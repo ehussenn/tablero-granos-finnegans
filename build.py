@@ -291,6 +291,39 @@ HTML_TEMPLATE = r"""<!doctype html>
   .vista-toggle{transition:all .15s}
   .vista-toggle.active{background:#16a34a;border-color:#16a34a;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3)}
 
+  /* Pagos Granos (POSICION GENERAL) */
+  .pg-alert{padding:12px 16px;border-radius:8px;margin-bottom:10px;border-left:4px solid;display:flex;justify-content:space-between;align-items:center}
+  .pg-alert .lbl{font-weight:700;font-size:13px}
+  .pg-alert .det{font-size:12px;color:var(--muted);margin-top:2px}
+  .pg-alert .tot{font-size:18px;font-weight:700;text-align:right}
+  .pg-alert.vencido{background:#fef2f2;border-color:var(--red);color:#991b1b}
+  .pg-alert.hoy{background:#fff7ed;border-color:var(--orange);color:#9a3412}
+  .pg-alert.proximo7{background:#fefce8;border-color:#ca8a04;color:#854d0e}
+  .pg-alert.proximo30{background:#eff6ff;border-color:var(--blue2);color:#1e40af}
+  .pg-alert.sinfecha{background:#f8fafc;border-color:#94a3b8;color:#475569}
+
+  #pg-tbl{font-size:12.5px}
+  #pg-tbl thead th{background:var(--blue);color:#fff;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;text-align:left;position:sticky;top:0;z-index:2}
+  #pg-tbl thead th.num{text-align:right}
+  #pg-tbl tbody tr td{padding:4px 8px;border-bottom:1px solid var(--line)}
+  #pg-tbl tbody tr.pagado td{background:#f0fdf4;color:#15803d;text-decoration:line-through}
+  #pg-tbl tbody tr.vencido td{background:#fef2f2}
+  #pg-tbl tbody tr.hoy td{background:#fff7ed}
+  #pg-tbl tbody tr.proximo7 td{background:#fefce8}
+  #pg-tbl tbody tr:hover td{background:#eff5ff}
+  #pg-tbl tbody td input, #pg-tbl tbody td.editable{width:100%;border:1px solid transparent;background:transparent;padding:3px 5px;font-size:11.5px;font-family:inherit;color:inherit;border-radius:3px;outline:none}
+  #pg-tbl tbody td input:hover, #pg-tbl tbody td.editable:hover{border-color:var(--line);background:#fff}
+  #pg-tbl tbody td input:focus, #pg-tbl tbody td.editable:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+  #pg-tbl tbody td.num input{text-align:right;font-variant-numeric:tabular-nums}
+  #pg-tbl tbody td.iva input{text-align:right;color:#b45309;font-weight:600}
+  #pg-tbl tbody td.action{text-align:center;white-space:nowrap}
+  #pg-tbl tbody td .row-btn{border:1px solid var(--line);background:#fff;cursor:pointer;padding:2px 7px;border-radius:4px;font-size:10.5px;color:var(--ink);margin:0 1px}
+  #pg-tbl tbody td .row-btn.pay{background:#16a34a;color:#fff;border-color:#16a34a}
+  #pg-tbl tbody td .row-btn.del{background:#fff;color:var(--red);border-color:#fecaca}
+  #pg-tbl tbody td .row-btn:hover{filter:brightness(0.95)}
+  #pg-tbl tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:13px;border-top:2px solid var(--blue);position:sticky;bottom:0}
+  #pg-tbl tfoot td.num{text-align:right;color:var(--blue);font-variant-numeric:tabular-nums}
+
   /* tabla con fila de totales sticky al pie */
   table tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
   table tfoot tr.sel td{background:#fef3c7;border-top:2px solid var(--orange);bottom:33px}
@@ -345,6 +378,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab" data-sub="cp-financiera">Financiera</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
+      <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
     </div>
 
     <!-- ========== SUB: POSICION COMPRA ========== -->
@@ -608,6 +642,67 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     </div>
 
+    <!-- ========== PROYECTADO DE PAGOS GRANOS ========== -->
+    <div class="subpanel" data-sub-panel="pg-pagos">
+
+      <!-- Banners de alertas -->
+      <div id="pg-alertas"></div>
+
+      <!-- KPIs principales -->
+      <div class="kpis" id="pg-kpis"></div>
+
+      <!-- Filtros -->
+      <div class="filterbar">
+        <div><label>CLIENTE</label><select id="pg-cliente"><option value="">Todos</option></select></div>
+        <div><label>ESTADO PAGO</label><select id="pg-estado">
+          <option value="">Todos</option>
+          <option value="vencido">Vencidos</option>
+          <option value="hoy">Vencen HOY</option>
+          <option value="proximo7">Próximos 7 días</option>
+          <option value="proximo30">Próximos 30 días</option>
+          <option value="futuro">Futuro lejano</option>
+          <option value="sinfecha">Sin fecha</option>
+          <option value="pagado">Marcados como pagados</option>
+        </select></div>
+        <div><label>MES PAGO</label><select id="pg-mes"><option value="">Todos</option></select></div>
+        <div><label>BUSCAR</label><input type="text" id="pg-q" placeholder="cliente…" /></div>
+        <button class="clear" id="pg-clear">Limpiar</button>
+        <button class="clear" id="pg-add-row" style="background:#16a34a;color:#fff;border-color:#16a34a">+ Agregar fila</button>
+        <div class="count" id="pg-count">0 pagos</div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
+        <button class="clear" id="pg-backup" style="background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600">💾 Backup ahora</button>
+        <span id="pg-backup-info" style="color:var(--muted)"></span>
+        <button class="clear" id="pg-export">⬇️ Exportar JSON</button>
+        <button class="clear" id="pg-import">⬆️ Importar JSON</button>
+        <input type="file" id="pg-import-file" accept="application/json" style="display:none" />
+        <button class="clear" id="pg-reset" style="color:var(--orange);border-color:#fed7aa">↺ Restaurar desde Excel original</button>
+        <button class="clear" id="pg-clear-data" style="color:var(--red);border-color:#fecaca">🗑️ Borrar todo</button>
+        <span style="margin-left:auto;color:var(--muted)" id="pg-storage-info"></span>
+      </div>
+
+      <!-- Banner backup overdue -->
+      <div id="pg-backup-banner" style="display:none;padding:10px 14px;border-radius:8px;background:#fef3c7;border-left:4px solid var(--orange);color:#92400e;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+        <span id="pg-backup-banner-msg">⚠️ Hace 0 días que no hacés backup</span>
+        <button class="clear" id="pg-backup-banner-btn" style="background:var(--orange);color:#fff;border-color:var(--orange);font-weight:600">💾 Descargar ahora</button>
+      </div>
+
+      <!-- Tabla editable -->
+      <div class="section">
+        <h3>Proyectado de Pagos <span class="badge">click en celdas para editar · cada cambio se guarda automáticamente</span></h3>
+        <div class="tbl-wrap" style="max-height:700px">
+          <table id="pg-tbl">
+            <thead><tr id="pg-tbl-head"></tr></thead>
+            <tbody id="pg-tbl-body"></tbody>
+            <tfoot id="pg-tbl-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
   <!-- ============ VENTA ============ -->
@@ -746,12 +841,12 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   </div>
 
-  <!-- ============ POSICION ============ -->
+  <!-- ============ POSICION (placeholder) ============ -->
   <div class="panel" data-panel="posicion">
     <div class="placeholder">
       <div class="ico">📊</div>
       <h4>Pestaña Posición General</h4>
-      <div>Próximamente: Stock por Depósito (8.485 reg.), Composición de Saldos (4.870 reg.), Clientes/Vendedores (9.365 reg.).</div>
+      <div>Pendiente — Stock por Depósito y Composición de Saldos transversal.</div>
     </div>
   </div>
 
@@ -3344,6 +3439,412 @@ cxInitFilters();
 cxRender();
 
 
+/* ============================================================
+   =====  PROYECTADO PAGOS GRANOS (POSICION GENERAL)  ========
+   ============================================================ */
+
+const PG_KEY = "tablero-granos-pagos-proyectados-v1";
+const PG_INICIALES = PAYLOAD.pagos_iniciales || [];
+
+let PG_DATA = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(PG_KEY) || "null");
+  if(Array.isArray(saved)) PG_DATA = saved;
+  else PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));   // primera carga: usa los del Excel
+} catch(e){ PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES)); }
+
+function pgSave(){ localStorage.setItem(PG_KEY, JSON.stringify(PG_DATA)); pgStorageInfo(); }
+function pgStorageInfo(){
+  const sz = (JSON.stringify(PG_DATA).length/1024).toFixed(1);
+  document.getElementById("pg-storage-info").textContent = `${PG_DATA.length} pagos · ${sz} KB en localStorage`;
+}
+
+// Hoy en yyyy-mm-dd
+function pgHoyISO(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+function pgDaysDiff(isoA, isoB){
+  if(!isoA || !isoB) return null;
+  const a = new Date(isoA), b = new Date(isoB);
+  return Math.round((b - a) / (1000*60*60*24));
+}
+function pgEstado(r){
+  if(r.pagado) return "pagado";
+  if(!r.fecha_pago) return "sinfecha";
+  const diff = pgDaysDiff(pgHoyISO(), r.fecha_pago);
+  if(diff < 0) return "vencido";
+  if(diff === 0) return "hoy";
+  if(diff <= 7) return "proximo7";
+  if(diff <= 30) return "proximo30";
+  return "futuro";
+}
+
+// Columnas tabla
+const PG_COLS = [
+  {k:"cliente",       lbl:"Cliente",        type:"text"},
+  {k:"fecha_fijacion",lbl:"Fecha Fijación", type:"date"},
+  {k:"tn_fijadas",    lbl:"Tn",             type:"num"},
+  {k:"precio_fijado", lbl:"Precio",         type:"num"},
+  {k:"total_sin_iva", lbl:"Sin IVA",        type:"num"},
+  {k:"iva_pct",       lbl:"% IVA",          type:"iva"},
+  {k:"total_con_iva", lbl:"Con IVA",        type:"num"},
+  {k:"fecha_pago",    lbl:"Fecha Pago",     type:"date"},
+];
+
+function pgRecalc(r){
+  // Si hay tn y precio → total sin IVA = tn × precio
+  if(r.tn_fijadas != null && r.precio_fijado != null){
+    r.total_sin_iva = r.tn_fijadas * r.precio_fijado;
+  }
+  // Si hay sin IVA + IVA pct → con IVA
+  if(r.total_sin_iva != null && r.iva_pct != null){
+    r.total_con_iva = r.total_sin_iva * (1 + r.iva_pct/100);
+  }
+}
+
+function pgFmtNum(v){
+  if(v == null || isNaN(v)) return "";
+  return Number(v).toLocaleString("es-AR", {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function pgFmtDate(v){ return v || ""; }
+function pgParseNum(s){
+  if(s == null || s === "") return null;
+  const v = parseFloat(String(s).replace(/\./g,"").replace(",","."));
+  return isNaN(v) ? null : v;
+}
+
+function pgInitFilters(){
+  // Clientes únicos
+  const clientes = [...new Set(PG_DATA.map(r => r.cliente).filter(Boolean))].sort();
+  document.getElementById("pg-cliente").innerHTML = '<option value="">Todos</option>' +
+    clientes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+  // Meses de pago únicos
+  const meses = [...new Set(PG_DATA.map(r => r.fecha_pago ? r.fecha_pago.slice(0,7) : null).filter(Boolean))].sort();
+  document.getElementById("pg-mes").innerHTML = '<option value="">Todos</option>' +
+    meses.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
+}
+
+function pgFiltered(){
+  const c = document.getElementById("pg-cliente").value;
+  const e = document.getElementById("pg-estado").value;
+  const m = document.getElementById("pg-mes").value;
+  const q = (document.getElementById("pg-q").value||"").toLowerCase().trim();
+  return PG_DATA.filter(r => {
+    if(c && r.cliente !== c) return false;
+    if(m && (!r.fecha_pago || !r.fecha_pago.startsWith(m))) return false;
+    if(q && !(r.cliente||"").toLowerCase().includes(q)) return false;
+    if(e && pgEstado(r) !== e) return false;
+    return true;
+  });
+}
+
+function pgRenderAlertas(){
+  const hoy = pgHoyISO();
+  const sets = {vencido:[], hoy:[], proximo7:[], proximo30:[], sinfecha:[]};
+  PG_DATA.forEach(r => {
+    if(r.pagado) return;
+    const est = pgEstado(r);
+    if(sets[est]) sets[est].push(r);
+  });
+
+  const sumar = arr => arr.reduce((s,r) => s + (Number(r.total_con_iva)||0), 0);
+  const html = [];
+  if(sets.vencido.length){
+    html.push(`<div class="pg-alert vencido">
+      <div><div class="lbl">🔴 ${sets.vencido.length} pagos VENCIDOS</div>
+      <div class="det">${sets.vencido.slice(0,3).map(r => `${r.cliente} (${r.fecha_pago})`).join(" · ")}${sets.vencido.length>3?` · +${sets.vencido.length-3} más`:''}</div></div>
+      <div class="tot">$${pgFmtNum(sumar(sets.vencido))}</div></div>`);
+  }
+  if(sets.hoy.length){
+    html.push(`<div class="pg-alert hoy">
+      <div><div class="lbl">⚠️ ${sets.hoy.length} pagos vencen HOY</div>
+      <div class="det">${sets.hoy.slice(0,3).map(r => r.cliente).join(" · ")}${sets.hoy.length>3?` · +${sets.hoy.length-3} más`:''}</div></div>
+      <div class="tot">$${pgFmtNum(sumar(sets.hoy))}</div></div>`);
+  }
+  if(sets.proximo7.length){
+    html.push(`<div class="pg-alert proximo7">
+      <div><div class="lbl">🟡 ${sets.proximo7.length} pagos en los próximos 7 días</div>
+      <div class="det">${sets.proximo7.slice(0,4).map(r => `${r.cliente} (${r.fecha_pago})`).join(" · ")}${sets.proximo7.length>4?` · +${sets.proximo7.length-4} más`:''}</div></div>
+      <div class="tot">$${pgFmtNum(sumar(sets.proximo7))}</div></div>`);
+  }
+  if(sets.proximo30.length){
+    html.push(`<div class="pg-alert proximo30">
+      <div><div class="lbl">🔵 ${sets.proximo30.length} pagos próximos 30 días</div>
+      <div class="det">Total estimado a cubrir</div></div>
+      <div class="tot">$${pgFmtNum(sumar(sets.proximo30))}</div></div>`);
+  }
+  if(sets.sinfecha.length){
+    html.push(`<div class="pg-alert sinfecha">
+      <div><div class="lbl">📝 ${sets.sinfecha.length} pagos sin fecha asignada</div>
+      <div class="det">Cargá la fecha de pago para que aparezcan en las alertas</div></div>
+      <div class="tot">$${pgFmtNum(sumar(sets.sinfecha))}</div></div>`);
+  }
+  document.getElementById("pg-alertas").innerHTML = html.join("");
+}
+
+function pgRenderKpis(filtered){
+  const tot = filtered.reduce((acc,r) => {
+    acc.con += Number(r.total_con_iva)||0;
+    acc.sin += Number(r.total_sin_iva)||0;
+    acc.tn  += Number(r.tn_fijadas)||0;
+    if(r.pagado) acc.pagado += Number(r.total_con_iva)||0;
+    else acc.pend += Number(r.total_con_iva)||0;
+    return acc;
+  }, {con:0,sin:0,tn:0,pagado:0,pend:0});
+
+  document.getElementById("pg-kpis").innerHTML = `
+    <div class="kpi"><div class="lbl">Pagos</div><div class="val">${fmt.int(filtered.length)}</div><div class="hint">de ${PG_DATA.length} totales</div></div>
+    <div class="kpi"><div class="lbl">Total Tn fijadas</div><div class="val">${fmt.num(tot.tn)}</div></div>
+    <div class="kpi red"><div class="lbl">Pendiente (con IVA)</div><div class="val">$${fmt.num(tot.pend)}</div></div>
+    <div class="kpi green"><div class="lbl">Ya pagado</div><div class="val">$${fmt.num(tot.pagado)}</div></div>
+  `;
+}
+
+function pgRender(){
+  pgInitFilters();
+  pgRenderAlertas();
+
+  const filtered = pgFiltered();
+  pgRenderKpis(filtered);
+  document.getElementById("pg-count").textContent =
+    `${filtered.length} / ${PG_DATA.length} pagos`;
+
+  // Header tabla
+  const head = `
+    <th>#</th>
+    ${PG_COLS.map(c => `<th class="${c.type==='num'||c.type==='iva'?'num':''}">${c.lbl}</th>`).join("")}
+    <th>Estado</th>
+    <th>Acciones</th>
+  `;
+  document.getElementById("pg-tbl-head").innerHTML = head;
+
+  // Body
+  const body = filtered.map((r, idx) => {
+    const est = pgEstado(r);
+    const estLabels = {
+      vencido:   '<span class="chip err">VENCIDO</span>',
+      hoy:       '<span class="chip warn">HOY</span>',
+      proximo7:  '<span class="chip warn">7 días</span>',
+      proximo30: '<span class="chip info">30 días</span>',
+      futuro:    '<span class="chip neutral">futuro</span>',
+      sinfecha:  '<span class="chip neutral">—</span>',
+      pagado:    '<span class="chip ok">✓ Pagado</span>',
+    };
+    let row = `<tr class="${est}" data-id="${r.id}"><td style="color:var(--muted);font-size:11px">${idx+1}</td>`;
+    PG_COLS.forEach(c => {
+      const v = r[c.k];
+      if(c.type === "text"){
+        row += `<td><input type="text" data-id="${r.id}" data-k="${c.k}" value="${v ? escapeHtml(v) : ''}"/></td>`;
+      } else if(c.type === "date"){
+        row += `<td><input type="date" data-id="${r.id}" data-k="${c.k}" value="${v || ''}"/></td>`;
+      } else if(c.type === "num"){
+        row += `<td class="num"><input type="text" data-id="${r.id}" data-k="${c.k}" value="${v != null ? pgFmtNum(v) : ''}"/></td>`;
+      } else if(c.type === "iva"){
+        row += `<td class="num iva"><input type="text" data-id="${r.id}" data-k="${c.k}" value="${v != null ? pgFmtNum(v) : ''}"/></td>`;
+      }
+    });
+    row += `<td>${estLabels[est] || ''}</td>`;
+    row += `<td class="action">
+      <button class="row-btn pay" data-id="${r.id}" data-act="pay" title="${r.pagado?'Desmarcar como pagado':'Marcar como pagado'}">${r.pagado ? '↺' : '✓'}</button>
+      ${r.pagado
+        ? `<button class="row-btn" data-id="${r.id}" data-act="locked" title="Desmarcá primero como NO pagado para poder borrar" style="background:#f1f5f9;color:#94a3b8;cursor:not-allowed">🔒</button>`
+        : `<button class="row-btn del" data-id="${r.id}" data-act="del" title="Borrar fila">🗑️</button>`}
+    </td>`;
+    row += `</tr>`;
+    return row;
+  }).join("");
+  document.getElementById("pg-tbl-body").innerHTML = body || '<tr><td colspan="99" style="padding:30px;text-align:center;color:var(--muted)">Sin pagos para los filtros aplicados</td></tr>';
+
+  // Footer totales
+  const totSin = filtered.reduce((s,r)=> s+(Number(r.total_sin_iva)||0), 0);
+  const totCon = filtered.reduce((s,r)=> s+(Number(r.total_con_iva)||0), 0);
+  const totTn  = filtered.reduce((s,r)=> s+(Number(r.tn_fijadas)||0), 0);
+  document.getElementById("pg-tbl-foot").innerHTML = `<tr>
+    <td colspan="3">TOTAL (${filtered.length} filas)</td>
+    <td class="num">${pgFmtNum(totTn)}</td>
+    <td></td>
+    <td class="num">${pgFmtNum(totSin)}</td>
+    <td></td>
+    <td class="num">${pgFmtNum(totCon)}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>`;
+
+  // Listeners
+  document.querySelectorAll("#pg-tbl-body input").forEach(inp => {
+    inp.addEventListener("blur", () => {
+      const id = inp.dataset.id, k = inp.dataset.k;
+      const r = PG_DATA.find(x => x.id === id);
+      if(!r) return;
+      const t = inp.type;
+      let v = inp.value;
+      if(["tn_fijadas","precio_fijado","total_sin_iva","iva_pct","total_con_iva"].includes(k)){
+        v = pgParseNum(v);
+      } else if(k.startsWith("fecha")){
+        v = v || null;
+      } else {
+        v = v.trim() || null;
+      }
+      r[k] = v;
+      // recalcular dependientes si se editó tn/precio/iva
+      if(k === "tn_fijadas" || k === "precio_fijado" || k === "iva_pct"){
+        pgRecalc(r);
+      } else if(k === "total_sin_iva" && r.iva_pct != null){
+        // Si edita "sin IVA" recalcular con IVA
+        r.total_con_iva = r.total_sin_iva * (1 + r.iva_pct/100);
+      } else if(k === "total_con_iva" && r.total_sin_iva){
+        // Si edita "con IVA" recalcular el % IVA
+        r.iva_pct = Math.round((r.total_con_iva / r.total_sin_iva - 1) * 1000) / 10;
+      }
+      pgSave();
+      pgRender();
+    });
+  });
+
+  document.querySelectorAll("#pg-tbl-body .row-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id, act = btn.dataset.act;
+      const idx = PG_DATA.findIndex(x => x.id === id);
+      if(idx < 0) return;
+      if(act === "pay"){
+        PG_DATA[idx].pagado = !PG_DATA[idx].pagado;
+      } else if(act === "del"){
+        if(PG_DATA[idx].pagado){
+          alert("Esta fila está marcada como PAGADA y no puede borrarse.\nDesmarcala primero apretando el botón ↺.");
+          return;
+        }
+        if(!confirm(`¿Borrar pago de ${PG_DATA[idx].cliente || '(sin cliente)'}?`)) return;
+        PG_DATA.splice(idx, 1);
+      } else if(act === "locked"){
+        alert("Esta fila está marcada como PAGADA.\nPara borrarla:\n1) Apretá el botón ↺ a la izquierda para desmarcar como pagado\n2) Después aparece el botón 🗑️ para borrar");
+        return;
+      }
+      pgSave();
+      pgRender();
+    });
+  });
+
+  pgStorageInfo();
+  pgRefreshBackupInfo();
+}
+
+// Filtros listeners
+["pg-cliente","pg-estado","pg-mes","pg-q"].forEach(id =>
+  document.getElementById(id).addEventListener(id === "pg-q" ? "input" : "change", pgRender)
+);
+document.getElementById("pg-clear").addEventListener("click", () => {
+  ["pg-cliente","pg-estado","pg-mes","pg-q"].forEach(id => document.getElementById(id).value = "");
+  pgRender();
+});
+
+// Agregar fila
+document.getElementById("pg-add-row").addEventListener("click", () => {
+  const newId = "n" + Date.now();
+  PG_DATA.unshift({
+    id: newId,
+    cliente: "",
+    fecha_fijacion: pgHoyISO(),
+    tn_fijadas: null,
+    precio_fijado: null,
+    total_sin_iva: null,
+    iva_pct: 10.5,   // default granos
+    total_con_iva: null,
+    fecha_pago: null,
+    pagado: false,
+  });
+  pgSave();
+  pgRender();
+});
+
+// ===== Sistema de Backup =====
+const PG_BACKUP_KEY = "tablero-granos-pagos-lastbackup-v1";
+
+function pgLastBackupDate(){
+  return localStorage.getItem(PG_BACKUP_KEY); // ISO yyyy-mm-dd
+}
+function pgDaysSinceBackup(){
+  const last = pgLastBackupDate();
+  if(!last) return null;
+  return pgDaysDiff(last, pgHoyISO());
+}
+function pgRefreshBackupInfo(){
+  const last = pgLastBackupDate();
+  const info = document.getElementById("pg-backup-info");
+  const banner = document.getElementById("pg-backup-banner");
+  const bannerMsg = document.getElementById("pg-backup-banner-msg");
+  if(!last){
+    info.textContent = "⚠️ Nunca hiciste backup";
+    info.style.color = "var(--red)";
+    banner.style.display = "flex";
+    bannerMsg.innerHTML = "⚠️ <strong>Nunca hiciste backup</strong>. Recomendado: bajá el JSON ahora para tener una copia segura.";
+  } else {
+    const days = pgDaysSinceBackup();
+    info.textContent = `último backup: ${last} (hace ${days} día${days===1?'':'s'})`;
+    info.style.color = days > 7 ? "var(--red)" : (days > 1 ? "var(--orange)" : "var(--muted)");
+    if(days >= 1){
+      banner.style.display = "flex";
+      bannerMsg.innerHTML = `⚠️ Hace <strong>${days} día${days===1?'':'s'}</strong> que no hacés backup. Tu último backup fue el ${last}.`;
+    } else {
+      banner.style.display = "none";
+    }
+  }
+}
+
+function pgDoBackup(){
+  const blob = new Blob([JSON.stringify(PG_DATA, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `proyectado_pagos_${pgHoyISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // Marcar backup hecho hoy
+  localStorage.setItem(PG_BACKUP_KEY, pgHoyISO());
+  pgRefreshBackupInfo();
+}
+
+// Botones de backup
+document.getElementById("pg-backup").addEventListener("click", pgDoBackup);
+document.getElementById("pg-backup-banner-btn").addEventListener("click", pgDoBackup);
+document.getElementById("pg-export").addEventListener("click", pgDoBackup);  // mismo comportamiento
+document.getElementById("pg-import").addEventListener("click", () => document.getElementById("pg-import-file").click());
+document.getElementById("pg-import-file").addEventListener("change", ev => {
+  const f = ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      if(!Array.isArray(obj)) throw new Error("debe ser un array de pagos");
+      if(confirm(`¿Reemplazar tus ${PG_DATA.length} pagos por los ${obj.length} del archivo?`)){
+        PG_DATA = obj;
+        pgSave();
+        pgRender();
+      }
+    } catch(err){ alert("JSON inválido: "+err.message); }
+  };
+  r.readAsText(f);
+});
+document.getElementById("pg-reset").addEventListener("click", () => {
+  if(confirm("¿Restaurar la lista desde el Excel original?\nVas a perder cualquier cambio que hayas hecho.")){
+    PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));
+    pgSave();
+    pgRender();
+  }
+});
+document.getElementById("pg-clear-data").addEventListener("click", () => {
+  if(confirm("¿Borrar TODOS los pagos? No se puede deshacer.")){
+    PG_DATA = [];
+    pgSave();
+    pgRender();
+  }
+});
+
+pgRender();
+
+
 </script>
 </body>
 </html>
@@ -3454,6 +3955,19 @@ def main() -> int:
         print(f"    [!] error BCR: {e}")
         bcr = {"fetched_at": None, "tc_usd_ars": None, "granos": {}}
 
+    # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
+    pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
+    if pagos_path.exists():
+        try:
+            pagos_iniciales = json.loads(pagos_path.read_text(encoding="utf-8"))
+            print(f"\n[+] Cargados {len(pagos_iniciales)} pagos iniciales desde {pagos_path.name}")
+        except Exception as e:
+            print(f"[!] Error leyendo {pagos_path}: {e}")
+            pagos_iniciales = []
+    else:
+        print(f"[.] No existe {pagos_path}, modulo de pagos arranca vacio")
+        pagos_iniciales = []
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
@@ -3462,6 +3976,7 @@ def main() -> int:
         "saldos": saldos_norm,
         "bcr":    bcr,
         "cruces": cruces_list,
+        "pagos_iniciales": pagos_iniciales,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
