@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Playwright / scraping
+scripts/scraper/.profile/
+scripts/scraper/out/
+*.auth.json
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Datos sensibles / temporales
+*.env
+.env
+.env.local
+secrets.json
+
+# Output local del scraper (screenshots, html dumps)
+out/
+*.png.tmp
+
+# HTML generado (lo regenera el workflow en cada deploy)
+index.html
+
+# Schemas/discovery historicos (ya no se usan; mantenemos solo el swagger en scripts/)
+schemas.json
+discovery.json
