@@ -254,6 +254,43 @@ HTML_TEMPLATE = r"""<!doctype html>
   #cal-cp-tbl tfoot td.cal-num{text-align:right}
   #cal-cp-tbl tfoot td.cal-org-cell{position:sticky;left:0;background:#fecaca;text-align:left}
 
+  /* Cruce Cliente x Comprador (matrix) */
+  #cx-matrix{font-size:11.5px}
+  #cx-matrix thead th{background:#1e3a8a;color:#fff;padding:8px 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;text-align:center;border-right:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:1}
+  #cx-matrix thead th.cx-cliente-h{text-align:left;background:#0f172a;min-width:240px;position:sticky;left:0;z-index:3}
+  #cx-matrix thead th.cx-pct-cli{background:#7c2d12;min-width:60px}
+  #cx-matrix thead th.cx-precio-cli{background:#0d9488;min-width:75px}
+  #cx-matrix thead th.cx-comprador{background:#1e3a8a;min-width:95px;cursor:default}
+  #cx-matrix thead th.cx-comprador .pct{display:block;font-size:9.5px;background:#f59e0b;color:#451a03;padding:1px 4px;border-radius:8px;margin-top:3px;font-weight:600}
+  #cx-matrix thead th.cx-comprador .pct.zero{background:#fee2e2;color:#7f1d1d}
+  #cx-matrix tbody td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+  #cx-matrix tbody td.cx-cli-name{text-align:left;font-weight:500;background:#fff;position:sticky;left:0;z-index:2;border-right:2px solid var(--line)}
+  #cx-matrix tbody tr:nth-child(even) td:not(.cx-cli-name){background:#fafbff}
+  #cx-matrix tbody tr:hover td{background:#eff5ff}
+  #cx-matrix tbody td.cx-pct-cell{background:#fef3c7;color:#92400e;font-weight:600}
+  #cx-matrix tbody td.cx-precio-cell{background:#ccfbf1;color:#134e4a;font-weight:600}
+  #cx-matrix tbody td.cx-empty{color:#cbd5e1}
+  #cx-matrix tfoot td{background:#eef2ff;font-weight:700;padding:8px 6px;font-size:11.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1;text-align:right}
+  #cx-matrix tfoot td.cx-foot-lbl{text-align:left;background:#dbeafe;color:var(--blue);position:sticky;left:0;z-index:2}
+
+  /* Cards de cultivos (variante con balance) */
+  .cult-card{padding:14px;border-radius:10px;border-left:4px solid #94a3b8;background:#fafbff}
+  .cult-card.soja{border-left-color:#16a34a;background:#f0fdf4}
+  .cult-card.maiz{border-left-color:#f59e0b;background:#fffbeb}
+  .cult-card.trigo{border-left-color:#a16207;background:#fefce8}
+  .cult-card.girasol{border-left-color:#d97706;background:#fff7ed}
+  .cult-card .name{font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+  .cult-card .name .cnt{font-size:11px;color:var(--muted);font-weight:500}
+  .cult-card .r{display:flex;justify-content:space-between;margin-top:4px;font-size:12.5px}
+  .cult-card .r .k{color:var(--muted)}
+  .cult-card .bal{margin-top:8px;padding-top:6px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-weight:700;font-size:13px}
+  .cult-card .pos{color:var(--green)}
+  .cult-card .neg{color:var(--red)}
+
+  /* Vista toggle */
+  .vista-toggle{transition:all .15s}
+  .vista-toggle.active{background:#16a34a;border-color:#16a34a;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3)}
+
   /* tabla con fila de totales sticky al pie */
   table tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
   table tfoot tr.sel td{background:#fef3c7;border-top:2px solid var(--orange);bottom:33px}
@@ -307,6 +344,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab active" data-sub="cp-posicion">Posición General</button>
       <button class="subtab" data-sub="cp-financiera">Financiera</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
+      <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
     </div>
 
     <!-- ========== SUB: POSICION COMPRA ========== -->
@@ -475,6 +513,95 @@ HTML_TEMPLATE = r"""<!doctype html>
             <thead><tr id="tbl-head-canjes"></tr></thead>
             <tbody id="tbl-body-canjes"></tbody>
             <tfoot id="tbl-foot-canjes"></tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== SUB: CRUCE CLIENTE x COMPRADOR ========== -->
+    <div class="subpanel" data-sub-panel="cp-cruce">
+
+      <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <h3 style="margin:0">Cruce Clientes × Compradores</h3>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Tablero reactivo · Cliente: 3.25% comisión compra (excepciones editables) · Comprador: % variable por tabla editable · Precios USD/tn (TC histórico)</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px" id="cx-meta">— ops · 0 CTGs procesados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle Vista -->
+      <div style="display:flex;gap:0;margin-bottom:14px">
+        <button class="vista-toggle active" data-vista="kgcom" style="padding:10px 22px;border:1px solid #16a34a;background:#16a34a;color:#fff;border-radius:8px 0 0 8px;cursor:pointer;font-weight:600">Cruce Kg + Comisiones</button>
+        <button class="vista-toggle" data-vista="precio" style="padding:10px 22px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:0 8px 8px 0;cursor:pointer;font-weight:500">Precio Compra vs Venta</button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filterbar">
+        <div><label>GRANO</label><select id="cx-grano"><option value="">Todos</option></select></div>
+        <div><label>MES</label><select id="cx-mes"><option value="">Todos</option></select></div>
+        <div><label>CLIENTE</label><select id="cx-cliente"><option value="">Todos</option></select></div>
+        <div><label>COMPRADOR</label><select id="cx-comprador"><option value="">Todos</option></select></div>
+        <div><label>ENTREGADOR</label><select id="cx-entregador"><option value="">Todos</option></select></div>
+        <div><label>BUSCAR CLIENTE</label><input type="text" id="cx-q" placeholder="texto…" /></div>
+        <button class="clear" id="cx-clear">Limpiar filtros</button>
+      </div>
+
+      <!-- Tabla editable de % por Comprador -->
+      <div class="section" style="background:#fff7ed;border:1px solid #fed7aa">
+        <h3 style="display:flex;justify-content:space-between;align-items:center">
+          <span>% Comisión por Comprador <span class="badge">editable · persiste en localStorage</span></span>
+          <span>
+            <button class="clear" id="cx-pct-defaults">↺ Cargar defaults</button>
+            <button class="clear" id="cx-pct-clear" style="color:var(--red);border-color:#fecaca">🗑️ Limpiar todo</button>
+          </span>
+        </h3>
+        <div id="cx-pct-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px"></div>
+      </div>
+
+      <!-- Comisión Cliente: default + excepciones -->
+      <div class="section" style="background:#f0fdf4;border:1px solid #86efac">
+        <h3>% Comisión Cliente <span class="badge">3.25% default · excepciones editables</span></h3>
+        <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+          <div>
+            <label style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">% DEFAULT</label>
+            <input type="text" id="cx-cli-default" style="display:block;margin-top:4px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;width:100px;text-align:right;font-variant-numeric:tabular-nums" value="3.25" />
+          </div>
+          <div style="flex:1;min-width:300px">
+            <label style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">EXCEPCIONES (formato: CLIENTE = %, una por línea)</label>
+            <textarea id="cx-cli-excs" style="display:block;margin-top:4px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;width:100%;height:60px;font-family:inherit;font-size:12px" placeholder="BENAYAS S.A. = 2.75&#10;BENAYAS MIGUEL ANGEL = 2.75"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards Resumen por cultivo -->
+      <div class="section">
+        <h3>Resumen por cultivo (con filtros aplicados)</h3>
+        <div class="grain-grid" id="cx-cultivos"></div>
+      </div>
+
+      <!-- Totales generales -->
+      <div class="section">
+        <h3>Totales generales</h3>
+        <div class="kpis" id="cx-totales"></div>
+      </div>
+
+      <!-- Pendientes -->
+      <div class="section" id="cx-pendientes-section" style="background:#fef3c7;border:1px dashed var(--orange);display:none">
+        <h3 style="color:#a16207">⚠️ Pendientes <span class="badge">operaciones sin % comprador cargado</span></h3>
+        <div id="cx-pendientes-content" style="font-size:13px;color:#a16207"></div>
+      </div>
+
+      <!-- Detalle Matrix Cliente x Comprador -->
+      <div class="section">
+        <h3>📋 Detalle <span class="badge" id="cx-matrix-meta">cruce de operaciones</span></h3>
+        <div class="tbl-wrap" style="max-height:700px">
+          <table id="cx-matrix">
+            <thead id="cx-matrix-head"></thead>
+            <tbody id="cx-matrix-body"></tbody>
+            <tfoot id="cx-matrix-foot"></tfoot>
           </table>
         </div>
       </div>
@@ -2799,6 +2926,424 @@ cjInitFilters();
 cjApply();
 
 
+/* ============================================================
+   =====  CRUCE CLIENTE x COMPRADOR (sub-pestaña COMPRA) =====
+   ============================================================ */
+
+const CRUCES_RAW = PAYLOAD.cruces || [];
+
+// Defaults de % comprador (del pinned screenshot del usuario)
+const CX_PCT_DEFAULTS = {
+  "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL": 2.25,
+  "LDC ARGENTINA S.A.": 0.50,
+  "ALLARIA AGRONEGOCIOS S.A.": 1.00,
+  "ARGENTRADING S.A.": 0.50,
+  "TOMAS HNOS Y CIA SA": 0.50,
+  "PUERTO ARROYO SECO SA": 1.00,
+  "LA BRAGADENSE SA": 1.00,
+  "LARTIRIGOYEN Y CIA SA": 2.00,
+  "BUNGE ARGENTINA S.A.": 0.00,
+  "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA": 2.25,
+};
+
+const CX_PCT_KEY  = "tablero-granos-cx-pct-comprador-v1";
+const CX_CLI_KEY  = "tablero-granos-cx-cli-comision-v1";
+let CX_PCT = {};
+let CX_CLI_DEFAULT = 3.25;
+let CX_CLI_EXCS = {"BENAYAS S.A.": 2.75, "BENAYAS MIGUEL ANGEL": 2.75};
+let cxVista = "kgcom";
+
+try {
+  const saved = JSON.parse(localStorage.getItem(CX_PCT_KEY) || "null");
+  if(saved && typeof saved === "object") CX_PCT = saved;
+} catch(e){}
+try {
+  const saved = JSON.parse(localStorage.getItem(CX_CLI_KEY) || "null");
+  if(saved){
+    CX_CLI_DEFAULT = saved.def != null ? saved.def : 3.25;
+    CX_CLI_EXCS    = saved.excs || CX_CLI_EXCS;
+  }
+} catch(e){}
+
+if(Object.keys(CX_PCT).length === 0) CX_PCT = {...CX_PCT_DEFAULTS};
+
+function cxSavePct(){ localStorage.setItem(CX_PCT_KEY, JSON.stringify(CX_PCT)); }
+function cxSaveCli(){ localStorage.setItem(CX_CLI_KEY, JSON.stringify({def: CX_CLI_DEFAULT, excs: CX_CLI_EXCS})); }
+
+function cxClienteUpper(s){ return (s||"").trim().toUpperCase(); }
+function cxGetPctCliente(cliente){
+  // buscar match case-insensitive en excepciones
+  const k = cxClienteUpper(cliente);
+  for(const [name, pct] of Object.entries(CX_CLI_EXCS)){
+    if(cxClienteUpper(name) === k) return pct;
+  }
+  return CX_CLI_DEFAULT;
+}
+function cxGetPctComprador(comprador){
+  if(comprador == null) return null;
+  // match exacto
+  if(CX_PCT[comprador] != null) return CX_PCT[comprador];
+  // match case-insensitive
+  for(const [name, pct] of Object.entries(CX_PCT)){
+    if(cxClienteUpper(name) === cxClienteUpper(comprador)) return pct;
+  }
+  return null;   // null = pendiente (no cargado)
+}
+
+// Buscar precio del contrato (compra o venta)
+// indexo contratos por NOMBRECONTRATO para lookups rapidos
+const CX_CONTRATOS_COMPRA_IDX = {};
+(DATA_CP || []).forEach(c => {
+  if(c.contrato) CX_CONTRATOS_COMPRA_IDX[c.contrato] = c;
+});
+const CX_CONTRATOS_VENTA_IDX = {};
+(DATA || []).forEach(c => {   // DATA es venta (pilot)
+  if(c.contrato) CX_CONTRATOS_VENTA_IDX[c.contrato] = c;
+});
+
+function cxPrecioCompra(nombreContrato){
+  const c = CX_CONTRATOS_COMPRA_IDX[nombreContrato];
+  if(!c) return null;
+  return c.preciopromediofijado || c.precioliquidado || null;
+}
+function cxPrecioVenta(nombreContrato){
+  const c = CX_CONTRATOS_VENTA_IDX[nombreContrato];
+  if(!c) return null;
+  return c.preciopromediofijado || c.precioliquidado || null;
+}
+
+function cxMesISO(fechaStr){
+  // fecha dd-MM-yyyy o yyyy-MM-dd
+  if(!fechaStr) return null;
+  const m1 = String(fechaStr).match(/^(\d{2})-(\d{2})-(\d{4})/);
+  if(m1) return `${m1[3]}-${m1[2]}`;
+  const m2 = String(fechaStr).match(/^(\d{4})-(\d{2})/);
+  if(m2) return `${m2[1]}-${m2[2]}`;
+  return null;
+}
+
+// Enriquecer cruces con precios + comisiones
+function cxBuildOps(){
+  return CRUCES_RAW.map(c => {
+    const kg = c.kg || 0;
+    const tn = kg/1000;
+    const precioC = cxPrecioCompra(c.contrato_compra);
+    const precioV = cxPrecioVenta(c.contrato_venta);
+    const pctC = cxGetPctCliente(c.cliente);
+    const pctV = cxGetPctComprador(c.comprador);
+    const comComp = (precioC != null) ? tn * precioC * (pctC/100) : 0;
+    const comVent = (precioV != null && pctV != null) ? tn * precioV * (pctV/100) : 0;
+    const margenPVPC = (precioV != null && precioC != null) ? precioV - precioC : null;
+    const balance = comComp - comVent;
+    return {
+      ...c,
+      mes: cxMesISO(c.fecha),
+      tn,
+      precioC, precioV,
+      pctC, pctV,
+      comComp, comVent,
+      margenPVPC,
+      balance,
+      pendiente: pctV == null,
+    };
+  });
+}
+
+const MES_LABELS = {
+  "01": "Ene", "02": "Feb", "03": "Mar", "04": "Abr", "05": "May", "06": "Jun",
+  "07": "Jul", "08": "Ago", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dic",
+};
+function mesNice(yyyymm){
+  if(!yyyymm) return "—";
+  const [y,m] = yyyymm.split("-");
+  return `${MES_LABELS[m] || m} ${y}`;
+}
+
+function cxInitFilters(){
+  const ops = cxBuildOps();
+  const fillSel = (id, vals, defLbl) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">${defLbl}</option>` +
+      vals.filter(v => v).sort().map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  };
+  fillSel("cx-grano",      [...new Set(ops.map(o=>o.grano))],         "Todos");
+  fillSel("cx-cliente",    [...new Set(ops.map(o=>o.cliente))],       "Todos");
+  fillSel("cx-comprador",  [...new Set(ops.map(o=>o.comprador))],     "Todos");
+  fillSel("cx-entregador", [...new Set(ops.map(o=>o.entregador))],    "Todos");
+  // meses
+  const meses = [...new Set(ops.map(o=>o.mes).filter(Boolean))].sort();
+  document.getElementById("cx-mes").innerHTML = '<option value="">Todos</option>' +
+    meses.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
+
+  ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador"].forEach(id =>
+    document.getElementById(id).addEventListener("change", cxRender)
+  );
+  document.getElementById("cx-q").addEventListener("input", cxRender);
+  document.getElementById("cx-clear").addEventListener("click", () => {
+    ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador","cx-q"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+    cxRender();
+  });
+
+  // Toggle vistas
+  document.querySelectorAll(".vista-toggle").forEach(b => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".vista-toggle").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      cxVista = b.dataset.vista;
+      cxRender();
+    });
+  });
+}
+
+function cxRenderPctGrid(){
+  // armar lista de compradores conocidos (de las ops y de defaults y de lo guardado)
+  const compradoresEnOps = [...new Set(CRUCES_RAW.map(c => c.comprador).filter(Boolean))];
+  const todos = new Set([
+    ...Object.keys(CX_PCT_DEFAULTS),
+    ...Object.keys(CX_PCT),
+    ...compradoresEnOps,
+  ]);
+  const list = [...todos].sort();
+  const grid = document.getElementById("cx-pct-grid");
+  grid.innerHTML = list.map(name => {
+    const v = CX_PCT[name] != null ? CX_PCT[name] : "";
+    const inOps = compradoresEnOps.includes(name);
+    const bg = v === "" || v == null ? "#fee2e2" : (v === 0 ? "#f3f4f6" : "#fff");
+    return `<div style="display:flex;gap:6px;align-items:center;padding:4px 6px;background:${bg};border:1px solid var(--line);border-radius:6px">
+      <div style="flex:1;font-size:12px;${inOps?'':'color:var(--muted)'}" title="${escapeHtml(name)}">${escapeHtml(name.length>30?name.slice(0,30)+'…':name)}</div>
+      <input type="text" data-comprador="${escapeHtml(name)}" class="cx-pct-input" value="${v}" placeholder="%" style="width:55px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;text-align:right;font-size:11.5px;font-variant-numeric:tabular-nums" />
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".cx-pct-input").forEach(inp => {
+    inp.addEventListener("blur", () => {
+      const name = inp.dataset.comprador;
+      const v = parseFloat((inp.value||"").replace(",","."));
+      if(isNaN(v)) delete CX_PCT[name];
+      else CX_PCT[name] = v;
+      cxSavePct();
+      cxRender();
+    });
+    inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
+  });
+}
+
+// Filtros + cruces + matrix render
+function cxApplyFilters(ops){
+  const g = document.getElementById("cx-grano").value;
+  const mes = document.getElementById("cx-mes").value;
+  const cli = document.getElementById("cx-cliente").value;
+  const cmp = document.getElementById("cx-comprador").value;
+  const ent = document.getElementById("cx-entregador").value;
+  const q = (document.getElementById("cx-q").value||"").toLowerCase().trim();
+  return ops.filter(o => {
+    if(g && o.grano !== g) return false;
+    if(mes && o.mes !== mes) return false;
+    if(cli && o.cliente !== cli) return false;
+    if(cmp && o.comprador !== cmp) return false;
+    if(ent && o.entregador !== ent) return false;
+    if(q && !(o.cliente||"").toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function cxRender(){
+  // refrescar inputs de cliente
+  document.getElementById("cx-cli-default").value = CX_CLI_DEFAULT;
+  document.getElementById("cx-cli-excs").value = Object.entries(CX_CLI_EXCS).map(([n,p]) => `${n} = ${p}`).join("\n");
+
+  cxRenderPctGrid();
+
+  const allOps = cxBuildOps();
+  const ops = cxApplyFilters(allOps);
+  document.getElementById("cx-meta").textContent = `${ops.length} ops · ${allOps.length} CTGs procesados`;
+
+  // Pendientes (% comprador no cargado)
+  const pendientes = ops.filter(o => o.pendiente);
+  if(pendientes.length){
+    const compFaltan = [...new Set(pendientes.map(o => o.comprador).filter(Boolean))];
+    document.getElementById("cx-pendientes-section").style.display = "block";
+    document.getElementById("cx-pendientes-content").innerHTML =
+      `<strong>${pendientes.length} ops</strong>${compFaltan.length ? ` · Falta % de: ${compFaltan.map(c=>escapeHtml(c)).join(", ")}` : ""}`;
+  } else {
+    document.getElementById("cx-pendientes-section").style.display = "none";
+  }
+
+  // Resumen por cultivo
+  const byCult = {};
+  ops.forEach(o => {
+    const g = o.grano || "—";
+    if(!byCult[g]) byCult[g] = {cnt:0, kg:0, comComp:0, comVent:0, margenTot:0};
+    byCult[g].cnt++;
+    byCult[g].kg += o.kg || 0;
+    byCult[g].comComp += o.comComp || 0;
+    byCult[g].comVent += o.comVent || 0;
+    if(o.margenPVPC != null) byCult[g].margenTot += (o.margenPVPC * (o.tn||0));
+  });
+  const cultivos = Object.entries(byCult).sort((a,b) => b[1].kg - a[1].kg);
+  document.getElementById("cx-cultivos").innerHTML = cultivos.map(([g,v]) => {
+    const bal = v.comComp - v.comVent;
+    return `<div class="cult-card ${grainClass(g)}">
+      <div class="name"><span>${g}</span><span class="cnt">${v.cnt} ops</span></div>
+      <div class="r"><span class="k">Kg</span><span>${fmt.num(v.kg)}</span></div>
+      <div class="r"><span class="k">Comisión Compra</span><span class="pos">$${fmt.num2(v.comComp)}</span></div>
+      <div class="r"><span class="k">Comisión Venta</span><span class="neg">$${fmt.num2(v.comVent)}</span></div>
+      <div class="r"><span class="k">Margen P.V−P.C</span><span class="${v.margenTot>=0?'pos':'neg'}">$${fmt.num2(v.margenTot)}</span></div>
+      <div class="bal"><span>BALANCE</span><span class="${bal>=0?'pos':'neg'}">$${fmt.num2(bal)}</span></div>
+    </div>`;
+  }).join("") || '<div class="placeholder">Sin operaciones para los filtros aplicados</div>';
+
+  // Totales generales
+  const tot = {comComp:0, comVent:0, balance:0, margenTot:0, ops:ops.length, kg:0,
+               clientes:new Set(), compradores:new Set(), entregadores:new Set()};
+  ops.forEach(o => {
+    tot.comComp += o.comComp || 0;
+    tot.comVent += o.comVent || 0;
+    tot.kg += o.kg || 0;
+    if(o.margenPVPC != null) tot.margenTot += (o.margenPVPC * (o.tn||0));
+    if(o.cliente) tot.clientes.add(o.cliente);
+    if(o.comprador) tot.compradores.add(o.comprador);
+    if(o.entregador) tot.entregadores.add(o.entregador);
+  });
+  tot.balance = tot.comComp - tot.comVent;
+  document.getElementById("cx-totales").innerHTML = `
+    <div class="kpi green"><div class="lbl">Comisión Compra</div><div class="val">$${fmt.num2(tot.comComp)}</div></div>
+    <div class="kpi red"><div class="lbl">Comisión Venta</div><div class="val">$${fmt.num2(tot.comVent)}</div></div>
+    <div class="kpi orange"><div class="lbl">Balance USD</div><div class="val">$${fmt.num2(tot.balance)}</div></div>
+    <div class="kpi"><div class="lbl">Margen P.V−P.C</div><div class="val">$${fmt.num2(tot.margenTot)}</div></div>
+    <div class="kpi"><div class="lbl">Operaciones</div><div class="val">${fmt.int(tot.ops)}</div></div>
+    <div class="kpi"><div class="lbl">Kg</div><div class="val">${fmt.num(tot.kg)}</div></div>
+    <div class="kpi"><div class="lbl">Clientes</div><div class="val">${tot.clientes.size}</div></div>
+    <div class="kpi"><div class="lbl">Compradores</div><div class="val">${tot.compradores.size}</div></div>
+    <div class="kpi"><div class="lbl">Entregadores</div><div class="val">${tot.entregadores.size}</div></div>
+  `;
+
+  // Matrix
+  cxRenderMatrix(ops);
+}
+
+function cxRenderMatrix(ops){
+  // Agrupar: rows = cliente, cols = comprador
+  const clientes = [...new Set(ops.map(o => o.cliente).filter(Boolean))].sort();
+  const compradores = [...new Set(ops.map(o => o.comprador).filter(Boolean))].sort();
+
+  document.getElementById("cx-matrix-meta").textContent =
+    `${clientes.length} clientes × ${compradores.length} compradores · vista: ${cxVista === "kgcom" ? "Kg + Comisiones" : "Precio Compra vs Venta"}`;
+
+  // matriz de datos: cliente -> comprador -> {kg, precioVTot/cnt, precioCCli (1ero), ops:[...]}
+  const matrix = {};
+  const precioCliente = {};   // cliente -> precio compra (promedio ponderado por kg)
+  const precioCpyKg = {};     // cliente -> {sumPxKg, sumKg}
+  clientes.forEach(c => { matrix[c] = {}; precioCpyKg[c] = {sumPxKg:0, sumKg:0}; });
+
+  ops.forEach(o => {
+    if(!o.cliente || !o.comprador) return;
+    if(!matrix[o.cliente][o.comprador]) matrix[o.cliente][o.comprador] = {kg:0, ops:0, sumPVxKg:0, sumKgPV:0};
+    const cell = matrix[o.cliente][o.comprador];
+    cell.kg += o.kg||0;
+    cell.ops++;
+    if(o.precioV != null && o.kg){ cell.sumPVxKg += o.precioV*o.kg; cell.sumKgPV += o.kg; }
+    if(o.precioC != null && o.kg){
+      precioCpyKg[o.cliente].sumPxKg += o.precioC*o.kg;
+      precioCpyKg[o.cliente].sumKg += o.kg;
+    }
+  });
+  clientes.forEach(c => {
+    const t = precioCpyKg[c];
+    precioCliente[c] = t.sumKg > 0 ? t.sumPxKg / t.sumKg : null;
+  });
+
+  // Header
+  let head = '<tr><th class="cx-cliente-h">Cliente</th><th class="cx-pct-cli">% Cliente</th><th class="cx-precio-cli">Precio<br/>Compra<br/>USD/tn</th>';
+  compradores.forEach(cp => {
+    const pct = cxGetPctComprador(cp);
+    const pctTxt = pct != null ? `${fmt.num2(pct)}%` : "—";
+    const pctCls = pct === 0 || pct == null ? "zero" : "";
+    const short = cp.length > 18 ? cp.slice(0,18) + "…" : cp;
+    head += `<th class="cx-comprador" title="${escapeHtml(cp)}">${escapeHtml(short)}<span class="pct ${pctCls}">${pctTxt}</span></th>`;
+  });
+  head += '</tr>';
+  document.getElementById("cx-matrix-head").innerHTML = head;
+
+  // Body
+  let body = "";
+  clientes.forEach(cli => {
+    const pctCli = cxGetPctCliente(cli);
+    const precCli = precioCliente[cli];
+    body += `<tr><td class="cx-cli-name" title="${escapeHtml(cli)}">${escapeHtml(cli)}</td>`;
+    body += `<td class="cx-pct-cell">${fmt.num2(pctCli)}%</td>`;
+    body += `<td class="cx-precio-cell">${precCli != null ? fmt.num2(precCli) : '—'}</td>`;
+    compradores.forEach(cp => {
+      const cell = matrix[cli][cp];
+      if(!cell || cell.kg === 0){
+        body += '<td class="cx-empty">—</td>';
+      } else if(cxVista === "kgcom") {
+        body += `<td>${fmt.num(cell.kg)}</td>`;
+      } else {
+        const precioCpr = cell.sumKgPV > 0 ? cell.sumPVxKg / cell.sumKgPV : null;
+        const diff = (precioCpr != null && precCli != null) ? (precioCpr - precCli) : null;
+        const diffTxt = diff != null ? `<span style="font-size:9px;color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'+':''}${fmt.num2(diff)}</span>` : '';
+        body += `<td>${precioCpr != null ? fmt.num2(precioCpr) : '—'}<br/><span style="font-size:9px;color:var(--muted)">${fmt.num(cell.kg)} kg</span>${diffTxt ? '<br/>' + diffTxt : ''}</td>`;
+      }
+    });
+    body += '</tr>';
+  });
+  document.getElementById("cx-matrix-body").innerHTML = body || '<tr><td colspan="99" style="padding:30px;text-align:center;color:var(--muted)">Sin datos</td></tr>';
+
+  // Footer (totales por comprador)
+  let foot = '<tr><td class="cx-foot-lbl">TOTAL</td><td></td><td></td>';
+  compradores.forEach(cp => {
+    let total = 0;
+    clientes.forEach(cli => {
+      const cell = matrix[cli][cp];
+      if(cell) total += cell.kg || 0;
+    });
+    foot += `<td>${total > 0 ? fmt.num(total) : '—'}</td>`;
+  });
+  foot += '</tr>';
+  document.getElementById("cx-matrix-foot").innerHTML = foot;
+}
+
+// Inputs de comision cliente
+document.getElementById("cx-cli-default").addEventListener("blur", () => {
+  const v = parseFloat(document.getElementById("cx-cli-default").value.replace(",","."));
+  if(!isNaN(v)){ CX_CLI_DEFAULT = v; cxSaveCli(); cxRender(); }
+});
+document.getElementById("cx-cli-excs").addEventListener("blur", () => {
+  const txt = document.getElementById("cx-cli-excs").value;
+  const newExcs = {};
+  txt.split("\n").forEach(line => {
+    const m = line.match(/^(.+?)\s*=\s*([-\d.,]+)/);
+    if(m){
+      const name = m[1].trim();
+      const v = parseFloat(m[2].replace(",","."));
+      if(!isNaN(v)) newExcs[name] = v;
+    }
+  });
+  CX_CLI_EXCS = newExcs;
+  cxSaveCli();
+  cxRender();
+});
+
+// Defaults / Clear de % comprador
+document.getElementById("cx-pct-defaults").addEventListener("click", () => {
+  CX_PCT = {...CX_PCT_DEFAULTS};
+  cxSavePct();
+  cxRender();
+});
+document.getElementById("cx-pct-clear").addEventListener("click", () => {
+  if(confirm("¿Limpiar TODOS los % de comprador?")){
+    CX_PCT = {};
+    cxSavePct();
+    cxRender();
+  }
+});
+
+cxInitFilters();
+cxRender();
+
+
 </script>
 </body>
 </html>
@@ -2855,6 +3400,49 @@ def main() -> int:
     canjes_n = sum(1 for r in saldos_norm if "canje" in (r.get("condicionpago") or "").lower())
     print(f"    -> {len(saldos_norm)} filas de saldos, {canjes_n} con condicion 'Canje'")
 
+    # Traslados de granos para modulo "Cruce Cliente x Comprador" (cruzando por CTG)
+    print(f"\n[+] Bajando Traslados de Granos (2026) para cruce Cliente x Comprador...", flush=True)
+    traslados_raw = api.call("/reports/trasladoGranos", {
+        "PARAMFechaDesde": "2026-01-01",
+        "PARAMFechaHasta": "2030-12-31",
+    })
+    if not isinstance(traslados_raw, list):
+        traslados_raw = []
+    # Filtrar solo los traslados que conforman el cruce (compra CV + venta CV)
+    SUBTIPOS_CRUCE = {"Recepción de Granos COMPRA CV", "Traslado de Granos VENTA CV"}
+    traslados_cv = [r for r in traslados_raw if r.get("TRANSACCIONSUBTIPONOMBRE") in SUBTIPOS_CRUCE]
+    print(f"    -> {len(traslados_raw)} traslados totales, {len(traslados_cv)} de COMPRA CV / VENTA CV")
+
+    # Agrupar por CTG (NUMERODOCUMENTOADICIONAL) y armar el cruce
+    cruces = {}
+    for r in traslados_cv:
+        ctg = r.get("NUMERODOCUMENTOADICIONAL")
+        if not ctg:
+            continue
+        if ctg not in cruces:
+            cruces[ctg] = {"ctg": ctg, "kg": 0.0}
+        c = cruces[ctg]
+        c["kg"] = float(r.get("PESONETO") or 0)   # debería ser el mismo en ambos lados
+        c["grano"] = r.get("GRANO")
+        c["fecha"] = r.get("FECHA")
+        c["cosecha"] = r.get("COSECHA")
+        c["destinatario"] = r.get("DESTINATARIO")
+        c["entregador"] = r.get("REPRESENTANTE") or r.get("TRANSPORTISTA")
+        c["titular"] = r.get("TITULAR")
+        c["estado_ctg"] = r.get("ESTADO CTG")
+        if r.get("OPERACIONTIPO") == "Compra":
+            c["cliente"] = r.get("ORGANIZACIONNOMBRE")
+            c["contrato_compra"] = r.get("NOMBRECONTRATO")
+            c["doc_contrato_compra"] = r.get("NUMERODOCUMENTOCONTRATO")
+        elif r.get("OPERACIONTIPO") == "Venta":
+            c["comprador"] = r.get("ORGANIZACIONNOMBRE")
+            c["contrato_venta"] = r.get("NOMBRECONTRATO")
+            c["doc_contrato_venta"] = r.get("NUMERODOCUMENTOCONTRATO")
+
+    cruces_list = list(cruces.values())
+    completos = sum(1 for c in cruces_list if c.get("cliente") and c.get("comprador"))
+    print(f"    -> {len(cruces_list)} CTGs unicos, {completos} con cliente+comprador completos")
+
     # Precios pizarra BCR (publico, sin auth)
     print(f"\n[+] Bajando precios pizarra BCR...", flush=True)
     try:
@@ -2873,6 +3461,7 @@ def main() -> int:
         "compra": compra_norm,
         "saldos": saldos_norm,
         "bcr":    bcr,
+        "cruces": cruces_list,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
