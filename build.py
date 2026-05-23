@@ -720,9 +720,20 @@ HTML_TEMPLATE = r"""<!doctype html>
         <button class="clear" id="pg-backup-banner-btn" style="background:var(--orange);color:#fff;border-color:var(--orange);font-weight:600">💾 Descargar ahora</button>
       </div>
 
+      <!-- Barra acciones masivas -->
+      <div id="pg-massbar" style="display:none;background:#dbeafe;border:1px solid var(--blue2);border-radius:8px;padding:10px 14px;margin-bottom:10px;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-weight:600;color:var(--blue)" id="pg-mass-count">0 seleccionados</span>
+        <span style="color:var(--muted)">·</span>
+        <button class="clear" id="pg-mass-pay" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:600">✓ Marcar como Pagados</button>
+        <button class="clear" id="pg-mass-unpay" style="border-color:var(--orange);color:var(--orange)">↺ Desmarcar Pagados</button>
+        <button class="clear" id="pg-mass-del" style="border-color:#fecaca;color:var(--red)">🗑️ Borrar seleccionados</button>
+        <span style="margin-left:auto"></span>
+        <button class="clear" id="pg-mass-clear">Limpiar selección</button>
+      </div>
+
       <!-- Tabla editable -->
       <div class="section">
-        <h3>Proyectado de Pagos <span class="badge">click en celdas para editar · cada cambio se guarda automáticamente</span></h3>
+        <h3>Proyectado de Pagos <span class="badge">click en celdas para editar · checkbox para seleccionar · cambios se guardan automáticamente</span></h3>
         <div class="tbl-wrap" style="max-height:700px">
           <table id="pg-tbl">
             <thead><tr id="pg-tbl-head"></tr></thead>
@@ -3557,6 +3568,7 @@ function pgInitFilters(){
 }
 
 let PG_TOGGLE_PAGO = "";  // "" | "pendiente" | "pagado"
+const PG_SEL = new Set();   // ids de filas seleccionadas (masivas)
 
 function pgFiltered(){
   const c = document.getElementById("pg-cliente").value;
@@ -3676,13 +3688,30 @@ function pgRender(){
     `${filtered.length} / ${PG_DATA.length} pagos`;
 
   // Header tabla
+  // chequear si todos los visibles están seleccionados
+  const allVisibleSelected = filtered.length > 0 && filtered.every(r => PG_SEL.has(r.id));
+  const someVisibleSelected = filtered.some(r => PG_SEL.has(r.id));
   const head = `
+    <th style="width:28px;text-align:center"><input type="checkbox" id="pg-chk-all" ${allVisibleSelected?'checked':''} ${!allVisibleSelected && someVisibleSelected?'data-indet="1"':''} title="Seleccionar/Deseleccionar todos los visibles"/></th>
     <th>#</th>
     ${PG_COLS.map(c => `<th class="${c.type==='num'||c.type==='iva'?'num':''}">${c.lbl}</th>`).join("")}
     <th>Estado</th>
     <th>Acciones</th>
   `;
   document.getElementById("pg-tbl-head").innerHTML = head;
+  // Indeterminate visual para el checkbox
+  const chkAll = document.getElementById("pg-chk-all");
+  if(chkAll){
+    chkAll.indeterminate = !allVisibleSelected && someVisibleSelected;
+    chkAll.addEventListener("change", () => {
+      if(chkAll.checked){
+        filtered.forEach(r => PG_SEL.add(r.id));
+      } else {
+        filtered.forEach(r => PG_SEL.delete(r.id));
+      }
+      pgRender();
+    });
+  }
 
   // Body
   const body = filtered.map((r, idx) => {
@@ -3696,7 +3725,10 @@ function pgRender(){
       sinfecha:  '<span class="chip neutral">—</span>',
       pagado:    '<span class="chip ok">✓ Pagado</span>',
     };
-    let row = `<tr class="${est}" data-id="${r.id}"><td style="color:var(--muted);font-size:11px">${idx+1}</td>`;
+    const isSel = PG_SEL.has(r.id);
+    let row = `<tr class="${est}${isSel?' row-sel':''}" data-id="${r.id}">
+      <td style="text-align:center"><input type="checkbox" class="pg-chk-row" data-id="${r.id}" ${isSel?'checked':''}/></td>
+      <td style="color:var(--muted);font-size:11px">${idx+1}</td>`;
     PG_COLS.forEach(c => {
       const v = r[c.k];
       if(c.type === "text"){
@@ -3726,7 +3758,7 @@ function pgRender(){
   const totCon = filtered.reduce((s,r)=> s+(Number(r.total_con_iva)||0), 0);
   const totTn  = filtered.reduce((s,r)=> s+(Number(r.tn_fijadas)||0), 0);
   document.getElementById("pg-tbl-foot").innerHTML = `<tr>
-    <td colspan="3">TOTAL (${filtered.length} filas)</td>
+    <td colspan="4">TOTAL (${filtered.length} filas)</td>
     <td class="num">${pgFmtNum(totTn)}</td>
     <td></td>
     <td class="num">${pgFmtNum(totSin)}</td>
@@ -3791,8 +3823,44 @@ function pgRender(){
     });
   });
 
+  // Listeners de checkboxes individuales
+  document.querySelectorAll(".pg-chk-row").forEach(chk => {
+    chk.addEventListener("change", () => {
+      const id = chk.dataset.id;
+      if(chk.checked) PG_SEL.add(id);
+      else PG_SEL.delete(id);
+      pgRefreshMassbar(filtered);
+      // toggle visual de la fila sin re-renderizar todo
+      const tr = chk.closest("tr");
+      if(tr) tr.classList.toggle("row-sel", chk.checked);
+      // actualizar el "select all"
+      const chkAll2 = document.getElementById("pg-chk-all");
+      if(chkAll2){
+        const allSel = filtered.every(r => PG_SEL.has(r.id));
+        const someSel = filtered.some(r => PG_SEL.has(r.id));
+        chkAll2.checked = allSel;
+        chkAll2.indeterminate = !allSel && someSel;
+      }
+    });
+  });
+
+  pgRefreshMassbar(filtered);
   pgStorageInfo();
   pgRefreshBackupInfo();
+}
+
+function pgRefreshMassbar(filtered){
+  const bar = document.getElementById("pg-massbar");
+  const n = PG_SEL.size;
+  if(n === 0){ bar.style.display = "none"; return; }
+  bar.style.display = "flex";
+  // contar cuantos seleccionados son pagados/pendientes
+  const sel = PG_DATA.filter(r => PG_SEL.has(r.id));
+  const pag = sel.filter(r => r.pagado).length;
+  const pen = sel.length - pag;
+  const tot = sel.reduce((s,r)=> s+(Number(r.total_con_iva)||0), 0);
+  document.getElementById("pg-mass-count").textContent =
+    `${n} seleccionados (${pen} pendientes, ${pag} pagados) · $${pgFmtNum(tot)}`;
 }
 
 // Filtros listeners
@@ -3811,6 +3879,47 @@ document.querySelectorAll(".pago-toggle").forEach(btn => {
     PG_TOGGLE_PAGO = btn.dataset.pago;
     pgRender();
   });
+});
+
+// Acciones masivas
+document.getElementById("pg-mass-pay").addEventListener("click", () => {
+  const ids = [...PG_SEL];
+  if(ids.length === 0) return;
+  const pen = PG_DATA.filter(r => ids.includes(r.id) && !r.pagado).length;
+  if(pen === 0){ alert("Todos los seleccionados ya están marcados como pagados."); return; }
+  if(!confirm(`¿Marcar ${pen} pagos como PAGADOS?`)) return;
+  PG_DATA.forEach(r => { if(PG_SEL.has(r.id)) r.pagado = true; });
+  pgSave();
+  pgRender();
+});
+document.getElementById("pg-mass-unpay").addEventListener("click", () => {
+  const ids = [...PG_SEL];
+  if(ids.length === 0) return;
+  const pag = PG_DATA.filter(r => ids.includes(r.id) && r.pagado).length;
+  if(pag === 0){ alert("Ninguno de los seleccionados está marcado como pagado."); return; }
+  if(!confirm(`¿Desmarcar ${pag} pagos (volverlos a pendientes)?`)) return;
+  PG_DATA.forEach(r => { if(PG_SEL.has(r.id)) r.pagado = false; });
+  pgSave();
+  pgRender();
+});
+document.getElementById("pg-mass-del").addEventListener("click", () => {
+  const ids = [...PG_SEL];
+  if(ids.length === 0) return;
+  const sel = PG_DATA.filter(r => ids.includes(r.id));
+  const pagadosCount = sel.filter(r => r.pagado).length;
+  if(pagadosCount > 0){
+    alert(`No se puede borrar: ${pagadosCount} de los seleccionados están marcados como PAGADOS.\nDesmarcalos primero como pendientes y volvé a intentar.`);
+    return;
+  }
+  if(!confirm(`¿Borrar ${sel.length} pagos seleccionados? No se puede deshacer.`)) return;
+  PG_DATA = PG_DATA.filter(r => !PG_SEL.has(r.id));
+  PG_SEL.clear();
+  pgSave();
+  pgRender();
+});
+document.getElementById("pg-mass-clear").addEventListener("click", () => {
+  PG_SEL.clear();
+  pgRender();
 });
 
 // Agregar fila (al final, scrollea hasta ahi para que se vea)
