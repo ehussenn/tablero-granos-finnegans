@@ -8,7 +8,8 @@
     "total_con_iva": 17730.74408625,
     "fecha_pago": "2025-09-18",
     "iva_pct": 10.5,
-    "id": "r2"
+    "id": "r2",
+    "pagado": true
   },
   {
     "cliente": "SAN ANTONIO DE LOS 13",
@@ -19,7 +20,8 @@
     "total_con_iva": 70443750,
     "fecha_pago": "2025-09-22",
     "iva_pct": 10.5,
-    "id": "r3"
+    "id": "r3",
+    "pagado": true
   },
   {
     "cliente": "SAN ANTONIO DE LOS 13",
@@ -30,7 +32,8 @@
     "total_con_iva": 62893373.4,
     "fecha_pago": "2025-09-24",
     "iva_pct": 10.5,
-    "id": "r4"
+    "id": "r4",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -41,7 +44,8 @@
     "total_con_iva": 45420090.9435,
     "fecha_pago": "2025-09-25",
     "iva_pct": 10.5,
-    "id": "r5"
+    "id": "r5",
+    "pagado": true
   },
   {
     "cliente": "PACO AGROPECUARIA",
@@ -52,7 +56,8 @@
     "total_con_iva": 84880309.8,
     "fecha_pago": "2025-09-26",
     "iva_pct": 10.5,
-    "id": "r6"
+    "id": "r6",
+    "pagado": true
   },
   {
     "cliente": "MOLEA HERNAN",
@@ -63,7 +68,8 @@
     "total_con_iva": 61711689.190124996,
     "fecha_pago": "2025-09-30",
     "iva_pct": 10.5,
-    "id": "r7"
+    "id": "r7",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -74,7 +80,8 @@
     "total_con_iva": 8893415.7,
     "fecha_pago": "2025-01-10",
     "iva_pct": 10.5,
-    "id": "r8"
+    "id": "r8",
+    "pagado": true
   },
   {
     "cliente": "SAN ANTONIO DE LOS 13",
@@ -96,7 +103,8 @@
     "total_con_iva": 18478948.371,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r10"
+    "id": "r10",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -118,7 +126,8 @@
     "total_con_iva": 13719906.525,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r12"
+    "id": "r12",
+    "pagado": true
   },
   {
     "cliente": "LARTIRIGOYEN",
