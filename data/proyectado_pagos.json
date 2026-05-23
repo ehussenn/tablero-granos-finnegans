@@ -188,7 +188,8 @@
     "total_con_iva": 30564300,
     "fecha_pago": "2025-03-10",
     "iva_pct": 10.5,
-    "id": "r17"
+    "id": "r17",
+    "pagado": true
   },
   {
     "cliente": "LOS PAPOS",
@@ -199,7 +200,8 @@
     "total_con_iva": 20398852.5,
     "fecha_pago": "2025-03-10",
     "iva_pct": 10.5,
-    "id": "r18"
+    "id": "r18",
+    "pagado": true
   },
   {
     "cliente": "FUSICO",
@@ -210,7 +212,8 @@
     "total_con_iva": 50056500,
     "fecha_pago": "2025-07-10",
     "iva_pct": 10.5,
-    "id": "r19"
+    "id": "r19",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -221,7 +224,8 @@
     "total_con_iva": 9758798.8368,
     "fecha_pago": "2025-07-10",
     "iva_pct": 10.5,
-    "id": "r20"
+    "id": "r20",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -232,7 +236,8 @@
     "total_con_iva": 18697710.304,
     "fecha_pago": "2025-09-10",
     "iva_pct": 10.5,
-    "id": "r21"
+    "id": "r21",
+    "pagado": true
   },
   {
     "cliente": "CARLOS CRIVELLO",
@@ -243,7 +248,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-09-10",
     "iva_pct": null,
-    "id": "r22"
+    "id": "r22",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -254,7 +260,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-10-13",
     "iva_pct": null,
-    "id": "r23"
+    "id": "r23",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -265,7 +272,8 @@
     "total_con_iva": 35606503.842,
     "fecha_pago": "2025-10-13",
     "iva_pct": 10.5,
-    "id": "r24"
+    "id": "r24",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO NICOLAS",
@@ -276,7 +284,8 @@
     "total_con_iva": 11979000,
     "fecha_pago": "2025-10-14",
     "iva_pct": 21,
-    "id": "r25"
+    "id": "r25",
+    "pagado": true
   },
   {
     "cliente": "PACO AGROPECUARIA",
@@ -287,7 +296,8 @@
     "total_con_iva": 59505553.9,
     "fecha_pago": "2025-01-10",
     "iva_pct": 10.5,
-    "id": "r26"
+    "id": "r26",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO NICOLAS",
@@ -298,7 +308,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-10-13",
     "iva_pct": null,
-    "id": "r27"
+    "id": "r27",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -309,7 +320,8 @@
     "total_con_iva": 9946756.01075,
     "fecha_pago": "2025-10-14",
     "iva_pct": 10.5,
-    "id": "r28"
+    "id": "r28",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -320,7 +332,8 @@
     "total_con_iva": 624518.82,
     "fecha_pago": "2025-10-27",
     "iva_pct": null,
-    "id": "r29"
+    "id": "r29",
+    "pagado": true
   },
   {
     "cliente": "CIFAG",
@@ -342,7 +355,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-10-15",
     "iva_pct": null,
-    "id": "r31"
+    "id": "r31",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -353,7 +367,8 @@
     "total_con_iva": 9037079.346749999,
     "fecha_pago": "2025-10-16",
     "iva_pct": 10.5,
-    "id": "r32"
+    "id": "r32",
+    "pagado": true
   },
   {
     "cliente": "AGROFONTEZUELA",
@@ -364,7 +379,8 @@
     "total_con_iva": 29048792.5,
     "fecha_pago": "2025-10-16",
     "iva_pct": 10.5,
-    "id": "r33"
+    "id": "r33",
+    "pagado": true
   },
   {
     "cliente": "DELIRIUM CROPS",
@@ -375,7 +391,8 @@
     "total_con_iva": 9338355,
     "fecha_pago": "2025-10-17",
     "iva_pct": 10.5,
-    "id": "r34"
+    "id": "r34",
+    "pagado": true
   },
   {
     "cliente": "AGROPECUARIA EL CULANTRILLAR",
@@ -386,7 +403,8 @@
     "total_con_iva": 56037762,
     "fecha_pago": "2025-10-20",
     "iva_pct": 21,
-    "id": "r35"
+    "id": "r35",
+    "pagado": true
   },
   {
     "cliente": "AGROPECUARIA EL CULANTRILLAR",
@@ -397,7 +415,8 @@
     "total_con_iva": 23125459.5,
     "fecha_pago": "2025-10-20",
     "iva_pct": 21,
-    "id": "r36"
+    "id": "r36",
+    "pagado": true
   },
   {
     "cliente": "BERARDO ALDO",
@@ -408,7 +427,8 @@
     "total_con_iva": 38669,
     "fecha_pago": "2025-10-13",
     "iva_pct": null,
-    "id": "r37"
+    "id": "r37",
+    "pagado": true
   },
   {
     "cliente": "EL PARAISO",
@@ -419,7 +439,8 @@
     "total_con_iva": 36156024.8725,
     "fecha_pago": "2025-10-21",
     "iva_pct": 10.5,
-    "id": "r38"
+    "id": "r38",
+    "pagado": true
   },
   {
     "cliente": "FUSICO",
@@ -430,7 +451,8 @@
     "total_con_iva": 17835631.515,
     "fecha_pago": "2025-10-21",
     "iva_pct": 10.5,
-    "id": "r39"
+    "id": "r39",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO CARLOS",
@@ -441,7 +463,8 @@
     "total_con_iva": 2417580,
     "fecha_pago": "2025-10-21",
     "iva_pct": 21,
-    "id": "r40"
+    "id": "r40",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO NICOLAS",
@@ -452,7 +475,8 @@
     "total_con_iva": 3626370,
     "fecha_pago": "2025-10-21",
     "iva_pct": 21,
-    "id": "r41"
+    "id": "r41",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -463,7 +487,8 @@
     "total_con_iva": 0,
     "fecha_pago": "2025-11-20",
     "iva_pct": null,
-    "id": "r42"
+    "id": "r42",
+    "pagado": true
   },
   {
     "cliente": "AGROFONTEZUELA",
@@ -474,7 +499,8 @@
     "total_con_iva": 43912244.37534999,
     "fecha_pago": "2025-10-29",
     "iva_pct": 10.5,
-    "id": "r43"
+    "id": "r43",
+    "pagado": true
   },
   {
     "cliente": "AGROFONTEZUELA",
@@ -485,7 +511,8 @@
     "total_con_iva": 44117794.46646,
     "fecha_pago": "2025-10-29",
     "iva_pct": 10.5,
-    "id": "r44"
+    "id": "r44",
+    "pagado": true
   },
   {
     "cliente": "DELIRIUM CROPS",
@@ -496,7 +523,8 @@
     "total_con_iva": 8849061,
     "fecha_pago": "2025-05-11",
     "iva_pct": 10.5,
-    "id": "r45"
+    "id": "r45",
+    "pagado": true
   },
   {
     "cliente": "TALISMAN VIEJO",
@@ -507,7 +535,8 @@
     "total_con_iva": 30676214.4,
     "fecha_pago": "2025-05-11",
     "iva_pct": 10.5,
-    "id": "r46"
+    "id": "r46",
+    "pagado": true
   },
   {
     "cliente": "TALISMAN VIEJO",
@@ -518,7 +547,8 @@
     "total_con_iva": 522720,
     "fecha_pago": "2025-05-11",
     "iva_pct": 21,
-    "id": "r47"
+    "id": "r47",
+    "pagado": true
   },
   {
     "cliente": "DUBINI GUILLERMO",
@@ -529,7 +559,8 @@
     "total_con_iva": 70275513.74999999,
     "fecha_pago": "2025-11-11",
     "iva_pct": 10.5,
-    "id": "r48"
+    "id": "r48",
+    "pagado": true
   },
   {
     "cliente": "DELIRIUM CROPS",
@@ -540,7 +571,8 @@
     "total_con_iva": 5249643.945,
     "fecha_pago": "2025-11-13",
     "iva_pct": 10.5,
-    "id": "r49"
+    "id": "r49",
+    "pagado": true
   },
   {
     "cliente": "DELIRIUM CROPS",
@@ -551,7 +583,8 @@
     "total_con_iva": 2338723.66,
     "fecha_pago": "2025-11-13",
     "iva_pct": 10.5,
-    "id": "r50"
+    "id": "r50",
+    "pagado": true
   },
   {
     "cliente": "REBOLLO SANTIAGO",
@@ -562,7 +595,8 @@
     "total_con_iva": 18699362.5,
     "fecha_pago": "2025-11-17",
     "iva_pct": 10.5,
-    "id": "r51"
+    "id": "r51",
+    "pagado": true
   },
   {
     "cliente": "SAN ANTONIO DE LOS 13",
@@ -573,7 +607,8 @@
     "total_con_iva": 97739460,
     "fecha_pago": "2025-11-25",
     "iva_pct": 10.5,
-    "id": "r52"
+    "id": "r52",
+    "pagado": true
   },
   {
     "cliente": "AGLINCK",
@@ -584,7 +619,8 @@
     "total_con_iva": 30232800,
     "fecha_pago": "2025-11-26",
     "iva_pct": 10.5,
-    "id": "r53"
+    "id": "r53",
+    "pagado": true
   },
   {
     "cliente": "SUCESORES DE JORGE E P PERALTA MARTINEZ SOCIEDAD DE HECHO",
@@ -595,7 +631,8 @@
     "total_con_iva": 55394089,
     "fecha_pago": "2025-12-03",
     "iva_pct": 26.5823,
-    "id": "r54"
+    "id": "r54",
+    "pagado": true
   },
   {
     "cliente": "SUCESORES DE JORGE E P PERALTA MARTINEZ SOCIEDAD DE HECHO",
@@ -606,7 +643,8 @@
     "total_con_iva": 3908011,
     "fecha_pago": "2025-12-03",
     "iva_pct": 26.5823,
-    "id": "r55"
+    "id": "r55",
+    "pagado": true
   },
   {
     "cliente": "MIYA",
@@ -617,7 +655,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-12-08",
     "iva_pct": null,
-    "id": "r56"
+    "id": "r56",
+    "pagado": true
   },
   {
     "cliente": "SAN ANTONIO DE LOS 13",
@@ -628,7 +667,8 @@
     "total_con_iva": 45270027.3025,
     "fecha_pago": "2025-12-08",
     "iva_pct": 10.5,
-    "id": "r57"
+    "id": "r57",
+    "pagado": true
   },
   {
     "cliente": "MARTINEZ GUSTAVO SEGUNDO C",
@@ -639,7 +679,8 @@
     "total_con_iva": 45448886.09301589,
     "fecha_pago": "2025-12-04",
     "iva_pct": 21,
-    "id": "r58"
+    "id": "r58",
+    "pagado": true
   },
   {
     "cliente": "MARTINEZ GUSTAVO SEGUNDO C",
@@ -650,7 +691,8 @@
     "total_con_iva": 51839633.580513895,
     "fecha_pago": "2025-12-04",
     "iva_pct": 21,
-    "id": "r59"
+    "id": "r59",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -661,7 +703,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-12-12",
     "iva_pct": null,
-    "id": "r60"
+    "id": "r60",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -672,7 +715,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-12-11",
     "iva_pct": null,
-    "id": "r61"
+    "id": "r61",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -683,7 +727,8 @@
     "total_con_iva": null,
     "fecha_pago": "2025-12-12",
     "iva_pct": null,
-    "id": "r62"
+    "id": "r62",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -694,7 +739,8 @@
     "total_con_iva": 110721639.16,
     "fecha_pago": "2025-12-17",
     "iva_pct": null,
-    "id": "r63"
+    "id": "r63",
+    "pagado": true
   },
   {
     "cliente": "TAMBO FUNDACION",
@@ -705,7 +751,8 @@
     "total_con_iva": 68882415.01,
     "fecha_pago": "2025-12-17",
     "iva_pct": null,
-    "id": "r64"
+    "id": "r64",
+    "pagado": true
   },
   {
     "cliente": "ALCORTA ANGELICA ESTER",
@@ -727,7 +774,8 @@
     "total_con_iva": 108576444,
     "fecha_pago": "2025-12-18",
     "iva_pct": 21.0001,
-    "id": "r66"
+    "id": "r66",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO NICOLAS JESUS",
@@ -738,7 +786,8 @@
     "total_con_iva": 13921884.9,
     "fecha_pago": "2025-12-18",
     "iva_pct": 21,
-    "id": "r67"
+    "id": "r67",
+    "pagado": true
   },
   {
     "cliente": "TORTI GERARDO IVAN",
@@ -749,7 +798,8 @@
     "total_con_iva": 7894341,
     "fecha_pago": "2025-12-23",
     "iva_pct": 10.5,
-    "id": "r68"
+    "id": "r68",
+    "pagado": true
   },
   {
     "cliente": "DUBINI GUILLERMO JOSE",
@@ -760,7 +810,8 @@
     "total_con_iva": 16494870.000000002,
     "fecha_pago": "2025-12-26",
     "iva_pct": 5,
-    "id": "r69"
+    "id": "r69",
+    "pagado": true
   },
   {
     "cliente": "OroVERDE Sa",
@@ -771,7 +822,8 @@
     "total_con_iva": 54374284.008,
     "fecha_pago": "2025-12-26",
     "iva_pct": 21,
-    "id": "r70"
+    "id": "r70",
+    "pagado": true
   },
   {
     "cliente": "SIMBALINA AGROGANADERA S.A.",
@@ -793,7 +845,8 @@
     "total_con_iva": 20941072.243,
     "fecha_pago": "2025-12-30",
     "iva_pct": 10.5,
-    "id": "r72"
+    "id": "r72",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -826,7 +879,8 @@
     "total_con_iva": 43396112.5,
     "fecha_pago": "2026-01-09",
     "iva_pct": 10.5,
-    "id": "r75"
+    "id": "r75",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -837,7 +891,8 @@
     "total_con_iva": 21120063.237,
     "fecha_pago": "2026-01-09",
     "iva_pct": 10.5,
-    "id": "r76"
+    "id": "r76",
+    "pagado": true
   },
   {
     "cliente": "FRANCO FIORITO",
@@ -848,7 +903,8 @@
     "total_con_iva": 9149360.22,
     "fecha_pago": "2026-01-07",
     "iva_pct": 10.5,
-    "id": "r77"
+    "id": "r77",
+    "pagado": true
   },
   {
     "cliente": "DUBINI GUILLERMO JOSE",
@@ -859,7 +915,8 @@
     "total_con_iva": 20077850,
     "fecha_pago": "2026-01-09",
     "iva_pct": 10.5,
-    "id": "r78"
+    "id": "r78",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -870,7 +927,8 @@
     "total_con_iva": 6283837.092,
     "fecha_pago": "2025-01-12",
     "iva_pct": 10.5,
-    "id": "r79"
+    "id": "r79",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -881,7 +939,8 @@
     "total_con_iva": 3020547.5117999995,
     "fecha_pago": "2025-01-13",
     "iva_pct": 10.5,
-    "id": "r80"
+    "id": "r80",
+    "pagado": true
   },
   {
     "cliente": "DUBINI GUILLERMO JOSE",
@@ -892,7 +951,8 @@
     "total_con_iva": 34391780.214999996,
     "fecha_pago": "2025-01-13",
     "iva_pct": 10.5,
-    "id": "r81"
+    "id": "r81",
+    "pagado": true
   },
   {
     "cliente": "BAIBONA VICTOR",
@@ -903,7 +963,8 @@
     "total_con_iva": 2500000,
     "fecha_pago": "2026-01-14",
     "iva_pct": null,
-    "id": "r82"
+    "id": "r82",
+    "pagado": true
   },
   {
     "cliente": "SIMBALINA AGROGANADERA S.A.",
@@ -914,7 +975,8 @@
     "total_con_iva": 17762766.107112,
     "fecha_pago": "2025-01-15",
     "iva_pct": 10.5,
-    "id": "r83"
+    "id": "r83",
+    "pagado": true
   },
   {
     "cliente": "GUILLERMO LOPEZ RONDO",
@@ -925,7 +987,8 @@
     "total_con_iva": 8115109.657199999,
     "fecha_pago": "2025-01-15",
     "iva_pct": 10.5,
-    "id": "r84"
+    "id": "r84",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -936,7 +999,8 @@
     "total_con_iva": 63021507.15575,
     "fecha_pago": "2025-01-16",
     "iva_pct": 10.5,
-    "id": "r85"
+    "id": "r85",
+    "pagado": true
   },
   {
     "cliente": "DUBINI",
@@ -947,7 +1011,8 @@
     "total_con_iva": 49227750,
     "fecha_pago": "2026-01-20",
     "iva_pct": 10.5,
-    "id": "r86"
+    "id": "r86",
+    "pagado": true
   },
   {
     "cliente": "DUBINI",
@@ -958,7 +1023,8 @@
     "total_con_iva": 14325326.08,
     "fecha_pago": "2026-01-20",
     "iva_pct": 10.5,
-    "id": "r87"
+    "id": "r87",
+    "pagado": true
   },
   {
     "cliente": "ARBUATTI",
@@ -969,7 +1035,8 @@
     "total_con_iva": 57942880.2832,
     "fecha_pago": "2026-01-22",
     "iva_pct": 21,
-    "id": "r88"
+    "id": "r88",
+    "pagado": true
   },
   {
     "cliente": "ARBUATTI",
@@ -980,7 +1047,8 @@
     "total_con_iva": 5396741.787799999,
     "fecha_pago": "2026-01-22",
     "iva_pct": 21,
-    "id": "r89"
+    "id": "r89",
+    "pagado": true
   },
   {
     "cliente": "ARBUATTI",
@@ -991,7 +1059,8 @@
     "total_con_iva": 22846804.848999996,
     "fecha_pago": "2026-01-22",
     "iva_pct": 21,
-    "id": "r90"
+    "id": "r90",
+    "pagado": true
   },
   {
     "cliente": "PANDOLFI",
@@ -1002,7 +1071,8 @@
     "total_con_iva": 10722519.161249999,
     "fecha_pago": "2026-01-23",
     "iva_pct": 10.5,
-    "id": "r91"
+    "id": "r91",
+    "pagado": true
   },
   {
     "cliente": "AGROFONTEZUELAS CEREALES",
@@ -1013,7 +1083,8 @@
     "total_con_iva": 44861747.07586,
     "fecha_pago": "2026-01-26",
     "iva_pct": 10.5,
-    "id": "r92"
+    "id": "r92",
+    "pagado": true
   },
   {
     "cliente": "RAMADA AGROPECUARIA",
@@ -1024,7 +1095,8 @@
     "total_con_iva": 37654980.42832499,
     "fecha_pago": "2026-01-29",
     "iva_pct": 10.5,
-    "id": "r93"
+    "id": "r93",
+    "pagado": true
   },
   {
     "cliente": "LA FEDERALA",
@@ -1035,7 +1107,8 @@
     "total_con_iva": 123881052.75,
     "fecha_pago": "2026-02-02",
     "iva_pct": 10.5,
-    "id": "r94"
+    "id": "r94",
+    "pagado": true
   },
   {
     "cliente": "LA FEDERALA",
@@ -1046,7 +1119,8 @@
     "total_con_iva": 120085875,
     "fecha_pago": "2026-02-02",
     "iva_pct": 10.5,
-    "id": "r95"
+    "id": "r95",
+    "pagado": true
   },
   {
     "cliente": "AGROGANADERA EL DESTINO",
@@ -1057,7 +1131,8 @@
     "total_con_iva": 70254227.42,
     "fecha_pago": "2026-02-12",
     "iva_pct": null,
-    "id": "r96"
+    "id": "r96",
+    "pagado": true
   },
   {
     "cliente": "MIRAFLORES",
@@ -1068,7 +1143,8 @@
     "total_con_iva": 88974229.41,
     "fecha_pago": "2026-02-18",
     "iva_pct": 21,
-    "id": "r97"
+    "id": "r97",
+    "pagado": true
   },
   {
     "cliente": "ALPINOS",
@@ -1079,7 +1155,8 @@
     "total_con_iva": 68967386.39999999,
     "fecha_pago": "2026-02-20",
     "iva_pct": 21,
-    "id": "r98"
+    "id": "r98",
+    "pagado": true
   },
   {
     "cliente": "Fyo",
@@ -1090,7 +1167,8 @@
     "total_con_iva": 16621007.99,
     "fecha_pago": "2026-02-23",
     "iva_pct": null,
-    "id": "r99"
+    "id": "r99",
+    "pagado": true
   },
   {
     "cliente": "BAIBONA VICTOR",
@@ -1101,7 +1179,8 @@
     "total_con_iva": 4700000,
     "fecha_pago": "2026-02-25",
     "iva_pct": null,
-    "id": "r100"
+    "id": "r100",
+    "pagado": true
   },
   {
     "cliente": "FALUGO RANCAGUA S.R.L.",
@@ -1112,7 +1191,8 @@
     "total_con_iva": 8440529.24,
     "fecha_pago": "2026-02-26",
     "iva_pct": 10.5,
-    "id": "r101"
+    "id": "r101",
+    "pagado": true
   },
   {
     "cliente": "ARBUATTI",
@@ -1123,7 +1203,8 @@
     "total_con_iva": 64482004.125,
     "fecha_pago": "2026-02-26",
     "iva_pct": 21,
-    "id": "r102"
+    "id": "r102",
+    "pagado": true
   },
   {
     "cliente": "EL BRABAJE SA",
@@ -1134,7 +1215,8 @@
     "total_con_iva": 147832597.58995,
     "fecha_pago": "2026-03-04",
     "iva_pct": 10.5,
-    "id": "r103"
+    "id": "r103",
+    "pagado": true
   },
   {
     "cliente": "CONTI NORB ERTO OSCAR",
@@ -1145,7 +1227,8 @@
     "total_con_iva": 24047009.99157548,
     "fecha_pago": "2026-03-04",
     "iva_pct": 10.5,
-    "id": "r104"
+    "id": "r104",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Turco",
@@ -1156,7 +1239,8 @@
     "total_con_iva": 18150177.5,
     "fecha_pago": "2026-03-04",
     "iva_pct": 10.5,
-    "id": "r105"
+    "id": "r105",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Dubinni",
@@ -1167,7 +1251,8 @@
     "total_con_iva": 18436041,
     "fecha_pago": "2026-03-05",
     "iva_pct": 10.5,
-    "id": "r106"
+    "id": "r106",
+    "pagado": true
   },
   {
     "cliente": "MARTIN SERGIO ALBERTO Y MARTIN OMAR JOSE N",
@@ -1178,7 +1263,8 @@
     "total_con_iva": 21175000,
     "fecha_pago": "2026-03-10",
     "iva_pct": 21,
-    "id": "r107"
+    "id": "r107",
+    "pagado": true
   },
   {
     "cliente": "El Refugio de Carlos",
@@ -1189,7 +1275,8 @@
     "total_con_iva": 37150823.66,
     "fecha_pago": "2026-03-10",
     "iva_pct": null,
-    "id": "r108"
+    "id": "r108",
+    "pagado": true
   },
   {
     "cliente": "Las Cebras",
@@ -1200,7 +1287,8 @@
     "total_con_iva": 15174382.52,
     "fecha_pago": "2026-03-10",
     "iva_pct": 21,
-    "id": "r109"
+    "id": "r109",
+    "pagado": true
   },
   {
     "cliente": "Miraflores",
@@ -1211,7 +1299,8 @@
     "total_con_iva": 87516031.23,
     "fecha_pago": "2026-03-11",
     "iva_pct": null,
-    "id": "r110"
+    "id": "r110",
+    "pagado": true
   },
   {
     "cliente": "BAIBONA VICTOR",
@@ -1222,7 +1311,8 @@
     "total_con_iva": 3596282.4,
     "fecha_pago": "2026-03-18",
     "iva_pct": 0,
-    "id": "r111"
+    "id": "r111",
+    "pagado": true
   },
   {
     "cliente": "Cribelo Carlos",
@@ -1233,7 +1323,8 @@
     "total_con_iva": 6099688.649999999,
     "fecha_pago": "2026-03-25",
     "iva_pct": 21,
-    "id": "r112"
+    "id": "r112",
+    "pagado": true
   },
   {
     "cliente": "MARTIN SERGIO ALBERTO Y MARTIN OMAR JOSE N",
@@ -1244,7 +1335,8 @@
     "total_con_iva": 6244084.274999999,
     "fecha_pago": "2026-03-25",
     "iva_pct": 10.5,
-    "id": "r113"
+    "id": "r113",
+    "pagado": true
   },
   {
     "cliente": "EL PARAISO SERVICIOS AGROPECUARIOS S.R.L",
@@ -1255,7 +1347,8 @@
     "total_con_iva": 43634118.45,
     "fecha_pago": "2026-03-27",
     "iva_pct": 10.5,
-    "id": "r114"
+    "id": "r114",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1266,7 +1359,8 @@
     "total_con_iva": 25154770.4226,
     "fecha_pago": "2026-03-27",
     "iva_pct": 10.5,
-    "id": "r115"
+    "id": "r115",
+    "pagado": true
   },
   {
     "cliente": "BEDAGLIA GASTON",
@@ -1277,7 +1371,8 @@
     "total_con_iva": 14490282.192750001,
     "fecha_pago": "2026-03-01",
     "iva_pct": 10.5,
-    "id": "r116"
+    "id": "r116",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1288,7 +1383,8 @@
     "total_con_iva": 81627127.11334999,
     "fecha_pago": "2026-03-01",
     "iva_pct": 10.5,
-    "id": "r117"
+    "id": "r117",
+    "pagado": true
   },
   {
     "cliente": "TAMBO FUNDACION",
@@ -1299,7 +1395,8 @@
     "total_con_iva": 43867226.343849994,
     "fecha_pago": "2026-03-01",
     "iva_pct": 10.5,
-    "id": "r118"
+    "id": "r118",
+    "pagado": true
   },
   {
     "cliente": "FALUGO RANCAGUA S.R.L.",
@@ -1310,7 +1407,8 @@
     "total_con_iva": 0,
     "fecha_pago": "2026-04-08",
     "iva_pct": null,
-    "id": "r119"
+    "id": "r119",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Dubinni",
@@ -1321,7 +1419,8 @@
     "total_con_iva": 19213740,
     "fecha_pago": "2026-04-08",
     "iva_pct": 10.5,
-    "id": "r120"
+    "id": "r120",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Dubinni",
@@ -1332,7 +1431,8 @@
     "total_con_iva": 23467.989999999998,
     "fecha_pago": "2026-04-10",
     "iva_pct": 10.5,
-    "id": "r121"
+    "id": "r121",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1343,7 +1443,8 @@
     "total_con_iva": 5175173.76,
     "fecha_pago": "2026-04-09",
     "iva_pct": 1058.7576,
-    "id": "r122"
+    "id": "r122",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1354,7 +1455,8 @@
     "total_con_iva": 288356,
     "fecha_pago": "2026-04-12",
     "iva_pct": -35.4351,
-    "id": "r123"
+    "id": "r123",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1365,7 +1467,8 @@
     "total_con_iva": 897500,
     "fecha_pago": "2026-04-12",
     "iva_pct": 100.9565,
-    "id": "r124"
+    "id": "r124",
+    "pagado": true
   },
   {
     "cliente": "EL BRABAJE SA",
@@ -1376,7 +1479,8 @@
     "total_con_iva": 23267898.81,
     "fecha_pago": "2026-04-13",
     "iva_pct": 10.5,
-    "id": "r125"
+    "id": "r125",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1387,7 +1491,8 @@
     "total_con_iva": 205700,
     "fecha_pago": "2026-04-15",
     "iva_pct": 63781.9876,
-    "id": "r126"
+    "id": "r126",
+    "pagado": true
   },
   {
     "cliente": "JUAN ZANCHES",
@@ -1398,7 +1503,8 @@
     "total_con_iva": 5916050.770500001,
     "fecha_pago": "2024-04-16",
     "iva_pct": 10.5,
-    "id": "r127"
+    "id": "r127",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1409,7 +1515,8 @@
     "total_con_iva": 2018835,
     "fecha_pago": "2026-04-18",
     "iva_pct": 626867.3913,
-    "id": "r128"
+    "id": "r128",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1420,7 +1527,8 @@
     "total_con_iva": 1042514.26,
     "fecha_pago": "2026-04-19",
     "iva_pct": 323662.1925,
-    "id": "r129"
+    "id": "r129",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1431,7 +1539,8 @@
     "total_con_iva": 5000000,
     "fecha_pago": "2026-04-30",
     "iva_pct": 1552695.0311,
-    "id": "r130"
+    "id": "r130",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1442,7 +1551,8 @@
     "total_con_iva": 1042514.26,
     "fecha_pago": "2026-05-19",
     "iva_pct": 323662.1925,
-    "id": "r131"
+    "id": "r131",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1453,7 +1563,8 @@
     "total_con_iva": 18836771.062199995,
     "fecha_pago": "2026-04-21",
     "iva_pct": 10.5,
-    "id": "r132"
+    "id": "r132",
+    "pagado": true
   },
   {
     "cliente": "PLUMA DE PATO",
@@ -1475,7 +1586,8 @@
     "total_con_iva": 29931023.43,
     "fecha_pago": "2026-05-05",
     "iva_pct": 21,
-    "id": "r134"
+    "id": "r134",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Dubinni",
@@ -1486,7 +1598,8 @@
     "total_con_iva": 36072360.35,
     "fecha_pago": "2026-05-06",
     "iva_pct": 10.5,
-    "id": "r135"
+    "id": "r135",
+    "pagado": true
   },
   {
     "cliente": "Agropecuaria lopez Rondo",
@@ -1497,7 +1610,8 @@
     "total_con_iva": 2947035,
     "fecha_pago": "2026-05-11",
     "iva_pct": 10.5,
-    "id": "r136"
+    "id": "r136",
+    "pagado": true
   },
   {
     "cliente": "Agropecuaria lopez Rondo",
@@ -1508,7 +1622,8 @@
     "total_con_iva": 7127250,
     "fecha_pago": "2026-05-11",
     "iva_pct": 10.5,
-    "id": "r137"
+    "id": "r137",
+    "pagado": true
   },
   {
     "cliente": "Guillermo Dubinni",
@@ -1519,7 +1634,8 @@
     "total_con_iva": null,
     "fecha_pago": "2026-05-15",
     "iva_pct": null,
-    "id": "r138"
+    "id": "r138",
+    "pagado": true
   },
   {
     "cliente": "PANDOLFINI",
@@ -1530,7 +1646,8 @@
     "total_con_iva": 14432024.879999999,
     "fecha_pago": "2026-05-18",
     "iva_pct": 10.5,
-    "id": "r139"
+    "id": "r139",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1541,7 +1658,8 @@
     "total_con_iva": 326297,
     "fecha_pago": "2026-05-18",
     "iva_pct": null,
-    "id": "r140"
+    "id": "r140",
+    "pagado": true
   },
   {
     "cliente": "LA FEDERALA",
@@ -1552,7 +1670,8 @@
     "total_con_iva": 47790632.22599249,
     "fecha_pago": "2026-05-20",
     "iva_pct": 10.5,
-    "id": "r141"
+    "id": "r141",
+    "pagado": true
   },
   {
     "cliente": "LA FEDERALA",
@@ -1563,7 +1682,8 @@
     "total_con_iva": 49573615,
     "fecha_pago": "2026-05-21",
     "iva_pct": 10.5,
-    "id": "r142"
+    "id": "r142",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1574,7 +1694,8 @@
     "total_con_iva": 121671550,
     "fecha_pago": "2026-05-21",
     "iva_pct": 10.5,
-    "id": "r143"
+    "id": "r143",
+    "pagado": true
   },
   {
     "cliente": "PAPA Y CHICOS SRL",
@@ -1585,7 +1706,8 @@
     "total_con_iva": 87714900,
     "fecha_pago": "2026-05-21",
     "iva_pct": 10.5,
-    "id": "r144"
+    "id": "r144",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1596,7 +1718,8 @@
     "total_con_iva": 9914495.4666875,
     "fecha_pago": "2026-05-22",
     "iva_pct": 10.5,
-    "id": "r145"
+    "id": "r145",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1607,7 +1730,8 @@
     "total_con_iva": 8627494.541087499,
     "fecha_pago": "2026-05-22",
     "iva_pct": 10.5,
-    "id": "r146"
+    "id": "r146",
+    "pagado": true
   },
   {
     "cliente": "SIMBALINA AGROGANADERA S.A.",
