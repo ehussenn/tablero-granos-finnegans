@@ -576,7 +576,16 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <div>
             <h3 style="margin:0">Cruce Clientes × Compradores</h3>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px">Tablero reactivo · Cliente: 3.25% comisión compra (excepciones editables) · Comprador: % variable por tabla editable · Precios USD/tn (TC histórico)</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">Tablero reactivo · Cliente: 3.25% comisión compra (excepciones editables) · Comprador: % variable por tabla editable · Precios USD/tn (TC histórico).</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
+              <span id="cx-rango-chip" style="background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">01/01/2026 — —</span>
+              <span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">✓ Validado vs Liquidaciones</span>
+              <span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Todo USD/tn</span>
+              <button id="cx-reload" style="background:var(--green);color:#fff;border:1px solid var(--green);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">🔄 Actualizar datos</button>
+              <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);margin-left:6px;cursor:pointer">
+                <input type="checkbox" id="cx-hide-zeros" checked /> Ocultar compradores sin % cargado
+              </label>
+            </div>
             <div style="font-size:11px;color:var(--muted);margin-top:6px" id="cx-meta">— ops · 0 CTGs procesados</div>
           </div>
         </div>
@@ -652,6 +661,26 @@ HTML_TEMPLATE = r"""<!doctype html>
             <thead id="cx-matrix-head"></thead>
             <tbody id="cx-matrix-body"></tbody>
             <tfoot id="cx-matrix-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ganancia Mensual -->
+      <div class="section">
+        <h3>📅 Ganancia Mensual <span class="badge">balance acumulado mes a mes</span></h3>
+        <div class="tbl-wrap">
+          <table id="cx-mensual">
+            <thead><tr>
+              <th>MES</th>
+              <th class="num">Ops</th>
+              <th class="num">Kg</th>
+              <th class="num">Comisión Compra</th>
+              <th class="num">Comisión Venta</th>
+              <th class="num">Margen P.V−P.C</th>
+              <th class="num">BALANCE USD</th>
+            </tr></thead>
+            <tbody id="cx-mensual-body"></tbody>
+            <tfoot id="cx-mensual-foot"></tfoot>
           </table>
         </div>
       </div>
@@ -3321,6 +3350,24 @@ function cxRender(){
   const ops = cxApplyFilters(allOps);
   document.getElementById("cx-meta").textContent = `${ops.length} ops · ${allOps.length} CTGs procesados`;
 
+  // Rango de fechas dinámico: desde 01/01/2026 hasta la fecha máxima de las ops
+  const fechas = allOps.map(o => o.fecha).filter(Boolean);
+  if(fechas.length){
+    // las fechas vienen en dd-MM-yyyy, las convierto a Date
+    const toDate = s => {
+      const m = String(s).match(/^(\d{2})-(\d{2})-(\d{4})/);
+      return m ? new Date(`${m[3]}-${m[2]}-${m[1]}`) : null;
+    };
+    const validDates = fechas.map(toDate).filter(Boolean);
+    if(validDates.length){
+      const max = new Date(Math.max(...validDates.map(d => d.getTime())));
+      const dd = String(max.getDate()).padStart(2,'0');
+      const mm = String(max.getMonth()+1).padStart(2,'0');
+      const yy = max.getFullYear();
+      document.getElementById('cx-rango-chip').textContent = `01/01/2026 — ${dd}/${mm}/${yy}`;
+    }
+  }
+
   // Pendientes (% comprador no cargado)
   const pendientes = ops.filter(o => o.pendiente);
   if(pendientes.length){
@@ -3383,12 +3430,72 @@ function cxRender(){
 
   // Matrix
   cxRenderMatrix(ops);
+
+  // Ganancia mensual
+  cxRenderMensual(ops);
+}
+
+function cxRenderMensual(ops){
+  // Agrupar ops por mes (yyyy-mm)
+  const byMes = {};
+  ops.forEach(o => {
+    const m = o.mes;
+    if(!m) return;
+    if(!byMes[m]) byMes[m] = {ops:0, kg:0, comComp:0, comVent:0, margenTot:0};
+    byMes[m].ops++;
+    byMes[m].kg += o.kg || 0;
+    byMes[m].comComp += o.comComp || 0;
+    byMes[m].comVent += o.comVent || 0;
+    if(o.margenPVPC != null) byMes[m].margenTot += (o.margenPVPC * (o.tn||0));
+  });
+  const meses = Object.keys(byMes).sort();   // yyyy-mm orden asc
+  const body = meses.map(m => {
+    const v = byMes[m];
+    const balance = v.comComp - v.comVent;
+    return `<tr>
+      <td>${mesNice(m)}</td>
+      <td class="num">${fmt.int(v.ops)}</td>
+      <td class="num">${fmt.num(v.kg)}</td>
+      <td class="num" style="color:var(--green)">$${fmt.num2(v.comComp)}</td>
+      <td class="num" style="color:var(--red)">$${fmt.num2(v.comVent)}</td>
+      <td class="num" style="color:${v.margenTot>=0?'var(--green)':'var(--red)'}">$${fmt.num2(v.margenTot)}</td>
+      <td class="num" style="font-weight:700;color:${balance>=0?'var(--green)':'var(--red)'}">$${fmt.num2(balance)}</td>
+    </tr>`;
+  }).join("") || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Sin operaciones</td></tr>';
+  document.getElementById("cx-mensual-body").innerHTML = body;
+
+  // Footer totales
+  const tot = meses.reduce((acc, m) => {
+    const v = byMes[m];
+    acc.ops += v.ops; acc.kg += v.kg; acc.comComp += v.comComp;
+    acc.comVent += v.comVent; acc.margenTot += v.margenTot;
+    return acc;
+  }, {ops:0, kg:0, comComp:0, comVent:0, margenTot:0});
+  const balance = tot.comComp - tot.comVent;
+  document.getElementById("cx-mensual-foot").innerHTML = `<tr>
+    <td><strong>TOTAL (${meses.length} ${meses.length===1?'mes':'meses'})</strong></td>
+    <td class="num"><strong>${fmt.int(tot.ops)}</strong></td>
+    <td class="num"><strong>${fmt.num(tot.kg)}</strong></td>
+    <td class="num" style="color:var(--green)"><strong>$${fmt.num2(tot.comComp)}</strong></td>
+    <td class="num" style="color:var(--red)"><strong>$${fmt.num2(tot.comVent)}</strong></td>
+    <td class="num" style="color:${tot.margenTot>=0?'var(--green)':'var(--red)'}"><strong>$${fmt.num2(tot.margenTot)}</strong></td>
+    <td class="num" style="font-weight:700;color:${balance>=0?'var(--green)':'var(--red)'}"><strong>$${fmt.num2(balance)}</strong></td>
+  </tr>`;
 }
 
 function cxRenderMatrix(ops){
   // Agrupar: rows = cliente, cols = comprador
   const clientes = [...new Set(ops.map(o => o.cliente).filter(Boolean))].sort();
-  const compradores = [...new Set(ops.map(o => o.comprador).filter(Boolean))].sort();
+  let compradores = [...new Set(ops.map(o => o.comprador).filter(Boolean))].sort();
+
+  // Si el checkbox "Ocultar compradores sin %" está activo, filtramos los que no tengan % cargado o tengan 0%
+  const hideZeros = document.getElementById("cx-hide-zeros");
+  if(hideZeros && hideZeros.checked){
+    compradores = compradores.filter(cp => {
+      const pct = cxGetPctComprador(cp);
+      return pct != null && pct > 0;
+    });
+  }
 
   document.getElementById("cx-matrix-meta").textContent =
     `${clientes.length} clientes × ${compradores.length} compradores · vista: ${cxVista === "kgcom" ? "Kg + Comisiones" : "Precio Compra vs Venta"}`;
@@ -3504,6 +3611,10 @@ document.getElementById("cx-pct-clear").addEventListener("click", () => {
 
 cxInitFilters();
 cxRender();
+
+// Listeners adicionales: ocultar 0% + botón Actualizar datos
+document.getElementById("cx-hide-zeros").addEventListener("change", cxRender);
+document.getElementById("cx-reload").addEventListener("click", () => location.reload());
 
 
 /* ============================================================
