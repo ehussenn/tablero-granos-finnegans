@@ -1786,7 +1786,8 @@
     "total_con_iva": 326297,
     "fecha_pago": "2026-06-17",
     "iva_pct": null,
-    "id": "r151"
+    "id": "r151",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1797,7 +1798,8 @@
     "total_con_iva": 326297,
     "fecha_pago": "2026-07-16",
     "iva_pct": null,
-    "id": "r152"
+    "id": "r152",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1808,7 +1810,8 @@
     "total_con_iva": 326297,
     "fecha_pago": "2026-08-16",
     "iva_pct": null,
-    "id": "r153"
+    "id": "r153",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
@@ -1819,6 +1822,7 @@
     "total_con_iva": 326297,
     "fecha_pago": "2026-09-16",
     "iva_pct": null,
-    "id": "r154"
+    "id": "r154",
+    "pagado": true
   }
 ]
