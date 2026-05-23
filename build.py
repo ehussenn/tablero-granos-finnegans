@@ -324,6 +324,22 @@ HTML_TEMPLATE = r"""<!doctype html>
   #pg-tbl tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:13px;border-top:2px solid var(--blue);position:sticky;bottom:0}
   #pg-tbl tfoot td.num{text-align:right;color:var(--blue);font-variant-numeric:tabular-nums}
 
+  /* Modo lectura (sin PAT configurado) */
+  body.pg-reader #pg-tbl tbody td input { pointer-events:none; background:transparent; border-color:transparent }
+  body.pg-reader #pg-tbl tbody td input:hover, body.pg-reader #pg-tbl tbody td input:focus { background:transparent; border-color:transparent; box-shadow:none }
+  body.pg-reader #pg-tbl tbody td.action,
+  body.pg-reader #pg-tbl thead th:last-child,
+  body.pg-reader #pg-add-row,
+  body.pg-reader #pg-massbar,
+  body.pg-reader #pg-tbl thead th:first-child,
+  body.pg-reader #pg-tbl tbody td:first-child,
+  body.pg-reader #pg-import,
+  body.pg-reader #pg-autobackup-cfg{ display:none !important }
+  body.pg-reader .pago-toggle{ opacity:.95 }
+  #pg-reader-banner{display:none}
+  body.pg-reader #pg-reader-banner{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#dbeafe;border-left:4px solid var(--blue);border-radius:8px;color:#1e3a8a;font-size:13px;margin-bottom:12px}
+  body.pg-reader #pg-reader-banner .lbl{font-weight:700}
+
   /* tabla con fila de totales sticky al pie */
   table tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
   table tfoot tr.sel td{background:#fef3c7;border-top:2px solid var(--orange);bottom:33px}
@@ -644,6 +660,15 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     <!-- ========== PROYECTADO DE PAGOS GRANOS ========== -->
     <div class="subpanel" data-sub-panel="pg-pagos">
+
+      <!-- Banner modo lectura -->
+      <div id="pg-reader-banner">
+        <span style="font-size:20px">👁️</span>
+        <div>
+          <div class="lbl">Modo lectura</div>
+          <div style="opacity:.85">Estás viendo los pagos actualizados al último guardado en el servidor. Solo la persona que administra el tablero puede modificar.</div>
+        </div>
+      </div>
 
       <!-- Banners de alertas -->
       <div id="pg-alertas"></div>
@@ -3487,13 +3512,37 @@ cxRender();
 
 const PG_KEY = "tablero-granos-pagos-proyectados-v1";
 const PG_INICIALES = PAYLOAD.pagos_iniciales || [];
+const PG_RAW_URL = "https://raw.githubusercontent.com/ehussenn/tablero-granos-finnegans/main/data/proyectado_pagos.json";
+
+// Editor = tiene PAT configurado. Lector = no.
+function pgIsEditor(){ return !!localStorage.getItem("tablero-granos-github-pat-v1"); }
 
 let PG_DATA = [];
-try {
-  const saved = JSON.parse(localStorage.getItem(PG_KEY) || "null");
-  if(Array.isArray(saved)) PG_DATA = saved;
-  else PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));   // primera carga: usa los del Excel
-} catch(e){ PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES)); }
+let PG_LOADED = false;
+
+async function pgLoadInitial(){
+  if(pgIsEditor()){
+    try {
+      const saved = JSON.parse(localStorage.getItem(PG_KEY) || "null");
+      if(Array.isArray(saved)){ PG_DATA = saved; PG_LOADED = true; return; }
+    } catch(e){}
+    PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));
+  } else {
+    // Lector: trae el JSON mas fresco del repo (no usa localStorage)
+    try {
+      const resp = await fetch(PG_RAW_URL + "?t=" + Date.now(), {cache:"no-store"});
+      if(resp.ok){
+        PG_DATA = await resp.json();
+        PG_LOADED = true;
+        return;
+      }
+    } catch(e){
+      console.warn("Reader: fallo fetch repo, uso PAYLOAD fallback", e);
+    }
+    PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));
+  }
+  PG_LOADED = true;
+}
 
 function pgSave(){ localStorage.setItem(PG_KEY, JSON.stringify(PG_DATA)); pgStorageInfo(); }
 function pgStorageInfo(){
@@ -3678,6 +3727,10 @@ function pgRenderKpis(filtered){
 }
 
 function pgRender(){
+  // Mostrar/ocultar UI de edición según modo
+  const editor = pgIsEditor();
+  document.body.classList.toggle("pg-reader", !editor);
+
   pgInitFilters();
   pgRenderAlertas();
   pgUpdateToggleCounters();
@@ -4021,7 +4074,11 @@ document.getElementById("pg-import-file").addEventListener("change", ev => {
 // (Botones reset y clear-data removidos para evitar borrado accidental
 //  Los datos viven en localStorage y se actualizan editando in-place.)
 
-pgRender();
+// Carga inicial async + render
+(async () => {
+  await pgLoadInitial();
+  pgRender();
+})();
 
 
 /* ===== AUTO-BACKUP a GitHub (commit automatico al repo) ===== */
