@@ -164,7 +164,8 @@
     "total_con_iva": 76218071.15,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r15"
+    "id": "r15",
+    "pagado": true
   },
   {
     "cliente": "REBOLLO",
@@ -175,7 +176,8 @@
     "total_con_iva": 19066775,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r16"
+    "id": "r16",
+    "pagado": true
   },
   {
     "cliente": "MIYA",
