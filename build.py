@@ -680,10 +680,38 @@ HTML_TEMPLATE = r"""<!doctype html>
       <!-- Acciones -->
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
         <button class="clear" id="pg-backup" style="background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600">💾 Backup ahora</button>
+        <button class="clear" id="pg-autobackup-cfg">⚙️ Auto-backup</button>
+        <span id="pg-autobackup-status" style="color:var(--muted);font-size:11.5px"></span>
         <span id="pg-backup-info" style="color:var(--muted)"></span>
         <button class="clear" id="pg-import">⬆️ Importar JSON</button>
         <input type="file" id="pg-import-file" accept="application/json" style="display:none" />
         <span style="margin-left:auto;color:var(--muted)" id="pg-storage-info"></span>
+      </div>
+
+      <!-- Modal config auto-backup -->
+      <div id="pg-autobackup-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:1000;align-items:center;justify-content:center;padding:20px">
+        <div style="background:#fff;border-radius:12px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow:auto">
+          <h3 style="margin:0 0 12px;font-size:18px">⚙️ Configurar Auto-backup a GitHub</h3>
+          <p style="font-size:13px;color:var(--muted);line-height:1.5">Cada vez que edites un pago, el tablero va a guardar automáticamente el JSON al repo (en <code>data/proyectado_pagos.json</code>) usando tu Personal Access Token (PAT).</p>
+          <details style="margin:12px 0;font-size:13px"><summary style="cursor:pointer;font-weight:600;color:var(--blue)">¿Cómo crear el PAT? (click para ver pasos)</summary>
+            <ol style="margin:10px 0 0 20px;line-height:1.7;color:var(--ink)">
+              <li>Abrí <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" style="color:var(--blue)">github.com/settings/personal-access-tokens/new</a></li>
+              <li><b>Token name</b>: <code>tablero-pagos</code></li>
+              <li><b>Expiration</b>: 1 año (o más)</li>
+              <li><b>Repository access</b>: <code>Only select repositories</code> → seleccioná <code>tablero-granos-finnegans</code></li>
+              <li><b>Repository permissions</b> → buscá <code>Contents</code> → ponelo en <code>Read and write</code></li>
+              <li>Click <b>Generate token</b> y copialo (empieza con <code>github_pat_</code>)</li>
+            </ol>
+          </details>
+          <label style="display:block;margin-top:14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted)">Pegá tu PAT acá:</label>
+          <input type="password" id="pg-pat-input" placeholder="github_pat_..." style="width:100%;margin-top:4px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;font-family:monospace;font-size:12px" />
+          <div id="pg-pat-status" style="margin-top:8px;font-size:12px;min-height:18px"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+            <button class="clear" id="pg-pat-cancel">Cancelar</button>
+            <button class="clear" id="pg-pat-disable" style="color:var(--red);border-color:#fecaca">Desactivar</button>
+            <button class="clear" id="pg-pat-save" style="background:var(--green);color:#fff;border-color:var(--green);font-weight:600">Guardar y activar</button>
+          </div>
+        </div>
       </div>
 
       <!-- Banner backup overdue -->
@@ -3885,6 +3913,210 @@ document.getElementById("pg-import-file").addEventListener("change", ev => {
 //  Los datos viven en localStorage y se actualizan editando in-place.)
 
 pgRender();
+
+
+/* ===== AUTO-BACKUP a GitHub (commit automatico al repo) ===== */
+
+const PG_PAT_KEY    = "tablero-granos-github-pat-v1";
+const PG_REPO_OWNER = "ehussenn";
+const PG_REPO_NAME  = "tablero-granos-finnegans";
+const PG_REPO_PATH  = "data/proyectado_pagos.json";
+
+let pgAutoTimer = null;
+let pgAutoSha = null;     // sha actual del archivo en GitHub
+let pgAutoLastSaved = null;
+let pgAutoStatusInterval = null;
+
+function pgGetPAT(){ return localStorage.getItem(PG_PAT_KEY) || ""; }
+function pgSetPAT(v){
+  if(v) localStorage.setItem(PG_PAT_KEY, v);
+  else localStorage.removeItem(PG_PAT_KEY);
+}
+
+function pgUpdateAutoStatus(){
+  const el = document.getElementById("pg-autobackup-status");
+  const pat = pgGetPAT();
+  if(!pat){
+    el.innerHTML = `<span style="color:var(--muted)">auto-backup desactivado</span>`;
+    return;
+  }
+  if(pgAutoLastSaved){
+    const sec = Math.floor((Date.now() - pgAutoLastSaved) / 1000);
+    let txt = "";
+    if(sec < 60) txt = `hace ${sec}s`;
+    else if(sec < 3600) txt = `hace ${Math.floor(sec/60)} min`;
+    else txt = `hace ${Math.floor(sec/3600)}h ${Math.floor((sec%3600)/60)}min`;
+    el.innerHTML = `🔄 auto-backup ON · último: ${txt}`;
+    el.style.color = "var(--green)";
+  } else {
+    el.innerHTML = `🔄 auto-backup ON · esperando primer cambio`;
+    el.style.color = "var(--blue)";
+  }
+}
+
+function pgStartAutoStatusTicker(){
+  if(pgAutoStatusInterval) clearInterval(pgAutoStatusInterval);
+  pgAutoStatusInterval = setInterval(pgUpdateAutoStatus, 5000);
+  pgUpdateAutoStatus();
+}
+
+// Codificar a base64 UTF-8 (porque btoa no maneja UTF-8 directamente)
+function pgToBase64(str){
+  const utf8 = new TextEncoder().encode(str);
+  let bin = "";
+  utf8.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+
+// Obtener el SHA actual del archivo en el repo (necesario para PUT update)
+async function pgFetchCurrentSha(){
+  const pat = pgGetPAT();
+  if(!pat) return null;
+  const url = `https://api.github.com/repos/${PG_REPO_OWNER}/${PG_REPO_NAME}/contents/${PG_REPO_PATH}`;
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${pat}`,
+        "Accept": "application/vnd.github+json",
+      },
+    });
+    if(resp.status === 404) return "";   // archivo no existe (caso raro)
+    if(!resp.ok) throw new Error("HTTP " + resp.status);
+    const j = await resp.json();
+    return j.sha;
+  } catch(e){
+    console.warn("pgFetchCurrentSha error:", e);
+    return null;
+  }
+}
+
+// Commit del JSON al repo
+async function pgDoAutoCommit(){
+  const pat = pgGetPAT();
+  if(!pat) return false;
+
+  const el = document.getElementById("pg-autobackup-status");
+  el.innerHTML = "⏳ guardando en GitHub...";
+  el.style.color = "var(--orange)";
+
+  // si no tengo sha, lo busco
+  if(pgAutoSha === null){
+    pgAutoSha = await pgFetchCurrentSha();
+  }
+
+  const content = JSON.stringify(PG_DATA, null, 2);
+  const body = {
+    message: `Auto-backup pagos ${new Date().toISOString().slice(0,16).replace('T',' ')}`,
+    content: pgToBase64(content),
+    branch: "main",
+  };
+  if(pgAutoSha) body.sha = pgAutoSha;
+
+  const url = `https://api.github.com/repos/${PG_REPO_OWNER}/${PG_REPO_NAME}/contents/${PG_REPO_PATH}`;
+  try {
+    const resp = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${pat}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if(!resp.ok){
+      const txt = await resp.text();
+      // SHA conflict (409): re-fetch y reintentar 1 vez
+      if(resp.status === 409){
+        pgAutoSha = await pgFetchCurrentSha();
+        if(pgAutoSha){
+          body.sha = pgAutoSha;
+          const r2 = await fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": `Bearer ${pat}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if(r2.ok){
+            const j2 = await r2.json();
+            pgAutoSha = j2.content.sha;
+            pgAutoLastSaved = Date.now();
+            pgUpdateAutoStatus();
+            return true;
+          }
+        }
+      }
+      throw new Error("HTTP " + resp.status + ": " + txt.slice(0,200));
+    }
+    const j = await resp.json();
+    pgAutoSha = j.content.sha;
+    pgAutoLastSaved = Date.now();
+    pgUpdateAutoStatus();
+    return true;
+  } catch(e){
+    console.error("pgDoAutoCommit error:", e);
+    el.innerHTML = `⚠️ error guardando: ${e.message.slice(0,60)}`;
+    el.style.color = "var(--red)";
+    return false;
+  }
+}
+
+// Debounce: cuando se llama, espera 5s sin más cambios, despues commitea
+function pgScheduleAutoCommit(){
+  if(!pgGetPAT()) return;
+  if(pgAutoTimer) clearTimeout(pgAutoTimer);
+  document.getElementById("pg-autobackup-status").innerHTML = "✏️ cambios pendientes (guardando en 5s...)";
+  document.getElementById("pg-autobackup-status").style.color = "var(--orange)";
+  pgAutoTimer = setTimeout(() => {
+    pgAutoTimer = null;
+    pgDoAutoCommit();
+  }, 5000);
+}
+
+// Hook: cada vez que pgSave se llama, schedular auto-commit
+const _origPgSave = pgSave;
+pgSave = function(){
+  _origPgSave();
+  pgScheduleAutoCommit();
+};
+
+// Modal handlers
+document.getElementById("pg-autobackup-cfg").addEventListener("click", () => {
+  document.getElementById("pg-autobackup-modal").style.display = "flex";
+  document.getElementById("pg-pat-input").value = pgGetPAT();
+  document.getElementById("pg-pat-status").innerHTML = pgGetPAT() ? '✅ Auto-backup activo' : '';
+});
+document.getElementById("pg-pat-cancel").addEventListener("click", () => {
+  document.getElementById("pg-autobackup-modal").style.display = "none";
+});
+document.getElementById("pg-pat-disable").addEventListener("click", () => {
+  pgSetPAT("");
+  if(pgAutoTimer){ clearTimeout(pgAutoTimer); pgAutoTimer = null; }
+  document.getElementById("pg-pat-input").value = "";
+  document.getElementById("pg-pat-status").innerHTML = '❌ Auto-backup desactivado';
+  pgUpdateAutoStatus();
+});
+document.getElementById("pg-pat-save").addEventListener("click", async () => {
+  const v = document.getElementById("pg-pat-input").value.trim();
+  if(!v.startsWith("github_pat_") && !v.startsWith("ghp_")){
+    document.getElementById("pg-pat-status").innerHTML = '<span style="color:var(--red)">❌ Token no parece válido (debe empezar con github_pat_ o ghp_)</span>';
+    return;
+  }
+  pgSetPAT(v);
+  document.getElementById("pg-pat-status").innerHTML = '⏳ probando token...';
+  pgAutoSha = await pgFetchCurrentSha();
+  if(pgAutoSha === null){
+    document.getElementById("pg-pat-status").innerHTML = '<span style="color:var(--red)">❌ Falló el test: token inválido o sin permisos sobre el repo</span>';
+    pgSetPAT("");
+    return;
+  }
+  document.getElementById("pg-pat-status").innerHTML = '<span style="color:var(--green)">✅ Token OK. Disparando primer backup...</span>';
+  const ok = await pgDoAutoCommit();
+  if(ok){
+    document.getElementById("pg-pat-status").innerHTML = '<span style="color:var(--green)">✅ Auto-backup ACTIVADO. Cada cambio se guardará en GitHub automáticamente.</span>';
+    setTimeout(() => document.getElementById("pg-autobackup-modal").style.display = "none", 1500);
+  }
+});
+
+pgStartAutoStatusTicker();
 
 
 </script>
