@@ -651,10 +651,17 @@ HTML_TEMPLATE = r"""<!doctype html>
       <!-- KPIs principales -->
       <div class="kpis" id="pg-kpis"></div>
 
+      <!-- Toggle Pagado/Pendiente -->
+      <div style="display:flex;gap:0;margin-bottom:14px">
+        <button class="pago-toggle active" data-pago="" style="padding:10px 24px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px 0 0 8px;cursor:pointer;font-weight:600;font-size:13px">Todos <span style="font-size:11px;font-weight:500;opacity:.7" id="pg-toggle-all">(—)</span></button>
+        <button class="pago-toggle" data-pago="pendiente" style="padding:10px 24px;border:1px solid var(--line);border-left:0;background:#fff;color:var(--ink);cursor:pointer;font-weight:500;font-size:13px">⏳ Pendientes <span style="font-size:11px;opacity:.7" id="pg-toggle-pend">(—)</span></button>
+        <button class="pago-toggle" data-pago="pagado" style="padding:10px 24px;border:1px solid var(--line);border-left:0;background:#fff;color:var(--ink);border-radius:0 8px 8px 0;cursor:pointer;font-weight:500;font-size:13px">✓ Pagados <span style="font-size:11px;opacity:.7" id="pg-toggle-pago">(—)</span></button>
+      </div>
+
       <!-- Filtros -->
       <div class="filterbar">
         <div><label>CLIENTE</label><select id="pg-cliente"><option value="">Todos</option></select></div>
-        <div><label>ESTADO PAGO</label><select id="pg-estado">
+        <div><label>ESTADO FECHA</label><select id="pg-estado">
           <option value="">Todos</option>
           <option value="vencido">Vencidos</option>
           <option value="hoy">Vencen HOY</option>
@@ -662,7 +669,6 @@ HTML_TEMPLATE = r"""<!doctype html>
           <option value="proximo30">Próximos 30 días</option>
           <option value="futuro">Futuro lejano</option>
           <option value="sinfecha">Sin fecha</option>
-          <option value="pagado">Marcados como pagados</option>
         </select></div>
         <div><label>MES PAGO</label><select id="pg-mes"><option value="">Todos</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="pg-q" placeholder="cliente…" /></div>
@@ -675,11 +681,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
         <button class="clear" id="pg-backup" style="background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600">💾 Backup ahora</button>
         <span id="pg-backup-info" style="color:var(--muted)"></span>
-        <button class="clear" id="pg-export">⬇️ Exportar JSON</button>
         <button class="clear" id="pg-import">⬆️ Importar JSON</button>
         <input type="file" id="pg-import-file" accept="application/json" style="display:none" />
-        <button class="clear" id="pg-reset" style="color:var(--orange);border-color:#fed7aa">↺ Restaurar desde Excel original</button>
-        <button class="clear" id="pg-clear-data" style="color:var(--red);border-color:#fecaca">🗑️ Borrar todo</button>
         <span style="margin-left:auto;color:var(--muted)" id="pg-storage-info"></span>
       </div>
 
@@ -3525,17 +3528,50 @@ function pgInitFilters(){
     meses.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
 }
 
+let PG_TOGGLE_PAGO = "";  // "" | "pendiente" | "pagado"
+
 function pgFiltered(){
   const c = document.getElementById("pg-cliente").value;
   const e = document.getElementById("pg-estado").value;
   const m = document.getElementById("pg-mes").value;
   const q = (document.getElementById("pg-q").value||"").toLowerCase().trim();
   return PG_DATA.filter(r => {
+    if(PG_TOGGLE_PAGO === "pagado" && !r.pagado) return false;
+    if(PG_TOGGLE_PAGO === "pendiente" && r.pagado) return false;
     if(c && r.cliente !== c) return false;
     if(m && (!r.fecha_pago || !r.fecha_pago.startsWith(m))) return false;
     if(q && !(r.cliente||"").toLowerCase().includes(q)) return false;
     if(e && pgEstado(r) !== e) return false;
     return true;
+  });
+}
+
+function pgUpdateToggleCounters(){
+  const all = PG_DATA.length;
+  const pag = PG_DATA.filter(r => r.pagado).length;
+  const pend = all - pag;
+  const allEl = document.getElementById("pg-toggle-all");
+  const pagEl = document.getElementById("pg-toggle-pago");
+  const pendEl = document.getElementById("pg-toggle-pend");
+  if(allEl) allEl.textContent = `(${all})`;
+  if(pagEl) pagEl.textContent = `(${pag})`;
+  if(pendEl) pendEl.textContent = `(${pend})`;
+
+  // Estilo visual del toggle activo
+  document.querySelectorAll(".pago-toggle").forEach(btn => {
+    const isActive = btn.dataset.pago === PG_TOGGLE_PAGO;
+    if(isActive){
+      btn.classList.add("active");
+      btn.style.background = btn.dataset.pago === "pagado" ? "#16a34a" :
+                              btn.dataset.pago === "pendiente" ? "#f59e0b" : "var(--blue)";
+      btn.style.color = "#fff";
+      btn.style.borderColor = btn.style.background;
+    } else {
+      btn.classList.remove("active");
+      btn.style.background = "#fff";
+      btn.style.color = "var(--ink)";
+      btn.style.borderColor = "var(--line)";
+    }
   });
 }
 
@@ -3604,6 +3640,7 @@ function pgRenderKpis(filtered){
 function pgRender(){
   pgInitFilters();
   pgRenderAlertas();
+  pgUpdateToggleCounters();
 
   const filtered = pgFiltered();
   pgRenderKpis(filtered);
@@ -3736,7 +3773,16 @@ function pgRender(){
 );
 document.getElementById("pg-clear").addEventListener("click", () => {
   ["pg-cliente","pg-estado","pg-mes","pg-q"].forEach(id => document.getElementById(id).value = "");
+  PG_TOGGLE_PAGO = "";
   pgRender();
+});
+
+// Toggle Todos / Pendientes / Pagados
+document.querySelectorAll(".pago-toggle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    PG_TOGGLE_PAGO = btn.dataset.pago;
+    pgRender();
+  });
 });
 
 // Agregar fila (al final, scrollea hasta ahi para que se vea)
@@ -3817,7 +3863,6 @@ function pgDoBackup(){
 // Botones de backup
 document.getElementById("pg-backup").addEventListener("click", pgDoBackup);
 document.getElementById("pg-backup-banner-btn").addEventListener("click", pgDoBackup);
-document.getElementById("pg-export").addEventListener("click", pgDoBackup);  // mismo comportamiento
 document.getElementById("pg-import").addEventListener("click", () => document.getElementById("pg-import-file").click());
 document.getElementById("pg-import-file").addEventListener("change", ev => {
   const f = ev.target.files[0];
@@ -3836,20 +3881,8 @@ document.getElementById("pg-import-file").addEventListener("change", ev => {
   };
   r.readAsText(f);
 });
-document.getElementById("pg-reset").addEventListener("click", () => {
-  if(confirm("¿Restaurar la lista desde el Excel original?\nVas a perder cualquier cambio que hayas hecho.")){
-    PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));
-    pgSave();
-    pgRender();
-  }
-});
-document.getElementById("pg-clear-data").addEventListener("click", () => {
-  if(confirm("¿Borrar TODOS los pagos? No se puede deshacer.")){
-    PG_DATA = [];
-    pgSave();
-    pgRender();
-  }
-});
+// (Botones reset y clear-data removidos para evitar borrado accidental
+//  Los datos viven en localStorage y se actualizan editando in-place.)
 
 pgRender();
 
