@@ -699,7 +699,7 @@
     "precio_fijado": 237800.0,
     "total_sin_iva": 1315034.0,
     "total_con_iva": 1591191.14,
-    "fecha_pago": null,
+    "fecha_pago": "2025-12-19",
     "iva_pct": 21.0,
     "id": "r65"
   },
@@ -765,7 +765,7 @@
     "precio_fijado": 265328.0,
     "total_sin_iva": 15802935.68,
     "total_con_iva": 17462243.9264,
-    "fecha_pago": null,
+    "fecha_pago": "2025-12-29",
     "iva_pct": 10.5,
     "id": "r71"
   },
@@ -1365,7 +1365,7 @@
   },
   {
     "cliente": "NUCLEO NORTE",
-    "fecha_fijacion": null,
+    "fecha_fijacion": "2022-03-20",
     "tn_fijadas": null,
     "precio_fijado": 322.0,
     "total_sin_iva": 322.0,
@@ -1447,7 +1447,7 @@
     "precio_fijado": 421344.0,
     "total_sin_iva": 209407968.0,
     "total_con_iva": 231395804.64,
-    "fecha_pago": null,
+    "fecha_pago": "2026-04-28",
     "iva_pct": 10.5,
     "id": "r133"
   },

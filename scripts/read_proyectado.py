@@ -12,6 +12,13 @@ def to_iso_date(v):
     if v is None or v == "": return None
     if isinstance(v, (datetime, date)):
         return v.strftime("%Y-%m-%d")
+    # Numero serial de Excel (rango razonable: 40000=2009, 60000=2064)
+    if isinstance(v, (int, float)) and 30000 <= v <= 70000:
+        from openpyxl.utils.datetime import from_excel
+        try:
+            return from_excel(v).strftime("%Y-%m-%d")
+        except Exception:
+            return None
     s = str(v).strip()
     # dd/mm/yyyy o dd-mm-yyyy
     m = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{4})", s)
@@ -21,6 +28,30 @@ def to_iso_date(v):
             return date(int(y), int(mo), int(d)).strftime("%Y-%m-%d")
         except ValueError:
             return None
+    # dd/mm/YYY (año 3 dígitos, posible typo: "28/04/206" = 2026)
+    m = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{3})$", s)
+    if m:
+        d, mo, y = m.groups()
+        y_int = int(y)
+        # Si parece "20YY" sin el último dígito, asumir 202X
+        if 200 <= y_int <= 209:
+            y_full = 2000 + (y_int - 200) * 10
+            # tampoco es exacto, mejor asumir que falta un digito al final: '206' -> '2026' '202X'?
+            # Heuristica: si y termina dentro de 200-209, faltaria el ultimo digito.
+            # Mejor: probamos '20' + y[1:] + '?' - pero no podemos adivinar el digito faltante.
+            # Caso comun: '206' -> '2026' (le falta el ultimo digito, asumiendo decada actual)
+            from datetime import datetime as _dt
+            current_year = _dt.now().year
+            current_decade_start = (current_year // 10) * 10  # ej 2020
+            # tomar el numero 3-dig, si el primer digito es 2 y segundo es 0, asumir 20YY donde Y=tercer digito
+            if y[0] == '2' and y[1] == '0':
+                y_full = 2020 + int(y[2])  # '206' -> 2026, '205' -> 2025
+            else:
+                return None
+            try:
+                return date(y_full, int(mo), int(d)).strftime("%Y-%m-%d")
+            except ValueError:
+                return None
     # yyyy-mm-dd...
     m = re.match(r"^(\d{4}-\d{2}-\d{2})", s)
     if m: return m.group(1)
