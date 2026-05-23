@@ -3739,10 +3739,10 @@ document.getElementById("pg-clear").addEventListener("click", () => {
   pgRender();
 });
 
-// Agregar fila
+// Agregar fila (al final, scrollea hasta ahi para que se vea)
 document.getElementById("pg-add-row").addEventListener("click", () => {
   const newId = "n" + Date.now();
-  PG_DATA.unshift({
+  PG_DATA.push({
     id: newId,
     cliente: "",
     fecha_fijacion: pgHoyISO(),
@@ -3756,6 +3756,15 @@ document.getElementById("pg-add-row").addEventListener("click", () => {
   });
   pgSave();
   pgRender();
+  // Scroll a la nueva fila y foco en el campo Cliente
+  requestAnimationFrame(() => {
+    const newRow = document.querySelector(`#pg-tbl-body tr[data-id="${newId}"]`);
+    if(newRow){
+      newRow.scrollIntoView({behavior:"smooth", block:"center"});
+      const firstInput = newRow.querySelector('input[data-k="cliente"]');
+      if(firstInput) firstInput.focus();
+    }
+  });
 });
 
 // ===== Sistema de Backup =====
