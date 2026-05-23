@@ -92,7 +92,8 @@
     "total_con_iva": 111605000,
     "fecha_pago": "2025-01-10",
     "iva_pct": 10.5,
-    "id": "r9"
+    "id": "r9",
+    "pagado": true
   },
   {
     "cliente": "PUERTO ARROYO SECO",
@@ -115,7 +116,8 @@
     "total_con_iva": 8806638.945,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r11"
+    "id": "r11",
+    "pagado": true
   },
   {
     "cliente": "AGROPECUARIA EL CULANTRILLAR",
@@ -138,7 +140,8 @@
     "total_con_iva": 109241725.45,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r13"
+    "id": "r13",
+    "pagado": true
   },
   {
     "cliente": "LARTIRIGOYEN",
@@ -149,7 +152,8 @@
     "total_con_iva": 33023654.3,
     "fecha_pago": "2025-02-10",
     "iva_pct": 10.5,
-    "id": "r14"
+    "id": "r14",
+    "pagado": true
   },
   {
     "cliente": "LARTIRIGOYEN",
