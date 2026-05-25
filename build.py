@@ -617,7 +617,7 @@ HTML_TEMPLATE = r"""<!doctype html>
             <button class="clear" id="cx-pct-clear" style="color:var(--red);border-color:#fecaca">🗑️ Limpiar todo</button>
           </span>
         </h3>
-        <div id="cx-pct-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px"></div>
+        <div id="cx-pct-grid" style="overflow:auto;max-height:480px"></div>
       </div>
 
       <!-- Comisión Cliente: default + excepciones -->
@@ -3123,30 +3123,61 @@ cjApply();
 
 const CRUCES_RAW = PAYLOAD.cruces || [];
 
-// Defaults de % comprador (del pinned screenshot del usuario)
+// Defaults de comisiones por comprador (de la planilla del usuario).
+// Cada comprador tiene componentes: base, prod (produccion), vol (volatil),
+// par (paritaria), otros, sell (sellado). El % TOTAL = suma de todos.
 const CX_PCT_DEFAULTS = {
-  "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL": 2.25,
-  "LDC ARGENTINA S.A.": 0.50,
-  "ALLARIA AGRONEGOCIOS S.A.": 1.00,
-  "ARGENTRADING S.A.": 0.50,
-  "TOMAS HNOS Y CIA SA": 0.50,
-  "PUERTO ARROYO SECO SA": 1.00,
-  "LA BRAGADENSE SA": 1.00,
-  "LARTIRIGOYEN Y CIA SA": 2.00,
-  "BUNGE ARGENTINA S.A.": 0.00,
-  "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA": 2.25,
+  "LDC ARGENTINA S.A.":                              {base: 0.5,                                            sell: 0},
+  "ALLARIA AGRONEGOCIOS S.A.":                       {base: 1,             vol: 1},
+  "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL": {base: 1,             vol: 1,  par: 0.3,               sell: 1.25},
+  "COFCO INTERNATIONAL ARGENTINA S.A":                {base: 1, prod: 2,                                     sell: 0.7},
+  "GEAR S A A I C F E I":                            {base: 1},
+  "TOMAS HNOS Y CIA SA":                             {base: 0.5,           vol: 1},
+  "GRANEROS Y ELEVADORES ARGENTINOS DE COLON SCL":   {base: 2},
+  "AGRICULTORES FEDERADOS ARGENTINOS SOC COOP LTDA": {base: 2},
+  "LA BRAGADENSE SA":                                {base: 1,             vol: 0},
+  "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA":       {base: 1,                      par: 0.3,               sell: 1.25},
+  "COOP DEFENSA DE AGRICULTORES LTDA":               {base: 1},
+  "COOP AGROP DE LA VIOLETA LTDA":                   {base: 2.5},
+  "EDUARDO BERAZA S. A.":                            {base: 1},
+  "AGROTECNOLOGIA Y SERVICIOS SA":                   {base: 1},
+  "COOP AGRICOLA LTDA LA UNION DE ALFONSO":          {base: 1.5},
+  "LARTIRIGOYEN Y CIA SA":                           {base: 2},
+  "ARGENTRADING S.A.":                               {base: 0.5,                                            sell: 0},
+  "BUNGE ARGENTINA S.A.":                            {base: 0},
+  "PUERTO ARROYO SECO SA":                           {base: 1,                      par: 0.4},
+  "FYO ACOPIO S.A.":                                 {base: 0.5,                                            sell: 0},
+  "RECTA AGRO SA":                                   {base: 0.75,                              otros: 0.5},
+  "COMMODITIES S.A.":                                {base: 0.5},
+  "J.H.B SAU":                                       {base: 0.5, prod: 1},
+  "ACEITERA GENERAL DEHEZA S A":                     {base: 1},
 };
 
-const CX_PCT_KEY  = "tablero-granos-cx-pct-comprador-v1";
+const CX_PCT_KEY  = "tablero-granos-cx-pct-comprador-v2";  // v2 = componentes en lugar de un % unico
+const CX_PCT_KEY_V1 = "tablero-granos-cx-pct-comprador-v1";
 const CX_CLI_KEY  = "tablero-granos-cx-cli-comision-v1";
+const CX_PCT_COMPS = ["base","prod","vol","par","otros","sell"];
+const CX_PCT_LABELS = {base:"Base", prod:"Producción", vol:"Volátil", par:"Paritaria", otros:"Otros", sell:"Sellado"};
 let CX_PCT = {};
 let CX_CLI_DEFAULT = 3.25;
 let CX_CLI_EXCS = {"BENAYAS S.A.": 2.75, "BENAYAS MIGUEL ANGEL": 2.75};
 let cxVista = "kgcom";
 
+// Cargar comisiones por comprador. Soporta migracion de v1 (un % unico) a v2 (componentes).
 try {
-  const saved = JSON.parse(localStorage.getItem(CX_PCT_KEY) || "null");
-  if(saved && typeof saved === "object") CX_PCT = saved;
+  const savedV2 = JSON.parse(localStorage.getItem(CX_PCT_KEY) || "null");
+  if(savedV2 && typeof savedV2 === "object"){
+    CX_PCT = savedV2;
+  } else {
+    // Migracion v1 -> v2
+    const savedV1 = JSON.parse(localStorage.getItem(CX_PCT_KEY_V1) || "null");
+    if(savedV1 && typeof savedV1 === "object"){
+      // En v1 cada valor era un numero. Lo trato como "base" en v2.
+      for(const [name, pct] of Object.entries(savedV1)){
+        CX_PCT[name] = (typeof pct === "object") ? pct : {base: pct};
+      }
+    }
+  }
 } catch(e){}
 try {
   const saved = JSON.parse(localStorage.getItem(CX_CLI_KEY) || "null");
@@ -3156,9 +3187,21 @@ try {
   }
 } catch(e){}
 
-if(Object.keys(CX_PCT).length === 0) CX_PCT = {...CX_PCT_DEFAULTS};
+// Si no hay nada guardado, usar defaults de la planilla
+if(Object.keys(CX_PCT).length === 0) CX_PCT = JSON.parse(JSON.stringify(CX_PCT_DEFAULTS));
+
+// Asegurar que cada entrada sea un objeto (no un numero crudo de v1)
+for(const k of Object.keys(CX_PCT)){
+  if(typeof CX_PCT[k] !== "object") CX_PCT[k] = {base: Number(CX_PCT[k])||0};
+}
 
 function cxSavePct(){ localStorage.setItem(CX_PCT_KEY, JSON.stringify(CX_PCT)); }
+
+// Suma de componentes de un comprador. Retorna null si no esta cargado.
+function cxSumComps(obj){
+  if(!obj) return 0;
+  return CX_PCT_COMPS.reduce((s,c) => s + (Number(obj[c])||0), 0);
+}
 function cxSaveCli(){ localStorage.setItem(CX_CLI_KEY, JSON.stringify({def: CX_CLI_DEFAULT, excs: CX_CLI_EXCS})); }
 
 function cxClienteUpper(s){ return (s||"").trim().toUpperCase(); }
@@ -3170,15 +3213,24 @@ function cxGetPctCliente(cliente){
   }
   return CX_CLI_DEFAULT;
 }
-function cxGetPctComprador(comprador){
+function cxGetPctObj(comprador){
   if(comprador == null) return null;
-  // match exacto
   if(CX_PCT[comprador] != null) return CX_PCT[comprador];
-  // match case-insensitive
-  for(const [name, pct] of Object.entries(CX_PCT)){
-    if(cxClienteUpper(name) === cxClienteUpper(comprador)) return pct;
+  const k = cxClienteUpper(comprador);
+  for(const [name, obj] of Object.entries(CX_PCT)){
+    if(cxClienteUpper(name) === k) return obj;
   }
-  return null;   // null = pendiente (no cargado)
+  return null;
+}
+function cxGetPctComprador(comprador){
+  const obj = cxGetPctObj(comprador);
+  if(!obj) return null;
+  const sum = cxSumComps(obj);
+  // si todos los componentes son 0/null, lo devolvemos como null (pendiente)
+  // EXCEPTO si explicitamente alguno fue definido como 0 (caso BUNGE)
+  const hasAny = CX_PCT_COMPS.some(c => obj[c] != null);
+  if(!hasAny) return null;
+  return sum;
 }
 
 // Buscar precio del contrato (compra o venta)
@@ -3289,7 +3341,6 @@ function cxInitFilters(){
 }
 
 function cxRenderPctGrid(){
-  // armar lista de compradores conocidos (de las ops y de defaults y de lo guardado)
   const compradoresEnOps = [...new Set(CRUCES_RAW.map(c => c.comprador).filter(Boolean))];
   const todos = new Set([
     ...Object.keys(CX_PCT_DEFAULTS),
@@ -3298,21 +3349,49 @@ function cxRenderPctGrid(){
   ]);
   const list = [...todos].sort();
   const grid = document.getElementById("cx-pct-grid");
-  grid.innerHTML = list.map(name => {
-    const v = CX_PCT[name] != null ? CX_PCT[name] : "";
+  // Reemplazo grid por una tabla con columnas Base/Prod/Vol/Par/Otros/Sellado/TOTAL
+  grid.style.display = "block";
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:11.5px">
+    <thead><tr style="background:#fff7ed;border-bottom:2px solid #fed7aa">
+      <th style="text-align:left;padding:6px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:#9a3412">Comprador</th>
+      ${CX_PCT_COMPS.map(c => `<th style="text-align:right;padding:6px 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:#9a3412;min-width:60px">${CX_PCT_LABELS[c]}</th>`).join("")}
+      <th style="text-align:right;padding:6px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--blue);min-width:70px">% TOTAL</th>
+    </tr></thead>
+    <tbody>`;
+  for(const name of list){
+    const obj = CX_PCT[name] || {};
     const inOps = compradoresEnOps.includes(name);
-    const bg = v === "" || v == null ? "#fee2e2" : (v === 0 ? "#f3f4f6" : "#fff");
-    return `<div style="display:flex;gap:6px;align-items:center;padding:4px 6px;background:${bg};border:1px solid var(--line);border-radius:6px">
-      <div style="flex:1;font-size:12px;${inOps?'':'color:var(--muted)'}" title="${escapeHtml(name)}">${escapeHtml(name.length>30?name.slice(0,30)+'…':name)}</div>
-      <input type="text" data-comprador="${escapeHtml(name)}" class="cx-pct-input" value="${v}" placeholder="%" style="width:55px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;text-align:right;font-size:11.5px;font-variant-numeric:tabular-nums" />
-    </div>`;
-  }).join("");
+    const total = cxSumComps(obj);
+    const hasAny = CX_PCT_COMPS.some(c => obj[c] != null);
+    const totalBg = !hasAny ? "#fee2e2" : (total === 0 ? "#f3f4f6" : "#dcfce7");
+    const totalCol = !hasAny ? "var(--red)" : (total === 0 ? "var(--muted)" : "var(--green)");
+    html += `<tr style="border-bottom:1px solid var(--line)${inOps?'':';opacity:0.7'}">
+      <td style="padding:4px 8px;font-size:11.5px;font-weight:${inOps?'600':'400'}" title="${escapeHtml(name)}">${escapeHtml(name.length>34?name.slice(0,34)+'…':name)}</td>
+      ${CX_PCT_COMPS.map(c => {
+        const v = obj[c];
+        const show = (v == null || v === "") ? "" : String(v).replace(".",",");
+        return `<td style="padding:2px"><input type="text" data-comprador="${escapeHtml(name)}" data-comp="${c}" class="cx-pct-input" value="${show}" placeholder="—" style="width:100%;padding:3px 5px;border:1px solid var(--line);border-radius:3px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;background:${v==null||v===''?'#fff':'#fffbeb'}"/></td>`;
+      }).join("")}
+      <td style="padding:4px 8px;text-align:right;font-weight:700;font-size:12px;color:${totalCol};background:${totalBg};border-radius:4px">${hasAny ? total.toLocaleString("es-AR",{maximumFractionDigits:2}) + "%" : "—"}</td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  grid.innerHTML = html;
+
   document.querySelectorAll(".cx-pct-input").forEach(inp => {
     inp.addEventListener("blur", () => {
       const name = inp.dataset.comprador;
-      const v = parseFloat((inp.value||"").replace(",","."));
-      if(isNaN(v)) delete CX_PCT[name];
-      else CX_PCT[name] = v;
+      const comp = inp.dataset.comp;
+      const raw = (inp.value||"").trim().replace(",",".");
+      if(!CX_PCT[name]) CX_PCT[name] = {};
+      if(raw === ""){
+        delete CX_PCT[name][comp];
+        if(Object.keys(CX_PCT[name]).length === 0) delete CX_PCT[name];
+      } else {
+        const v = parseFloat(raw);
+        if(isNaN(v)) return;
+        CX_PCT[name][comp] = v;
+      }
       cxSavePct();
       cxRender();
     });
