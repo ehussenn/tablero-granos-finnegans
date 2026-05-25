@@ -3234,25 +3234,30 @@ function cxGetPctComprador(comprador){
 }
 
 // Buscar precio del contrato (compra o venta)
-// indexo contratos por NOMBRECONTRATO para lookups rapidos
+// El traslado trae NOMBRECONTRATO = "CONT-CPRA-GRA - 878"
+// El dataset de Resumen tiene:
+//   contrato: "CONT-CPRA-GRA - 878 (Grano Trigo) - PESOS"  (con descripción)
+//   nombre:   "CONT-CPRA-GRA - 878"                        (puro)
+// Por eso indexamos por 'nombre' que es lo que matchea
 const CX_CONTRATOS_COMPRA_IDX = {};
 (DATA_CP || []).forEach(c => {
-  if(c.contrato) CX_CONTRATOS_COMPRA_IDX[c.contrato] = c;
+  if(c.nombre) CX_CONTRATOS_COMPRA_IDX[c.nombre] = c;
 });
 const CX_CONTRATOS_VENTA_IDX = {};
 (DATA || []).forEach(c => {   // DATA es venta (pilot)
-  if(c.contrato) CX_CONTRATOS_VENTA_IDX[c.contrato] = c;
+  if(c.nombre) CX_CONTRATOS_VENTA_IDX[c.nombre] = c;
 });
 
+// Prioridad: precio LIQUIDADO (final/real) > precio PROMEDIO FIJADO
 function cxPrecioCompra(nombreContrato){
   const c = CX_CONTRATOS_COMPRA_IDX[nombreContrato];
   if(!c) return null;
-  return c.preciopromediofijado || c.precioliquidado || null;
+  return Number(c.precioliquidado) || Number(c.preciopromediofijado) || null;
 }
 function cxPrecioVenta(nombreContrato){
   const c = CX_CONTRATOS_VENTA_IDX[nombreContrato];
   if(!c) return null;
-  return c.preciopromediofijado || c.precioliquidado || null;
+  return Number(c.precioliquidado) || Number(c.preciopromediofijado) || null;
 }
 
 function cxMesISO(fechaStr){
