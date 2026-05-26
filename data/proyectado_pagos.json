@@ -1829,11 +1829,11 @@
     "id": "n1779802545951",
     "cliente": "TAMBO NORTE",
     "fecha_fijacion": "2026-05-26",
-    "tn_fijadas": null,
-    "precio_fijado": null,
-    "total_sin_iva": null,
+    "tn_fijadas": 92926,
+    "precio_fijado": 455000,
+    "total_sin_iva": 42281330000,
     "iva_pct": 10.5,
-    "total_con_iva": null,
+    "total_con_iva": 46720869650,
     "fecha_pago": null,
     "pagado": false
   }
