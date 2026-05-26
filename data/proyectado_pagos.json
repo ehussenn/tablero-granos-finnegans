@@ -1857,7 +1857,7 @@
     "precio_fijado": null,
     "total_sin_iva": null,
     "iva_pct": 10.5,
-    "total_con_iva": null,
+    "total_con_iva": 0,
     "fecha_pago": null,
     "pagado": false
   }
