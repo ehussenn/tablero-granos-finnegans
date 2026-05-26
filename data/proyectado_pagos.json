@@ -1863,9 +1863,9 @@
   },
   {
     "id": "n1779816810660",
-    "cliente": "",
+    "cliente": "Guillermo Dubinni",
     "fecha_fijacion": "2026-05-26",
-    "tn_fijadas": null,
+    "tn_fijadas": 100,
     "precio_fijado": null,
     "total_sin_iva": null,
     "iva_pct": 10.5,
