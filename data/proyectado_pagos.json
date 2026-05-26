@@ -1866,10 +1866,10 @@
     "cliente": "Guillermo Dubinni",
     "fecha_fijacion": "2026-05-26",
     "tn_fijadas": 100,
-    "precio_fijado": null,
-    "total_sin_iva": null,
+    "precio_fijado": 460000,
+    "total_sin_iva": 46000000,
     "iva_pct": 10.5,
-    "total_con_iva": null,
+    "total_con_iva": 50830000,
     "fecha_pago": null,
     "pagado": false
   }
