@@ -1737,9 +1737,9 @@
     "cliente": "SIMBALINA AGROGANADERA S.A.",
     "fecha_fijacion": "2026-05-14",
     "tn_fijadas": 11,
-    "precio_fijado": 455000,
-    "total_sin_iva": 5005000,
-    "total_con_iva": 5530525,
+    "precio_fijado": 449310,
+    "total_sin_iva": 4942410,
+    "total_con_iva": 5461363.05,
     "fecha_pago": "2026-05-25",
     "iva_pct": 10.5,
     "id": "r147"
