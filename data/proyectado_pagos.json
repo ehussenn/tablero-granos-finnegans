@@ -1824,5 +1824,17 @@
     "iva_pct": null,
     "id": "r154",
     "pagado": true
+  },
+  {
+    "id": "n1779802545951",
+    "cliente": "",
+    "fecha_fijacion": "2026-05-26",
+    "tn_fijadas": null,
+    "precio_fijado": null,
+    "total_sin_iva": null,
+    "iva_pct": 10.5,
+    "total_con_iva": null,
+    "fecha_pago": null,
+    "pagado": false
   }
 ]
