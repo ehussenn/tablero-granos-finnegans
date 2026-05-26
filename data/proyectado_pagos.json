@@ -1834,7 +1834,7 @@
     "total_sin_iva": 42281330000,
     "iva_pct": 10.5,
     "total_con_iva": 46720869650,
-    "fecha_pago": null,
+    "fecha_pago": "2026-06-03",
     "pagado": false
   }
 ]
