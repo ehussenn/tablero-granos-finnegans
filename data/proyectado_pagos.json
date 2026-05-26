@@ -1836,5 +1836,17 @@
     "total_con_iva": 46720869650,
     "fecha_pago": "2026-06-03",
     "pagado": false
+  },
+  {
+    "id": "n1779803043697",
+    "cliente": "TAMBO NORTE",
+    "fecha_fijacion": "2026-05-26",
+    "tn_fijadas": 24388,
+    "precio_fijado": 455000,
+    "total_sin_iva": 11096540000,
+    "iva_pct": 10.5,
+    "total_con_iva": 12261676700,
+    "fecha_pago": null,
+    "pagado": false
   }
 ]
