@@ -291,6 +291,47 @@ HTML_TEMPLATE = r"""<!doctype html>
   .vista-toggle{transition:all .15s}
   .vista-toggle.active{background:#16a34a;border-color:#16a34a;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3)}
 
+  /* Posicion Granaria */
+  #pn-tabla thead th{background:#1e3a8a;color:#fff;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-right:1px solid rgba(255,255,255,.1);text-align:center}
+  #pn-tabla thead th.pn-prod{background:#0f172a;text-align:left;position:sticky;left:0;z-index:3;min-width:180px}
+  #pn-tabla thead th.grp{background:#7c2d12;border-bottom:2px solid #fed7aa}
+  #pn-tabla thead th.grp-prod{background:#15803d;border-bottom:2px solid #86efac}
+  #pn-tabla thead th.grp-compra{background:#1e3a8a;border-bottom:2px solid #93c5fd}
+  #pn-tabla thead th.grp-venta{background:#9a3412;border-bottom:2px solid #fdba74}
+  #pn-tabla thead th.grp-resultado{background:#581c87;border-bottom:2px solid #d8b4fe}
+  #pn-tabla tbody td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+  #pn-tabla tbody td.pn-prod-cell{text-align:left;font-weight:500;background:#fff;position:sticky;left:0;z-index:2;border-right:2px solid var(--line)}
+  #pn-tabla tbody tr.pn-grupo td{background:#fffbeb;font-weight:700;color:#92400e;border-top:2px solid #fcd34d;font-size:12px}
+  #pn-tabla tbody tr.pn-grupo td.pn-prod-cell{background:#fef3c7}
+  #pn-tabla tbody tr.pn-total td{background:#dbeafe;font-weight:700;color:#1e3a8a;border-top:2px solid var(--blue);font-size:12px}
+  #pn-tabla tbody tr.pn-total td.pn-prod-cell{background:#bfdbfe}
+  #pn-tabla tbody td input{width:100%;border:1px solid transparent;background:transparent;padding:2px 4px;text-align:right;font-size:11px;font-family:inherit;font-variant-numeric:tabular-nums;border-radius:3px;color:inherit}
+  #pn-tabla tbody td input:hover{border-color:var(--line);background:#fff}
+  #pn-tabla tbody td input:focus{border-color:var(--blue);background:#fff;outline:none;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+  #pn-tabla tbody td.editable{background:#fffbeb}
+  #pn-tabla tbody td.editable input{color:#92400e;font-weight:500}
+  #pn-tabla tbody td.calc{background:#f0fdf4;color:#15803d;font-weight:500}
+  #pn-tabla tbody td.pos-pos{background:#dcfce7;color:#15803d;font-weight:700}
+  #pn-tabla tbody td.pos-neg{background:#fee2e2;color:#991b1b;font-weight:700}
+  #pn-tabla tfoot td{background:#1e3a8a;color:#fff;font-weight:700;padding:6px 8px;font-size:12px;border-top:2px solid #0f172a;position:sticky;bottom:0}
+  #pn-tabla tfoot td.pn-prod-cell{background:#0f172a;position:sticky;left:0;z-index:1}
+
+  /* Cards de cultivo posicion */
+  .pn-card{padding:14px;border-radius:10px;border-top:4px solid #94a3b8;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .pn-card.soja{border-top-color:#16a34a}
+  .pn-card.maiz{border-top-color:#f59e0b}
+  .pn-card.trigo{border-top-color:#a16207}
+  .pn-card.girasol{border-top-color:#d97706}
+  .pn-card.sorgo{border-top-color:#7c2d12}
+  .pn-card .name{font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;letter-spacing:.3px}
+  .pn-card .pos-val{font-size:26px;font-weight:800;margin:4px 0}
+  .pn-card .pos-val.pos{color:var(--green)}
+  .pn-card .pos-val.neg{color:var(--red)}
+  .pn-card .of-de{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px}
+  .pn-card .bar-cobertura{margin-top:8px;height:6px;background:#e5e9f2;border-radius:4px;overflow:hidden}
+  .pn-card .bar-cobertura > div{height:100%;background:linear-gradient(90deg,#3b82f6,#1e3a8a)}
+  .pn-card .pct{text-align:right;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
+
   /* Pagos Granos (POSICION GENERAL) */
   .pg-alert{padding:12px 16px;border-radius:8px;margin-bottom:10px;border-left:4px solid;display:flex;justify-content:space-between;align-items:center}
   .pg-alert .lbl{font-weight:700;font-size:13px}
@@ -937,13 +978,48 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   </div>
 
-  <!-- ============ POSICION (placeholder) ============ -->
+  <!-- ============ POSICION GRANARIA ============ -->
   <div class="panel" data-panel="posicion">
-    <div class="placeholder">
-      <div class="ico">📊</div>
-      <h4>Pestaña Posición General</h4>
-      <div>Pendiente — Stock por Depósito y Composición de Saldos transversal.</div>
+
+    <!-- Header -->
+    <div class="section" style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border:none">
+      <h3 style="color:#fff;margin:0">📊 Posición Granaria · Agronasaja</h3>
+      <div style="font-size:12px;opacity:.85;margin-top:4px">Análisis comercial · Compra · Venta · Cobertura — datos en vivo + carga manual de Planta y Producción</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+        <span id="pn-campana-chip" style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Campaña actual</span>
+        <span style="background:rgba(34,197,94,.3);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Valores en Toneladas</span>
+      </div>
     </div>
+
+    <!-- Filtros -->
+    <div class="filterbar">
+      <div><label>CAMPAÑA</label><select id="pn-campana"><option value="">Todas</option></select></div>
+      <div><label>EMPRESA</label><select id="pn-empresa"><option value="">Todas</option></select></div>
+      <button class="clear" id="pn-clear">Limpiar</button>
+      <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pn-info"></span>
+    </div>
+
+    <!-- KPI cards por cultivo (auto) -->
+    <div class="section">
+      <h3>Posición por Cultivo <span class="badge" id="pn-cards-meta"></span></h3>
+      <div id="pn-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px"></div>
+    </div>
+
+    <!-- Detalle tabla -->
+    <div class="section">
+      <h3>Análisis de Posición Granaria · Detalle por Producto <span class="badge">click en celdas de Planta/Producción para editar</span></h3>
+      <div class="tbl-wrap" style="max-height:700px">
+        <table id="pn-tabla" style="font-size:11.5px">
+          <thead id="pn-thead"></thead>
+          <tbody id="pn-tbody"></tbody>
+          <tfoot id="pn-tfoot"></tfoot>
+        </table>
+      </div>
+      <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
+        💡 <strong>Cómo funciona</strong>: las columnas de <strong>Compra</strong> y <strong>Venta</strong> vienen automáticas de los contratos en Finnegans. Las columnas de <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) y <strong>Producción</strong> (Pend Cos, Cosechado, Campo Est) las cargás vos haciendo click en cada celda y se guardan en localStorage. El resto se calcula solo.
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -4478,6 +4554,346 @@ document.getElementById("pg-pat-save").addEventListener("click", async () => {
 });
 
 pgStartAutoStatusTicker();
+
+
+/* ============================================================
+   ============  POSICION GRANARIA  ============================
+   ============================================================ */
+
+const PN_KEY = "tablero-granos-posicion-granaria-v1";
+// PN_MANUAL guarda los inputs editables del usuario:
+//  { producto: { silo, bolsas, silobolsa, pendcos, cosechado, campoest }, ... }
+let PN_MANUAL = {};
+try { PN_MANUAL = JSON.parse(localStorage.getItem(PN_KEY) || "{}") || {}; } catch(e){ PN_MANUAL = {}; }
+function pnSave(){ localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL)); }
+
+// Mapeo de producto Finnegans a "familia" agrupadora
+function pnFamilia(prod){
+  if(!prod) return "Otros";
+  const p = prod.toLowerCase();
+  if(p.includes("soja")) return "SOJA";
+  if(p.includes("maíz") || p.includes("maiz")) return "MAÍZ";
+  if(p.includes("trigo")) return "TRIGO";
+  if(p.includes("girasol")) return "GIRASOL";
+  if(p.includes("sorgo")) return "SORGO";
+  if(p.includes("cebada")) return "CEBADA";
+  if(p.includes("avena")) return "AVENA";
+  if(p.includes("arveja")) return "ARVEJA";
+  if(p.includes("centeno")) return "CENTENO";
+  if(p.includes("camelina")) return "CAMELINA";
+  if(p.includes("rabanito")) return "RABANITO";
+  return "OTROS";
+}
+function pnSubtipo(prod){
+  if(!prod) return "Otro";
+  const p = prod.toLowerCase();
+  if(p.includes("sem") || p.includes("semilla")) return "Semilla";
+  if(p.includes("descarte")) return "Descarte";
+  if(p.includes("consumo")) return "Consumo";
+  return "Grano";
+}
+
+// Listas de productos únicos
+function pnProductosUnicos(){
+  const all = new Set();
+  (DATA_CP || []).forEach(c => { if(c.producto) all.add(c.producto); });
+  (DATA    || []).forEach(c => { if(c.producto) all.add(c.producto); });
+  return [...all].sort();
+}
+
+function pnInitFiltros(){
+  // Campañas y empresas únicas combinadas
+  const camps = new Set(), emps = new Set();
+  (DATA_CP || []).forEach(c => { if(c.campana) camps.add(c.campana); if(c.empresa) emps.add(c.empresa); });
+  (DATA    || []).forEach(c => { if(c.campana) camps.add(c.campana); if(c.empresa) emps.add(c.empresa); });
+  const fillSel = (id, vals, def) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = `<option value="">${def}</option>` +
+      [...vals].sort().map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  };
+  fillSel("pn-campana", camps, "Todas");
+  fillSel("pn-empresa", emps,  "Todas");
+  // Default: campaña más reciente (la más alta alfabéticamente)
+  const campArr = [...camps].sort();
+  if(campArr.length){
+    const last = campArr[campArr.length - 1];
+    document.getElementById("pn-campana").value = last;
+    document.getElementById("pn-campana-chip").textContent = last;
+  }
+
+  ["pn-campana","pn-empresa"].forEach(id => document.getElementById(id).addEventListener("change", () => {
+    const c = document.getElementById("pn-campana").value;
+    document.getElementById("pn-campana-chip").textContent = c || "Todas las campañas";
+    pnRender();
+  }));
+  document.getElementById("pn-clear").addEventListener("click", () => {
+    document.getElementById("pn-campana").value = "";
+    document.getElementById("pn-empresa").value = "";
+    document.getElementById("pn-campana-chip").textContent = "Todas las campañas";
+    pnRender();
+  });
+}
+
+// Estructura columnas: grupos y subcolumnas
+const PN_COLS = [
+  {grp:"PLANTA",     cls:"grp",        cols:[
+    {k:"plantaTot",    lbl:"Total",      calc:true},
+    {k:"silo",         lbl:"Silo",       edit:true, manK:"silo"},
+    {k:"bolsas",       lbl:"Bolsas",     edit:true, manK:"bolsas"},
+    {k:"silobolsa",    lbl:"Silo Bolsa", edit:true, manK:"silobolsa"},
+  ]},
+  {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
+    {k:"prodTot",      lbl:"Total",      calc:true},
+    {k:"pendCos",      lbl:"Pend Cos",   edit:true, manK:"pendcos"},
+    {k:"cosechado",    lbl:"Cosechado",  edit:true, manK:"cosechado"},
+    {k:"campoEst",     lbl:"Campo Est",  edit:true, manK:"campoest"},
+  ]},
+  {grp:"P+C",        cls:"grp-compra", cols:[
+    {k:"pcTot",        lbl:"Total P+C",  calc:true},
+  ]},
+  {grp:"COMPRA",     cls:"grp-compra", cols:[
+    {k:"compraTot",    lbl:"Tot Compra", calc:true},
+    {k:"compraPend",   lbl:"Pend Ing",   calc:true},
+    {k:"compraEntr",   lbl:"Entregado",  calc:true},
+  ]},
+  {grp:"OFERTA",     cls:"grp-prod",   cols:[
+    {k:"ofertaTot",    lbl:"Oferta Tot", calc:true},
+  ]},
+  {grp:"VENTA",      cls:"grp-venta",  cols:[
+    {k:"vtaSem",       lbl:"Vta Sem",    calc:true},
+    {k:"ventaCtos",    lbl:"Ctos P.E",   calc:true},
+    {k:"ventaEntr",    lbl:"Ctos Entr",  calc:true},
+  ]},
+  {grp:"DEMANDA",    cls:"grp-venta",  cols:[
+    {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
+  ]},
+  {grp:"RESULTADO",  cls:"grp-resultado", cols:[
+    {k:"posPend",      lbl:"Pos Pend",   calc:true},
+    {k:"posicion",     lbl:"Posición",   calc:true, hl:true},
+  ]},
+];
+
+function pnGetMan(prod, k){
+  const o = PN_MANUAL[prod] || {};
+  return Number(o[k]) || 0;
+}
+function pnSetMan(prod, k, v){
+  if(!PN_MANUAL[prod]) PN_MANUAL[prod] = {};
+  if(v === null || v === "" || isNaN(v)){
+    delete PN_MANUAL[prod][k];
+    if(Object.keys(PN_MANUAL[prod]).length === 0) delete PN_MANUAL[prod];
+  } else {
+    PN_MANUAL[prod][k] = Number(v);
+  }
+  pnSave();
+}
+
+function pnCalcRow(producto, opsCompra, opsVenta){
+  // PLANTA (manual)
+  const silo       = pnGetMan(producto, "silo");
+  const bolsas     = pnGetMan(producto, "bolsas");
+  const silobolsa  = pnGetMan(producto, "silobolsa");
+  const plantaTot  = silo + bolsas + silobolsa;
+
+  // PRODUCCIÓN (manual)
+  const pendCos    = pnGetMan(producto, "pendcos");
+  const cosechado  = pnGetMan(producto, "cosechado");
+  const campoEst   = pnGetMan(producto, "campoest");
+  const prodTot    = pendCos + cosechado + campoEst;
+
+  // COMPRA (auto desde contratos de compra)
+  let compraTot = 0, compraEntr = 0;
+  opsCompra.forEach(c => {
+    compraTot  += Number(c.cantidadmax) || 0;
+    compraEntr += Number(c.cantidadentregada) || 0;
+  });
+  const compraPend = compraTot - compraEntr;
+
+  // P+C
+  const pcTot = prodTot + compraTot;
+
+  // OFERTA = PLANTA + PRODUCCION + COMPRA (lo total disponible)
+  const ofertaTot = plantaTot + prodTot + compraTot;
+
+  // VENTA (auto desde contratos de venta)
+  let ventaCtos = 0, ventaEntr = 0, vtaSem = 0;
+  opsVenta.forEach(c => {
+    const cant = Number(c.cantidadmax) || 0;
+    const ent  = Number(c.cantidadentregada) || 0;
+    if((c.producto || "").toLowerCase().includes("sem")) {
+      vtaSem += cant;
+    } else {
+      ventaCtos += cant;
+      ventaEntr += ent;
+    }
+  });
+
+  // DEMANDA = todo lo vendido (Sem + Ctos)
+  const demandaTot = vtaSem + ventaCtos;
+
+  // RESULTADO
+  const posPend = compraPend - (ventaCtos - ventaEntr);   // pendiente neto
+  const posicion = ofertaTot - demandaTot;
+
+  return {
+    silo, bolsas, silobolsa, plantaTot,
+    pendCos, cosechado, campoEst, prodTot,
+    pcTot,
+    compraTot, compraPend, compraEntr,
+    ofertaTot,
+    vtaSem, ventaCtos, ventaEntr,
+    demandaTot,
+    posPend, posicion,
+  };
+}
+
+function pnFiltrarOps(){
+  const c = document.getElementById("pn-campana").value;
+  const e = document.getElementById("pn-empresa").value;
+  const filtra = r => {
+    if(c && r.campana !== c) return false;
+    if(e && r.empresa !== e) return false;
+    return true;
+  };
+  return {
+    compras: (DATA_CP || []).filter(filtra),
+    ventas:  (DATA    || []).filter(filtra),
+  };
+}
+
+function pnRender(){
+  const {compras, ventas} = pnFiltrarOps();
+  document.getElementById("pn-info").textContent =
+    `${compras.length} contratos compra · ${ventas.length} contratos venta`;
+
+  // Productos únicos en los filtros aplicados
+  const prods = new Set();
+  compras.forEach(c => { if(c.producto) prods.add(c.producto); });
+  ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
+  // También incluir productos con datos manuales cargados
+  Object.keys(PN_MANUAL).forEach(p => prods.add(p));
+  const prodList = [...prods].sort();
+
+  // Agrupar por familia
+  const byFamilia = {};
+  prodList.forEach(p => {
+    const f = pnFamilia(p);
+    if(!byFamilia[f]) byFamilia[f] = [];
+    byFamilia[f].push(p);
+  });
+  const familias = Object.keys(byFamilia).sort((a,b) => {
+    const orden = ["SOJA","MAÍZ","TRIGO","GIRASOL","SORGO","CEBADA","AVENA","ARVEJA","CENTENO","CAMELINA","RABANITO","OTROS"];
+    return orden.indexOf(a) - orden.indexOf(b);
+  });
+
+  // Calcular por producto
+  const dataPorProd = {};
+  prodList.forEach(p => {
+    const cp = compras.filter(c => c.producto === p);
+    const vp = ventas.filter(c  => c.producto === p);
+    dataPorProd[p] = pnCalcRow(p, cp, vp);
+  });
+
+  // Render Header tabla con grupos
+  const thead = document.getElementById("pn-thead");
+  let h1 = "<tr><th class='pn-prod' rowspan='2'>Producto</th>";
+  PN_COLS.forEach(g => h1 += `<th colspan="${g.cols.length}" class="${g.cls}">${g.grp}</th>`);
+  h1 += "</tr><tr>";
+  PN_COLS.forEach(g => g.cols.forEach(c => h1 += `<th class="${g.cls}">${c.lbl}</th>`));
+  h1 += "</tr>";
+  thead.innerHTML = h1;
+
+  // Render Body - agrupado por familia
+  let body = "";
+  const totalsFam = {};
+  const grandTotal = {};
+  PN_COLS.forEach(g => g.cols.forEach(c => grandTotal[c.k] = 0));
+
+  familias.forEach(fam => {
+    const productos = byFamilia[fam];
+    // calcular total familia
+    const totFam = {};
+    PN_COLS.forEach(g => g.cols.forEach(c => totFam[c.k] = 0));
+
+    productos.forEach(prod => {
+      const r = dataPorProd[prod];
+      let row = `<tr><td class="pn-prod-cell" title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
+      PN_COLS.forEach(g => g.cols.forEach(c => {
+        const v = r[c.k] || 0;
+        totFam[c.k] += v;
+        grandTotal[c.k] += v;
+        if(c.edit){
+          row += `<td class="editable"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
+        } else if(c.hl){
+          const cls = v >= 0 ? "pos-pos" : "pos-neg";
+          row += `<td class="${cls}">${fmt.num(v)}</td>`;
+        } else {
+          row += `<td class="calc">${v ? fmt.num(v) : '—'}</td>`;
+        }
+      }));
+      row += "</tr>";
+      body += row;
+    });
+
+    // Fila TOTAL familia
+    let rowFam = `<tr class="pn-grupo"><td class="pn-prod-cell">▸ TOTAL ${fam}</td>`;
+    PN_COLS.forEach(g => g.cols.forEach(c => {
+      const v = totFam[c.k];
+      const cls = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
+      rowFam += `<td class="${cls}">${v ? fmt.num(v) : '—'}</td>`;
+    }));
+    rowFam += "</tr>";
+    body += rowFam;
+    totalsFam[fam] = totFam;
+  });
+
+  document.getElementById("pn-tbody").innerHTML = body || '<tr><td colspan="99" style="padding:30px;text-align:center;color:var(--muted)">Sin productos para los filtros aplicados</td></tr>';
+
+  // Footer total general
+  let foot = `<tr class="pn-total"><td class="pn-prod-cell">TOTAL GENERAL</td>`;
+  PN_COLS.forEach(g => g.cols.forEach(c => {
+    foot += `<td>${grandTotal[c.k] ? fmt.num(grandTotal[c.k]) : '—'}</td>`;
+  }));
+  foot += "</tr>";
+  document.getElementById("pn-tfoot").innerHTML = foot;
+
+  // Listeners inputs editables
+  document.querySelectorAll("#pn-tbody input").forEach(inp => {
+    inp.addEventListener("blur", () => {
+      const prod = inp.dataset.prod;
+      const k = inp.dataset.k;
+      const raw = (inp.value || "").trim().replace(/\./g,"").replace(",",".");
+      const v = parseFloat(raw);
+      pnSetMan(prod, k, isNaN(v) ? null : v);
+      pnRender();
+    });
+    inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
+  });
+
+  // Cards arriba (por familia)
+  pnRenderCards(totalsFam, familias);
+}
+
+function pnRenderCards(totalsFam, familias){
+  const cls = {SOJA:"soja", "MAÍZ":"maiz", TRIGO:"trigo", GIRASOL:"girasol", SORGO:"sorgo"};
+  const html = familias.map(fam => {
+    const t = totalsFam[fam];
+    const posicion = t.posicion;
+    const cobertura = t.ofertaTot > 0 ? t.demandaTot / t.ofertaTot : 0;
+    return `<div class="pn-card ${cls[fam] || ''}">
+      <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Posición</span></div>
+      <div class="pos-val ${posicion>=0?'pos':'neg'}">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
+      <div class="of-de"><span>Of ${fmt.num(t.ofertaTot)}</span><span>De ${fmt.num(t.demandaTot)}</span></div>
+      <div class="bar-cobertura"><div style="width:${Math.min(100, cobertura*100)}%"></div></div>
+      <div class="pct">${fmt.pct(cobertura)} cobertura</div>
+    </div>`;
+  }).join("");
+  document.getElementById("pn-cards").innerHTML = html;
+  document.getElementById("pn-cards-meta").textContent = `${familias.length} cultivos`;
+}
+
+pnInitFiltros();
+pnRender();
 
 
 </script>
