@@ -1848,5 +1848,17 @@
     "total_con_iva": 11992189300,
     "fecha_pago": "2026-06-03",
     "pagado": false
+  },
+  {
+    "id": "n1779805961348",
+    "cliente": "PAPA Y CHICOS SRL",
+    "fecha_fijacion": "2026-05-26",
+    "tn_fijadas": null,
+    "precio_fijado": null,
+    "total_sin_iva": null,
+    "iva_pct": 10.5,
+    "total_con_iva": null,
+    "fecha_pago": null,
+    "pagado": false
   }
 ]
