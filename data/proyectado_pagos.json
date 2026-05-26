@@ -1830,10 +1830,10 @@
     "cliente": "TAMBO NORTE",
     "fecha_fijacion": "2026-05-26",
     "tn_fijadas": 92926,
-    "precio_fijado": 455000,
-    "total_sin_iva": 42281330000,
+    "precio_fijado": 445000,
+    "total_sin_iva": 41352070000,
     "iva_pct": 10.5,
-    "total_con_iva": 46720869650,
+    "total_con_iva": 45694037350,
     "fecha_pago": "2026-06-03",
     "pagado": false
   },
@@ -1842,10 +1842,10 @@
     "cliente": "TAMBO NORTE",
     "fecha_fijacion": "2026-05-26",
     "tn_fijadas": 24388,
-    "precio_fijado": 455000,
-    "total_sin_iva": 11096540000,
+    "precio_fijado": 445000,
+    "total_sin_iva": 10852660000,
     "iva_pct": 10.5,
-    "total_con_iva": 12261676700,
+    "total_con_iva": 11992189300,
     "fecha_pago": "2026-06-03",
     "pagado": false
   }
