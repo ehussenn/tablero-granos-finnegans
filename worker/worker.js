@@ -14,47 +14,45 @@
  *  - TABLERO_URL: la URL del tablero en GitHub Pages (no la difundas)
  */
 
-// ====== CONFIGURACIÓN (editá esto) ======
-const USUARIOS = {
-  "ehussen@agronasaja.com.ar": "2026",   // <-- cambiá el PIN por uno tuyo
-};
-
-// Cadena secreta para firmar las cookies. CAMBIALA por una random larga.
-// Podés generar una en https://www.random.org/strings/ o tirar caracteres al azar.
-const SESSION_SECRET = "CAMBIA-ESTO-por-una-cadena-larga-aleatoria-xK29fJ3mPq8z";
+// ====== CONFIGURACIÓN ======
+// Los valores sensibles (USUARIOS y SESSION_SECRET) se inyectan como
+// SECRETS de Cloudflare (env), NO se guardan en este archivo público.
+// Fallbacks de respaldo por si no se setean (NO usar en producción):
+const USUARIOS_FALLBACK = {};
+const SESSION_SECRET_FALLBACK = "fallback-no-usar";
 
 // URL del tablero (GitHub Pages). El Worker la trae internamente; no la difundas.
 const TABLERO_URL = "https://ehussenn.github.io/tablero-granos-finnegans/";
 
 // Duración de la sesión (horas)
 const SESSION_HOURS = 8;
-// =========================================
+// ============================
 
 const COOKIE_NAME = "agronasaja_sess";
 
 // ---- helpers de firma (HMAC-SHA256 via Web Crypto) ----
-async function hmac(data) {
+async function hmac(data, secret) {
   const key = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(SESSION_SECRET),
+    "raw", new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
   return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=+$/, "");
 }
 
-async function crearToken(email) {
+async function crearToken(email, secret) {
   const exp = Date.now() + SESSION_HOURS * 3600 * 1000;
   const payload = `${email}|${exp}`;
-  const firma = await hmac(payload);
+  const firma = await hmac(payload, secret);
   return btoa(payload).replace(/=+$/, "") + "." + firma;
 }
 
-async function validarToken(token) {
+async function validarToken(token, secret) {
   if (!token || !token.includes(".")) return null;
   const [payloadB64, firma] = token.split(".");
   let payload;
   try { payload = atob(payloadB64); } catch { return null; }
-  const firmaEsperada = await hmac(payload);
+  const firmaEsperada = await hmac(payload, secret);
   if (firma !== firmaEsperada) return null;        // firma inválida
   const [email, expStr] = payload.split("|");
   if (Date.now() > Number(expStr)) return null;    // expiró
@@ -126,9 +124,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // permitir override de config por variables de entorno (opcional)
-    // (si definís estos secrets en Cloudflare, pisan las constantes)
-    const usuarios = env.USUARIOS_JSON ? JSON.parse(env.USUARIOS_JSON) : USUARIOS;
+    // Config sensible desde SECRETS de Cloudflare (env)
+    const usuarios = env.USUARIOS_JSON ? JSON.parse(env.USUARIOS_JSON) : USUARIOS_FALLBACK;
+    const secret = env.SESSION_SECRET || SESSION_SECRET_FALLBACK;
 
     // ---- POST /login ----
     if (url.pathname === "/login" && request.method === "POST") {
@@ -137,7 +135,7 @@ export default {
       const pin = (form.get("pin") || "").trim();
       const pinCorrecto = usuarios[email];
       if (pinCorrecto && pin === String(pinCorrecto)) {
-        const token = await crearToken(email);
+        const token = await crearToken(email, secret);
         return new Response(null, {
           status: 302,
           headers: {
@@ -164,7 +162,7 @@ export default {
 
     // ---- Verificar sesión ----
     const token = getCookie(request, COOKIE_NAME);
-    const email = await validarToken(token);
+    const email = await validarToken(token, secret);
     if (!email) {
       return new Response(loginHTML(null), {
         status: 200, headers: { "Content-Type": "text/html; charset=utf-8" },
