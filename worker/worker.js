@@ -74,37 +74,36 @@ function loginHTML(error) {
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     min-height:100vh;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(rgba(10,20,12,.78),rgba(10,20,12,.90)),
+    background:linear-gradient(rgba(8,15,30,.78),rgba(8,15,30,.92)),
       url('https://images.unsplash.com/photo-1694105073180-9e7dc1a83fbe?q=80&w=2000') center/cover fixed;
     color:#fff}
   .wrap{text-align:center;max-width:420px;width:100%;padding:24px}
-  .logo{width:78px;height:78px;border-radius:18px;background:rgba(0,0,0,.4);
+  .logo{width:78px;height:78px;border-radius:18px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);
     display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
-    border:1px solid rgba(255,255,255,.15);font-size:34px}
+    border:1px solid rgba(255,255,255,.18);box-shadow:0 6px 18px rgba(30,58,138,.4)}
   h1{font-size:34px;letter-spacing:3px;font-weight:800}
   .sub{font-size:12px;letter-spacing:5px;opacity:.7;margin-top:2px}
   .lema{font-style:italic;opacity:.7;font-size:13px;margin:14px 0 26px}
-  .card{background:rgba(20,28,22,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);
+  .card{background:rgba(15,23,42,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);
     border-radius:14px;padding:24px;text-align:left}
   .card h2{font-size:20px;margin-bottom:2px}
   .card .acc{font-size:12px;opacity:.65;margin-bottom:18px}
   label{font-size:11px;letter-spacing:1px;opacity:.75;text-transform:uppercase;display:block;margin:14px 0 5px}
   input{width:100%;padding:12px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.18);
     background:rgba(0,0,0,.35);color:#fff;font-size:15px}
-  input:focus{outline:none;border-color:#84cc16;box-shadow:0 0 0 3px rgba(132,204,22,.25)}
+  input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.3)}
   .err{background:rgba(220,38,38,.25);border:1px solid rgba(248,113,113,.5);color:#fecaca;
     padding:9px 12px;border-radius:8px;font-size:13px;margin-top:14px}
   button{width:100%;margin-top:18px;padding:13px;border:none;border-radius:10px;cursor:pointer;
-    background:linear-gradient(90deg,#65a30d,#84cc16);color:#fff;font-size:15px;font-weight:700;
-    box-shadow:0 4px 16px rgba(132,204,22,.35)}
+    background:linear-gradient(90deg,#1e3a8a,#3b82f6);color:#fff;font-size:15px;font-weight:700;
+    box-shadow:0 4px 16px rgba(30,58,138,.45)}
   button:hover{filter:brightness(1.05)}
   .foot{margin-top:22px;font-size:11px;opacity:.5}
 </style></head><body>
   <div class="wrap">
-    <div class="logo">🌱</div>
+    <div class="logo"><svg width="46" height="46" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Grano de soja"><defs><radialGradient id="soy" cx="38%" cy="34%" r="72%"><stop offset="0%" stop-color="#fbf4d8"/><stop offset="55%" stop-color="#ead9a0"/><stop offset="100%" stop-color="#cbb072"/></radialGradient></defs><ellipse cx="50" cy="50" rx="33" ry="38" fill="url(#soy)" transform="rotate(-16 50 50)"/><ellipse cx="33" cy="52" rx="3.4" ry="9" fill="#7a5a2c" transform="rotate(-16 50 50)"/></svg></div>
     <h1>AGRONASAJA</h1>
     <div class="sub">PORTAL DE GRANOS</div>
-    <div class="lema">"Buscando el mejor rendimiento para su campo."</div>
     <form class="card" method="POST" action="/login">
       <h2>Iniciar sesión</h2>
       <div class="acc">Acceso exclusivo personal autorizado</div>
