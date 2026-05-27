@@ -1742,7 +1742,8 @@
     "total_con_iva": 5461363.05,
     "fecha_pago": "2026-05-25",
     "iva_pct": 10.5,
-    "id": "r147"
+    "id": "r147",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1753,7 +1754,8 @@
     "total_con_iva": 98159360,
     "fecha_pago": "2026-05-27",
     "iva_pct": 10.5,
-    "id": "r148"
+    "id": "r148",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1764,7 +1766,8 @@
     "total_con_iva": 45916149.5325,
     "fecha_pago": "2026-05-27",
     "iva_pct": 10.5,
-    "id": "r149"
+    "id": "r149",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -1775,7 +1778,8 @@
     "total_con_iva": 57423225.6,
     "fecha_pago": "2026-05-27",
     "iva_pct": 10.5,
-    "id": "r150"
+    "id": "r150",
+    "pagado": true
   },
   {
     "cliente": "NUCLEO NORTE",
