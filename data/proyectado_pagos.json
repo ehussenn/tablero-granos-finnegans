@@ -344,7 +344,8 @@
     "total_con_iva": 110455800,
     "fecha_pago": null,
     "iva_pct": 10.5,
-    "id": "r30"
+    "id": "r30",
+    "pagado": true
   },
   {
     "cliente": "CRIVELLO CARLOS",
@@ -763,7 +764,8 @@
     "total_con_iva": 1591191.14,
     "fecha_pago": null,
     "iva_pct": 21,
-    "id": "r65"
+    "id": "r65",
+    "pagado": true
   },
   {
     "cliente": "MATILDE Y ALICIA CAMOIRANO",
@@ -834,7 +836,8 @@
     "total_con_iva": 17462243.9264,
     "fecha_pago": null,
     "iva_pct": 10.5,
-    "id": "r71"
+    "id": "r71",
+    "pagado": true
   },
   {
     "cliente": "TAMBO NORTE",
@@ -857,7 +860,8 @@
     "total_con_iva": 29272304.607,
     "fecha_pago": "2026-12-05",
     "iva_pct": 10.5,
-    "id": "r73"
+    "id": "r73",
+    "pagado": true
   },
   {
     "cliente": "OroVERDE Sa",
@@ -868,7 +872,8 @@
     "total_con_iva": null,
     "fecha_pago": null,
     "iva_pct": null,
-    "id": "r74"
+    "id": "r74",
+    "pagado": true
   },
   {
     "cliente": "REBOLLO SANTIAGO ALBERTO",
@@ -1575,7 +1580,8 @@
     "total_con_iva": 231395804.64,
     "fecha_pago": null,
     "iva_pct": 10.5,
-    "id": "r133"
+    "id": "r133",
+    "pagado": true
   },
   {
     "cliente": "SAUTIER",
