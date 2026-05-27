@@ -133,6 +133,40 @@ HTML_TEMPLATE = r"""<!doctype html>
   .subtab:hover{color:var(--blue)}
   .subtab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
 
+  /* ===== Layout con menú lateral (sidebar) + topbar ===== */
+  .tabs{display:none !important}      /* reemplazadas por el sidebar */
+  .subtabs{display:none !important}   /* idem (siguen funcionando por JS) */
+  .app-shell{display:flex;min-height:100vh}
+  .sidebar{width:248px;flex:0 0 248px;background:#0e1a13;color:#aab8b0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1c2a22;z-index:30}
+  .sidebar .brand{display:flex;align-items:center;gap:10px;padding:18px 18px 4px}
+  .sidebar .brand-logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#65a30d,#84cc16);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px}
+  .sidebar .brand-name{font-weight:800;letter-spacing:1px;color:#fff;font-size:15px;line-height:1.1}
+  .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#7d8c83;text-transform:uppercase;margin-top:2px}
+  .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#84cc16;text-transform:uppercase;font-weight:700;border-top:1px solid #1c2a22;padding-top:12px}
+  .nav{padding:4px 10px 28px}
+  .nav-group{font-size:10px;letter-spacing:1.5px;color:#5e6e64;text-transform:uppercase;font-weight:700;margin:16px 10px 6px}
+  .nav-item{display:block;padding:9px 12px;border-radius:8px;color:#bccabf;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
+  .nav-item:hover{background:#16241b;color:#fff}
+  .nav-item.active{background:#16241b;color:#a3e635;border-left-color:#84cc16;font-weight:600}
+  .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
+  .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:11px 24px;display:flex;justify-content:space-between;align-items:center;z-index:25;gap:16px}
+  .topbar-title{font-size:18px;font-weight:700;color:var(--ink)}
+  .topbar-right{display:flex;align-items:center;gap:14px}
+  .topbar-meta{font-size:11px;color:var(--muted);text-align:right;line-height:1.35}
+  .topbar-meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:5px;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+  .admin-pill{background:#ecfccb;color:#3f6212;border:1px solid #d9f99d;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .admin-pill:hover{background:#d9f99d}
+  .logout-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);color:var(--ink);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .logout-btn:hover{border-color:#dc2626;color:#dc2626}
+  .content{padding:20px 24px;max-width:1560px;width:100%}
+  .menu-toggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink);line-height:1}
+  @media (max-width:880px){
+    .sidebar{transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.4)}
+    .sidebar.open{transform:none}
+    .main{margin-left:0}
+    .menu-toggle{display:block}
+  }
+
   /* tab panels */
   .panel{display:none}
   .panel.active{display:block}
@@ -407,18 +441,45 @@ HTML_TEMPLATE = r"""<!doctype html>
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app-shell">
 
-  <div class="hero">
-    <div>
-      <h1>Granos · Agronasaja</h1>
-      <div class="sub">Datawarehouse finnegansbi · Resumen comercial de compra, venta y posición</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🌱</div>
+      <div>
+        <div class="brand-name">AGRONASAJA</div>
+        <div class="brand-sub">Portal de Granos</div>
+      </div>
     </div>
-    <div class="meta">
-      <div><span class="dot"></span>Última actualización: __BUILD_TIME__</div>
-      <div>Fuente: API Finnegans (api.finneg.com) en vivo</div>
-    </div>
-  </div>
+    <div class="campana">Resumen comercial</div>
+    <nav class="nav">
+      <div class="nav-group">Compra</div>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-posicion" data-title="Compra · Posición General">Posición General</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
+      <div class="nav-group">Venta</div>
+      <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
+      <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
+      <div class="nav-group">Posición General</div>
+      <a class="nav-item" data-go-tab="posicion" data-go-sub="" data-title="Posición Granaria">Posición Granaria</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menú">☰</button>
+        <div class="topbar-title" id="topbar-title">Venta · Posición General</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__<br>Fuente: API Finnegans en vivo</div>
+        <button class="admin-pill" id="btn-admin">Administración</button>
+        <a class="logout-btn" href="/logout">⤴ Salir</a>
+      </div>
+    </header>
+    <div class="content">
 
   <div class="tabs">
     <div class="tab" data-tab="compra">COMPRA <span class="count" id="cnt-compra">0</span></div>
@@ -1022,7 +1083,9 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   </div>
 
-</div>
+    </div><!-- /.content -->
+  </div><!-- /.main -->
+</div><!-- /.app-shell -->
 
 <script>
 /* ============== DATOS EMBEBIDOS ============== */
@@ -1084,6 +1147,45 @@ document.querySelectorAll('.subtab').forEach(st => {
     parent.querySelector(`.subpanel[data-sub-panel="${st.dataset.sub}"]`).classList.add('active');
   });
 });
+
+/* ============== MENÚ LATERAL (sidebar) ============== */
+/* Cada item dispara los .tab/.subtab existentes (que ya están ocultos por CSS),
+   reutilizando toda la lógica de switching sin tocarla. */
+const NAV_ITEMS = document.querySelectorAll('.nav-item');
+NAV_ITEMS.forEach(item => {
+  item.addEventListener('click', () => {
+    const tab = item.dataset.goTab, sub = item.dataset.goSub;
+    const tabEl = document.querySelector(`.tab[data-tab="${tab}"]`);
+    if(tabEl) tabEl.click();
+    if(sub){
+      const stEl = document.querySelector(`.panel[data-panel="${tab}"] .subtab[data-sub="${sub}"]`);
+      if(stEl) stEl.click();
+    }
+    NAV_ITEMS.forEach(x => x.classList.remove('active'));
+    item.classList.add('active');
+    const t = document.getElementById('topbar-title');
+    if(t) t.textContent = item.dataset.title || item.textContent.trim();
+    // cerrar el sidebar en mobile
+    document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+/* ============== ADMINISTRACIÓN (abre config de editor/PAT) ============== */
+document.getElementById('btn-admin').addEventListener('click', () => {
+  const m = document.getElementById('pg-autobackup-modal');
+  if(!m) return;
+  // El modal vive dentro del subpanel Proyectado (oculto si estás en otra sección);
+  // lo movemos al body para que se vea desde cualquier pantalla.
+  if(m.parentElement !== document.body) document.body.appendChild(m);
+  m.style.display = 'flex';
+  const pat = localStorage.getItem('tablero-granos-github-pat-v1') || '';
+  const inp = document.getElementById('pg-pat-input'); if(inp) inp.value = pat;
+  const stt = document.getElementById('pg-pat-status'); if(stt) stt.innerHTML = pat ? '✅ Auto-backup activo' : '';
+});
+
+/* ============== Toggle del menú en mobile ============== */
+const _mt = document.getElementById('menu-toggle');
+if(_mt) _mt.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
 
 /* ============== TAB COUNTS ============== */
 document.getElementById('cnt-compra').textContent  = (PAYLOAD.counts.compra||0).toLocaleString('es-AR');
