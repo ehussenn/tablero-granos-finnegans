@@ -137,25 +137,25 @@ HTML_TEMPLATE = r"""<!doctype html>
   .tabs{display:none !important}      /* reemplazadas por el sidebar */
   .subtabs{display:none !important}   /* idem (siguen funcionando por JS) */
   .app-shell{display:flex;min-height:100vh}
-  .sidebar{width:248px;flex:0 0 248px;background:#0e1a13;color:#aab8b0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1c2a22;z-index:30}
+  .sidebar{width:248px;flex:0 0 248px;background:#14264a;color:#aebbd2;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid #24375f;z-index:30}
   .sidebar .brand{display:flex;align-items:center;gap:10px;padding:18px 18px 4px}
-  .sidebar .brand-logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#65a30d,#84cc16);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px}
+  .sidebar .brand-logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px}
   .sidebar .brand-name{font-weight:800;letter-spacing:1px;color:#fff;font-size:15px;line-height:1.1}
-  .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#7d8c83;text-transform:uppercase;margin-top:2px}
-  .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#84cc16;text-transform:uppercase;font-weight:700;border-top:1px solid #1c2a22;padding-top:12px}
+  .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#8ea3c4;text-transform:uppercase;margin-top:2px}
+  .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#60a5fa;text-transform:uppercase;font-weight:700;border-top:1px solid #24375f;padding-top:12px}
   .nav{padding:4px 10px 28px}
-  .nav-group{font-size:10px;letter-spacing:1.5px;color:#5e6e64;text-transform:uppercase;font-weight:700;margin:16px 10px 6px}
-  .nav-item{display:block;padding:9px 12px;border-radius:8px;color:#bccabf;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
-  .nav-item:hover{background:#16241b;color:#fff}
-  .nav-item.active{background:#16241b;color:#a3e635;border-left-color:#84cc16;font-weight:600}
+  .nav-group{font-size:10px;letter-spacing:1.5px;color:#6b80a6;text-transform:uppercase;font-weight:700;margin:16px 10px 6px}
+  .nav-item{display:block;padding:9px 12px;border-radius:8px;color:#c2cee3;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
+  .nav-item:hover{background:#1c2f54;color:#fff}
+  .nav-item.active{background:#1c2f54;color:#bfdbfe;border-left-color:#3b82f6;font-weight:600}
   .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
   .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:11px 24px;display:flex;justify-content:space-between;align-items:center;z-index:25;gap:16px}
   .topbar-title{font-size:18px;font-weight:700;color:var(--ink)}
   .topbar-right{display:flex;align-items:center;gap:14px}
   .topbar-meta{font-size:11px;color:var(--muted);text-align:right;line-height:1.35}
   .topbar-meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:5px;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
-  .admin-pill{background:#ecfccb;color:#3f6212;border:1px solid #d9f99d;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-  .admin-pill:hover{background:#d9f99d}
+  .admin-pill{background:#dbeafe;color:#1e3a8a;border:1px solid #bfdbfe;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .admin-pill:hover{background:#bfdbfe}
   .logout-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);color:var(--ink);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
   .logout-btn:hover{border-color:#dc2626;color:#dc2626}
   .content{padding:20px 24px;max-width:1560px;width:100%}
