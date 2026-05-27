@@ -7,8 +7,18 @@ venv/
 
 # Playwright / scraping
 scripts/scraper/.profile/
+scripts/scraper/.cf_profile/
 scripts/scraper/out/
 *.auth.json
+
+# Secretos / artefactos de despliegue Cloudflare (NUNCA subir: repo publico)
+scripts/.cf_token
+scripts/.cf_globalkey
+scripts/.cf_email
+scripts/.cf_otp
+scripts/.session_secret
+# Scripts helper de Cloudflare: tienen password/PIN hardcodeados
+scripts/cf_*.py
 
 # Editores
 .vscode/

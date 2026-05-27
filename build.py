@@ -99,7 +99,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tablero Granos — Agronasaja</title>
+<title>Granos — Agronasaja</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{
@@ -411,7 +411,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   <div class="hero">
     <div>
-      <h1>Tablero Granos · Agronasaja</h1>
+      <h1>Granos · Agronasaja</h1>
       <div class="sub">Datawarehouse finnegansbi · Resumen comercial de compra, venta y posición</div>
     </div>
     <div class="meta">
@@ -2765,7 +2765,7 @@ try {
   if(saved) CJ_PX = saved;
 } catch(e) {}
 
-function cjResetPrecios(fromBCR=true){
+function cjResetPrecios(fromBCR=true, doRender=true){
   if(fromBCR){
     const g = BCR.granos || {};
     CJ_PX = {
@@ -2779,7 +2779,10 @@ function cjResetPrecios(fromBCR=true){
     localStorage.setItem(CJ_PX_KEY, JSON.stringify(CJ_PX));
   }
   cjUpdateInputs();
-  cjRender();
+  // El render real ocurre en cjApply() al final del init (línea ~3193).
+  // Evitar renderizar acá porque cjFiltered/CJ_TABLE_COLS aún no están
+  // inicializados si esta función corre temprano (visitante sin localStorage).
+  if(doRender) cjRender();
 }
 function cjUpdateInputs(){
   ['soja','maiz','trigo','girasol','sorgo'].forEach(g=>{
@@ -2799,7 +2802,8 @@ function cjReadInputs(){
 }
 
 // Inicial: si no hay precios guardados, usar los del BCR
-if(CJ_PX.soja==null && CJ_PX.tc==null) cjResetPrecios(true);
+// (doRender=false: el render se hace luego en cjApply(); evita TDZ de cjFiltered)
+if(CJ_PX.soja==null && CJ_PX.tc==null) cjResetPrecios(true, false);
 else cjUpdateInputs();
 document.getElementById('cj-bcr-meta').textContent =
   BCR.fecha_informe ? `Fuente: ${BCR.source} · informe ${BCR.fecha_informe}` : 'BCR no disponible';
