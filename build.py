@@ -474,7 +474,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="topbar-title" id="topbar-title">Venta · Posición General</div>
       </div>
       <div class="topbar-right">
-        <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__<br>Fuente: API Finnegans en vivo</div>
+        <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__</div>
         <button class="admin-pill" id="btn-admin">Administración</button>
         <a class="logout-btn" href="/logout">⤴ Salir</a>
       </div>

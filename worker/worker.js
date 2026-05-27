@@ -69,13 +69,13 @@ function getCookie(request, name) {
 function loginHTML(error) {
   return `<!doctype html><html lang="es"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Agronasaja — Portal de Producción</title>
+<title>Agronasaja — Portal de Granos</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     min-height:100vh;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(rgba(10,20,12,.82),rgba(10,20,12,.92)),
-      url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000') center/cover fixed;
+    background:linear-gradient(rgba(10,20,12,.78),rgba(10,20,12,.90)),
+      url('https://images.unsplash.com/photo-1694105073180-9e7dc1a83fbe?q=80&w=2000') center/cover fixed;
     color:#fff}
   .wrap{text-align:center;max-width:420px;width:100%;padding:24px}
   .logo{width:78px;height:78px;border-radius:18px;background:rgba(0,0,0,.4);
@@ -103,7 +103,7 @@ function loginHTML(error) {
   <div class="wrap">
     <div class="logo">🌱</div>
     <h1>AGRONASAJA</h1>
-    <div class="sub">PORTAL DE PRODUCCIÓN</div>
+    <div class="sub">PORTAL DE GRANOS</div>
     <div class="lema">"Buscando el mejor rendimiento para su campo."</div>
     <form class="card" method="POST" action="/login">
       <h2>Iniciar sesión</h2>
@@ -181,6 +181,10 @@ export default {
     const headers = new Headers(resp.headers);
     headers.set("X-Agronasaja-User", email);
     headers.delete("Content-Security-Policy"); // por si Pages mete CSP que rompa
+    // No cachear contenido autenticado en el navegador: así al cerrar sesión
+    // (o sin cookie) el browser vuelve a pedirle al Worker y muestra el login.
+    headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    headers.set("Pragma", "no-cache");
     return new Response(resp.body, { status: resp.status, headers });
   },
 };
