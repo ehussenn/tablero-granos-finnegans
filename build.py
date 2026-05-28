@@ -4878,7 +4878,7 @@ const PN_COLS = [
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
     {k:"prodTot",      lbl:"Total",      calc:true},
     {k:"pendCos",      lbl:"Pend Cos",   edit:true, manK:"pendcos"},
-    {k:"cosechado",    lbl:"Cosechado",  edit:true, manK:"cosechado"},
+    {k:"cosechado",    lbl:"Cosechado"},
     {k:"campoEst",     lbl:"Campo Est",  edit:true, manK:"campoest"},
   ]},
   {grp:"P+C",        cls:"grp-compra", cols:[
@@ -4935,9 +4935,12 @@ function pnCalcRow(producto, opsCompra, opsVenta){
   const silobolsa  = silobolsaAuto || pnGetMan(producto, "silobolsa");
   const plantaTot  = silo + bolsas + silobolsa;
 
-  // PRODUCCIÓN (manual)
+  // PRODUCCIÓN
+  // Cosechado AUTO desde traslados (Traslado CPE Agronasaja + Rec Sem PROPIA, origen Dep Cosecha)
+  // Pend Cos y Campo Est siguen siendo manuales
   const pendCos    = pnGetMan(producto, "pendcos");
-  const cosechado  = pnGetMan(producto, "cosechado");
+  const cosechadoAuto = (PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0;
+  const cosechado  = cosechadoAuto || pnGetMan(producto, "cosechado");
   const campoEst   = pnGetMan(producto, "campoest");
   const prodTot    = pendCos + cosechado + campoEst;
 
@@ -5565,6 +5568,29 @@ def main() -> int:
         print(f"[.] No existe {pagos_path}, modulo de pagos arranca vacio")
         pagos_iniciales = []
 
+    # Cosechado: total trasladado desde el campo a depositos
+    # Filtro: subtipos 'Traslado CPE Agronasaja' (TRAS-VTA-GRANO-AS = granos) +
+    #         'Recepción de Semilla PROPIA' (REC-SEM-PPIO = semilla propia)
+    # Suma PESONETO (kg) por GRANO -> convertido a tn
+    print(f"\n[+] Calculando COSECHADO desde traslados (Traslado CPE Agronasaja + Rec Sem PROPIA)...", flush=True)
+    cosechado = {}
+    try:
+        SUBT_COS = {"Traslado CPE Agronasaja", "Recepción de Semilla PROPIA"}
+        acum_cos = {}
+        for row in traslados_raw:
+            if row.get("TRANSACCIONSUBTIPONOMBRE") not in SUBT_COS: continue
+            g = row.get("GRANO") or ""
+            if not g: continue
+            try: kg = float(row.get("PESONETO") or 0)
+            except: kg = 0.0
+            acum_cos[g] = acum_cos.get(g, 0.0) + kg
+        cosechado = {p: round(kg/1000.0, 4) for p, kg in acum_cos.items() if kg}
+        print(f"    -> {len(cosechado)} productos con cosechado")
+        for p, t in sorted(cosechado.items(), key=lambda x: -abs(x[1]))[:6]:
+            print(f"       {t:>12,.2f} tn  {p}")
+    except Exception as e:
+        print(f"    [!] Error cosechado: {e}")
+
     # Stock por Deposito -> categorizar por tipo de deposito y agregar por producto (kg -> tn)
     print(f"\n[+] Bajando Stock por Deposito y categorizando (SILO/SILOBOLSA/BOLSAS/DESCARTE)...", flush=True)
     stock_silo, stock_silobolsa, stock_bolsas, stock_descarte = {}, {}, {}, {}
@@ -5618,6 +5644,7 @@ def main() -> int:
         "stock_silobolsa": stock_silobolsa,
         "stock_bolsas":    stock_bolsas,
         "stock_descarte":  stock_descarte,
+        "cosechado":       cosechado,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
