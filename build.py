@@ -4881,9 +4881,10 @@ const PN_COLS = [
     {k:"ofertaTot",    lbl:"Oferta Tot", calc:true},
   ]},
   {grp:"VENTA",      cls:"grp-venta",  cols:[
-    {k:"vtaSem",       lbl:"Vta Sem",    calc:true},
-    {k:"ventaCtos",    lbl:"Ctos P.E",   calc:true},
-    {k:"ventaEntr",    lbl:"Ctos Entr",  calc:true},
+    {k:"vtaSem",          lbl:"Vta Sem",   edit:true, manK:"vtaSem"},
+    {k:"ventaCtosAjust",  lbl:"Tot Venta", calc:true},
+    {k:"ventaCtos",       lbl:"Ctos P.E",  calc:true},
+    {k:"ventaEntr",       lbl:"Ctos Entr", calc:true},
   ]},
   {grp:"DEMANDA",    cls:"grp-venta",  cols:[
     {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
@@ -4937,24 +4938,21 @@ function pnCalcRow(producto, opsCompra, opsVenta){
   // OFERTA = PLANTA + PRODUCCION + COMPRA (lo total disponible)
   const ofertaTot = plantaTot + prodTot + compraTot;
 
-  // VENTA (auto desde contratos de venta)
-  // Vta Sem: ajustada de productos semilla (separados)
-  // Ctos P.E: pendiente de entrega de contratos NO-semilla = ajustada - entregada
-  // Ctos Entr: ya entregado de contratos NO-semilla
-  let vtaSem = 0, ventaCtosAjust = 0, ventaEntr = 0;
+  // VENTA
+  // Vta Sem: MANUAL — el potencial de semilla lo carga el gerente comercial
+  // Tot Venta: cantidad ajustada de contratos NO-semilla
+  // Ctos P.E: pendiente de entrega NO-semilla = ajustada - entregada
+  // Ctos Entr: ya entregado NO-semilla
+  const vtaSem = pnGetMan(producto, "vtaSem");
+  let ventaCtosAjust = 0, ventaEntr = 0;
   opsVenta.forEach(c => {
-    const cant = Number(c.cantidadmax) || 0;
-    const ent  = Number(c.cantidadentregada) || 0;
-    if((c.producto || "").toLowerCase().includes("sem")) {
-      vtaSem += cant;
-    } else {
-      ventaCtosAjust += cant;
-      ventaEntr += ent;
-    }
+    if((c.producto || "").toLowerCase().includes("sem")) return;  // semilla va aparte (manual)
+    ventaCtosAjust += Number(c.cantidadmax) || 0;
+    ventaEntr      += Number(c.cantidadentregada) || 0;
   });
-  const ventaCtos = ventaCtosAjust - ventaEntr;   // PENDIENTE de entrega (no semilla)
+  const ventaCtos = ventaCtosAjust - ventaEntr;   // pendiente entrega contratos
 
-  // DEMANDA = total comprometido en ventas (ajustada total: semillas + no-semillas)
+  // DEMANDA = total comprometido = potencial semilla (manual) + contratos no-semilla (auto)
   const demandaTot = vtaSem + ventaCtosAjust;
 
   // RESULTADO
@@ -4967,7 +4965,7 @@ function pnCalcRow(producto, opsCompra, opsVenta){
     pcTot,
     compraTot, compraPend, compraEntr,
     ofertaTot,
-    vtaSem, ventaCtos, ventaEntr,
+    vtaSem, ventaCtosAjust, ventaCtos, ventaEntr,
     demandaTot,
     posPend, posicion,
   };
