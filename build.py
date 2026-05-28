@@ -179,11 +179,15 @@ HTML_TEMPLATE = r"""<!doctype html>
   .kpi.green{border-top-color:var(--green)}
   .kpi.red{border-top-color:var(--red)}
   .kpi.orange{border-top-color:var(--orange)}
+  .kpi.yellow{border-top-color:#eab308}
+  .kpi.pink{border-top-color:#ec4899}
   .kpi .lbl{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
   .kpi .val{font-size:28px;font-weight:700;margin-top:4px;color:var(--ink)}
   .kpi.green .val{color:var(--green)}
   .kpi.red .val{color:var(--red)}
   .kpi.orange .val{color:var(--orange)}
+  .kpi.yellow .val{color:#a16207}
+  .kpi.pink .val{color:#be185d}
   .kpi .hint{color:var(--muted);font-size:12px;margin-top:6px}
 
   /* filtros */
@@ -707,6 +711,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div><label>CLIENTE</label><select id="cx-cliente"><option value="">Todos</option></select></div>
         <div><label>COMPRADOR</label><select id="cx-comprador"><option value="">Todos</option></select></div>
         <div><label>ENTREGADOR</label><select id="cx-entregador"><option value="">Todos</option></select></div>
+        <div><label>VENDEDOR</label><select id="cx-vendedor"><option value="">Todos</option></select></div>
         <div><label>BUSCAR CLIENTE</label><input type="text" id="cx-q" placeholder="texto…" /></div>
         <button class="clear" id="cx-clear">Limpiar filtros</button>
       </div>
@@ -3580,6 +3585,9 @@ function cxBuildOps(){
     const comVent = (precioV != null && pctV != null) ? tn * precioV * (pctV/100) : 0;
     const margenPVPC = (precioV != null && precioC != null) ? precioV - precioC : null;
     const balance = comComp - comVent;
+    // Vendedor: del contrato de venta (es el vendedor de Agronasaja que cerró la operación)
+    const ventaCto = CX_CONTRATOS_VENTA_IDX[c.contrato_venta];
+    const vendedor = (ventaCto && (ventaCto.vendedor || ventaCto.vendedornombre)) || null;
     return {
       ...c,
       mes: cxMesISO(c.fecha),
@@ -3588,6 +3596,7 @@ function cxBuildOps(){
       pctC, pctV,
       comComp, comVent,
       margenPVPC,
+      vendedor,
       balance,
       pendiente: pctV == null,
     };
@@ -3615,17 +3624,18 @@ function cxInitFilters(){
   fillSel("cx-cliente",    [...new Set(ops.map(o=>o.cliente))],       "Todos");
   fillSel("cx-comprador",  [...new Set(ops.map(o=>o.comprador))],     "Todos");
   fillSel("cx-entregador", [...new Set(ops.map(o=>o.entregador))],    "Todos");
+  fillSel("cx-vendedor",   [...new Set(ops.map(o=>o.vendedor))],      "Todos");
   // meses
   const meses = [...new Set(ops.map(o=>o.mes).filter(Boolean))].sort();
   document.getElementById("cx-mes").innerHTML = '<option value="">Todos</option>' +
     meses.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
 
-  ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador"].forEach(id =>
+  ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador","cx-vendedor"].forEach(id =>
     document.getElementById(id).addEventListener("change", cxRender)
   );
   document.getElementById("cx-q").addEventListener("input", cxRender);
   document.getElementById("cx-clear").addEventListener("click", () => {
-    ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador","cx-q"].forEach(id => {
+    ["cx-grano","cx-mes","cx-cliente","cx-comprador","cx-entregador","cx-vendedor","cx-q"].forEach(id => {
       document.getElementById(id).value = "";
     });
     cxRender();
@@ -3708,6 +3718,7 @@ function cxApplyFilters(ops){
   const cli = document.getElementById("cx-cliente").value;
   const cmp = document.getElementById("cx-comprador").value;
   const ent = document.getElementById("cx-entregador").value;
+  const vnd = document.getElementById("cx-vendedor").value;
   const q = (document.getElementById("cx-q").value||"").toLowerCase().trim();
   return ops.filter(o => {
     if(g && o.grano !== g) return false;
@@ -3715,6 +3726,7 @@ function cxApplyFilters(ops){
     if(cli && o.cliente !== cli) return false;
     if(cmp && o.comprador !== cmp) return false;
     if(ent && o.entregador !== ent) return false;
+    if(vnd && o.vendedor !== vnd) return false;
     if(q && !(o.cliente||"").toLowerCase().includes(q)) return false;
     return true;
   });
@@ -3777,10 +3789,10 @@ function cxRender(){
     return `<div class="cult-card ${grainClass(g)}">
       <div class="name"><span>${g}</span><span class="cnt">${v.cnt} ops</span></div>
       <div class="r"><span class="k">Kg</span><span>${fmt.num(v.kg)}</span></div>
-      <div class="r"><span class="k">Comisión Compra</span><span class="pos">$${fmt.num2(v.comComp)}</span></div>
-      <div class="r"><span class="k">Comisión Venta</span><span class="neg">$${fmt.num2(v.comVent)}</span></div>
+      <div class="r"><span class="k">Comisión Compra</span><span style="color:#a16207;font-weight:600">$${fmt.num2(v.comComp)}</span></div>
+      <div class="r"><span class="k">Comisión Venta</span><span style="color:#be185d;font-weight:600">$${fmt.num2(v.comVent)}</span></div>
       <div class="r"><span class="k">Margen P.V−P.C</span><span class="${v.margenTot>=0?'pos':'neg'}">$${fmt.num2(v.margenTot)}</span></div>
-      <div class="bal"><span>BALANCE</span><span class="${bal>=0?'pos':'neg'}">$${fmt.num2(bal)}</span></div>
+      <div class="bal"><span>BALANCE</span><span style="color:var(--green);font-weight:700">$${fmt.num2(bal)}</span></div>
     </div>`;
   }).join("") || '<div class="placeholder">Sin operaciones para los filtros aplicados</div>';
 
@@ -3798,9 +3810,9 @@ function cxRender(){
   });
   tot.balance = tot.comComp - tot.comVent;
   document.getElementById("cx-totales").innerHTML = `
-    <div class="kpi green"><div class="lbl">Comisión Compra</div><div class="val">$${fmt.num2(tot.comComp)}</div></div>
-    <div class="kpi red"><div class="lbl">Comisión Venta</div><div class="val">$${fmt.num2(tot.comVent)}</div></div>
-    <div class="kpi orange"><div class="lbl">Balance USD</div><div class="val">$${fmt.num2(tot.balance)}</div></div>
+    <div class="kpi yellow"><div class="lbl">Comisión Compra</div><div class="val">$${fmt.num2(tot.comComp)}</div></div>
+    <div class="kpi pink"><div class="lbl">Comisión Venta</div><div class="val">$${fmt.num2(tot.comVent)}</div></div>
+    <div class="kpi green"><div class="lbl">Balance USD</div><div class="val">$${fmt.num2(tot.balance)}</div></div>
     <div class="kpi"><div class="lbl">Margen P.V−P.C</div><div class="val">$${fmt.num2(tot.margenTot)}</div></div>
     <div class="kpi"><div class="lbl">Operaciones</div><div class="val">${fmt.int(tot.ops)}</div></div>
     <div class="kpi"><div class="lbl">Kg</div><div class="val">${fmt.num(tot.kg)}</div></div>
@@ -3837,10 +3849,10 @@ function cxRenderMensual(ops){
       <td>${mesNice(m)}</td>
       <td class="num">${fmt.int(v.ops)}</td>
       <td class="num">${fmt.num(v.kg)}</td>
-      <td class="num" style="color:var(--green)">$${fmt.num2(v.comComp)}</td>
-      <td class="num" style="color:var(--red)">$${fmt.num2(v.comVent)}</td>
+      <td class="num" style="color:#a16207">$${fmt.num2(v.comComp)}</td>
+      <td class="num" style="color:#be185d">$${fmt.num2(v.comVent)}</td>
       <td class="num" style="color:${v.margenTot>=0?'var(--green)':'var(--red)'}">$${fmt.num2(v.margenTot)}</td>
-      <td class="num" style="font-weight:700;color:${balance>=0?'var(--green)':'var(--red)'}">$${fmt.num2(balance)}</td>
+      <td class="num" style="font-weight:700;color:var(--green)">$${fmt.num2(balance)}</td>
     </tr>`;
   }).join("") || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Sin operaciones</td></tr>';
   document.getElementById("cx-mensual-body").innerHTML = body;
@@ -3857,10 +3869,10 @@ function cxRenderMensual(ops){
     <td><strong>TOTAL (${meses.length} ${meses.length===1?'mes':'meses'})</strong></td>
     <td class="num"><strong>${fmt.int(tot.ops)}</strong></td>
     <td class="num"><strong>${fmt.num(tot.kg)}</strong></td>
-    <td class="num" style="color:var(--green)"><strong>$${fmt.num2(tot.comComp)}</strong></td>
-    <td class="num" style="color:var(--red)"><strong>$${fmt.num2(tot.comVent)}</strong></td>
+    <td class="num" style="color:#a16207"><strong>$${fmt.num2(tot.comComp)}</strong></td>
+    <td class="num" style="color:#be185d"><strong>$${fmt.num2(tot.comVent)}</strong></td>
     <td class="num" style="color:${tot.margenTot>=0?'var(--green)':'var(--red)'}"><strong>$${fmt.num2(tot.margenTot)}</strong></td>
-    <td class="num" style="font-weight:700;color:${balance>=0?'var(--green)':'var(--red)'}"><strong>$${fmt.num2(balance)}</strong></td>
+    <td class="num" style="font-weight:700;color:var(--green)"><strong>$${fmt.num2(balance)}</strong></td>
   </tr>`;
 }
 
