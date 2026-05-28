@@ -4982,6 +4982,8 @@ function pnFiltrarOps(){
   };
 }
 
+// Familias cuyas semillas estan expandidas (en memoria, se cierra al recargar)
+const PN_SEM_EXPANDED = new Set();
 function pnRender(){
   const {compras, ventas} = pnFiltrarOps();
   document.getElementById("pn-info").textContent =
@@ -5030,33 +5032,74 @@ function pnRender(){
   const grandTotal = {};
   PN_COLS.forEach(g => g.cols.forEach(c => grandTotal[c.k] = 0));
 
+  // helper para renderizar una fila de producto (con opciones de estilo)
+  function pnRenderProdRow(prod, opts){
+    const r = dataPorProd[prod] || {};
+    const cls = (opts && opts.cls) || '';
+    const indented = !!(opts && opts.indent);
+    const tdStyle = indented ? ' style="padding-left:36px;color:var(--muted);font-size:12.5px"' : '';
+    let row = `<tr class="${cls}"><td class="pn-prod-cell"${tdStyle} title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
+    PN_COLS.forEach(g => g.cols.forEach(c => {
+      const v = r[c.k] || 0;
+      if(c.edit){
+        row += `<td class="editable"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
+      } else if(c.hl){
+        const cls2 = v >= 0 ? "pos-pos" : "pos-neg";
+        row += `<td class="${cls2}">${fmt.num(v)}</td>`;
+      } else {
+        row += `<td class="calc">${v ? fmt.num(v) : '—'}</td>`;
+      }
+    }));
+    return row + "</tr>";
+  }
+
   familias.forEach(fam => {
     const productos = byFamilia[fam];
-    // calcular total familia
-    const totFam = {};
-    PN_COLS.forEach(g => g.cols.forEach(c => totFam[c.k] = 0));
+    // separar semillas (todas las variedades) del resto
+    const semillas = productos.filter(p => pnSubtipo(p) === 'Semilla');
+    const otros    = productos.filter(p => pnSubtipo(p) !== 'Semilla');
 
+    // totales familia (sobre TODOS los productos, esten o no expandidas las semillas)
+    const totFam = {};
+    const totSem = {};
+    PN_COLS.forEach(g => g.cols.forEach(c => { totFam[c.k] = 0; totSem[c.k] = 0; }));
     productos.forEach(prod => {
       const r = dataPorProd[prod];
-      let row = `<tr><td class="pn-prod-cell" title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
       PN_COLS.forEach(g => g.cols.forEach(c => {
         const v = r[c.k] || 0;
         totFam[c.k] += v;
         grandTotal[c.k] += v;
-        if(c.edit){
-          row += `<td class="editable"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
-        } else if(c.hl){
-          const cls = v >= 0 ? "pos-pos" : "pos-neg";
-          row += `<td class="${cls}">${fmt.num(v)}</td>`;
-        } else {
-          row += `<td class="calc">${v ? fmt.num(v) : '—'}</td>`;
-        }
       }));
-      row += "</tr>";
-      body += row;
+    });
+    semillas.forEach(prod => {
+      const r = dataPorProd[prod];
+      PN_COLS.forEach(g => g.cols.forEach(c => { totSem[c.k] += (r[c.k] || 0); }));
     });
 
-    // Fila TOTAL familia
+    // 1) Productos NO-semilla (Grano X, Consumo, Descarte...) — filas normales
+    otros.forEach(prod => { body += pnRenderProdRow(prod); });
+
+    // 2) Fila agrupadora SEMILLA <FAM>  — clickeable; expande/colapsa variedades
+    if(semillas.length > 0){
+      const expanded = PN_SEM_EXPANDED.has(fam);
+      const arrow = expanded ? '▾' : '▸';
+      let rowSem = `<tr class="pn-semilla-header" data-sem-fam="${escapeHtml(fam)}" style="cursor:pointer;background:#fff7ed">
+        <td class="pn-prod-cell" style="font-weight:600">${arrow} SEMILLA ${fam} <span style="font-size:10.5px;color:var(--muted);font-weight:500">(${semillas.length} variedades)</span></td>`;
+      PN_COLS.forEach(g => g.cols.forEach(c => {
+        const v = totSem[c.k];
+        const cls2 = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
+        rowSem += `<td class="${cls2}" style="font-weight:600">${v ? fmt.num(v) : '—'}</td>`;
+      }));
+      rowSem += "</tr>";
+      body += rowSem;
+
+      // 3) Variedades (solo si expandido)
+      if(expanded){
+        semillas.forEach(prod => { body += pnRenderProdRow(prod, {cls:'pn-semilla-child', indent:true}); });
+      }
+    }
+
+    // 4) Fila TOTAL familia (ya tiene la suma de todo, sin importar expansion)
     let rowFam = `<tr class="pn-grupo"><td class="pn-prod-cell">▸ TOTAL ${fam}</td>`;
     PN_COLS.forEach(g => g.cols.forEach(c => {
       const v = totFam[c.k];
@@ -5089,6 +5132,18 @@ function pnRender(){
       pnRender();
     });
     inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
+  });
+
+  // Listener: click en fila SEMILLA <FAM> → expande/colapsa variedades
+  document.querySelectorAll("#pn-tbody .pn-semilla-header").forEach(tr => {
+    tr.addEventListener("click", (e) => {
+      // ignorar clicks en inputs (por las dudas)
+      if(e.target.tagName === 'INPUT') return;
+      const fam = tr.dataset.semFam;
+      if(PN_SEM_EXPANDED.has(fam)) PN_SEM_EXPANDED.delete(fam);
+      else PN_SEM_EXPANDED.add(fam);
+      pnRender();
+    });
   });
 
   // Cards arriba (por familia)
