@@ -4871,8 +4871,8 @@ function pnInitFiltros(){
 const PN_COLS = [
   {grp:"PLANTA",     cls:"grp",        cols:[
     {k:"plantaTot",    lbl:"Total",      calc:true},
-    {k:"silo",         lbl:"Silo",       edit:true, manK:"silo"},
-    {k:"bolsas",       lbl:"Bolsas",     edit:true, manK:"bolsas"},
+    {k:"silo",         lbl:"Silo"},
+    {k:"bolsas",       lbl:"Bolsas"},
     {k:"silobolsa",    lbl:"Silo Bolsa"},
   ]},
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
@@ -4893,10 +4893,11 @@ const PN_COLS = [
     {k:"ofertaTot",    lbl:"Oferta Tot", calc:true},
   ]},
   {grp:"VENTA",      cls:"grp-venta",  cols:[
-    {k:"vtaSem",          lbl:"Vta Sem",   edit:true, manK:"vtaSem"},
-    {k:"ventaCtosAjust",  lbl:"Tot Venta", calc:true},
-    {k:"ventaCtos",       lbl:"Ctos P.E",  calc:true},
-    {k:"ventaEntr",       lbl:"Ctos Entr", calc:true},
+    {k:"vtaSem",          lbl:"Vta Sem",     edit:true, manK:"vtaSem"},
+    {k:"pendVincular",    lbl:"Pend Vincular", edit:true, manK:"pendVincular"},
+    {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true},
+    {k:"ventaCtos",       lbl:"Ctos P.E",    calc:true},
+    {k:"ventaEntr",       lbl:"Ctos Entr",   calc:true},
   ]},
   {grp:"DEMANDA",    cls:"grp-venta",  cols:[
     {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
@@ -4923,10 +4924,14 @@ function pnSetMan(prod, k, v){
 }
 
 function pnCalcRow(producto, opsCompra, opsVenta){
-  // PLANTA: silo y bolsas manuales; silo bolsa AUTO desde Stock por Deposito (USR_RESSTOCKDEP)
-  const silo       = pnGetMan(producto, "silo");
-  const bolsas     = pnGetMan(producto, "bolsas");
+  // PLANTA: TODO auto desde Stock por Deposito (USR_RESSTOCKDEP), categorizado por nombre de deposito
+  // SILO (silos físicos sin "bolsa", "descarte", "ventas"), SILOBOLSA, BOLSAS (DEPOSITO VENTAS ...)
+  // Si no hay valor en la API, cae a lo cargado manualmente (PN_MANUAL) para no perder data vieja.
+  const siloAuto      = (PAYLOAD.stock_silo      && PAYLOAD.stock_silo[producto])      || 0;
+  const bolsasAuto    = (PAYLOAD.stock_bolsas    && PAYLOAD.stock_bolsas[producto])    || 0;
   const silobolsaAuto = (PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0;
+  const silo       = siloAuto      || pnGetMan(producto, "silo");
+  const bolsas     = bolsasAuto    || pnGetMan(producto, "bolsas");
   const silobolsa  = silobolsaAuto || pnGetMan(producto, "silobolsa");
   const plantaTot  = silo + bolsas + silobolsa;
 
@@ -4952,10 +4957,12 @@ function pnCalcRow(producto, opsCompra, opsVenta){
 
   // VENTA
   // Vta Sem: MANUAL — el potencial de semilla lo carga el gerente comercial
+  // Pend Vincular: MANUAL — mercadería ya entregada al exportador que aún no se asignó a un contrato
   // Tot Venta: cantidad ajustada de contratos NO-semilla
   // Ctos P.E: pendiente de entrega NO-semilla = ajustada - entregada
   // Ctos Entr: ya entregado NO-semilla
-  const vtaSem = pnGetMan(producto, "vtaSem");
+  const vtaSem       = pnGetMan(producto, "vtaSem");
+  const pendVincular = pnGetMan(producto, "pendVincular");
   let ventaCtosAjust = 0, ventaEntr = 0;
   opsVenta.forEach(c => {
     if((c.producto || "").toLowerCase().includes("sem")) return;  // semilla va aparte (manual)
@@ -4964,8 +4971,8 @@ function pnCalcRow(producto, opsCompra, opsVenta){
   });
   const ventaCtos = ventaCtosAjust - ventaEntr;   // pendiente entrega contratos
 
-  // DEMANDA = total comprometido = potencial semilla (manual) + contratos no-semilla (auto)
-  const demandaTot = vtaSem + ventaCtosAjust;
+  // DEMANDA = total comprometido = semilla + pend vincular + contratos no-semilla
+  const demandaTot = vtaSem + pendVincular + ventaCtosAjust;
 
   // RESULTADO
   const posPend = compraPend - ventaCtos;   // pendiente neto compra vs venta
@@ -4977,7 +4984,7 @@ function pnCalcRow(producto, opsCompra, opsVenta){
     pcTot,
     compraTot, compraPend, compraEntr,
     ofertaTot,
-    vtaSem, ventaCtosAjust, ventaCtos, ventaEntr,
+    vtaSem, pendVincular, ventaCtosAjust, ventaCtos, ventaEntr,
     demandaTot,
     posPend, posicion,
   };
@@ -5472,6 +5479,15 @@ def main() -> int:
     pilot_norm  = normalize_pilot(pilot_rows)
     compra_norm = normalize_pilot(compra_rows)   # misma normalizacion, mismas columnas
 
+    # Filtrar contratos ANULADOS (la API trae todos; el cierre solo cuenta los No Anulado)
+    def _no_anul(r):
+        v = (r.get("estadoanulacion") or "").strip().lower()
+        return v != "anulado"
+    _ant_pilot = len(pilot_norm); _ant_compra = len(compra_norm)
+    pilot_norm  = [r for r in pilot_norm  if _no_anul(r)]
+    compra_norm = [r for r in compra_norm if _no_anul(r)]
+    print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
+
     # Composicion de Saldos detallada (con CONDICIONPAGO y VENDEDOR) para modulo Canjes
     print(f"\n[+] Bajando Composicion Saldo Cliente (detallada con condicion y vendedor)...", flush=True)
     saldos_raw = api.call("/reports/composicionSaldoCliente",
@@ -5549,31 +5565,43 @@ def main() -> int:
         print(f"[.] No existe {pagos_path}, modulo de pagos arranca vacio")
         pagos_iniciales = []
 
-    # Stock por Deposito -> filtrar SILO BOLSA y agregar por producto (kg -> tn)
-    print(f"\n[+] Bajando Stock por Deposito y filtrando SILO BOLSA...", flush=True)
-    stock_silobolsa = {}
+    # Stock por Deposito -> categorizar por tipo de deposito y agregar por producto (kg -> tn)
+    print(f"\n[+] Bajando Stock por Deposito y categorizando (SILO/SILOBOLSA/BOLSAS/DESCARTE)...", flush=True)
+    stock_silo, stock_silobolsa, stock_bolsas, stock_descarte = {}, {}, {}, {}
     try:
         stock_raw = api.call("/reports/USR_RESSTOCKDEP", {"PARAMWEBREPORT_fecha":"getCurrentDate"})
         if not isinstance(stock_raw, list): stock_raw = []
-        acum = {}
+
+        def categorizar(dep):
+            if not dep: return None
+            d = dep.upper()
+            if "SILO DESCARTE" in d: return "DESCARTE"
+            if "SILOBOLSA" in d or "SILO BOLSA" in d: return "SILOBOLSA"
+            if "DEPOSITO VENTAS" in d or "DEPÓSITO VENTAS" in d: return "BOLSAS"
+            if "SILO" in d: return "SILO"
+            return None
+
+        acums = {"SILO": {}, "SILOBOLSA": {}, "BOLSAS": {}, "DESCARTE": {}}
         for row in stock_raw:
-            dep = (row.get("DEPOSITO") or "").upper()
-            # Match "SILOBOLSA" (sin espacio) o "SILO BOLSA" (con espacio)
-            if "SILOBOLSA" not in dep and "SILO BOLSA" not in dep:
-                continue
+            cat = categorizar(row.get("DEPOSITO"))
+            if not cat: continue
             prod = row.get("PRODUCTO") or ""
             if not prod: continue
             try: kg = float(row.get("CANTIDAD1") or 0)
             except: kg = 0.0
-            acum[prod] = acum.get(prod, 0.0) + kg
+            acums[cat][prod] = acums[cat].get(prod, 0.0) + kg
+
         # convertir a tn y filtrar ceros
-        stock_silobolsa = {p: round(kg/1000.0, 4) for p, kg in acum.items() if kg}
-        print(f"    -> {len(stock_silobolsa)} productos con stock en silo bolsa")
-        for p, t in sorted(stock_silobolsa.items(), key=lambda x: -abs(x[1]))[:8]:
-            print(f"       {t:>12,.2f} tn  {p}")
+        stock_silo      = {p: round(kg/1000.0, 4) for p, kg in acums["SILO"].items() if kg}
+        stock_silobolsa = {p: round(kg/1000.0, 4) for p, kg in acums["SILOBOLSA"].items() if kg}
+        stock_bolsas    = {p: round(kg/1000.0, 4) for p, kg in acums["BOLSAS"].items() if kg}
+        stock_descarte  = {p: round(kg/1000.0, 4) for p, kg in acums["DESCARTE"].items() if kg}
+        print(f"    -> SILO:      {len(stock_silo)} productos")
+        print(f"    -> SILOBOLSA: {len(stock_silobolsa)} productos")
+        print(f"    -> BOLSAS:    {len(stock_bolsas)} productos")
+        print(f"    -> DESCARTE:  {len(stock_descarte)} productos")
     except Exception as e:
         print(f"    [!] Error stock por deposito: {e}")
-        stock_silobolsa = {}
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -5584,7 +5612,10 @@ def main() -> int:
         "bcr":    bcr,
         "cruces": cruces_list,
         "pagos_iniciales": pagos_iniciales,
+        "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,
+        "stock_bolsas":    stock_bolsas,
+        "stock_descarte":  stock_descarte,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
