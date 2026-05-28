@@ -33,7 +33,7 @@ RANGO_DEFAULT = {
 DATASETS: list[tuple[str, str, dict, str]] = [
     ("Resumen Contrato Compra Granos",          "/reports/ResumenContratoCompraGranos",      dict(RANGO_DEFAULT),                                                                "compra"),
     ("Resumen Contratos Venta Granos",          "/reports/resumenContratosVentaGranos",      dict(RANGO_DEFAULT),                                                                "venta"),
-    ("Reporte Stock por Deposito",              "/reports/USR_RESSTOCKDEP",                  {"PARAMWEBREPORT_fecha":"getCurrentDate","PARAMWEBREPORT_MonedaID":"PESOS"},        "posicion"),
+    # Stock por Deposito se baja ahora directamente más abajo (sin MonedaID, que rompía); ver "stock_silobolsa"
     ("Composicion Saldos (Email c/Vendedor)",   "/reports/USR_ComposicionSaldosResumenParaEmail_API", {"PARAMWEBREPORT_FechaCorte":"getCurrentDate"},                            "posicion"),
 ]
 
@@ -4861,7 +4861,7 @@ const PN_COLS = [
     {k:"plantaTot",    lbl:"Total",      calc:true},
     {k:"silo",         lbl:"Silo",       edit:true, manK:"silo"},
     {k:"bolsas",       lbl:"Bolsas",     edit:true, manK:"bolsas"},
-    {k:"silobolsa",    lbl:"Silo Bolsa", edit:true, manK:"silobolsa"},
+    {k:"silobolsa",    lbl:"Silo Bolsa"},
   ]},
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
     {k:"prodTot",      lbl:"Total",      calc:true},
@@ -4910,10 +4910,11 @@ function pnSetMan(prod, k, v){
 }
 
 function pnCalcRow(producto, opsCompra, opsVenta){
-  // PLANTA (manual)
+  // PLANTA: silo y bolsas manuales; silo bolsa AUTO desde Stock por Deposito (USR_RESSTOCKDEP)
   const silo       = pnGetMan(producto, "silo");
   const bolsas     = pnGetMan(producto, "bolsas");
-  const silobolsa  = pnGetMan(producto, "silobolsa");
+  const silobolsaAuto = (PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0;
+  const silobolsa  = silobolsaAuto || pnGetMan(producto, "silobolsa");
   const plantaTot  = silo + bolsas + silobolsa;
 
   // PRODUCCIÓN (manual)
@@ -5533,6 +5534,32 @@ def main() -> int:
         print(f"[.] No existe {pagos_path}, modulo de pagos arranca vacio")
         pagos_iniciales = []
 
+    # Stock por Deposito -> filtrar SILO BOLSA y agregar por producto (kg -> tn)
+    print(f"\n[+] Bajando Stock por Deposito y filtrando SILO BOLSA...", flush=True)
+    stock_silobolsa = {}
+    try:
+        stock_raw = api.call("/reports/USR_RESSTOCKDEP", {"PARAMWEBREPORT_fecha":"getCurrentDate"})
+        if not isinstance(stock_raw, list): stock_raw = []
+        acum = {}
+        for row in stock_raw:
+            dep = (row.get("DEPOSITO") or "").upper()
+            # Match "SILOBOLSA" (sin espacio) o "SILO BOLSA" (con espacio)
+            if "SILOBOLSA" not in dep and "SILO BOLSA" not in dep:
+                continue
+            prod = row.get("PRODUCTO") or ""
+            if not prod: continue
+            try: kg = float(row.get("CANTIDAD1") or 0)
+            except: kg = 0.0
+            acum[prod] = acum.get(prod, 0.0) + kg
+        # convertir a tn y filtrar ceros
+        stock_silobolsa = {p: round(kg/1000.0, 4) for p, kg in acum.items() if kg}
+        print(f"    -> {len(stock_silobolsa)} productos con stock en silo bolsa")
+        for p, t in sorted(stock_silobolsa.items(), key=lambda x: -abs(x[1]))[:8]:
+            print(f"       {t:>12,.2f} tn  {p}")
+    except Exception as e:
+        print(f"    [!] Error stock por deposito: {e}")
+        stock_silobolsa = {}
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
@@ -5542,6 +5569,7 @@ def main() -> int:
         "bcr":    bcr,
         "cruces": cruces_list,
         "pagos_iniciales": pagos_iniciales,
+        "stock_silobolsa": stock_silobolsa,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
