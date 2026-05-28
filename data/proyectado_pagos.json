@@ -1885,6 +1885,18 @@
   },
   {
     "id": "n1779979368399",
+    "cliente": "CIACIA JUAN CARLOS",
+    "fecha_fijacion": "2026-05-28",
+    "tn_fijadas": 29,
+    "precio_fijado": null,
+    "total_sin_iva": null,
+    "iva_pct": 10.5,
+    "total_con_iva": null,
+    "fecha_pago": "2026-06-01",
+    "pagado": false
+  },
+  {
+    "id": "n1779979468364",
     "cliente": null,
     "fecha_fijacion": "2026-05-28",
     "tn_fijadas": null,
