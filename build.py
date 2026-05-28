@@ -4938,23 +4938,27 @@ function pnCalcRow(producto, opsCompra, opsVenta){
   const ofertaTot = plantaTot + prodTot + compraTot;
 
   // VENTA (auto desde contratos de venta)
-  let ventaCtos = 0, ventaEntr = 0, vtaSem = 0;
+  // Vta Sem: ajustada de productos semilla (separados)
+  // Ctos P.E: pendiente de entrega de contratos NO-semilla = ajustada - entregada
+  // Ctos Entr: ya entregado de contratos NO-semilla
+  let vtaSem = 0, ventaCtosAjust = 0, ventaEntr = 0;
   opsVenta.forEach(c => {
     const cant = Number(c.cantidadmax) || 0;
     const ent  = Number(c.cantidadentregada) || 0;
     if((c.producto || "").toLowerCase().includes("sem")) {
       vtaSem += cant;
     } else {
-      ventaCtos += cant;
+      ventaCtosAjust += cant;
       ventaEntr += ent;
     }
   });
+  const ventaCtos = ventaCtosAjust - ventaEntr;   // PENDIENTE de entrega (no semilla)
 
-  // DEMANDA = todo lo vendido (Sem + Ctos)
-  const demandaTot = vtaSem + ventaCtos;
+  // DEMANDA = total comprometido en ventas (ajustada total: semillas + no-semillas)
+  const demandaTot = vtaSem + ventaCtosAjust;
 
   // RESULTADO
-  const posPend = compraPend - (ventaCtos - ventaEntr);   // pendiente neto
+  const posPend = compraPend - ventaCtos;   // pendiente neto compra vs venta
   const posicion = ofertaTot - demandaTot;
 
   return {
@@ -5214,8 +5218,9 @@ function fnFiltrarYAgrupar(rows, campSel, empSel){
     m[k].ajustada  += Number(r.cantidadmax || r.cantidadajustada || 0);
     m[k].entregada += Number(r.cantidadentregada || 0);
     m[k].liquidada += Number(r.cantidadliquidada || 0);
-    m[k].pdteLiq   += Number(r.cantidadpendienteliquidar || 0);
   });
+  // Pend de liq = Entregada - Liquidada (pendiente de liquidar de lo entregado)
+  Object.values(m).forEach(r => { r.pdteLiq = r.entregada - r.liquidada; });
   return Object.values(m).filter(r => r.ajustada || r.entregada || r.liquidada || r.pdteLiq)
     .sort((a,b) => a.campana.localeCompare(b.campana) || a.producto.localeCompare(b.producto));
 }
