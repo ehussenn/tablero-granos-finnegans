@@ -1882,5 +1882,17 @@
     "total_con_iva": 50830000,
     "fecha_pago": "2026-06-03",
     "pagado": false
+  },
+  {
+    "id": "n1779979368399",
+    "cliente": "",
+    "fecha_fijacion": "2026-05-28",
+    "tn_fijadas": null,
+    "precio_fijado": null,
+    "total_sin_iva": null,
+    "iva_pct": 10.5,
+    "total_con_iva": null,
+    "fecha_pago": null,
+    "pagado": false
   }
 ]
