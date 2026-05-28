@@ -5575,6 +5575,8 @@ def main() -> int:
         def categorizar(dep):
             if not dep: return None
             d = dep.upper()
+            # Excluir depositos de ALQUILER (contra-cuentas que no son stock real, ajusta el Excel)
+            if "ALQUILER" in d: return None
             if "SILO DESCARTE" in d: return "DESCARTE"
             if "SILOBOLSA" in d or "SILO BOLSA" in d: return "SILOBOLSA"
             if "DEPOSITO VENTAS" in d or "DEPÓSITO VENTAS" in d: return "BOLSAS"
