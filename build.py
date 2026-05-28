@@ -463,7 +463,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
       <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
       <div class="nav-group">Posición General</div>
-      <a class="nav-item" data-go-tab="posicion" data-go-sub="" data-title="Posición Granaria">Posición Granaria</a>
+      <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
+      <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
     </nav>
   </aside>
 
@@ -1042,6 +1043,15 @@ HTML_TEMPLATE = r"""<!doctype html>
   <!-- ============ POSICION GRANARIA ============ -->
   <div class="panel" data-panel="posicion">
 
+    <!-- SUB-TABS Posicion General -->
+    <div class="subtabs">
+      <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
+      <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
+    </div>
+
+    <!-- ========== SUB: GRANARIA ========== -->
+    <div class="subpanel active" data-sub-panel="pn-granaria">
+
     <!-- Header -->
     <div class="section" style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border:none">
       <h3 style="color:#fff;margin:0">📊 Posición Granaria · Agronasaja</h3>
@@ -1080,6 +1090,111 @@ HTML_TEMPLATE = r"""<!doctype html>
         💡 <strong>Cómo funciona</strong>: las columnas de <strong>Compra</strong> y <strong>Venta</strong> vienen automáticas de los contratos en Finnegans. Las columnas de <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) y <strong>Producción</strong> (Pend Cos, Cosechado, Campo Est) las cargás vos haciendo click en cada celda y se guardan en localStorage. El resto se calcula solo.
       </div>
     </div>
+
+    </div><!-- /subpanel pn-granaria -->
+
+    <!-- ========== SUB: FINANCIERA ========== -->
+    <div class="subpanel" data-sub-panel="pn-financiera">
+
+      <!-- Header -->
+      <div class="section" style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">💰 Posición Financiera · Agronasaja</h3>
+        <div style="font-size:12px;opacity:.85;margin-top:4px">Valorización de pendientes de liquidar + Stock físico — para cierre patrimonial</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+          <span id="fn-tc-chip" style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">TC USD/ARS: —</span>
+          <span id="fn-px-chip" style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Precios BCR (USD/tn): —</span>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filterbar">
+        <div><label>CAMPAÑA</label><select id="fn-camp"><option value="">Todas</option></select></div>
+        <div><label>EMPRESA</label><select id="fn-emp"><option value="">Todas</option></select></div>
+        <button class="clear" id="fn-clear">Limpiar</button>
+        <span style="margin-left:auto;color:var(--muted);font-size:12px" id="fn-info"></span>
+      </div>
+
+      <!-- KPI totales -->
+      <div class="kpis" id="fn-kpis"></div>
+
+      <!-- 1. CONTRATO VENTA -->
+      <div class="section">
+        <h3><span style="background:#84cc16;color:#fff;padding:4px 14px;border-radius:6px;display:inline-block;font-size:14px">Contrato Venta</span> <span class="badge" id="fn-vta-meta"></span></h3>
+        <div class="tbl-wrap">
+          <table id="fn-tbl-vta" style="width:100%">
+            <thead><tr>
+              <th>Cultivo</th><th>Campaña</th>
+              <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">Liquidada</th><th class="num">Pend de liq</th>
+              <th style="background:#f8fafd"></th>
+              <th class="num">Totales</th><th class="num">Total USD</th><th class="num">Total $</th>
+            </tr></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. CONTRATO COMPRA -->
+      <div class="section">
+        <h3><span style="background:#84cc16;color:#fff;padding:4px 14px;border-radius:6px;display:inline-block;font-size:14px">Contrato Compra</span> <span class="badge" id="fn-cpr-meta"></span></h3>
+        <div class="tbl-wrap">
+          <table id="fn-tbl-cpr" style="width:100%">
+            <thead><tr>
+              <th>Cultivo</th><th>Campaña</th>
+              <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">Liquidada</th><th class="num">Pend de liq</th>
+              <th style="background:#f8fafd"></th>
+              <th class="num">Totales</th><th class="num">Total USD</th><th class="num">Total $</th>
+            </tr></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. STOCK -->
+      <div class="section">
+        <h3><span style="background:#84cc16;color:#fff;padding:4px 14px;border-radius:6px;display:inline-block;font-size:14px">Stock</span> <span class="badge">Toma los valores de Posición Granaria (Silo / Bolsas / Silo Bolsa); editá ahí para actualizar</span></h3>
+        <div class="tbl-wrap">
+          <table id="fn-tbl-stk" style="width:100%">
+            <thead><tr>
+              <th>Tipo</th><th>Campaña</th>
+              <th class="num">Silo Bolsa</th><th class="num">Silo</th><th class="num">Bolsas</th><th class="num">Totales</th>
+              <th style="background:#f8fafd"></th>
+              <th class="num">Totales</th><th class="num">Total USD</th><th class="num">Total $</th>
+            </tr></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. PENDIENTES -->
+      <div class="section">
+        <h3><span style="background:#84cc16;color:#fff;padding:4px 14px;border-radius:6px;display:inline-block;font-size:14px">Pendientes</span> <span class="badge">Mercadería pendiente de liquidar que no está aplicada al sistema · Editá las celdas o agregá filas</span></h3>
+        <div class="tbl-wrap">
+          <table id="fn-tbl-pdt" style="width:100%">
+            <thead><tr>
+              <th>Tipo</th><th>Campaña</th>
+              <th class="num">Silo Bolsa</th><th class="num">Silo</th><th class="num">En Tránsito</th><th class="num">Totales</th>
+              <th style="background:#f8fafd"></th>
+              <th class="num">Totales</th><th class="num">Total USD</th><th class="num">Total $</th>
+              <th></th>
+            </tr></thead>
+            <tbody></tbody>
+            <tfoot></tfoot>
+          </table>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="clear" id="fn-pdt-add">+ Agregar fila</button>
+          <span style="font-size:11.5px;color:var(--muted)">Las celdas se guardan en localStorage. Click en cada celda numérica para editar.</span>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:14px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <strong>Cómo se calcula</strong>: <strong>Totales</strong> = pendiente de liquidar (tn). <strong>Total USD</strong> = Totales × precio BCR USD/tn del cultivo. <strong>Total $</strong> = Total USD × TC. Cultivos sin precio en BCR muestran "—" (podés editar el precio manualmente más adelante si querés).
+      </div>
+
+    </div><!-- /subpanel pn-financiera -->
 
   </div>
 
@@ -5000,6 +5115,244 @@ function pnRenderCards(totalsFam, familias){
 
 pnInitFiltros();
 pnRender();
+
+
+/* ============================================================
+   ============  POSICION FINANCIERA  ==========================
+   ============================================================ */
+const FN_PDT_KEY = "tablero-granos-fn-pendientes-v1";
+let FN_PDT = [];
+try { FN_PDT = JSON.parse(localStorage.getItem(FN_PDT_KEY) || "[]") || []; } catch(e){ FN_PDT = []; }
+function fnPdtSave(){ localStorage.setItem(FN_PDT_KEY, JSON.stringify(FN_PDT)); }
+
+function fnGrainKey(prod){
+  if(!prod) return null;
+  const p = String(prod).toLowerCase();
+  if(p.includes('soja')) return 'soja';
+  if(p.includes('maíz') || p.includes('maiz')) return 'maiz';
+  if(p.includes('trigo') || p.includes('triticale')) return 'trigo';
+  if(p.includes('girasol')) return 'girasol';
+  if(p.includes('sorgo')) return 'sorgo';
+  return null;
+}
+function fnPrice(prod){
+  const k = fnGrainKey(prod);
+  if(!k) return null;
+  const g = (PAYLOAD.bcr && PAYLOAD.bcr.granos || {})[k];
+  return g && g.usd ? g.usd : null;
+}
+const FN_TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 0;
+function fnFmtUsd(v){ return v==null ? '—' : (fmt.num2(v) + ' USD'); }
+function fnFmtArs(v){ return v==null ? '—' : ('$ ' + fmt.num2(v)); }
+
+function fnFiltrarYAgrupar(rows, campSel, empSel){
+  const m = {};
+  (rows||[]).forEach(r => {
+    const p = r.producto || '—';
+    const c = r.campana || '—';
+    const e = r.empresa || r.organizacion || '—';
+    if(campSel && c !== campSel) return;
+    if(empSel && e !== empSel) return;
+    const k = p + '||' + c;
+    if(!m[k]) m[k] = {producto:p, campana:c, ajustada:0, entregada:0, liquidada:0, pdteLiq:0};
+    m[k].ajustada  += Number(r.cantidadmax || r.cantidadajustada || 0);
+    m[k].entregada += Number(r.cantidadentregada || 0);
+    m[k].liquidada += Number(r.cantidadliquidada || 0);
+    m[k].pdteLiq   += Number(r.cantidadpendienteliquidar || 0);
+  });
+  return Object.values(m).filter(r => r.ajustada || r.entregada || r.liquidada || r.pdteLiq)
+    .sort((a,b) => a.campana.localeCompare(b.campana) || a.producto.localeCompare(b.producto));
+}
+
+function fnRenderContratoTbl(tblId, metaId, rows){
+  const tbl = document.getElementById(tblId);
+  const tbody = tbl.querySelector('tbody'); const tfoot = tbl.querySelector('tfoot');
+  let totAj=0, totEnt=0, totLiq=0, totPdt=0, totUsd=0, totArs=0;
+  let html = '';
+  rows.forEach(r => {
+    const px = fnPrice(r.producto);
+    const usd = px ? r.pdteLiq * px : null;
+    const ars = (usd!=null) ? usd * FN_TC : null;
+    totAj += r.ajustada; totEnt += r.entregada; totLiq += r.liquidada; totPdt += r.pdteLiq;
+    if(usd!=null) totUsd += usd;
+    if(ars!=null) totArs += ars;
+    html += `<tr>
+      <td>${r.producto}</td><td>${r.campana}</td>
+      <td class="num">${fmt.num(r.ajustada)}</td><td class="num">${fmt.num(r.entregada)}</td>
+      <td class="num">${fmt.num(r.liquidada)}</td><td class="num">${fmt.num(r.pdteLiq)}</td>
+      <td style="background:#f8fafd"></td>
+      <td class="num">${fmt.num(r.pdteLiq)}</td>
+      <td class="num">${fnFmtUsd(usd)}</td>
+      <td class="num">${fnFmtArs(ars)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html || `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:18px">Sin datos con los filtros actuales</td></tr>`;
+  tfoot.innerHTML = `<tr style="background:#eef2ff;font-weight:700">
+    <td colspan="2">TOTAL</td>
+    <td class="num">${fmt.num(totAj)}</td><td class="num">${fmt.num(totEnt)}</td>
+    <td class="num">${fmt.num(totLiq)}</td><td class="num">${fmt.num(totPdt)}</td>
+    <td style="background:#eef2ff"></td>
+    <td class="num">${fmt.num(totPdt)}</td>
+    <td class="num">${fnFmtUsd(totUsd)}</td>
+    <td class="num">${fnFmtArs(totArs)}</td>
+  </tr>`;
+  const meta = document.getElementById(metaId); if(meta) meta.textContent = `${rows.length} filas`;
+  return {tn:totPdt, usd:totUsd, ars:totArs};
+}
+
+function fnRenderStock(campSel){
+  const tbl = document.getElementById('fn-tbl-stk');
+  const tbody = tbl.querySelector('tbody'); const tfoot = tbl.querySelector('tfoot');
+  const agrupado = {};
+  Object.entries(PN_MANUAL || {}).forEach(([prod, vals]) => {
+    if(!vals) return;
+    const familia = (typeof pnFamilia==='function') ? pnFamilia(prod) : prod;
+    const sub = (typeof pnSubtipo==='function') ? pnSubtipo(prod) : '';
+    const tipo = sub && sub !== 'Grano' ? `${familia} ${sub}` : familia;
+    const camp = campSel || '—';
+    const k = tipo + '||' + camp;
+    if(!agrupado[k]) agrupado[k] = {tipo, campana:camp, silobolsa:0, silo:0, bolsas:0, prodSample:prod};
+    agrupado[k].silobolsa += Number(vals.silobolsa||0);
+    agrupado[k].silo += Number(vals.silo||0);
+    agrupado[k].bolsas += Number(vals.bolsas||0);
+  });
+  const rows = Object.values(agrupado).filter(r => r.silobolsa||r.silo||r.bolsas).sort((a,b)=>a.tipo.localeCompare(b.tipo));
+  let totSb=0,totSi=0,totBo=0,totTot=0,totUsd=0,totArs=0;
+  let html='';
+  rows.forEach(r => {
+    const tot = r.silobolsa + r.silo + r.bolsas;
+    const px = fnPrice(r.prodSample);
+    const usd = px ? tot * px : null;
+    const ars = (usd!=null) ? usd * FN_TC : null;
+    totSb+=r.silobolsa; totSi+=r.silo; totBo+=r.bolsas; totTot+=tot;
+    if(usd!=null) totUsd+=usd; if(ars!=null) totArs+=ars;
+    html += `<tr>
+      <td>${r.tipo}</td><td>${r.campana}</td>
+      <td class="num">${fmt.num(r.silobolsa)}</td><td class="num">${fmt.num(r.silo)}</td><td class="num">${fmt.num(r.bolsas)}</td>
+      <td class="num">${fmt.num(tot)}</td>
+      <td style="background:#f8fafd"></td>
+      <td class="num">${fmt.num(tot)}</td>
+      <td class="num">${fnFmtUsd(usd)}</td>
+      <td class="num">${fnFmtArs(ars)}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html || `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:18px">Sin stock cargado en Posición Granaria todavía (cargá Silo/Bolsas/Silo Bolsa ahí y aparecen acá)</td></tr>`;
+  tfoot.innerHTML = `<tr style="background:#eef2ff;font-weight:700">
+    <td colspan="2">TOTAL</td>
+    <td class="num">${fmt.num(totSb)}</td><td class="num">${fmt.num(totSi)}</td><td class="num">${fmt.num(totBo)}</td>
+    <td class="num">${fmt.num(totTot)}</td>
+    <td style="background:#eef2ff"></td>
+    <td class="num">${fmt.num(totTot)}</td>
+    <td class="num">${fnFmtUsd(totUsd)}</td>
+    <td class="num">${fnFmtArs(totArs)}</td>
+  </tr>`;
+  return {tn:totTot, usd:totUsd, ars:totArs};
+}
+
+function fnRenderPendientes(){
+  const tbl = document.getElementById('fn-tbl-pdt');
+  const tbody = tbl.querySelector('tbody'); const tfoot = tbl.querySelector('tfoot');
+  let totSb=0,totSi=0,totEt=0,totTot=0,totUsd=0,totArs=0;
+  let html='';
+  FN_PDT.forEach((r,i) => {
+    const tot = (Number(r.silobolsa||0) + Number(r.silo||0) + Number(r.transito||0));
+    const px = fnPrice(r.tipo);
+    const usd = px ? tot * px : null;
+    const ars = (usd!=null) ? usd * FN_TC : null;
+    totSb+=Number(r.silobolsa||0); totSi+=Number(r.silo||0); totEt+=Number(r.transito||0); totTot+=tot;
+    if(usd!=null) totUsd+=usd; if(ars!=null) totArs+=ars;
+    const inpSty = 'padding:4px;border:1px solid var(--line);border-radius:4px;font-size:12.5px';
+    html += `<tr data-idx="${i}">
+      <td><input type="text" data-k="tipo" value="${r.tipo||''}" style="width:160px;${inpSty}"/></td>
+      <td><input type="text" data-k="campana" value="${r.campana||''}" style="width:80px;${inpSty}"/></td>
+      <td class="num"><input type="number" step="any" data-k="silobolsa" value="${r.silobolsa||''}" style="width:90px;text-align:right;${inpSty}"/></td>
+      <td class="num"><input type="number" step="any" data-k="silo" value="${r.silo||''}" style="width:90px;text-align:right;${inpSty}"/></td>
+      <td class="num"><input type="number" step="any" data-k="transito" value="${r.transito||''}" style="width:90px;text-align:right;${inpSty}"/></td>
+      <td class="num">${fmt.num(tot)}</td>
+      <td style="background:#f8fafd"></td>
+      <td class="num">${fmt.num(tot)}</td>
+      <td class="num">${fnFmtUsd(usd)}</td>
+      <td class="num">${fnFmtArs(ars)}</td>
+      <td><button class="fn-pdt-del" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px" title="Borrar fila">×</button></td>
+    </tr>`;
+  });
+  if(FN_PDT.length===0) html = `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:14px">No hay pendientes cargados. Click "+ Agregar fila" para empezar.</td></tr>`;
+  tbody.innerHTML = html;
+  tfoot.innerHTML = `<tr style="background:#eef2ff;font-weight:700">
+    <td colspan="2">TOTAL</td>
+    <td class="num">${fmt.num(totSb)}</td><td class="num">${fmt.num(totSi)}</td><td class="num">${fmt.num(totEt)}</td>
+    <td class="num">${fmt.num(totTot)}</td>
+    <td style="background:#eef2ff"></td>
+    <td class="num">${fmt.num(totTot)}</td>
+    <td class="num">${fnFmtUsd(totUsd)}</td>
+    <td class="num">${fnFmtArs(totArs)}</td>
+    <td></td>
+  </tr>`;
+  tbody.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const tr = inp.closest('tr'); const idx = Number(tr.dataset.idx); const k = inp.dataset.k;
+      FN_PDT[idx][k] = (inp.type==='number') ? (inp.value===''? '' : Number(inp.value)) : inp.value;
+      fnPdtSave(); fnRender();
+    });
+  });
+  tbody.querySelectorAll('.fn-pdt-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tr = btn.closest('tr'); const idx = Number(tr.dataset.idx);
+      FN_PDT.splice(idx,1); fnPdtSave(); fnRender();
+    });
+  });
+  return {tn:totTot, usd:totUsd, ars:totArs};
+}
+
+function fnInitFiltros(){
+  const camps = [...new Set([
+    ...(PAYLOAD.pilot||[]).map(r=>r.campana),
+    ...(PAYLOAD.compra||[]).map(r=>r.campana)
+  ].filter(Boolean))].sort();
+  const sel = document.getElementById('fn-camp');
+  camps.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+  const emps = [...new Set([
+    ...(PAYLOAD.pilot||[]).map(r=>r.empresa||r.organizacion),
+    ...(PAYLOAD.compra||[]).map(r=>r.empresa||r.organizacion)
+  ].filter(Boolean))].sort();
+  const sel2 = document.getElementById('fn-emp');
+  emps.forEach(e => { const o=document.createElement('option'); o.value=e; o.textContent=e; sel2.appendChild(o); });
+  ['fn-camp','fn-emp'].forEach(id => document.getElementById(id).addEventListener('change', fnRender));
+  document.getElementById('fn-clear').addEventListener('click', () => {
+    document.getElementById('fn-camp').value=''; document.getElementById('fn-emp').value=''; fnRender();
+  });
+  document.getElementById('fn-pdt-add').addEventListener('click', () => {
+    FN_PDT.push({tipo:'',campana:'',silobolsa:'',silo:'',transito:''}); fnPdtSave(); fnRender();
+  });
+  document.getElementById('fn-tc-chip').textContent = `TC USD/ARS: ${fmt.num2(FN_TC)}`;
+  const px = (PAYLOAD.bcr && PAYLOAD.bcr.granos) || {};
+  const txt = Object.entries(px).map(([k,v]) => `${k}: ${v && v.usd ? fmt.num2(v.usd) : '—'}`).join(' · ');
+  document.getElementById('fn-px-chip').textContent = `Precios BCR (USD/tn): ${txt}`;
+}
+
+function fnRender(){
+  const camp = document.getElementById('fn-camp').value;
+  const emp = document.getElementById('fn-emp').value;
+  const vtaRows = fnFiltrarYAgrupar(PAYLOAD.pilot, camp, emp);
+  const cprRows = fnFiltrarYAgrupar(PAYLOAD.compra, camp, emp);
+  const tVta = fnRenderContratoTbl('fn-tbl-vta','fn-vta-meta',vtaRows);
+  const tCpr = fnRenderContratoTbl('fn-tbl-cpr','fn-cpr-meta',cprRows);
+  const tStk = fnRenderStock(camp);
+  const tPdt = fnRenderPendientes();
+  const kpi = document.getElementById('fn-kpis');
+  const cxc = tVta.usd, cxp = tCpr.usd, stock = tStk.usd + tPdt.usd;
+  const neto = stock + cxc - cxp;
+  kpi.innerHTML = `
+    <div class="kpi green"><div class="lbl">STOCK + PENDIENTES (USD)</div><div class="val">${fnFmtUsd(stock)}</div><div class="hint">${fmt.num(tStk.tn+tPdt.tn)} tn valoradas</div></div>
+    <div class="kpi"><div class="lbl">CUENTAS POR COBRAR (USD)</div><div class="val">${fnFmtUsd(cxc)}</div><div class="hint">Venta pte. liquidar · ${fmt.num(tVta.tn)} tn</div></div>
+    <div class="kpi red"><div class="lbl">CUENTAS POR PAGAR (USD)</div><div class="val">${fnFmtUsd(cxp)}</div><div class="hint">Compra pte. liquidar · ${fmt.num(tCpr.tn)} tn</div></div>
+    <div class="kpi orange"><div class="lbl">POSICIÓN NETA (USD)</div><div class="val">${fnFmtUsd(neto)}</div><div class="hint">Stock+Pdtes + CxC − CxP</div></div>
+  `;
+  document.getElementById('fn-info').textContent = `Calculado al ${new Date().toLocaleString('es-AR')}`;
+}
+
+fnInitFiltros();
+fnRender();
 
 
 </script>
