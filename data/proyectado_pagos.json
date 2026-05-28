@@ -1885,7 +1885,7 @@
   },
   {
     "id": "n1779979368399",
-    "cliente": "",
+    "cliente": null,
     "fecha_fijacion": "2026-05-28",
     "tn_fijadas": null,
     "precio_fijado": null,
