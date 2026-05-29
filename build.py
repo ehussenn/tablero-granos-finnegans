@@ -5243,12 +5243,16 @@ const FN_TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 0;
 function fnFmtUsd(v){ return v==null ? '—' : (fmt.num2(v) + ' USD'); }
 function fnFmtArs(v){ return v==null ? '—' : ('$ ' + fmt.num2(v)); }
 
+// Campañas que se incluyen en Posicion Financiera (el cierre actual)
+const FN_CAMP_OK = new Set(["CAMPAÑA 24-25", "CAMPAÑA 25-26"]);
+
 function fnFiltrarYAgrupar(rows, campSel, empSel){
   const m = {};
   (rows||[]).forEach(r => {
     const p = r.producto || '—';
     const c = r.campana || '—';
     const e = r.empresa || r.organizacion || '—';
+    if(!FN_CAMP_OK.has(c)) return;          // omitir campañas viejas (21-22, 22-23, 23-24, etc.)
     if(campSel && c !== campSel) return;
     if(empSel && e !== empSel) return;
     const k = p + '||' + c;
@@ -5259,7 +5263,9 @@ function fnFiltrarYAgrupar(rows, campSel, empSel){
   });
   // Pend de liq = Entregada - Liquidada (pendiente de liquidar de lo entregado)
   Object.values(m).forEach(r => { r.pdteLiq = r.entregada - r.liquidada; });
-  return Object.values(m).filter(r => r.ajustada || r.entregada || r.liquidada || r.pdteLiq)
+  return Object.values(m)
+    .filter(r => r.pdteLiq >= 0)  // omitir Pend de liq negativos
+    .filter(r => r.ajustada || r.entregada || r.liquidada || r.pdteLiq)
     .sort((a,b) => a.campana.localeCompare(b.campana) || a.producto.localeCompare(b.producto));
 }
 
@@ -5404,10 +5410,11 @@ function fnRenderPendientes(){
 }
 
 function fnInitFiltros(){
+  // Solo las campañas vigentes para el cierre (24-25 y 25-26)
   const camps = [...new Set([
     ...(PAYLOAD.pilot||[]).map(r=>r.campana),
     ...(PAYLOAD.compra||[]).map(r=>r.campana)
-  ].filter(Boolean))].sort();
+  ].filter(c => c && FN_CAMP_OK.has(c)))].sort();
   const sel = document.getElementById('fn-camp');
   camps.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
   const emps = [...new Set([
