@@ -4908,9 +4908,16 @@ const PN_COLS = [
   ]},
 ];
 
+// Defaults embebidos: valores manuales que vienen del cierre — el usuario los puede sobreescribir
+// editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
+const PN_DEFAULTS = {
+  "Maiz Segunda": { pendcos: 26802 },
+};
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
-  return Number(o[k]) || 0;
+  if(o[k] !== undefined && o[k] !== null && o[k] !== "") return Number(o[k]) || 0;
+  const d = PN_DEFAULTS[prod] || {};
+  return Number(d[k]) || 0;
 }
 function pnSetMan(prod, k, v){
   if(!PN_MANUAL[prod]) PN_MANUAL[prod] = {};
