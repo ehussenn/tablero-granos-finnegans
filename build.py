@@ -1208,6 +1208,17 @@ HTML_TEMPLATE = r"""<!doctype html>
 </div><!-- /.app-shell -->
 
 <script>
+/* ============== FORZAR ACCESO POR EL PORTAL (Cloudflare Worker) ============== */
+/* Si entran directo por GitHub Pages, los rebotamos al Worker para que pasen por el login */
+(function(){
+  try {
+    var h = location.hostname || "";
+    if (h.endsWith(".github.io")) {
+      location.replace("https://tablero-agronasaja.ehussen.workers.dev/" + (location.search || ""));
+    }
+  } catch(e) {}
+})();
+
 /* ============== DATOS EMBEBIDOS ============== */
 const PAYLOAD = __PAYLOAD__;
 
