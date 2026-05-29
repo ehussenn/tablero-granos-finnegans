@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Estado Patrimonial · Agronasaja SRL · 29-05-2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0f172a; --blue:#1e3a8a; --blue2:#3b82f6; --blueL:#dbeafe;
+    --red:#dc2626; --redL:#fee2e2;
+    --green:#16a34a; --greenL:#dcfce7;
+    --gold:#a16207; --goldL:#fef3c7;
+    --line:#e5e9f2; --muted:#64748b; --ink:#0f172a; --bg:#f1f5f9;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+       background:linear-gradient(180deg,#eef2ff 0%, #f1f5f9 360px, #f1f5f9 100%);
+       color:var(--ink);font-size:13px;line-height:1.45;padding:24px;min-height:100vh}
+  .doc{max-width:1280px;margin:0 auto}
+
+  /* ===== Hero ===== */
+  .hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 40%,#3b82f6 110%);
+        color:#fff;padding:32px 40px;border-radius:18px;
+        box-shadow:0 10px 36px rgba(15,23,42,.22);
+        display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:18px;
+        position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;right:-80px;top:-80px;width:340px;height:340px;
+                border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 70%)}
+  .hero .l{position:relative;z-index:1}
+  .hero .crumb{font-size:11px;letter-spacing:3px;opacity:.7;font-weight:600;text-transform:uppercase}
+  .hero h1{font-size:30px;font-weight:800;letter-spacing:.4px;margin-top:4px}
+  .hero .sub{margin-top:6px;opacity:.85;font-size:13.5px;max-width:540px}
+  .hero .r{display:flex;flex-direction:column;gap:6px;text-align:right;position:relative;z-index:1}
+  .hero .r .lbl{font-size:11px;letter-spacing:2px;opacity:.6;text-transform:uppercase}
+  .hero .r .fecha{font-size:22px;font-weight:700;letter-spacing:.4px}
+  .hero .r .meta{font-size:11.5px;opacity:.75;margin-top:6px}
+  .hero .r .meta span{background:rgba(255,255,255,.12);padding:4px 10px;border-radius:6px;display:inline-block;margin:2px 0 2px 6px}
+
+  /* ===== KPIs Grid ===== */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0}
+  .kpi{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 4px 16px rgba(15,23,42,.06);
+       border-top:4px solid;position:relative;overflow:hidden;transition:transform .15s}
+  .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,42,.1)}
+  .kpi.cxc{border-color:#3b82f6}
+  .kpi.cxp{border-color:#dc2626}
+  .kpi.stock{border-color:#16a34a}
+  .kpi.neta{border-color:#a16207;background:linear-gradient(135deg,#fffbeb 0%, #fef3c7 200%)}
+  .kpi .icon{position:absolute;top:18px;right:20px;opacity:.18;font-size:32px}
+  .kpi .lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.4px}
+  .kpi .val{font-size:24px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .kpi.cxc .val{color:#1e3a8a}
+  .kpi.cxp .val{color:#991b1b}
+  .kpi.stock .val{color:#166534}
+  .kpi.neta .val{color:#854d0e}
+  .kpi .usd{font-size:13px;color:var(--muted);font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .kpi .hint{font-size:11px;color:var(--muted);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+
+  /* ===== Charts Row ===== */
+  .row2{display:grid;grid-template-columns:1fr 1.6fr;gap:16px;margin-bottom:22px}
+  .card{background:#fff;border-radius:14px;padding:22px 24px;box-shadow:0 4px 16px rgba(15,23,42,.06)}
+  .card h3{font-size:13px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+  .card h3 .small{color:var(--muted);font-weight:500;font-size:11.5px;text-transform:none;letter-spacing:0;margin-left:6px}
+  .chart-wrap{height:240px;position:relative}
+
+  /* ===== Secciones tablas ===== */
+  .seccion{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(15,23,42,.06);overflow:hidden;margin-bottom:18px}
+  .seccion-head{padding:18px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+  .seccion-tit{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:10px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+  .pill.venta{background:#dbeafe;color:#1e3a8a}
+  .pill.compra{background:#fee2e2;color:#991b1b}
+  .pill.stock{background:#dcfce7;color:#166534}
+  .seccion-meta{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .seccion-meta b{color:var(--ink);font-weight:700}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  thead th{padding:11px 16px;background:#f8fafc;color:var(--muted);font-weight:700;text-align:left;
+           border-bottom:1px solid var(--line);text-transform:uppercase;font-size:10.5px;letter-spacing:.8px}
+  thead th.num{text-align:right}
+  tbody td{padding:10px 16px;border-bottom:1px solid #f1f5f9;font-variant-numeric:tabular-nums;color:var(--ink)}
+  tbody td.num{text-align:right}
+  tbody td.cult{font-weight:600}
+  tbody tr:hover td{background:#f8fafc}
+  tbody td.camp{color:var(--muted);font-size:11.5px}
+  .tn{color:var(--muted);font-size:11.5px;font-weight:600}
+  .usd-c{color:#1e3a8a;font-weight:600}
+  .ars-c{color:var(--ink);font-weight:700}
+
+  tfoot td{padding:13px 16px;background:linear-gradient(180deg,#fffbeb,#fef3c7);
+           color:#854d0e;font-weight:800;border-top:2px solid #f59e0b;
+           font-variant-numeric:tabular-nums}
+  tfoot td.num{text-align:right;font-size:13.5px}
+  tfoot td.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+
+  /* ===== Resumen banda final ===== */
+  .resumen{background:linear-gradient(135deg,#0f172a 0%, #1e3a8a 100%);color:#fff;
+           border-radius:14px;padding:24px 32px;margin-top:18px;
+           display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;
+           box-shadow:0 6px 24px rgba(15,23,42,.2)}
+  .resumen .l .lbl{font-size:11px;letter-spacing:2px;opacity:.7;text-transform:uppercase;font-weight:700}
+  .resumen .l .formula{margin-top:6px;font-size:13px;opacity:.85}
+  .resumen .l .formula span{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:5px;margin:0 3px}
+  .resumen .r{text-align:right}
+  .resumen .r .val{font-size:34px;font-weight:800;letter-spacing:.2px;font-variant-numeric:tabular-nums;
+                   text-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .resumen .r .usd{margin-top:2px;font-size:14px;opacity:.85;font-weight:600;font-variant-numeric:tabular-nums}
+
+  .foot{margin-top:24px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+  .foot b{color:var(--ink)}
+
+  /* Responsive */
+  @media (max-width: 900px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .row2{grid-template-columns:1fr}
+    .hero{flex-direction:column}
+    .hero .r{text-align:left}
+  }
+
+  /* Print */
+  @media print {
+    body{background:#fff;padding:0;font-size:11px}
+    .doc{max-width:100%}
+    .hero,.kpi,.card,.seccion,.resumen{box-shadow:none}
+    .seccion{page-break-inside:avoid}
+    .kpi:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="l">
+      <div class="crumb">AGRONASAJA SRL</div>
+      <h1>Estado Patrimonial</h1>
+      <div class="sub">Posición financiera consolidada — Contratos pendientes de liquidar y stock valorizado a precios de mercado.</div>
+    </div>
+    <div class="r">
+      <div class="lbl">CIERRE</div>
+      <div class="fecha">29 / 05 / 2026</div>
+      <div class="meta">
+        <span>Campañas 24-25 / 25-26</span>
+        <span>USD / ARS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ KPIs ============ -->
+  <div class="kpis">
+    <div class="kpi cxc">
+      <div class="icon">📥</div>
+      <div class="lbl">Cuentas por Cobrar</div>
+      <div class="val">$ 2.138.378.420</div>
+      <div class="usd">USD 1.516.580,44</div>
+      <div class="hint">Contrato Venta · Pdte liquidar de lo entregado · 6.132 tn</div>
+    </div>
+    <div class="kpi cxp">
+      <div class="icon">📤</div>
+      <div class="lbl">Cuentas por Pagar</div>
+      <div class="val">$ 2.969.156.399</div>
+      <div class="usd">USD 2.105.785,00</div>
+      <div class="hint">Contrato Compra · Pdte liquidar de lo entregado · 7.769 tn</div>
+    </div>
+    <div class="kpi stock">
+      <div class="icon">🌾</div>
+      <div class="lbl">Stock Valorizado</div>
+      <div class="val">$ 1.641.747.600</div>
+      <div class="usd">USD 1.164.360,00</div>
+      <div class="hint">Soja Consumo + Soja Semilla + Arveja · 3.656 tn</div>
+    </div>
+    <div class="kpi neta">
+      <div class="icon">⚖️</div>
+      <div class="lbl">Posición Neta</div>
+      <div class="val">$ 810.969.622</div>
+      <div class="usd">USD 575.155,44</div>
+      <div class="hint">Stock + Cobrar − Pagar</div>
+    </div>
+  </div>
+
+  <!-- ============ CHARTS ============ -->
+  <div class="row2">
+    <div class="card">
+      <h3>Composición Patrimonial <span class="small">USD</span></h3>
+      <div class="chart-wrap"><canvas id="donut"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Top Cultivos por Importe Pendiente <span class="small">USD · Venta + Compra</span></h3>
+      <div class="chart-wrap"><canvas id="bars"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ============ CONTRATO VENTA ============ -->
+  <div class="seccion">
+    <div class="seccion-head">
+      <div class="seccion-tit"><span class="pill venta">Contrato Venta</span> Pendiente de liquidar (de lo entregado)</div>
+      <div class="seccion-meta"><b>6.132 tn</b> · <b>USD 1.516.580</b> · <b>$ 2.138 M</b></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Cultivo</th>
+          <th>Campaña</th>
+          <th class="num">Pend de liq (tn)</th>
+          <th class="num">Total USD</th>
+          <th class="num">Total $</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="cult">Grano Maíz</td>           <td class="camp">CAMPAÑA 25-26</td><td class="num tn">3.337</td><td class="num usd-c">$ 600.660,00</td>  <td class="num ars-c">$ 846.930.600,00</td></tr>
+        <tr><td class="cult">Grano Maíz Pisingallo</td><td class="camp">CAMPAÑA 25-26</td><td class="num tn">30</td>   <td class="num usd-c">$ 8.100,00</td>    <td class="num ars-c">$ 11.421.000,00</td></tr>
+        <tr><td class="cult">Grano Soja</td>           <td class="camp">CAMPAÑA 25-26</td><td class="num tn">2.726</td><td class="num usd-c">$ 899.580,00</td>  <td class="num ars-c">$ 1.268.407.800,00</td></tr>
+        <tr><td class="cult">Grano Trigo Pan</td>      <td class="camp">CAMPAÑA 25-26</td><td class="num tn">39</td>   <td class="num usd-c">$ 8.240,44</td>    <td class="num ars-c">$ 11.619.020,40</td></tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" class="lbl">Total Contrato Venta</td>
+          <td class="num">6.132</td>
+          <td class="num">$ 1.516.580,44</td>
+          <td class="num">$ 2.138.378.420,40</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- ============ CONTRATO COMPRA ============ -->
+  <div class="seccion">
+    <div class="seccion-head">
+      <div class="seccion-tit"><span class="pill compra">Contrato Compra</span> Pendiente de liquidar (de lo entregado)</div>
+      <div class="seccion-meta"><b>7.769 tn</b> · <b>USD 2.105.785</b> · <b>$ 2.969 M</b></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Cultivo</th>
+          <th>Campaña</th>
+          <th class="num">Pend de liq (tn)</th>
+          <th class="num">Total USD</th>
+          <th class="num">Total $</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="cult">Grano Maíz</td>          <td class="camp">CAMPAÑA 24-25</td><td class="num tn">339</td>  <td class="num usd-c">$ 61.020,00</td>  <td class="num ars-c">$ 86.038.200,00</td></tr>
+        <tr><td class="cult">Grano Soja</td>          <td class="camp">CAMPAÑA 24-25</td><td class="num tn">633</td>  <td class="num usd-c">$ 208.890,00</td> <td class="num ars-c">$ 294.534.900,00</td></tr>
+        <tr><td class="cult">Semilla Soja</td>        <td class="camp">CAMPAÑA 24-25</td><td class="num tn">289</td>  <td class="num usd-c">$ 95.370,00</td>  <td class="num ars-c">$ 134.471.700,00</td></tr>
+        <tr><td class="cult">Grano Trigo Pan</td>     <td class="camp">CAMPAÑA 24-25</td><td class="num tn">54</td>   <td class="num usd-c">$ 11.414,00</td>  <td class="num ars-c">$ 16.093.853,00</td></tr>
+        <tr><td class="cult">Semilla Trigo Pan</td>   <td class="camp">CAMPAÑA 24-25</td><td class="num tn">64</td>   <td class="num usd-c">$ 13.568,00</td>  <td class="num ars-c">$ 19.130.880,00</td></tr>
+        <tr><td class="cult">Grano Maíz</td>          <td class="camp">CAMPAÑA 25-26</td><td class="num tn">294</td>  <td class="num usd-c">$ 52.920,00</td>  <td class="num ars-c">$ 74.617.200,00</td></tr>
+        <tr><td class="cult">Grano Trigo Pan</td>     <td class="camp">CAMPAÑA 25-26</td><td class="num tn">312</td>  <td class="num usd-c">$ 66.144,00</td>  <td class="num ars-c">$ 93.263.040,00</td></tr>
+        <tr><td class="cult">Semilla Trigo Pan</td>   <td class="camp">CAMPAÑA 25-26</td><td class="num tn">2.606</td><td class="num usd-c">$ 552.472,00</td> <td class="num ars-c">$ 778.985.520,00</td></tr>
+        <tr><td class="cult">Grano Soja</td>          <td class="camp">CAMPAÑA 25-26</td><td class="num tn">1.768</td><td class="num usd-c">$ 583.440,00</td> <td class="num ars-c">$ 822.650.400,00</td></tr>
+        <tr><td class="cult">Semilla Soja</td>        <td class="camp">CAMPAÑA 25-26</td><td class="num tn">1.374</td><td class="num usd-c">$ 453.420,00</td> <td class="num ars-c">$ 639.322.200,00</td></tr>
+        <tr><td class="cult">Grano Arveja</td>        <td class="camp">CAMPAÑA 25-26</td><td class="num tn">36</td>   <td class="num usd-c">$ 7.127,00</td>   <td class="num ars-c">$ 10.048.506,00</td></tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" class="lbl">Total Contrato Compra</td>
+          <td class="num">7.769</td>
+          <td class="num">$ 2.105.785,00</td>
+          <td class="num">$ 2.969.156.398,80</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- ============ STOCK ============ -->
+  <div class="seccion">
+    <div class="seccion-head">
+      <div class="seccion-tit"><span class="pill stock">Stock</span> Mercadería propia valorizada</div>
+      <div class="seccion-meta"><b>3.656 tn</b> · <b>USD 1.164.360</b> · <b>$ 1.642 M</b></div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Campaña</th>
+          <th class="num">Totales (tn)</th>
+          <th class="num">Total USD</th>
+          <th class="num">Total $</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="cult">Soja Consumo</td><td class="camp">25/26</td><td class="num tn">841</td>  <td class="num usd-c">$ 277.530,00</td><td class="num ars-c">$ 391.317.300,00</td></tr>
+        <tr><td class="cult">Soja Semilla</td><td class="camp">25/26</td><td class="num tn">2.491</td><td class="num usd-c">$ 822.030,00</td><td class="num ars-c">$ 1.159.062.300,00</td></tr>
+        <tr><td class="cult">Arveja</td>      <td class="camp">25/26</td><td class="num tn">324</td>  <td class="num usd-c">$ 64.800,00</td> <td class="num ars-c">$ 91.368.000,00</td></tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" class="lbl">Total Stock</td>
+          <td class="num">3.656</td>
+          <td class="num">$ 1.164.360,00</td>
+          <td class="num">$ 1.641.747.600,00</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- ============ RESUMEN FINAL ============ -->
+  <div class="resumen">
+    <div class="l">
+      <div class="lbl">Posición Patrimonial Neta</div>
+      <div class="formula">
+        <span style="color:#86efac">Stock $ 1.641 M</span> +
+        <span style="color:#93c5fd">CxC $ 2.138 M</span> −
+        <span style="color:#fca5a5">CxP $ 2.969 M</span>
+      </div>
+    </div>
+    <div class="r">
+      <div class="val">$ 810.969.621,60</div>
+      <div class="usd">USD 575.155,44</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Agronasaja SRL</b> · Estado Patrimonial al 29-05-2026<br/>
+    Datos consolidados desde Sistema Finnegans · Valuación a precios pizarra BCR · Excluye contratos anulados y Pend. de liq. negativos
+  </div>
+
+</div>
+
+<script>
+const dineroFmt = (v) => '$ ' + Math.round(v).toLocaleString('es-AR');
+const usdFmt = (v) => 'USD ' + Math.round(v).toLocaleString('es-AR');
+
+// Donut: composición patrimonial
+new Chart(document.getElementById('donut'), {
+  type:'doughnut',
+  data:{
+    labels:['Cuentas por Cobrar','Cuentas por Pagar','Stock'],
+    datasets:[{
+      data:[1516580.44, 2105785.00, 1164360.00],
+      backgroundColor:['#3b82f6','#dc2626','#16a34a'],
+      borderColor:'#fff',borderWidth:3, hoverOffset:8
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{boxWidth:12,boxHeight:12,padding:14,font:{size:12}}},
+      tooltip:{callbacks:{label:(c)=> c.label+': '+usdFmt(c.parsed)}}
+    },
+    cutout:'62%'
+  }
+});
+
+// Bars: top cultivos por importe pendiente (USD), suma venta+compra
+const topData = [
+  {cultivo:'Grano Soja',          v: 899580.00,  c: 208890.00 + 583440.00},
+  {cultivo:'Semilla Soja',        v: 0,          c: 95370.00 + 453420.00},
+  {cultivo:'Grano Maíz',          v: 600660.00,  c: 61020.00 + 52920.00},
+  {cultivo:'Semilla Trigo Pan',   v: 0,          c: 13568.00 + 552472.00},
+  {cultivo:'Grano Trigo Pan',     v: 8240.44,    c: 11414.00 + 66144.00},
+  {cultivo:'Grano Maíz Pisingallo',v: 8100.00,   c: 0},
+  {cultivo:'Grano Arveja',        v: 0,          c: 7127.00},
+];
+topData.sort((a,b)=> (b.v+b.c)-(a.v+a.c));
+new Chart(document.getElementById('bars'), {
+  type:'bar',
+  data:{
+    labels: topData.map(r=>r.cultivo),
+    datasets:[
+      {label:'Venta (CxC)', data:topData.map(r=>r.v), backgroundColor:'#3b82f6', borderRadius:4},
+      {label:'Compra (CxP)',data:topData.map(r=>r.c), backgroundColor:'#dc2626', borderRadius:4},
+    ]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'bottom',labels:{boxWidth:12,boxHeight:12,padding:14,font:{size:12}}},
+      tooltip:{callbacks:{label:(c)=> c.dataset.label+': '+usdFmt(c.parsed.x)}}
+    },
+    scales:{
+      x:{stacked:true,ticks:{callback:(v)=> 'US$ '+(v/1000).toFixed(0)+'k',font:{size:10}},grid:{color:'#f1f5f9'}},
+      y:{stacked:true,ticks:{font:{size:11}},grid:{display:false}}
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -49,6 +49,10 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/index.html
+          # Cierres patrimoniales (HTMLs estáticos para compartir como link)
+          if [ -d cierres ]; then
+            cp -r cierres _site/cierres
+          fi
           # opcional: archivo CNAME si en el futuro tienen dominio propio
           # echo "tablero.agronasaja.com.ar" > _site/CNAME
 
