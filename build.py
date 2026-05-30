@@ -381,6 +381,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .pg-alert.proximo30{background:#eff6ff;border-color:var(--blue2);color:#1e40af}
   .pg-alert.sinfecha{background:#f8fafc;border-color:#94a3b8;color:#475569}
 
+  /* Filtros sticky: quedan pegados arriba al hacer scroll dentro de la página. */
+  #pg-filterbar{position:sticky;top:54px;z-index:20;box-shadow:0 4px 10px -6px rgba(15,23,42,.18)}
+
   #pg-tbl{font-size:12.5px}
   #pg-tbl thead th{background:var(--blue);color:#fff;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;text-align:left;position:sticky;top:0;z-index:2}
   #pg-tbl thead th.num{text-align:right}
@@ -812,8 +815,8 @@ HTML_TEMPLATE = r"""<!doctype html>
         <button class="pago-toggle" data-pago="pagado" style="padding:10px 24px;border:1px solid var(--line);border-left:0;background:#fff;color:var(--ink);border-radius:0 8px 8px 0;cursor:pointer;font-weight:500;font-size:13px">✓ Pagados <span style="font-size:11px;opacity:.7" id="pg-toggle-pago">(—)</span></button>
       </div>
 
-      <!-- Filtros -->
-      <div class="filterbar">
+      <!-- Filtros (sticky al hacer scroll) -->
+      <div class="filterbar" id="pg-filterbar">
         <div><label>CLIENTE</label><select id="pg-cliente"><option value="">Todos</option></select></div>
         <div><label>ESTADO FECHA</label><select id="pg-estado">
           <option value="">Todos</option>
@@ -4131,7 +4134,7 @@ function pgFiltered(){
   const e = document.getElementById("pg-estado").value;
   const m = document.getElementById("pg-mes").value;
   const q = (document.getElementById("pg-q").value||"").toLowerCase().trim();
-  return PG_DATA.filter(r => {
+  const out = PG_DATA.filter(r => {
     if(PG_TOGGLE_PAGO === "pagado" && !r.pagado) return false;
     if(PG_TOGGLE_PAGO === "pendiente" && r.pagado) return false;
     if(c && r.cliente !== c) return false;
@@ -4140,6 +4143,16 @@ function pgFiltered(){
     if(e && pgEstado(r) !== e) return false;
     return true;
   });
+  // Orden cronológico por fecha_pago ascendente. Sin fecha → al final.
+  out.sort((a, b) => {
+    const fa = a.fecha_pago || "";
+    const fb = b.fecha_pago || "";
+    if(!fa && !fb) return 0;
+    if(!fa) return 1;
+    if(!fb) return -1;
+    return fa.localeCompare(fb);
+  });
+  return out;
 }
 
 function pgUpdateToggleCounters(){
