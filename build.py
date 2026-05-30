@@ -437,6 +437,45 @@ HTML_TEMPLATE = r"""<!doctype html>
   /* layout 2-col */
   .row2{display:grid;grid-template-columns:2fr 1fr;gap:16px}
   @media (max-width: 1100px){ .row2{grid-template-columns:1fr} }
+
+  /* ====== Mi Bandeja ====== */
+  #mb-filterbar{position:sticky;top:54px;z-index:20;box-shadow:0 4px 10px -6px rgba(15,23,42,.18)}
+  .mb-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+  .mb-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative;display:flex;flex-direction:column;gap:10px;transition:box-shadow .15s}
+  .mb-card:hover{box-shadow:0 4px 14px -6px rgba(15,23,42,.12)}
+  .mb-card.urg-alta{border-left:4px solid #dc2626;background:#fff7f7}
+  .mb-card.urg-media{border-left:4px solid #f59e0b;background:#fffaf0}
+  .mb-card.urg-baja{border-left:4px solid #94a3b8}
+  .mb-card.estado-respondido{opacity:.55;background:#f0fdf4;border-left-color:#16a34a}
+  .mb-card.estado-archivado{opacity:.4;background:#f8fafc}
+  .mb-card-head{display:flex;align-items:start;justify-content:space-between;gap:8px}
+  .mb-card-head h4{font-size:14px;line-height:1.35;margin:0;color:var(--ink);font-weight:600}
+  .mb-card.estado-respondido h4{text-decoration:line-through}
+  .mb-chip{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+  .mb-chip.urg-alta{background:#fee2e2;color:#991b1b}
+  .mb-chip.urg-media{background:#fef3c7;color:#92400e}
+  .mb-chip.urg-baja{background:#f1f5f9;color:#475569}
+  .mb-chip.cat{background:#dbeafe;color:#1e40af}
+  .mb-meta{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .mb-meta .sender{font-weight:600;color:#1e3a8a}
+  .mb-section-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+  .mb-card textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-family:inherit;font-size:12.5px;resize:vertical;min-height:46px;color:var(--ink);background:#fff;line-height:1.45}
+  .mb-card textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+  .mb-card.readonly textarea{background:#f8fafc;border-color:transparent;pointer-events:none}
+  .mb-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;padding-top:10px;border-top:1px dashed var(--line)}
+  .mb-actions button{padding:5px 10px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;font-size:11.5px;color:var(--ink)}
+  .mb-actions button:hover{border-color:var(--blue);color:var(--blue)}
+  .mb-actions button.primary{background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600}
+  .mb-actions button.primary:hover{filter:brightness(.95);color:#fff}
+  .mb-actions button.danger{color:#dc2626;border-color:#fecaca}
+  .mb-actions button.danger:hover{background:#fef2f2;color:#dc2626}
+  .mb-actions .outlook-link{margin-left:auto;font-size:11px;color:var(--blue);text-decoration:none;padding:5px 8px;border-radius:6px;border:1px solid var(--line)}
+  .mb-actions .outlook-link:hover{background:#eff5ff}
+  .mb-empty{padding:60px 20px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:12px;background:#fafbff;grid-column:1/-1}
+
+  /* gate visual: si el usuario no es propietario, ocultar botones de edicion */
+  body.mb-readonly .mb-edit-only{display:none !important}
+  body.mb-readonly #mb-readonly-banner{display:block}
 </style>
 </head>
 <body>
@@ -464,6 +503,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="nav-group">Posición General</div>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+      <div class="nav-group nav-internal" style="display:none">Personal</div>
+      <a class="nav-item nav-internal" style="display:none" data-go-tab="personal" data-go-sub="mb-bandeja" data-title="Mi Bandeja · Pendientes de Mail">📬 Mi Bandeja</a>
     </nav>
   </aside>
 
@@ -485,6 +526,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="tab" data-tab="compra">COMPRA <span class="count" id="cnt-compra">0</span></div>
     <div class="tab active" data-tab="venta">VENTA <span class="count" id="cnt-venta">0</span></div>
     <div class="tab" data-tab="posicion">POSICIÓN GENERAL <span class="count" id="cnt-pos">0</span></div>
+    <div class="tab nav-internal" data-tab="personal" style="display:none">PERSONAL <span class="count" id="cnt-personal">0</span></div>
   </div>
 
   <!-- ============ COMPRA ============ -->
@@ -1197,6 +1239,68 @@ HTML_TEMPLATE = r"""<!doctype html>
     </div><!-- /subpanel pn-financiera -->
 
   </div>
+
+  <!-- ============ PERSONAL · Mi Bandeja ============ -->
+  <div class="panel nav-internal" data-panel="personal" style="display:none">
+    <div class="subtabs">
+      <button class="subtab active" data-sub="mb-bandeja">📬 Mi Bandeja</button>
+    </div>
+
+    <div class="subpanel active" data-sub-panel="mb-bandeja">
+
+      <div id="mb-readonly-banner" style="display:none;padding:12px 14px;border-radius:10px;background:#fef3c7;border-left:4px solid #f59e0b;color:#92400e;margin-bottom:14px;font-size:13px">
+        ⚠️ <b>Modo lectura</b> · Estás viendo la bandeja personal de Ezequiel. Solo el propietario puede editar las notas.
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpis" id="mb-kpis"></div>
+
+      <!-- Filtros sticky -->
+      <div class="filterbar" id="mb-filterbar">
+        <div><label>URGENCIA</label><select id="mb-urgencia">
+          <option value="">Todas</option>
+          <option value="alta">⚠ Alta</option>
+          <option value="media">● Media</option>
+          <option value="baja">○ Baja</option>
+        </select></div>
+        <div><label>CATEGORÍA</label><select id="mb-categoria">
+          <option value="">Todas</option>
+          <option value="interno">🏢 Interno (Agronasaja)</option>
+          <option value="compra">🌾 Compra</option>
+          <option value="venta">📦 Venta</option>
+          <option value="logistica">🚚 Logística</option>
+          <option value="liquidacion">💰 Liquidación</option>
+          <option value="banco">🏦 Banco</option>
+          <option value="otro">📂 Otro</option>
+        </select></div>
+        <div><label>ESTADO</label><select id="mb-estado">
+          <option value="pendiente">Pendientes</option>
+          <option value="">Todos</option>
+          <option value="respondido">Respondidos</option>
+          <option value="archivado">Archivados</option>
+        </select></div>
+        <div><label>BUSCAR</label><input type="text" id="mb-q" placeholder="remitente, asunto, nota…" /></div>
+        <button class="clear" id="mb-clear">Limpiar</button>
+        <button class="clear mb-edit-only" id="mb-add" style="background:#16a34a;color:#fff;border-color:#16a34a">+ Nueva nota</button>
+        <div class="count" id="mb-count">0 / 0</div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="mb-edit-only" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
+        <button class="clear" id="mb-backup" style="background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600">💾 Backup ahora</button>
+        <span id="mb-backup-info" style="color:var(--muted)"></span>
+        <span style="margin-left:auto;color:var(--muted);font-size:11.5px" id="mb-storage-info"></span>
+      </div>
+
+      <!-- Cards -->
+      <div id="mb-cards" class="mb-cards-grid"></div>
+
+      <div style="margin-top:18px;padding:14px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <strong>Cómo se usa</strong>: cada card es un mail pendiente. Editá la <b>nota interna</b> con el contexto y la <b>acción a tomar</b>. Marcá <b>Respondido</b> cuando lo cerrás. Las notas se guardan en tu navegador y se sincronizan al repo si tenés PAT configurado en Administración.
+      </div>
+
+    </div><!-- /subpanel mb-bandeja -->
+  </div><!-- /panel personal -->
 
     </div><!-- /.content -->
   </div><!-- /.main -->
@@ -5465,6 +5569,377 @@ function fnRender(){
 fnInitFiltros();
 fnRender();
 
+
+/* ============================================================
+   ============  MI BANDEJA · Notas de Mail (Personal)  ========
+   ============================================================
+   Cada usuario interno (@agronasaja.com.ar) tiene su propia bandeja
+   personal con notas sobre mails pendientes. El owner del archivo
+   actual es ehussen — los demas internos lo ven en modo lectura. */
+
+const MB_OWNER = "ehussen@agronasaja.com.ar";
+const MB_STORAGE_KEY = "tablero-granos-mb-ehussen-v1";
+const MB_REPO_PATH = "data/bandeja_ehussen.json";
+
+// Defaults pre-poblados con accionables detectados en la bandeja real
+const MB_DEFAULTS = [
+  { id:"mb-sangui-soja1", asunto:"CONTRATO SOJA 1° LOS SANGUIS",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-17",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Sofia pidió hacer contrato de compra a Los Sanguis por 1122.02 tn de Soja 1° (140 tn ya salieron del campo, 980 tn pendientes según rinde estimado).",
+    accion:"Cargar contrato en Finnegans contra el remito ya cargado. Confirmar a Sofia + Matías + Tomás cuando esté hecho.",
+    outlook:"" },
+  { id:"mb-sangui-soja2", asunto:"CONTRATO SOJA 2° LOS SANGUIS",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-17",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Los Sanguis por 273 tn de Soja 2°, todo pendiente de cosechar.",
+    accion:"Cargar contrato en Finnegans (campaña 25-26). Confirmar a Sofia.",
+    outlook:"" },
+  { id:"mb-sangui-maiz1", asunto:"CONTRATO MAIZ 1° LOS SANGUIS",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-17",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Los Sanguis por 840 tn de Maíz 1° (sembrado en octubre).",
+    accion:"Cargar contrato en Finnegans. Confirmar a Sofia + Matías + JP + Tomás.",
+    outlook:"" },
+  { id:"mb-sangui-maiztardio", asunto:"CONTRATO MAIZ TARDÍO / 2DA LOS SANGUIS",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-17",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Los Sanguis por 1949.08 tn de Maíz Tardío/2da.",
+    accion:"Cargar contrato en Finnegans. Confirmar a Sofia + Matías + JP + Tomás.",
+    outlook:"" },
+  { id:"mb-sangui-girasol", asunto:"CONTRATO GIRASOL LOS SANGUIS",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-17",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra por 113.359 tn de Girasol a Los Sanguis. Remito ya cargado en depósito La Isabel 25-26, falta asociarlo.",
+    accion:"Cargar contrato + asociar remito existente en Finnegans.",
+    outlook:"" },
+  { id:"mb-delsen-soja1", asunto:"CONTRATO SOJA 1° DELSEN",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-16",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Delsen por 1342.21 tn de Soja 1°.",
+    accion:"Cargar contrato en Finnegans. Confirmar a Sofia + Matías + Tomás.",
+    outlook:"" },
+  { id:"mb-delsen-soja2", asunto:"CONTRATO SOJA 2° DELSEN",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-16",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Delsen por 330.55 tn de Soja 2°.",
+    accion:"Cargar contrato en Finnegans. Confirmar a Sofia.",
+    outlook:"" },
+  { id:"mb-delsen-maiz1", asunto:"CONTRATOS MAIZ PRIMERA DELSEN",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-15",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"DOS contratos a Delsen: (1) 1296 tn Maíz Primera. (2) 399.2 tn por el negocio húmedo de maíz que Delsen ya facturó (Fc N° 630). Excel adjunto con detalle.",
+    accion:"Cargar AMBOS contratos en Finnegans. Vincular Fc 630 al contrato (2).",
+    outlook:"" },
+  { id:"mb-delsen-maiztardio", asunto:"CONTRATO MAIZ TARDÍO DELSEN",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-16",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Delsen por 1582.51 tn de Maíz Tardío.",
+    accion:"Cargar contrato en Finnegans.",
+    outlook:"" },
+  { id:"mb-delsen-girasol", asunto:"CONTRATO Y FACTURA GIRASOL DELSEN",
+    remitente:"Sofia Alvarez · salvarez@agronasaja.com.ar", fecha:"2026-04-16",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Contrato de compra a Delsen por 131.56 tn de Girasol. Adjunta factura 50% Delsen (ya entregado).",
+    accion:"Cargar contrato + factura en Finnegans. Vincular entrega.",
+    outlook:"" },
+  { id:"mb-jpg-convenios-fina", asunto:"Confección contratos Compensación Convenios FINA 25-26",
+    remitente:"JP Gonzalez · jpgonzalez@agronasaja.com.ar", fecha:"2026-04-23",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Planilla con TODOS los contratos venta/compra a vincular para dejar compensados los convenios FINA. Mayoría requiere liquidación falsa posterior.",
+    accion:"Revisar planilla adjunta. Cargar contratos uno por uno. Coordinar con Carla / Sofia / Tomás. Avisar a JP cuando esté.",
+    outlook:"" },
+  { id:"mb-ffior-sauthier", asunto:"FC Servicio Multiplicación Semilla Trigo - Marcelo Sauthier",
+    remitente:"Federico Fiorito · ffiorito@agronasaja.com.ar", fecha:"2026-04-23",
+    urgencia:"media", categoria:"compra", estado:"pendiente",
+    nota:"Sauthier pasó factura por servicio multiplicación semilla trigo. Fede ya me la mandó. Sauthier quiere CHEQUE (no fijación).",
+    accion:"Coordinar con Mariana Zanchetta para emitir cheque. Avisar a Fede y a Sauthier cuando esté.",
+    outlook:"" },
+  { id:"mb-baglietto-canje", asunto:"Canje trigo Agro Baglietto 2026 — 250 tn × 230 USD",
+    remitente:"Juan Baglietto · jbaglietto@agronasaja.com.ar", fecha:"2026-05-21",
+    urgencia:"alta", categoria:"compra", estado:"pendiente",
+    nota:"Juan confirma: hay que cerrar canje de trigo 2026 con Agro Baglietto por 250 tn a 230 USD. Pasarle todo al hermano (jcampuzano / fpavese) para que armen el contrato.",
+    accion:"Cargar contrato. Pasar info a Campuzano/Pavese. Cerrar canje con la contraparte.",
+    outlook:"" },
+  { id:"mb-ffior-sanchez", asunto:"Forward trigo Miguel Sanchez — 30 tn × 230 USD diciembre",
+    remitente:"Federico Fiorito · ffiorito@agronasaja.com.ar", fecha:"2026-05-12",
+    urgencia:"media", categoria:"compra", estado:"pendiente",
+    nota:"Fede cerró canje forward con Miguel Sanchez: 30 tn trigo diciembre 230 USD puerto Rosario Sur. Parte del canje cancela compra de semilla trigo (~3567 USD).",
+    accion:"Cargar contrato forward. Vincular cancelación de FC semilla trigo. Coordinar con Mariana.",
+    outlook:"" },
+  { id:"mb-mendez-soja", asunto:"Negocio MM Mendez — 60 tn soja + 2 cupos × 317 USD",
+    remitente:"Ramón Podesta · rpodesta@agronasaja.com.ar", fecha:"2026-05-07",
+    urgencia:"media", categoria:"compra", estado:"pendiente",
+    nota:"Manuel M Mendez cumplió 180 tn soja pendiente. Va a entregar 60 tn más para seguir pagando deuda. Ramón confirmó precio 317 USD para 2 nuevos cupos.",
+    accion:"Cargar contrato/entrega. Confirmar con Santiago/Mendez. Seguir cobro de deuda.",
+    outlook:"" },
+];
+
+let MB_DATA = [];
+let MB_PAT_OK = false;
+let MB_OWNER_MODE = false;
+let MB_BACKUP_SHA = null;
+let MB_LAST_SAVED = null;
+
+function mbGetUser(){
+  try{
+    const m = (document.cookie||"").match(/(?:^|; )agronasaja_user=([^;]*)/);
+    if(!m) return "";
+    return decodeURIComponent(m[1]).toLowerCase();
+  } catch(e){ return ""; }
+}
+function mbIsInternal(user){ return /@agronasaja\.com\.ar$/i.test(user||""); }
+
+function mbSave(){
+  try{ localStorage.setItem(MB_STORAGE_KEY, JSON.stringify(MB_DATA)); }catch(e){}
+  if(MB_OWNER_MODE) mbAutoBackup();
+}
+
+async function mbLoadInitial(){
+  // 1) intento del repo (datos canónicos)
+  let fromRepo = null;
+  try{
+    const r = await fetch(`./${MB_REPO_PATH}?t=${Date.now()}`, {cache:"no-store"});
+    if(r.ok) fromRepo = await r.json();
+  } catch(e){}
+
+  if(Array.isArray(fromRepo) && fromRepo.length){
+    MB_DATA = fromRepo;
+  } else {
+    // 2) localStorage
+    try{
+      const ls = JSON.parse(localStorage.getItem(MB_STORAGE_KEY) || "null");
+      if(Array.isArray(ls) && ls.length) MB_DATA = ls;
+      else MB_DATA = JSON.parse(JSON.stringify(MB_DEFAULTS));
+    } catch(e){ MB_DATA = JSON.parse(JSON.stringify(MB_DEFAULTS)); }
+  }
+}
+
+function mbFiltered(){
+  const u = document.getElementById("mb-urgencia").value;
+  const c = document.getElementById("mb-categoria").value;
+  const e = document.getElementById("mb-estado").value;
+  const q = (document.getElementById("mb-q").value||"").toLowerCase().trim();
+  return MB_DATA.filter(r => {
+    if(u && r.urgencia !== u) return false;
+    if(c && r.categoria !== c) return false;
+    if(e && r.estado !== e) return false;
+    if(q){
+      const blob = `${r.asunto||""} ${r.remitente||""} ${r.nota||""} ${r.accion||""}`.toLowerCase();
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b) => {
+    // pendientes primero, luego por urgencia, luego por fecha desc
+    const stOrder = {pendiente:0, respondido:1, archivado:2};
+    if(stOrder[a.estado] !== stOrder[b.estado]) return stOrder[a.estado] - stOrder[b.estado];
+    const urgOrder = {alta:0, media:1, baja:2};
+    if(urgOrder[a.urgencia] !== urgOrder[b.urgencia]) return (urgOrder[a.urgencia]||9) - (urgOrder[b.urgencia]||9);
+    return (b.fecha||"").localeCompare(a.fecha||"");
+  });
+}
+
+function mbRenderKpis(){
+  const pend = MB_DATA.filter(r => r.estado === "pendiente").length;
+  const alta = MB_DATA.filter(r => r.estado === "pendiente" && r.urgencia === "alta").length;
+  const respondidos = MB_DATA.filter(r => r.estado === "respondido").length;
+  const total = MB_DATA.length;
+  document.getElementById("mb-kpis").innerHTML = `
+    <div class="kpi red"><div class="lbl">PENDIENTES URGENTES</div><div class="val">${alta}</div></div>
+    <div class="kpi orange"><div class="lbl">TOTAL PENDIENTES</div><div class="val">${pend}</div></div>
+    <div class="kpi green"><div class="lbl">RESPONDIDOS</div><div class="val">${respondidos}</div></div>
+    <div class="kpi"><div class="lbl">TOTAL EN BANDEJA</div><div class="val">${total}</div></div>
+  `;
+  const cnt = document.getElementById("cnt-personal");
+  if(cnt) cnt.textContent = pend;
+}
+
+function mbEscape(s){
+  return String(s||"").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function mbRender(){
+  mbRenderKpis();
+  const filt = mbFiltered();
+  document.getElementById("mb-count").textContent = `${filt.length} / ${MB_DATA.length}`;
+  const cont = document.getElementById("mb-cards");
+  if(!filt.length){
+    cont.innerHTML = `<div class="mb-empty">📭 Sin mails para los filtros aplicados.${MB_OWNER_MODE ? ' Apretá <b>+ Nueva nota</b> para agregar uno.' : ''}</div>`;
+    return;
+  }
+  const ro = MB_OWNER_MODE ? "" : "readonly";
+  cont.innerHTML = filt.map(r => {
+    const urgLbl = {alta:"⚠ ALTA", media:"● MEDIA", baja:"○ BAJA"}[r.urgencia] || r.urgencia;
+    const catLbl = {interno:"🏢 Interno", compra:"🌾 Compra", venta:"📦 Venta", logistica:"🚚 Logística", liquidacion:"💰 Liquidación", banco:"🏦 Banco", otro:"📂 Otro"}[r.categoria] || r.categoria || "—";
+    const estadoCls = `estado-${r.estado||"pendiente"}`;
+    return `
+    <div class="mb-card urg-${r.urgencia||"baja"} ${estadoCls} ${ro}" data-id="${r.id}">
+      <div class="mb-card-head">
+        <h4>${mbEscape(r.asunto)}</h4>
+        <span class="mb-chip urg-${r.urgencia||"baja"}">${urgLbl}</span>
+      </div>
+      <div class="mb-meta">
+        <span class="sender">${mbEscape(r.remitente)}</span>
+        <span>·</span><span>${mbEscape(r.fecha)}</span>
+        <span>·</span><span class="mb-chip cat">${catLbl}</span>
+      </div>
+      <div>
+        <div class="mb-section-lbl">Nota interna</div>
+        <textarea data-id="${r.id}" data-k="nota" rows="2" placeholder="Contexto / qué pasó / a quién involucra…">${mbEscape(r.nota)}</textarea>
+      </div>
+      <div>
+        <div class="mb-section-lbl">Acción a tomar</div>
+        <textarea data-id="${r.id}" data-k="accion" rows="2" placeholder="Qué hay que hacer concretamente y a quién avisarle…">${mbEscape(r.accion)}</textarea>
+      </div>
+      <div class="mb-actions">
+        ${MB_OWNER_MODE ? (r.estado === "pendiente"
+          ? `<button class="primary" data-id="${r.id}" data-act="resolver">✓ Marcar respondido</button>`
+          : `<button data-id="${r.id}" data-act="reabrir">↺ Reabrir</button>`) : ""}
+        ${MB_OWNER_MODE && r.estado !== "archivado" ? `<button data-id="${r.id}" data-act="archivar">📁 Archivar</button>` : ""}
+        ${MB_OWNER_MODE ? `<button class="danger" data-id="${r.id}" data-act="borrar">🗑️ Borrar</button>` : ""}
+        ${r.outlook ? `<a class="outlook-link" href="${mbEscape(r.outlook)}" target="_blank">↗ Abrir en Outlook</a>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+
+  // Listeners textareas
+  if(MB_OWNER_MODE){
+    cont.querySelectorAll("textarea").forEach(t => {
+      t.addEventListener("blur", () => {
+        const r = MB_DATA.find(x => x.id === t.dataset.id);
+        if(!r) return;
+        const v = t.value;
+        if(r[t.dataset.k] === v) return;
+        r[t.dataset.k] = v;
+        mbSave();
+      });
+    });
+    cont.querySelectorAll("button[data-act]").forEach(b => {
+      b.addEventListener("click", () => {
+        const r = MB_DATA.find(x => x.id === b.dataset.id);
+        if(!r) return;
+        const act = b.dataset.act;
+        if(act === "resolver") r.estado = "respondido";
+        else if(act === "reabrir") r.estado = "pendiente";
+        else if(act === "archivar") r.estado = "archivado";
+        else if(act === "borrar"){
+          if(!confirm(`¿Borrar la nota "${r.asunto}"?`)) return;
+          MB_DATA = MB_DATA.filter(x => x.id !== r.id);
+        }
+        mbSave();
+        mbRender();
+      });
+    });
+  }
+}
+
+function mbStorageInfo(){
+  try{
+    const bytes = (localStorage.getItem(MB_STORAGE_KEY)||"").length;
+    document.getElementById("mb-storage-info").textContent = `${MB_DATA.length} notas · ${(bytes/1024).toFixed(1)} KB`;
+  } catch(e){}
+}
+
+// Wire-up filtros
+["mb-urgencia","mb-categoria","mb-estado","mb-q"].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener(id === "mb-q" ? "input" : "change", mbRender);
+});
+const mbClearBtn = document.getElementById("mb-clear");
+if(mbClearBtn) mbClearBtn.addEventListener("click", () => {
+  ["mb-urgencia","mb-categoria","mb-q"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("mb-estado").value = "pendiente";
+  mbRender();
+});
+const mbAddBtn = document.getElementById("mb-add");
+if(mbAddBtn) mbAddBtn.addEventListener("click", () => {
+  const id = "mb-" + Date.now();
+  MB_DATA.unshift({
+    id, asunto:"(nuevo) ", remitente:"", fecha: new Date().toISOString().slice(0,10),
+    urgencia:"media", categoria:"interno", estado:"pendiente",
+    nota:"", accion:"", outlook:""
+  });
+  mbSave();
+  mbRender();
+  setTimeout(() => {
+    const c = document.querySelector(`.mb-card[data-id="${id}"]`);
+    if(c){ c.scrollIntoView({behavior:"smooth", block:"center"}); c.querySelector("textarea")?.focus(); }
+  }, 50);
+});
+const mbBackupBtn = document.getElementById("mb-backup");
+if(mbBackupBtn) mbBackupBtn.addEventListener("click", async () => {
+  mbBackupBtn.textContent = "Guardando…";
+  const ok = await mbAutoBackup(true);
+  mbBackupBtn.textContent = ok ? "✓ Guardado" : "💾 Backup ahora";
+  setTimeout(() => mbBackupBtn.textContent = "💾 Backup ahora", 2200);
+});
+
+/* === Auto-backup al repo (mismo PAT que Proyectado Pagos) === */
+async function mbGetBackupSha(){
+  const pat = (typeof pgGetPAT === "function") ? pgGetPAT() : "";
+  if(!pat) return null;
+  try{
+    const r = await fetch(`https://api.github.com/repos/${PG_REPO_OWNER}/${PG_REPO_NAME}/contents/${MB_REPO_PATH}`, {
+      headers:{ "Authorization":"Bearer "+pat, "Accept":"application/vnd.github+json" }
+    });
+    if(r.ok){ const j = await r.json(); return j.sha || null; }
+  } catch(e){}
+  return null;
+}
+let mbAutoTimer = null;
+async function mbAutoBackup(forceNow){
+  const pat = (typeof pgGetPAT === "function") ? pgGetPAT() : "";
+  if(!pat) return false;
+  if(!forceNow){
+    // debounce 2s
+    if(mbAutoTimer) clearTimeout(mbAutoTimer);
+    mbAutoTimer = setTimeout(() => mbAutoBackup(true), 2000);
+    return true;
+  }
+  if(MB_BACKUP_SHA === null) MB_BACKUP_SHA = await mbGetBackupSha();
+  const body = {
+    message: `Mi Bandeja ehussen · ${new Date().toISOString()}`,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(MB_DATA, null, 2)))),
+  };
+  if(MB_BACKUP_SHA) body.sha = MB_BACKUP_SHA;
+  try{
+    const r = await fetch(`https://api.github.com/repos/${PG_REPO_OWNER}/${PG_REPO_NAME}/contents/${MB_REPO_PATH}`, {
+      method:"PUT",
+      headers:{ "Authorization":"Bearer "+pat, "Accept":"application/vnd.github+json", "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+    if(r.ok){
+      const j = await r.json();
+      MB_BACKUP_SHA = j.content?.sha || null;
+      MB_LAST_SAVED = Date.now();
+      const info = document.getElementById("mb-backup-info");
+      if(info) info.textContent = `✓ guardado ${new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`;
+      mbStorageInfo();
+      return true;
+    } else if(r.status === 409 || r.status === 422){
+      MB_BACKUP_SHA = await mbGetBackupSha();
+      return await mbAutoBackup(true);
+    }
+  } catch(e){}
+  return false;
+}
+
+/* === Gate: mostrar nav-internal solo si usuario es @agronasaja.com.ar === */
+(function mbInit(){
+  const user = mbGetUser();
+  const internal = mbIsInternal(user);
+  if(!internal) return;  // usuarios no internos no ven la pestaña
+  document.querySelectorAll(".nav-internal").forEach(el => el.style.display = "");
+  // owner mode: solo el owner edita
+  MB_OWNER_MODE = (user === MB_OWNER);
+  if(!MB_OWNER_MODE) document.body.classList.add("mb-readonly");
+  // cargar datos y renderizar
+  (async () => {
+    await mbLoadInitial();
+    mbRender();
+    mbStorageInfo();
+  })();
+})();
 
 </script>
 </body>

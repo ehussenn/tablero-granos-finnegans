@@ -135,13 +135,11 @@ export default {
       const pinCorrecto = usuarios[email];
       if (pinCorrecto && pin === String(pinCorrecto)) {
         const token = await crearToken(email, secret);
-        return new Response(null, {
-          status: 302,
-          headers: {
-            "Location": "/",
-            "Set-Cookie": `${COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_HOURS*3600}`,
-          },
-        });
+        const h = new Headers({ "Location": "/" });
+        h.append("Set-Cookie", `${COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_HOURS*3600}`);
+        // Cookie LEGIBLE desde JS (no es de auth, solo para que la UI sepa quien esta logueado y muestre la pestania Personal correspondiente)
+        h.append("Set-Cookie", `agronasaja_user=${encodeURIComponent(email)}; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_HOURS*3600}`);
+        return new Response(null, { status: 302, headers: h });
       }
       return new Response(loginHTML("Usuario o PIN incorrecto."), {
         status: 401, headers: { "Content-Type": "text/html; charset=utf-8" },
@@ -150,13 +148,10 @@ export default {
 
     // ---- GET /logout ----
     if (url.pathname === "/logout") {
-      return new Response(null, {
-        status: 302,
-        headers: {
-          "Location": "/",
-          "Set-Cookie": `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
-        },
-      });
+      const h = new Headers({ "Location": "/" });
+      h.append("Set-Cookie", `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
+      h.append("Set-Cookie", `agronasaja_user=; Secure; SameSite=Lax; Path=/; Max-Age=0`);
+      return new Response(null, { status: 302, headers: h });
     }
 
     // ---- Verificar sesión ----
