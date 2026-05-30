@@ -403,20 +403,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   #pg-tbl tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:13px;border-top:2px solid var(--blue);position:sticky;bottom:0}
   #pg-tbl tfoot td.num{text-align:right;color:var(--blue);font-variant-numeric:tabular-nums}
 
-  /* Modo lectura (sin PAT configurado) */
-  body.pg-reader #pg-tbl tbody td input { pointer-events:none; background:transparent; border-color:transparent }
-  body.pg-reader #pg-tbl tbody td input:hover, body.pg-reader #pg-tbl tbody td input:focus { background:transparent; border-color:transparent; box-shadow:none }
-  body.pg-reader #pg-tbl tbody td.action,
-  body.pg-reader #pg-tbl thead th:last-child,
-  body.pg-reader #pg-add-row,
-  body.pg-reader #pg-massbar,
-  body.pg-reader #pg-tbl thead th:first-child,
-  body.pg-reader #pg-tbl tbody td:first-child,
-  body.pg-reader #pg-import,
+  /* Modo lectura (sin PAT configurado):
+     Sin PAT los cambios igual se editan y guardan en localStorage; solo se pierde el auto-backup
+     al repo. Por eso solo escondemos el boton viejo de config (reemplazado por "Administración"). */
   body.pg-reader #pg-autobackup-cfg{ display:none !important }
-  body.pg-reader .pago-toggle{ opacity:.95 }
   #pg-reader-banner{display:none}
-  body.pg-reader #pg-reader-banner{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#dbeafe;border-left:4px solid var(--blue);border-radius:8px;color:#1e3a8a;font-size:13px;margin-bottom:12px}
+  body.pg-reader #pg-reader-banner{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;color:#854d0e;font-size:13px;margin-bottom:12px}
   body.pg-reader #pg-reader-banner .lbl{font-weight:700}
 
   /* tabla con fila de totales sticky al pie */
@@ -800,10 +792,10 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       <!-- Banner modo lectura -->
       <div id="pg-reader-banner">
-        <span style="font-size:20px">👁️</span>
+        <span style="font-size:20px">⚠️</span>
         <div>
-          <div class="lbl">Modo lectura</div>
-          <div style="opacity:.85">Estás viendo los pagos actualizados al último guardado en el servidor. Solo la persona que administra el tablero puede modificar.</div>
+          <div class="lbl">Auto-backup desactivado</div>
+          <div style="opacity:.85">Podés editar / agregar / borrar filas — los cambios se guardan en este navegador. Para que se backupeen al repo automáticamente, configurá el PAT en el botón <b>Administración</b> (arriba a la derecha).</div>
         </div>
       </div>
 
