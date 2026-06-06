@@ -1292,6 +1292,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     <!-- Acciones -->
     <div class="mb-edit-only" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;align-items:center">
+      <button class="clear" id="mb-refresh" style="background:#1e3a8a;color:#fff;border-color:#1e3a8a;font-weight:600" title="Pulla cards nuevas del repo (los mails que Claude haya agregado desde tu última carga). Tus notas locales no se tocan.">🔄 Actualizar bandeja</button>
       <button class="clear" id="mb-backup" style="background:#16a34a;color:#fff;border-color:#16a34a;font-weight:600">💾 Backup ahora</button>
       <span id="mb-backup-info" style="color:var(--muted)"></span>
       <span style="margin-left:auto;color:var(--muted);font-size:11.5px" id="mb-storage-info"></span>
@@ -5976,6 +5977,58 @@ if(mbBackupBtn) mbBackupBtn.addEventListener("click", async () => {
   const ok = await mbAutoBackup(true);
   mbBackupBtn.textContent = ok ? "✓ Guardado" : "💾 Backup ahora";
   setTimeout(() => mbBackupBtn.textContent = "💾 Backup ahora", 2200);
+});
+
+/* Actualizar manual: pulla las cards nuevas del repo (additive merge — no toca lo editado local) */
+const mbRefreshBtn = document.getElementById("mb-refresh");
+if(mbRefreshBtn) mbRefreshBtn.addEventListener("click", async () => {
+  mbRefreshBtn.disabled = true;
+  mbRefreshBtn.textContent = "Actualizando…";
+  let added = 0, updated = 0;
+  try{
+    const r = await fetch(`./${MB_REPO_PATH}?t=${Date.now()}`, {cache:"no-store"});
+    if(r.ok){
+      const fromRepo = await r.json();
+      if(Array.isArray(fromRepo)){
+        const byId = new Map(MB_DATA.map(c => [c.id, c]));
+        fromRepo.forEach(rc => {
+          const local = byId.get(rc.id);
+          if(!local){
+            MB_DATA.push(rc);
+            added++;
+          } else {
+            // Card ya existe local. Si NO tiene edits del usuario (nota+accion iguales al repo), refresco metadata.
+            // Si tiene edits, no la toco.
+            const localEdited = (local.nota || "").trim() !== (rc.nota || "").trim()
+                              || (local.accion || "").trim() !== (rc.accion || "").trim();
+            if(!localEdited){
+              // refrescar metadata canonica (urgencia, fecha, etc) sin perder estado/fijado del usuario
+              ["asunto","remitente","fecha","urgencia","categoria","bandeja","outlook"].forEach(k => {
+                if(rc[k] !== undefined && rc[k] !== local[k]){ local[k] = rc[k]; updated++; }
+              });
+            }
+          }
+        });
+        if(added || updated){
+          mbSave();
+          mbRender();
+        }
+        mbRefreshBtn.textContent = added > 0 ? `✓ +${added} nuevas` : (updated > 0 ? "✓ Metadata actualizada" : "✓ Al día");
+      } else {
+        mbRefreshBtn.textContent = "✗ Repo sin datos";
+      }
+    } else if(r.status === 404){
+      mbRefreshBtn.textContent = "ℹ Aún sin backup en repo";
+    } else {
+      mbRefreshBtn.textContent = "✗ Error " + r.status;
+    }
+  } catch(e){
+    mbRefreshBtn.textContent = "✗ Sin conexión";
+  }
+  setTimeout(() => {
+    mbRefreshBtn.textContent = "🔄 Actualizar bandeja";
+    mbRefreshBtn.disabled = false;
+  }, 2800);
 });
 
 /* === Auto-backup al repo (mismo PAT que Proyectado Pagos) === */
