@@ -1503,6 +1503,8 @@ const TABLE_COLS = [
   {k:'cantidadmax',                 lbl:'Tn Ajustadas',    num:true, sum:true},
   {k:'cantidadentregada',           lbl:'Tn Entregadas',   num:true, sum:true},
   {k:'_pdteEntrega',                lbl:'Tn Pdte Entrega', num:true, sum:true},
+  {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true},
+  {k:'_pdteLiquidar',               lbl:'Tn Pdte Liquidar',num:true, sum:true},
   {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
   {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
@@ -1607,12 +1609,14 @@ let chartTop=null, chartDonut=null;
 
 function render(){
   // KPIs (posición física, "ajustada" = cantidadmax)
-  let cnt=filtered.length, tnAj=0, tnEnt=0;
+  let cnt=filtered.length, tnAj=0, tnEnt=0, tnLiq=0;
   filtered.forEach(r => {
     tnAj  += r.cantidadmax || 0;
     tnEnt += r.cantidadentregada || 0;
+    tnLiq += r.cantidadliquidada || 0;
   });
   const tnPdt = tnAj - tnEnt;
+  const tnPdtLiq = tnEnt - tnLiq;
   const cumplimiento = tnAj>0 ? tnEnt/tnAj : null;
 
   document.getElementById('kpi-row').innerHTML = `
@@ -1620,27 +1624,32 @@ function render(){
     <div class="kpi"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
     <div class="kpi green"><div class="lbl">Toneladas Entregadas</div><div class="val">${fmt.num(tnEnt)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
     <div class="kpi orange"><div class="lbl">Tn Pendientes de Entrega</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Entregadas</div></div>
+    <div class="kpi red"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Entregadas − Liquidadas (de lo entregado)</div></div>
   `;
 
   // resumen por grano (sin importes)
   const byGrain = {};
   filtered.forEach(r => {
     const p = r.producto || '—';
-    if(!byGrain[p]) byGrain[p] = {cnt:0,tnAj:0,tnEnt:0};
+    if(!byGrain[p]) byGrain[p] = {cnt:0,tnAj:0,tnEnt:0,tnLiq:0};
     byGrain[p].cnt++;
     byGrain[p].tnAj  += r.cantidadmax || 0;
     byGrain[p].tnEnt += r.cantidadentregada || 0;
+    byGrain[p].tnLiq += r.cantidadliquidada || 0;
   });
   const grainOrder = Object.entries(byGrain).sort((a,b)=>b[1].tnAj - a[1].tnAj);
   document.getElementById('grain-meta').textContent = `${grainOrder.length} granos`;
   document.getElementById('grain-grid').innerHTML = grainOrder.map(([g,v]) => {
     const pct = v.tnAj>0 ? v.tnEnt/v.tnAj : 0;
     const pdt = v.tnAj - v.tnEnt;
+    const pdtLiq = v.tnEnt - v.tnLiq;
+    const pctLiq = v.tnEnt>0 ? v.tnLiq/v.tnEnt : 0;
     return `<div class="grain-card ${grainClass(g)}">
       <div class="name"><span>${g}</span><span class="cnt">${v.cnt} contratos</span></div>
       <div class="row"><span class="k">Tn Ajustadas</span><span><b>${fmt.num(v.tnAj)}</b></span></div>
       <div class="row"><span class="k">Tn Entregadas</span><span>${fmt.num(v.tnEnt)} <span style="color:var(--muted)">(${fmt.pct(pct)})</span></span></div>
       <div class="row"><span class="k">Tn Pdte Entrega</span><span style="color:var(--orange)"><b>${fmt.num(pdt)}</b></span></div>
+      <div class="row"><span class="k">Tn Pdte Liquidar</span><span style="color:var(--red)"><b>${fmt.num(pdtLiq)}</b> <span style="color:var(--muted);font-weight:400">(${fmt.pct(pctLiq)} liq.)</span></span></div>
       <div class="bar"><div style="width:${Math.min(100,pct*100)}%"></div></div>
     </div>`;
   }).join('') || '<div class="placeholder">Sin datos para los filtros aplicados</div>';
@@ -1685,6 +1694,7 @@ function render(){
   const getVal = (r, k) => {
     if(k==='_estado') return r.estadoanulacion||'';
     if(k==='_pdteEntrega') return (r.cantidadmax||0) - (r.cantidadentregada||0);
+    if(k==='_pdteLiquidar') return (r.cantidadentregada||0) - (r.cantidadliquidada||0);
     return r[k];
   };
 
@@ -1748,7 +1758,13 @@ function renderFootPos(rows){
       return `<td class="lbl">${label} (${subset.length.toLocaleString('es-AR')})${btn}</td>`;
     }
     if(c.sum === true){
-      const total = subset.reduce((acc,r) => acc + (Number(c.k==='_pdteEntrega' ? ((r.cantidadmax||0)-(r.cantidadentregada||0)) : r[c.k]) || 0), 0);
+      const total = subset.reduce((acc,r) => {
+        let v;
+        if(c.k==='_pdteEntrega') v = (r.cantidadmax||0)-(r.cantidadentregada||0);
+        else if(c.k==='_pdteLiquidar') v = (r.cantidadentregada||0)-(r.cantidadliquidada||0);
+        else v = Number(r[c.k]);
+        return acc + (Number(v) || 0);
+      }, 0);
       return `<td class="num">${fmt.num(total)}</td>`;
     }
     if(c.sum === 'avg'){
