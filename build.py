@@ -2371,6 +2371,8 @@ const CP_TABLE_COLS = [
   {k:'cantidadmax',                 lbl:'Tn Ajustadas',    num:true, sum:true},
   {k:'cantidadentregada',           lbl:'Tn Recibidas',    num:true, sum:true},
   {k:'_cpPdteRecibir',              lbl:'Tn Pdte Recibir', num:true, sum:true},
+  {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true},
+  {k:'_cpPdteLiquidar',             lbl:'Tn Pdte Liquidar',num:true, sum:true},
   {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
   {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
@@ -2383,6 +2385,7 @@ const CP_TABLE_COLS = [
 function cpGetVal(r, k){
   if(k==='_cpEstado') return r.estadoanulacion||'';
   if(k==='_cpPdteRecibir') return (r.cantidadmax||0) - (r.cantidadentregada||0);
+  if(k==='_cpPdteLiquidar') return (r.cantidadentregada||0) - (r.cantidadliquidada||0);
   return r[k];
 }
 function cpEstadoChip(r){
