@@ -1348,6 +1348,47 @@ function uniqSorted(arr, key){
   return [...new Set(arr.map(r => r[key]).filter(v => v!=null && v!==''))].sort((a,b)=>String(a).localeCompare(String(b),'es'));
 }
 
+/* ============== API DE PERSISTENCIA COMPARTIDA ==============
+   Llama al Worker /api/data/<key>. Cuando el Worker tiene Cloudflare KV bindeada,
+   guarda en KV (compartido entre todos los usuarios). Si la KV no esta lista,
+   apiSave/apiLoad devuelven null y el caller cae a localStorage como antes.
+
+   Solo funciona cuando estamos detras del Worker (no en GitHub Pages directo). */
+const API_AVAILABLE = !location.hostname.endsWith(".github.io");  // si estamos en el Worker
+async function apiLoad(key){
+  if(!API_AVAILABLE) return null;
+  try{
+    const r = await fetch(`/api/data/${key}?t=${Date.now()}`, {cache:"no-store", credentials:"include"});
+    if(!r.ok) return null;
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch(e) { return null; }
+  } catch(e){ return null; }
+}
+async function apiSave(key, value){
+  if(!API_AVAILABLE) return false;
+  try{
+    const r = await fetch(`/api/data/${key}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"include",
+      body: JSON.stringify(value),
+    });
+    return r.ok;
+  } catch(e){ return false; }
+}
+// Debounce para auto-save: agrupa cambios rapidos en una sola escritura
+const _apiSaveTimers = {};
+function apiSaveDebounced(key, getValue, statusCb){
+  if(_apiSaveTimers[key]) clearTimeout(_apiSaveTimers[key]);
+  if(statusCb) statusCb("pending");
+  _apiSaveTimers[key] = setTimeout(async () => {
+    _apiSaveTimers[key] = null;
+    if(statusCb) statusCb("saving");
+    const ok = await apiSave(key, getValue());
+    if(statusCb) statusCb(ok ? "saved" : "error");
+  }, 1500);
+}
+
 function grainClass(p){
   if(!p) return '';
   const s = p.toLowerCase();
@@ -4141,21 +4182,41 @@ const PG_KEY = "tablero-granos-pagos-proyectados-v1";
 const PG_INICIALES = PAYLOAD.pagos_iniciales || [];
 const PG_RAW_URL = "https://raw.githubusercontent.com/ehussenn/tablero-granos-finnegans/main/data/proyectado_pagos.json";
 
-// Editor = tiene PAT configurado. Lector = no.
-function pgIsEditor(){ return !!localStorage.getItem("tablero-granos-github-pat-v1"); }
+// Editor: ahora todos los usuarios internos son editores (la persistencia es server-side via KV).
+// pgIsEditor() queda como true por compatibilidad con codigo viejo que pregunta por PAT.
+function pgIsEditor(){ return API_AVAILABLE || !!localStorage.getItem("tablero-granos-github-pat-v1"); }
 
 let PG_DATA = [];
 let PG_LOADED = false;
 
 async function pgLoadInitial(){
+  // 1) Intentar primero la API (Cloudflare KV via Worker) — fuente canonica compartida
+  const fromApi = await apiLoad("pagos");
+  if(Array.isArray(fromApi) && fromApi.length){
+    PG_DATA = fromApi;
+    PG_LOADED = true;
+    try{ localStorage.setItem(PG_KEY, JSON.stringify(PG_DATA)); }catch(e){}
+    return;
+  }
+  // 2) Fallback: localStorage (editor) — si la KV esta vacia pero el navegador tiene datos
   if(pgIsEditor()){
     try {
       const saved = JSON.parse(localStorage.getItem(PG_KEY) || "null");
-      if(Array.isArray(saved)){ PG_DATA = saved; PG_LOADED = true; return; }
+      if(Array.isArray(saved) && saved.length){
+        PG_DATA = saved;
+        PG_LOADED = true;
+        // Migracion: KV vacia + localStorage con datos → pushear a la API para inicializarla
+        if(API_AVAILABLE && Array.isArray(fromApi)){
+          apiSave("pagos", PG_DATA).then(ok => {
+            if(ok) console.log("[migracion] localStorage → KV (pagos):", PG_DATA.length, "filas");
+          });
+        }
+        return;
+      }
     } catch(e){}
     PG_DATA = JSON.parse(JSON.stringify(PG_INICIALES));
   } else {
-    // Lector: trae el JSON mas fresco del repo (no usa localStorage)
+    // 3) Fallback lector: trae el JSON del repo
     try {
       const resp = await fetch(PG_RAW_URL + "?t=" + Date.now(), {cache:"no-store"});
       if(resp.ok){
@@ -4171,7 +4232,21 @@ async function pgLoadInitial(){
   PG_LOADED = true;
 }
 
-function pgSave(){ localStorage.setItem(PG_KEY, JSON.stringify(PG_DATA)); pgStorageInfo(); }
+function pgSave(){
+  localStorage.setItem(PG_KEY, JSON.stringify(PG_DATA));
+  pgStorageInfo();
+  // Auto-save a Cloudflare KV via Worker (debounce 1.5s) — sin necesidad de PAT
+  if(API_AVAILABLE){
+    apiSaveDebounced("pagos", () => PG_DATA, (state) => {
+      const el = document.getElementById("pg-autobackup-status");
+      if(!el) return;
+      if(state === "pending"){ el.innerHTML = "✏️ guardando..."; el.style.color = "var(--orange)"; }
+      else if(state === "saving"){ el.innerHTML = "⏳ guardando en servidor..."; el.style.color = "var(--orange)"; }
+      else if(state === "saved"){ el.innerHTML = "✓ guardado en servidor"; el.style.color = "var(--green)"; }
+      else if(state === "error"){ el.innerHTML = "⚠️ error guardando (queda en local)"; el.style.color = "var(--red)"; }
+    });
+  }
+}
 function pgStorageInfo(){
   const sz = (JSON.stringify(PG_DATA).length/1024).toFixed(1);
   document.getElementById("pg-storage-info").textContent = `${PG_DATA.length} pagos · ${sz} KB en localStorage`;
@@ -5753,11 +5828,32 @@ function mbIsInternal(user){ return /@agronasaja\.com\.ar$/i.test(user||""); }
 
 function mbSave(){
   try{ localStorage.setItem(MB_STORAGE_KEY, JSON.stringify(MB_DATA)); }catch(e){}
-  if(MB_OWNER_MODE) mbAutoBackup();
+  if(MB_OWNER_MODE){
+    // Auto-save a Cloudflare KV via Worker (debounce 1.5s)
+    if(API_AVAILABLE){
+      apiSaveDebounced("bandeja_ehussen", () => MB_DATA, (state) => {
+        const el = document.getElementById("mb-backup-info");
+        if(!el) return;
+        if(state === "pending") el.textContent = "✏️ guardando…";
+        else if(state === "saving") el.textContent = "⏳ guardando en servidor…";
+        else if(state === "saved") el.textContent = "✓ guardado " + new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+        else if(state === "error") el.textContent = "⚠️ error guardando (queda en local)";
+      });
+    } else {
+      mbAutoBackup();  // fallback al backup viejo via GitHub PAT
+    }
+  }
 }
 
 async function mbLoadInitial(){
-  // 1) intento del repo (datos canónicos)
+  // 1) API (Cloudflare KV via Worker) — fuente canonica para el usuario logueado
+  const fromApi = await apiLoad("bandeja_ehussen");
+  if(Array.isArray(fromApi) && fromApi.length){
+    MB_DATA = fromApi;
+    try{ localStorage.setItem(MB_STORAGE_KEY, JSON.stringify(MB_DATA)); }catch(e){}
+    return;
+  }
+  // 2) Repo (legacy / fallback)
   let fromRepo = null;
   try{
     const r = await fetch(`./${MB_REPO_PATH}?t=${Date.now()}`, {cache:"no-store"});
@@ -5767,12 +5863,19 @@ async function mbLoadInitial(){
   if(Array.isArray(fromRepo) && fromRepo.length){
     MB_DATA = fromRepo;
   } else {
-    // 2) localStorage
+    // 3) localStorage
     try{
       const ls = JSON.parse(localStorage.getItem(MB_STORAGE_KEY) || "null");
       if(Array.isArray(ls) && ls.length) MB_DATA = ls;
       else MB_DATA = JSON.parse(JSON.stringify(MB_DEFAULTS));
     } catch(e){ MB_DATA = JSON.parse(JSON.stringify(MB_DEFAULTS)); }
+  }
+
+  // Migracion: si la API esta lista pero vacia, pushear los datos para inicializarla
+  if(API_AVAILABLE && Array.isArray(fromApi) && fromApi.length === 0 && MB_DATA.length > 0 && MB_OWNER_MODE){
+    apiSave("bandeja_ehussen", MB_DATA).then(ok => {
+      if(ok) console.log("[migracion] localStorage/repo → KV (bandeja):", MB_DATA.length, "cards");
+    });
   }
 }
 

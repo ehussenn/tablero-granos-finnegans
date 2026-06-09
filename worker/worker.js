@@ -158,8 +158,86 @@ export default {
     const token = getCookie(request, COOKIE_NAME);
     const email = await validarToken(token, secret);
     if (!email) {
+      // API endpoints require auth → 401 JSON, no HTML
+      if (url.pathname.startsWith("/api/")) {
+        return new Response(JSON.stringify({ error: "unauthenticated" }), {
+          status: 401, headers: { "Content-Type": "application/json" },
+        });
+      }
       return new Response(loginHTML(null), {
         status: 200, headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
+
+    // ---- API: persistencia compartida via Cloudflare KV ----
+    // GET  /api/data/<key>          → devuelve el JSON guardado bajo esa key (o "[]" si no hay)
+    // POST /api/data/<key>          → reemplaza el JSON guardado bajo esa key con el body recibido
+    //
+    // Keys "compartidas" (todos los usuarios internos ven lo mismo):
+    //   - pagos                     → Proyectado Pagos Granos
+    // Keys "por usuario" (cada usuario tiene la suya, namespaced por email):
+    //   - bandeja_ehussen           → Mi Bandeja personal (solo el owner edita)
+    //
+    // El listado de keys SHARED esta hardcodeado; cualquier otra key se considera per-user.
+    if (url.pathname.startsWith("/api/data/")) {
+      const rawKey = url.pathname.slice("/api/data/".length);
+      if (!/^[a-z0-9_-]{1,64}$/i.test(rawKey)) {
+        return new Response(JSON.stringify({ error: "bad key" }), {
+          status: 400, headers: { "Content-Type": "application/json" },
+        });
+      }
+      // Si la KV no esta bindeada al worker (env.TABLERO_KV undefined), devolver 503
+      if (!env.TABLERO_KV) {
+        return new Response(JSON.stringify({ error: "KV no configurada" }), {
+          status: 503, headers: { "Content-Type": "application/json" },
+        });
+      }
+      const SHARED_KEYS = new Set(["pagos"]);
+      const fullKey = SHARED_KEYS.has(rawKey) ? rawKey : `${rawKey}:${email}`;
+
+      if (request.method === "GET") {
+        const data = await env.TABLERO_KV.get(fullKey);
+        return new Response(data || "[]", {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+            "X-Agronasaja-Key": fullKey,
+          },
+        });
+      }
+
+      if (request.method === "POST" || request.method === "PUT") {
+        const body = await request.text();
+        if (body.length > 2_000_000) {
+          return new Response(JSON.stringify({ error: "demasiado grande" }), {
+            status: 413, headers: { "Content-Type": "application/json" },
+          });
+        }
+        try { JSON.parse(body); }
+        catch {
+          return new Response(JSON.stringify({ error: "JSON invalido" }), {
+            status: 400, headers: { "Content-Type": "application/json" },
+          });
+        }
+        // Guardar con metadata (quien lo modifico y cuando)
+        await env.TABLERO_KV.put(fullKey, body, {
+          metadata: { user: email, ts: Date.now() },
+        });
+        return new Response(JSON.stringify({ ok: true, key: fullKey, savedBy: email }), {
+          status: 200, headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: "metodo no soportado" }), {
+        status: 405, headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // ---- /api/whoami: el cliente pregunta quien esta logueado (para UI) ----
+    if (url.pathname === "/api/whoami") {
+      return new Response(JSON.stringify({ email }), {
+        status: 200, headers: { "Content-Type": "application/json" },
       });
     }
 
