@@ -2449,38 +2449,45 @@ function cpApply(){
 let cpChartTop=null, cpChartDonut=null;
 
 function cpRender(){
-  let cnt=cpFiltered.length, tnAj=0, tnRec=0;
+  let cnt=cpFiltered.length, tnAj=0, tnRec=0, tnLiq=0;
   cpFiltered.forEach(r => {
     tnAj  += r.cantidadmax || 0;
     tnRec += r.cantidadentregada || 0;
+    tnLiq += r.cantidadliquidada || 0;
   });
   const tnPdt = tnAj - tnRec;
+  const tnPdtLiq = tnRec - tnLiq;   // entregado pero aun no liquidado
   const cumplimiento = tnAj>0 ? tnRec/tnAj : null;
   document.getElementById('kpi-row-cp').innerHTML = `
     <div class="kpi"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA_CP.length)} totales</div></div>
     <div class="kpi"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
     <div class="kpi green"><div class="lbl">Toneladas Recibidas</div><div class="val">${fmt.num(tnRec)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
     <div class="kpi orange"><div class="lbl">Tn Pendientes de Recibir</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Recibidas</div></div>
+    <div class="kpi red"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Recibidas − Liquidadas (de lo entregado)</div></div>
   `;
 
   const byG = {};
   cpFiltered.forEach(r => {
     const p = r.producto || '—';
-    if(!byG[p]) byG[p] = {cnt:0,tnAj:0,tnRec:0};
+    if(!byG[p]) byG[p] = {cnt:0,tnAj:0,tnRec:0,tnLiq:0};
     byG[p].cnt++;
     byG[p].tnAj  += r.cantidadmax || 0;
     byG[p].tnRec += r.cantidadentregada || 0;
+    byG[p].tnLiq += r.cantidadliquidada || 0;
   });
   const gOrder = Object.entries(byG).sort((a,b)=>b[1].tnAj - a[1].tnAj);
   document.getElementById('grain-meta-cp').textContent = `${gOrder.length} productos`;
   document.getElementById('grain-grid-cp').innerHTML = gOrder.map(([g,v]) => {
     const pct = v.tnAj>0 ? v.tnRec/v.tnAj : 0;
     const pdt = v.tnAj - v.tnRec;
+    const pdtLiq = v.tnRec - v.tnLiq;
+    const pctLiq = v.tnRec>0 ? v.tnLiq/v.tnRec : 0;
     return `<div class="grain-card ${grainClass(g)}">
       <div class="name"><span>${g}</span><span class="cnt">${v.cnt} contratos</span></div>
       <div class="row"><span class="k">Tn Ajustadas</span><span><b>${fmt.num(v.tnAj)}</b></span></div>
       <div class="row"><span class="k">Tn Recibidas</span><span>${fmt.num(v.tnRec)} <span style="color:var(--muted)">(${fmt.pct(pct)})</span></span></div>
       <div class="row"><span class="k">Tn Pdte Recibir</span><span style="color:var(--orange)"><b>${fmt.num(pdt)}</b></span></div>
+      <div class="row"><span class="k">Tn Pdte Liquidar</span><span style="color:var(--red)"><b>${fmt.num(pdtLiq)}</b> <span style="color:var(--muted);font-weight:400">(${fmt.pct(pctLiq)} liq.)</span></span></div>
       <div class="bar"><div style="width:${Math.min(100,pct*100)}%"></div></div>
     </div>`;
   }).join('') || '<div class="placeholder">Sin datos para los filtros aplicados</div>';
