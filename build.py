@@ -438,6 +438,23 @@ HTML_TEMPLATE = r"""<!doctype html>
   .row2{display:grid;grid-template-columns:2fr 1fr;gap:16px}
   @media (max-width: 1100px){ .row2{grid-template-columns:1fr} }
 
+  /* ====== Calculadoras (Canje / Proforma) ====== */
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .calc-grid label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px}
+  .calc-grid input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13.5px;font-family:inherit;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  .calc-grid input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+  .calc-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .calc-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .calc-card .lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .calc-card .val{font-size:22px;font-weight:700;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums}
+  .calc-card .hint{font-size:11px;color:var(--muted);margin-top:2px}
+  .calc-card.highlight{background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);border:none}
+  .calc-card.highlight .lbl{color:rgba(255,255,255,.85)}
+  .calc-card.highlight .val{color:#fff;font-size:28px}
+  .calc-card.highlight .hint{color:rgba(255,255,255,.75)}
+  .calc-card.subtle{background:#f8fafc;border-color:#e2e8f0}
+  .calc-card.subtle .val{font-size:18px;color:#475569}
+
   /* ====== Mi Bandeja ====== */
   #mb-filterbar{position:sticky;top:54px;z-index:20;box-shadow:0 4px 10px -6px rgba(15,23,42,.18)}
   .mb-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
@@ -503,6 +520,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
       <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
       <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
       <div class="nav-group">Venta</div>
       <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
       <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
@@ -550,6 +569,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
+      <button class="subtab" data-sub="cp-calc-canje">🔄 Calc. Canje</button>
+      <button class="subtab" data-sub="cp-calc-proforma">📄 Calc. Proforma</button>
     </div>
 
     <!-- ========== SUB: POSICION COMPRA ========== -->
@@ -953,6 +974,118 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
 
+    </div>
+
+    <!-- ========== SUB: CALCULADOR DE CANJE ========== -->
+    <div class="subpanel" data-sub-panel="cp-calc-canje">
+      <div class="section">
+        <h3>🔄 Calculador de Canje <span class="badge">cliente paga su deuda con grano</span></h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📝 Datos del canje</div>
+            <div class="calc-grid">
+              <div><label>Deuda cliente (USD con IVA)</label><input type="number" id="cnj-deuda" step="0.01" value="5976.09"/></div>
+              <div><label>Precio commodity (USD/Tn)</label><input type="number" id="cnj-precio" step="0.01" value="308.58"/></div>
+              <div><label>Tipo de cambio (ARS/USD)</label><input type="number" id="cnj-tc" step="0.01" value="1356.5"/></div>
+              <div><label>% IVA</label><input type="number" id="cnj-iva" step="0.001" value="10.5"/></div>
+              <div><label>% Comisión</label><input type="number" id="cnj-com" step="0.01" value="2"/></div>
+              <div><label>% Sellado + registro</label><input type="number" id="cnj-sel" step="0.01" value="1.25"/></div>
+              <div><label>% Perc. IVA (depende SISA)</label><input type="number" id="cnj-perc" step="0.01" value="0"/></div>
+              <div><label>% Ret. IIBB</label><input type="number" id="cnj-ib" step="0.01" value="0"/></div>
+            </div>
+            <button class="clear" id="cnj-reset" style="margin-top:14px">↺ Resetear a valores ejemplo</button>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Resultados</div>
+            <div class="calc-result-grid">
+              <div class="calc-card"><div class="lbl">Precio Neto (USD/Tn)</div><div class="val" id="cnj-out-precio-neto">—</div><div class="hint">= Precio − Comisión − Sellado − Perc.IVA − Ret.IIBB</div></div>
+              <div class="calc-card highlight"><div class="lbl">TONELADAS a entregar</div><div class="val" id="cnj-out-tn">—</div><div class="hint" id="cnj-out-kg">— kg</div></div>
+              <div class="calc-card"><div class="lbl">Total USD (deuda)</div><div class="val" id="cnj-out-total-usd">—</div></div>
+              <div class="calc-card"><div class="lbl">Total ARS</div><div class="val" id="cnj-out-total-ars">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Comisión $</div><div class="val" id="cnj-out-com">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Sellado + Reg. $</div><div class="val" id="cnj-out-sel">—</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding:12px;background:#fffbeb;border-radius:10px;border-left:4px solid #f59e0b;font-size:12.5px;color:#92400e;line-height:1.6">
+          <b>📌 Procedimiento (memo):</b><br/>
+          1. Poner deuda cliente final <b>con IVA</b><br/>
+          2. Poner precio commodity actual<br/>
+          3. Chequear % comisiones y gastos (sellado 1,02 / cámara 1,25 según corresponda)<br/>
+          4. Avisar al cliente que se hace una ND del 1% IVA por la percepción<br/>
+          5. Si hay gastos de calidad o acondicionamiento, sumarlos aparte
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SUB: CALCULADOR DE PROFORMA ========== -->
+    <div class="subpanel" data-sub-panel="cp-calc-proforma">
+      <div class="section">
+        <h3>📄 Calculador de Proforma <span class="badge">para liquidar contrato vendido a cerealera</span></h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start">
+
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📝 Datos de la proforma</div>
+            <div class="calc-grid">
+              <div><label>Toneladas</label><input type="number" id="prf-tn" step="0.01" value="282.42"/></div>
+              <div><label>Precio (USD/Tn)</label><input type="number" id="prf-precio" step="0.01" value="190"/></div>
+              <div><label>Tipo de cambio (ARS/USD)</label><input type="number" id="prf-tc" step="0.01" value="1347.5"/></div>
+              <div><label>% Liquidación (típ. 100%)</label><input type="number" id="prf-liq" step="0.01" value="100"/></div>
+              <div><label>% Comisión</label><input type="number" id="prf-com" step="0.01" value="1.5"/></div>
+              <div><label>Tarifa cámara ($/cam)</label><input type="number" id="prf-cam-tarifa" step="0.01" value="22553"/></div>
+              <div><label>N° camiones</label><input type="number" id="prf-cam-n" step="1" value="8"/></div>
+              <div><label>% Gastos entrega/lab</label><input type="number" id="prf-gtos" step="0.01" value="1.25"/></div>
+              <div><label>% IVA</label><input type="number" id="prf-iva" step="0.01" value="12.1"/></div>
+            </div>
+
+            <div style="margin-top:14px;padding:10px;background:#eef2ff;border-radius:8px;font-size:11.5px;color:var(--blue);font-weight:600">
+              <label style="font-size:10px;color:var(--blue);text-transform:uppercase">📋 Régimen SISA</label>
+              <div style="display:flex;gap:8px;margin-top:6px">
+                <label style="font-weight:500"><input type="radio" name="prf-sisa" value="none" checked/> Sin retenciones (canje)</label>
+                <label style="font-weight:500"><input type="radio" name="prf-sisa" value="sisa1"/> SISA 1</label>
+                <label style="font-weight:500"><input type="radio" name="prf-sisa" value="sisa2"/> SISA 2</label>
+              </div>
+            </div>
+
+            <button class="clear" id="prf-reset" style="margin-top:14px">↺ Resetear a valores ejemplo</button>
+          </div>
+
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Resultados</div>
+            <div class="calc-result-grid">
+              <div class="calc-card subtle"><div class="lbl">Precio en $/Tn</div><div class="val" id="prf-out-precio-ars">—</div></div>
+              <div class="calc-card"><div class="lbl">Total Pesos (bruto)</div><div class="val" id="prf-out-total">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Comisión $</div><div class="val" id="prf-out-com">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Cámara $</div><div class="val" id="prf-out-cam">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Gastos entrega/lab</div><div class="val" id="prf-out-gtos">—</div></div>
+              <div class="calc-card highlight"><div class="lbl">A FACTURAR (Sin IVA)</div><div class="val" id="prf-out-fact">—</div></div>
+              <div class="calc-card"><div class="lbl">A FACTURAR (Con IVA)</div><div class="val" id="prf-out-fact-iva">—</div></div>
+              <div class="calc-card subtle"><div class="lbl">Equivalente USD</div><div class="val" id="prf-out-usd">—</div></div>
+            </div>
+
+            <div id="prf-sisa-box" style="margin-top:14px;padding:12px;background:#fef3c7;border-radius:10px;border-left:4px solid #d97706;display:none">
+              <div style="font-weight:700;font-size:12.5px;color:#92400e;margin-bottom:6px" id="prf-sisa-titulo">Régimen SISA</div>
+              <table style="width:100%;font-size:12px;color:#78350f">
+                <tr><td>Bruto:</td><td class="num" id="prf-sisa-bruto">—</td></tr>
+                <tr><td>Comisión:</td><td class="num" id="prf-sisa-com">—</td></tr>
+                <tr><td>Gastos lab:</td><td class="num" id="prf-sisa-gtos">—</td></tr>
+                <tr><td>Subtotal:</td><td class="num" id="prf-sisa-sub">—</td></tr>
+                <tr><td>+ IVA:</td><td class="num" id="prf-sisa-iva">—</td></tr>
+                <tr id="prf-sisa-iva-ret"><td>− Ret. IVA:</td><td class="num"></td></tr>
+                <tr id="prf-sisa-gan"><td>− Ret. Ganancias 2%:</td><td class="num"></td></tr>
+                <tr style="font-weight:700;border-top:1px solid #d97706"><td>TOTAL A PAGAR:</td><td class="num" id="prf-sisa-total">—</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding:12px;background:#fffbeb;border-radius:10px;border-left:4px solid #f59e0b;font-size:12.5px;color:#92400e;line-height:1.6">
+          <b>📌 Notas:</b> las liquidaciones por <b>canje no llevan retenciones</b> (elegí "Sin retenciones"). Las liquidaciones a pagar usan SISA 1 (Ret. IVA 5%) o SISA 2 (Ret. IVA 7% + Ret. Ganancias 2%) según el cliente.
+        </div>
+      </div>
     </div>
 
   </div>
@@ -6021,6 +6154,179 @@ function fnRender(){
 
 fnInitFiltros();
 fnRender();
+
+
+/* ============================================================
+   ============  CALCULADORES Canje + Proforma  ================
+   ============================================================
+   Forms con autocálculo on input. Persisten el último set de valores
+   en localStorage por usuario. */
+
+function cnjFmt(n, dec=2){
+  if(n==null||isNaN(n)) return "—";
+  return Number(n).toLocaleString("es-AR", {minimumFractionDigits:dec, maximumFractionDigits:dec});
+}
+function cnjFmt0(n){
+  if(n==null||isNaN(n)) return "—";
+  return Number(n).toLocaleString("es-AR", {maximumFractionDigits:0});
+}
+
+/* ----- CALCULADOR DE CANJE ----- */
+const CNJ_KEY = "tablero-granos-cnj-v1";
+const CNJ_DEFAULTS = {
+  deuda:5976.09, precio:308.58, tc:1356.5, iva:10.5,
+  com:2, sel:1.25, perc:0, ib:0,
+};
+function cnjGet(){
+  const r = {};
+  ["deuda","precio","tc","iva","com","sel","perc","ib"].forEach(k => {
+    r[k] = parseFloat(document.getElementById("cnj-"+k).value) || 0;
+  });
+  return r;
+}
+function cnjSet(v){
+  Object.keys(v).forEach(k => {
+    const el = document.getElementById("cnj-"+k); if(el) el.value = v[k];
+  });
+}
+function cnjRender(){
+  const v = cnjGet();
+  // Precio Neto = Precio − Precio×(Comisión + Sellado + PercIVA + IIBB)
+  const desc = (v.com + v.sel + v.perc + v.ib) / 100;
+  const precioNeto = v.precio * (1 - desc);
+  const com$  = v.precio * v.com / 100;
+  const sel$  = v.precio * v.sel / 100;
+  // Toneladas a entregar: Deuda con IVA / Precio Neto / (1 + IVA)
+  // (Si la deuda viene con IVA y el precio commodity es neto)
+  const factorIva = 1 + (v.iva/100);
+  const deudaSinIva = v.deuda / factorIva;
+  const tn = precioNeto > 0 ? deudaSinIva / precioNeto : 0;
+  const kg = tn * 1000;
+  const totalARS = v.deuda * v.tc;
+
+  document.getElementById("cnj-out-precio-neto").textContent = cnjFmt(precioNeto, 2) + " USD";
+  document.getElementById("cnj-out-tn").textContent = cnjFmt(tn, 3);
+  document.getElementById("cnj-out-kg").textContent = cnjFmt0(kg) + " kg";
+  document.getElementById("cnj-out-total-usd").textContent = "USD " + cnjFmt(v.deuda, 2);
+  document.getElementById("cnj-out-total-ars").textContent = "$ " + cnjFmt0(totalARS);
+  document.getElementById("cnj-out-com").textContent = cnjFmt(com$, 2) + " USD";
+  document.getElementById("cnj-out-sel").textContent = cnjFmt(sel$, 2) + " USD";
+
+  try{ localStorage.setItem(CNJ_KEY, JSON.stringify(v)); }catch(e){}
+}
+(function cnjInit(){
+  ["deuda","precio","tc","iva","com","sel","perc","ib"].forEach(k => {
+    const el = document.getElementById("cnj-"+k);
+    if(el) el.addEventListener("input", cnjRender);
+  });
+  const rst = document.getElementById("cnj-reset");
+  if(rst) rst.addEventListener("click", () => { cnjSet(CNJ_DEFAULTS); cnjRender(); });
+  // restore from localStorage
+  try{
+    const ls = JSON.parse(localStorage.getItem(CNJ_KEY) || "null");
+    if(ls && typeof ls === "object") cnjSet(ls);
+  } catch(e){}
+  cnjRender();
+})();
+
+/* ----- CALCULADOR DE PROFORMA ----- */
+const PRF_KEY = "tablero-granos-prf-v1";
+const PRF_DEFAULTS = {
+  tn:282.42, precio:190, tc:1347.5, liq:100,
+  com:1.5, "cam-tarifa":22553, "cam-n":8,
+  gtos:1.25, iva:12.1,
+};
+function prfGet(){
+  const r = {};
+  Object.keys(PRF_DEFAULTS).forEach(k => {
+    r[k] = parseFloat(document.getElementById("prf-"+k).value) || 0;
+  });
+  r.sisa = (document.querySelector('input[name="prf-sisa"]:checked')||{}).value || "none";
+  return r;
+}
+function prfSet(v){
+  Object.keys(v).forEach(k => {
+    if(k === "sisa") return;
+    const el = document.getElementById("prf-"+k); if(el) el.value = v[k];
+  });
+}
+function prfRender(){
+  const v = prfGet();
+  const precioARS = v.precio * v.tc;
+  const total    = v.tn * v.precio * v.tc * (v.liq/100);
+  const com      = total * v.com / 100;
+  const cam      = v["cam-tarifa"] * v["cam-n"];
+  const gtos     = total * v.gtos / 100;
+  const factSin  = total - com - cam - gtos;
+  const factCon  = factSin * (1 + v.iva/100);
+  const eqUsd    = v.tc > 0 ? factCon / v.tc : 0;
+
+  document.getElementById("prf-out-precio-ars").textContent = "$ " + cnjFmt0(precioARS);
+  document.getElementById("prf-out-total").textContent = "$ " + cnjFmt0(total);
+  document.getElementById("prf-out-com").textContent = "$ " + cnjFmt0(com);
+  document.getElementById("prf-out-cam").textContent = "$ " + cnjFmt0(cam);
+  document.getElementById("prf-out-gtos").textContent = "$ " + cnjFmt0(gtos);
+  document.getElementById("prf-out-fact").textContent = "$ " + cnjFmt0(factSin);
+  document.getElementById("prf-out-fact-iva").textContent = "$ " + cnjFmt0(factCon);
+  document.getElementById("prf-out-usd").textContent = "USD " + cnjFmt(eqUsd, 2);
+
+  // Régimen SISA
+  const box = document.getElementById("prf-sisa-box");
+  const ivaRetRow = document.getElementById("prf-sisa-iva-ret");
+  const ganRow = document.getElementById("prf-sisa-gan");
+  if(v.sisa === "none"){
+    box.style.display = "none";
+  } else {
+    box.style.display = "block";
+    const bruto = v.tn * v.precio * v.tc;
+    const sCom = bruto * v.com / 100;
+    const sGtos = bruto * v.gtos / 100;
+    const sub = bruto - sCom - sGtos;
+    const conIva = sub * (1 + v.iva/100);
+    let total;
+    if(v.sisa === "sisa1"){
+      const retIva = bruto * 0.05;
+      document.getElementById("prf-sisa-titulo").textContent = "Régimen SISA 1 (Ret. IVA 5%)";
+      ivaRetRow.style.display = "table-row";
+      ivaRetRow.cells[1].textContent = "$ " + cnjFmt0(-retIva);
+      ganRow.style.display = "none";
+      total = conIva - retIva;
+    } else {
+      const retIva = bruto * 0.07;
+      const retGan = bruto * 0.02;
+      document.getElementById("prf-sisa-titulo").textContent = "Régimen SISA 2 (Ret. IVA 7% + Ret. Ganancias 2%)";
+      ivaRetRow.style.display = "table-row";
+      ivaRetRow.cells[0].textContent = "− Ret. IVA 7%:";
+      ivaRetRow.cells[1].textContent = "$ " + cnjFmt0(-retIva);
+      ganRow.style.display = "table-row";
+      ganRow.cells[1].textContent = "$ " + cnjFmt0(-retGan);
+      total = conIva - retIva - retGan;
+    }
+    document.getElementById("prf-sisa-bruto").textContent = "$ " + cnjFmt0(bruto);
+    document.getElementById("prf-sisa-com").textContent = "$ " + cnjFmt0(-sCom);
+    document.getElementById("prf-sisa-gtos").textContent = "$ " + cnjFmt0(-sGtos);
+    document.getElementById("prf-sisa-sub").textContent = "$ " + cnjFmt0(sub);
+    document.getElementById("prf-sisa-iva").textContent = "$ " + cnjFmt0(conIva - sub);
+    document.getElementById("prf-sisa-total").textContent = "$ " + cnjFmt0(total);
+  }
+
+  const persist = Object.assign({}, v); delete persist.sisa;
+  try{ localStorage.setItem(PRF_KEY, JSON.stringify(persist)); }catch(e){}
+}
+(function prfInit(){
+  Object.keys(PRF_DEFAULTS).forEach(k => {
+    const el = document.getElementById("prf-"+k);
+    if(el) el.addEventListener("input", prfRender);
+  });
+  document.querySelectorAll('input[name="prf-sisa"]').forEach(r => r.addEventListener("change", prfRender));
+  const rst = document.getElementById("prf-reset");
+  if(rst) rst.addEventListener("click", () => { prfSet(PRF_DEFAULTS); prfRender(); });
+  try{
+    const ls = JSON.parse(localStorage.getItem(PRF_KEY) || "null");
+    if(ls && typeof ls === "object") prfSet(ls);
+  } catch(e){}
+  prfRender();
+})();
 
 
 /* ============================================================
