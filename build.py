@@ -506,6 +506,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="nav-group">Venta</div>
       <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
       <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
+      <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
       <div class="nav-group">Posición General</div>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
