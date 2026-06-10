@@ -3723,7 +3723,26 @@ let lastClickIdxCj = null;
 function cjInitFilters(){
   // condiciones de pago: solo las que contienen "canje"
   const condSel = document.getElementById('cj-cond');
-  const allConds = [...new Set(SALDOS.map(s => s.condicionpago).filter(v => v && v.toLowerCase().includes('canje')))].sort();
+  // Orden cronologico: parsea "Canje <Mes> <Año>" y ordena por (Año, Mes).
+  // Las que no tienen fecha parseable (ej. "Canje Insumos") van al final.
+  const MES_NUM = {
+    enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6,
+    julio:7, agosto:8, septiembre:9, setiembre:9, octubre:10, noviembre:11, diciembre:12
+  };
+  function condKey(c){
+    const m = (c||"").toLowerCase().match(/canje\s+([a-záéíóúñ]+)\s+(\d{4})/i);
+    if(!m) return [9999, 99, c];   // sin fecha al final, alfabetico entre si
+    const mes = MES_NUM[m[1]] || 99;
+    const anio = parseInt(m[2], 10);
+    return [anio, mes, c];
+  }
+  const allConds = [...new Set(SALDOS.map(s => s.condicionpago).filter(v => v && v.toLowerCase().includes('canje')))]
+    .sort((a,b) => {
+      const ka = condKey(a), kb = condKey(b);
+      if(ka[0] !== kb[0]) return ka[0] - kb[0];
+      if(ka[1] !== kb[1]) return ka[1] - kb[1];
+      return String(ka[2]).localeCompare(String(kb[2]), 'es');
+    });
   condSel.size = Math.min(allConds.length + 1, 8);
   condSel.innerHTML = allConds.map(c => {
     // default seleccionadas: las que contengan "2026"
