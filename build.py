@@ -6689,7 +6689,6 @@ const TZ_LIQ_BY_COE = (() => {
 const TZ_CTO_COMPRA = (() => {
   const m = {};
   ((PAYLOAD && PAYLOAD.compra) || []).forEach(c => {
-    // Las claves comunes son 'contrato' (largo) o 'nombre' (corto)
     if(c.contrato) m[c.contrato] = c;
     if(c.nombre)   m[c.nombre]   = c;
   });
@@ -6703,6 +6702,46 @@ const TZ_CTO_VENTA = (() => {
   });
   return m;
 })();
+
+// Indices Cargill (movements por CTG/coe, invoices por COE, payments por contrato)
+const TZ_CARGILL_MOV_BY_CTG = {};
+const TZ_CARGILL_MOV_BY_COE = {};
+const TZ_CARGILL_MOV_BY_CONTRATO = {};
+((PAYLOAD && PAYLOAD.cargill_movements) || []).forEach(m => {
+  if(m.legalDocument){
+    const k = String(m.legalDocument).trim();
+    (TZ_CARGILL_MOV_BY_CTG[k] = TZ_CARGILL_MOV_BY_CTG[k] || []).push(m);
+  }
+  if(m.coeNumber && String(m.coeNumber).trim()){
+    const k = String(m.coeNumber).trim();
+    (TZ_CARGILL_MOV_BY_COE[k] = TZ_CARGILL_MOV_BY_COE[k] || []).push(m);
+  }
+  if(m.contractNumber){
+    const k = String(m.contractNumber).trim();
+    (TZ_CARGILL_MOV_BY_CONTRATO[k] = TZ_CARGILL_MOV_BY_CONTRATO[k] || []).push(m);
+  }
+});
+
+const TZ_CARGILL_INV_BY_CONTRATO = {};
+const TZ_CARGILL_INV_BY_COE = {};
+((PAYLOAD && PAYLOAD.cargill_invoices) || []).forEach(inv => {
+  if(inv.contractNumber){
+    const k = String(inv.contractNumber).trim();
+    (TZ_CARGILL_INV_BY_CONTRATO[k] = TZ_CARGILL_INV_BY_CONTRATO[k] || []).push(inv);
+  }
+  if(inv.externalDocumentReference){
+    const k = String(inv.externalDocumentReference).trim();
+    (TZ_CARGILL_INV_BY_COE[k] = TZ_CARGILL_INV_BY_COE[k] || []).push(inv);
+  }
+});
+
+const TZ_CARGILL_PAY_BY_CONTRATO = {};
+((PAYLOAD && PAYLOAD.cargill_payments) || []).forEach(pay => {
+  if(pay.contractNumber){
+    const k = String(pay.contractNumber).trim();
+    (TZ_CARGILL_PAY_BY_CONTRATO[k] = TZ_CARGILL_PAY_BY_CONTRATO[k] || []).push(pay);
+  }
+});
 
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
@@ -6823,6 +6862,154 @@ function tzRenderDetailExtra(ctg, data){
     }
   }
 
+  // Bloque CARGILL: matchear este CTG con la data scrapeada de Cargill GPS
+  // Estrategias de match: 1) por CTG (legalDocument), 2) por COE, 3) por contrato venta
+  let cargillHtml = "";
+  if(tzRow){
+    let cargMovs = [];
+    // Match por CTG
+    if(TZ_CARGILL_MOV_BY_CTG[ctg]) cargMovs = TZ_CARGILL_MOV_BY_CTG[ctg];
+    // Match por COE encontrado en cartaPorte
+    if(!cargMovs.length){
+      for(const coe of coesEncontrados){
+        if(TZ_CARGILL_MOV_BY_COE[coe]){
+          cargMovs = TZ_CARGILL_MOV_BY_COE[coe]; break;
+        }
+      }
+    }
+    // Match por contrato venta (puede tener muchos movements; tomamos solo los relevantes al CTG si los hay)
+    if(!cargMovs.length && tzRow.contrato_venta){
+      // Intentar diferentes formas del contrato venta (Finnegans usa "CTO-VTA-GRA - 836", Cargill usa el numero externo)
+      const vcLong = tzRow.contrato_venta;
+      const vcShort = vcLong.replace(/[^0-9]/g,"");
+      cargMovs = (TZ_CARGILL_MOV_BY_CONTRATO[vcLong] || TZ_CARGILL_MOV_BY_CONTRATO[vcShort] || []);
+    }
+
+    if(cargMovs.length){
+      const mainMov = cargMovs[0];
+      // Buscar invoices y payments por contrato Cargill
+      const cargContract = mainMov.contractNumber;
+      const invs = cargContract ? (TZ_CARGILL_INV_BY_CONTRATO[String(cargContract).trim()] || []) : [];
+      const pays = cargContract ? (TZ_CARGILL_PAY_BY_CONTRATO[String(cargContract).trim()] || []) : [];
+
+      // Sumar descuentos
+      const totDisc = cargMovs.reduce((s,m)=>s+(Number(m.totalDiscount)||0), 0);
+      const totNeto = cargMovs.reduce((s,m)=>s+(Number(m.netWeight)||0), 0);
+      const totBruto = cargMovs.reduce((s,m)=>s+(Number(m.grossWeight)||0), 0);
+
+      const movRows = cargMovs.slice(0, 10).map(m => `<tr>
+        <td style="padding:4px">${tzEscape(m.movementNumber||"")}</td>
+        <td style="padding:4px">${tzEscape(m.deliveryDate||"")}</td>
+        <td style="padding:4px;font-family:monospace">${tzEscape(m.legalDocument||"")}</td>
+        <td style="padding:4px;font-family:monospace">${tzEscape(m.coeNumber||"").trim()||"—"}</td>
+        <td style="padding:4px" class="num">${fmt.num(m.grossWeight)}</td>
+        <td style="padding:4px" class="num">${fmt.num(m.tareWeight)}</td>
+        <td style="padding:4px" class="num"><b>${fmt.num(m.netWeight)}</b></td>
+        <td style="padding:4px" class="num">${m.humedad?fmt.num2(m.humedad)+'%':'—'}</td>
+        <td style="padding:4px" class="num">${m.impurezas?fmt.num2(m.impurezas)+'%':'—'}</td>
+        <td style="padding:4px" class="num" style="color:#b45309">${fmt.num(m.totalDiscount)}</td>
+      </tr>`).join("");
+
+      const invRows = invs.slice(0, 10).map(inv => `<tr>
+        <td style="padding:4px">${tzEscape(inv.invoiceTypeCode||"")}</td>
+        <td style="padding:4px">${tzEscape(inv.invoiceNumber||"")}</td>
+        <td style="padding:4px">${tzEscape(inv.documentCreationDate||"")}</td>
+        <td style="padding:4px" class="num">${fmt.num(inv.commodityQuantity)}</td>
+        <td style="padding:4px" class="num">${fmt.num2(inv.unitPrice)}</td>
+        <td style="padding:4px" class="num"><b>${fmt.num(inv.amountLocalCurrency)}</b> ${tzEscape(inv.localCurrencyCode||"")}</td>
+        <td style="padding:4px">${tzEscape(inv.externalDocumentReference||"")}</td>
+      </tr>`).join("");
+
+      const payRows = pays.slice(0, 10).map(p => `<tr>
+        <td style="padding:4px">${tzEscape(p.documentNumber||"")}</td>
+        <td style="padding:4px">${tzEscape(p.paymentDate||"")}</td>
+        <td style="padding:4px">${tzEscape(p.paymentType||"")}</td>
+        <td style="padding:4px" class="num">${fmt.num(p.amountLocalCurrency)} ${tzEscape(p.localCurrency||"")}</td>
+        <td style="padding:4px" class="num">${fmt.num(p.netPaymentAmount)}</td>
+        <td style="padding:4px">${tzEscape(p.status||"")}</td>
+        <td style="padding:4px">${tzEscape(p.voucherNumber||"")}</td>
+      </tr>`).join("");
+
+      cargillHtml = `
+        <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#fff7ed,#fef3c7);border-left:4px solid #ea580c;padding:14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:11px;font-weight:700;color:#7c2d12;text-transform:uppercase;letter-spacing:.3px">🏢 Cargill GPS (scraped de mycargill.com)</span>
+            <span style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${cargMovs.length} mov · ${invs.length} fc · ${pays.length} pagos</span>
+            ${cargContract ? `<span style="font-size:11px;color:#7c2d12">Contrato Cargill: <b>${tzEscape(cargContract)}</b></span>` : ''}
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+            <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Bruto</div>
+              <div style="font-size:15px;font-weight:700">${fmt.num(totBruto)} kg</div>
+            </div>
+            <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+              <div style="font-size:15px;font-weight:700">${fmt.num(totNeto)} kg</div>
+            </div>
+            <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #b45309">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Descuentos Total</div>
+              <div style="font-size:15px;font-weight:700;color:#b45309">${fmt.num(totDisc)} kg</div>
+            </div>
+            <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #6366f1">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Producto</div>
+              <div style="font-size:13px;font-weight:600">${tzEscape(mainMov.productName||"")}</div>
+            </div>
+          </div>
+
+          <details open style="margin-bottom:8px">
+            <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#7c2d12;text-transform:uppercase">📦 Descargas (${cargMovs.length})</summary>
+            <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+              <thead><tr style="background:#fed7aa">
+                <th style="text-align:left;padding:5px">Mov</th><th style="text-align:left;padding:5px">Fecha</th>
+                <th style="text-align:left;padding:5px">CTG</th><th style="text-align:left;padding:5px">COE</th>
+                <th class="num" style="text-align:right;padding:5px">Bruto</th>
+                <th class="num" style="text-align:right;padding:5px">Tara</th>
+                <th class="num" style="text-align:right;padding:5px">Neto</th>
+                <th class="num" style="text-align:right;padding:5px">Humedad</th>
+                <th class="num" style="text-align:right;padding:5px">Impurezas</th>
+                <th class="num" style="text-align:right;padding:5px">Descuento</th>
+              </tr></thead>
+              <tbody>${movRows}</tbody>
+            </table>
+            ${cargMovs.length > 10 ? `<div style="font-size:10.5px;color:#7c2d12;margin-top:4px">... y ${cargMovs.length - 10} más</div>` : ''}
+          </details>
+
+          ${invs.length ? `<details style="margin-bottom:8px">
+            <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#7c2d12;text-transform:uppercase">📄 Facturas / Liquidaciones (${invs.length})</summary>
+            <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+              <thead><tr style="background:#fed7aa">
+                <th style="text-align:left;padding:5px">Tipo</th><th style="text-align:left;padding:5px">N°</th>
+                <th style="text-align:left;padding:5px">Fecha</th>
+                <th class="num" style="text-align:right;padding:5px">Cant.</th>
+                <th class="num" style="text-align:right;padding:5px">Precio U.</th>
+                <th class="num" style="text-align:right;padding:5px">Total</th>
+                <th style="text-align:left;padding:5px">Ref. Ext.</th>
+              </tr></thead>
+              <tbody>${invRows}</tbody>
+            </table>
+            ${invs.length > 10 ? `<div style="font-size:10.5px;color:#7c2d12;margin-top:4px">... y ${invs.length - 10} más</div>` : ''}
+          </details>` : ''}
+
+          ${pays.length ? `<details>
+            <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#7c2d12;text-transform:uppercase">💸 Pagos (${pays.length})</summary>
+            <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+              <thead><tr style="background:#fed7aa">
+                <th style="text-align:left;padding:5px">N°</th><th style="text-align:left;padding:5px">Fecha</th>
+                <th style="text-align:left;padding:5px">Tipo</th>
+                <th class="num" style="text-align:right;padding:5px">Importe</th>
+                <th class="num" style="text-align:right;padding:5px">Neto</th>
+                <th style="text-align:left;padding:5px">Estado</th>
+                <th style="text-align:left;padding:5px">Voucher</th>
+              </tr></thead>
+              <tbody>${payRows}</tbody>
+            </table>
+          </details>` : ''}
+        </div>
+      `;
+    }
+  }
+
   el.innerHTML = `
     <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
@@ -6831,6 +7018,7 @@ function tzRenderDetailExtra(ctg, data){
     </table>
     ${liqHtml}
     ${contratoHtml}
+    ${cargillHtml}
   `;
 }
 
@@ -7972,6 +8160,29 @@ def main() -> int:
         print(f"    [!] error BCR: {e}")
         bcr = {"fetched_at": None, "tc_usd_ars": None, "granos": {}}
 
+    # Data scrapeada de Cargill GPS (movements + payments + invoices)
+    # Se actualiza con: py scripts/cargill_api_final.py (manual, ~1 vez/dia)
+    print(f"\n[+] Cargando data Cargill GPS (si existe)...", flush=True)
+    cargill_movements = []
+    cargill_invoices = []
+    cargill_payments = []
+    cargill_dir = Path(__file__).resolve().parent / "data" / "cargill"
+    for fname, target in [("movements.json", "cargill_movements"),
+                           ("invoices.json", "cargill_invoices"),
+                           ("payments.json", "cargill_payments")]:
+        fp = cargill_dir / fname
+        if fp.exists():
+            try:
+                rows = json.loads(fp.read_text(encoding="utf-8"))
+                if target == "cargill_movements": cargill_movements = rows
+                elif target == "cargill_invoices": cargill_invoices = rows
+                elif target == "cargill_payments": cargill_payments = rows
+                print(f"    -> {fname}: {len(rows)} filas")
+            except Exception as e:
+                print(f"    [!] {fname} error: {e}")
+        else:
+            print(f"    [.] {fp} no existe (correr scripts/cargill_api_final.py)")
+
     # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
     pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
     if pagos_path.exists():
@@ -8117,6 +8328,9 @@ def main() -> int:
         "traza": traza_list,
         "liquidaciones": liquidaciones_dw,
         "liquidaciones_secu": liquidaciones_secu_dw,
+        "cargill_movements": cargill_movements,
+        "cargill_invoices": cargill_invoices,
+        "cargill_payments": cargill_payments,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,
