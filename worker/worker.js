@@ -30,6 +30,20 @@ const SESSION_HOURS = 8;
 
 const COOKIE_NAME = "agronasaja_sess";
 
+// ---- cache del token de Finnegans (in-memory, valido por isolate) ----
+let _fnnToken = null;
+let _fnnTokenExp = 0;
+async function getFinnegansToken(env) {
+  if (_fnnToken && Date.now() < _fnnTokenExp) return _fnnToken;
+  const u = `https://api.finneg.com/api/oauth/token?grant_type=client_credentials&client_id=${env.FINNEGANS_CLIENT_ID}&client_secret=${env.FINNEGANS_CLIENT_SECRET}`;
+  const r = await fetch(u);
+  if (!r.ok) throw new Error("Finnegans auth HTTP " + r.status);
+  const token = (await r.text()).trim();
+  _fnnToken = token;
+  _fnnTokenExp = Date.now() + 50 * 60 * 1000;  // 50 min
+  return token;
+}
+
 // ---- helpers de firma (HMAC-SHA256 via Web Crypto) ----
 async function hmac(data, secret) {
   const key = await crypto.subtle.importKey(
@@ -240,6 +254,49 @@ export default {
       return new Response(JSON.stringify({ email }), {
         status: 200, headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // ---- /api/finnegans/ctg/<CTG>: proxy autenticado al detalle de un CTG en Finnegans ----
+    // Trae la cadena cartaPortePorCTG (3 filas: recepcion compra, traslado CV, traslado venta).
+    // Usa los Cloudflare secrets FINNEGANS_CLIENT_ID + FINNEGANS_CLIENT_SECRET.
+    // Cachea el token Finnegans por 50 min en memoria global del Worker.
+    if (url.pathname.startsWith("/api/finnegans/ctg/")) {
+      const ctg = url.pathname.slice("/api/finnegans/ctg/".length);
+      if (!/^\d{6,15}$/.test(ctg)) {
+        return new Response(JSON.stringify({ error: "CTG invalido" }), {
+          status: 400, headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (!env.FINNEGANS_CLIENT_ID || !env.FINNEGANS_CLIENT_SECRET) {
+        return new Response(JSON.stringify({ error: "Falta configurar FINNEGANS_CLIENT_ID/SECRET en el Worker" }), {
+          status: 503, headers: { "Content-Type": "application/json" },
+        });
+      }
+      try {
+        const tok = await getFinnegansToken(env);
+        const r = await fetch(`https://api.finneg.com/api/reports/cartaPortePorCTG?CTG=${encodeURIComponent(ctg)}`, {
+          headers: { "Authorization": `Bearer ${tok}` },
+        });
+        const txt = await r.text();
+        if (!r.ok) {
+          return new Response(JSON.stringify({ error: `Finnegans HTTP ${r.status}`, body: txt.slice(0, 300) }), {
+            status: 502, headers: { "Content-Type": "application/json" },
+          });
+        }
+        let arr;
+        try { arr = JSON.parse(txt); } catch { arr = []; }
+        return new Response(JSON.stringify({ ctg, cartaPorte: arr }), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "private, max-age=300",
+          },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: String(e).slice(0, 200) }), {
+          status: 500, headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     // ---- Autenticado: servir el tablero (proxy a GitHub Pages) ----

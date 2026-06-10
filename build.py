@@ -522,6 +522,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
       <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
       <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
+      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-traza" data-title="Compra · Trazabilidad">📦 Trazabilidad</a>
       <div class="nav-group">Venta</div>
       <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
       <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
@@ -571,6 +572,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
       <button class="subtab" data-sub="cp-calc-canje">🔄 Calc. Canje</button>
       <button class="subtab" data-sub="cp-calc-proforma">📄 Calc. Proforma</button>
+      <button class="subtab" data-sub="cp-traza">📦 Trazabilidad</button>
     </div>
 
     <!-- ========== SUB: POSICION COMPRA ========== -->
@@ -1086,6 +1088,45 @@ HTML_TEMPLATE = r"""<!doctype html>
           <b>📌 Notas:</b> las liquidaciones por <b>canje no llevan retenciones</b> (elegí "Sin retenciones"). Las liquidaciones a pagar usan SISA 1 (Ret. IVA 5%) o SISA 2 (Ret. IVA 7% + Ret. Ganancias 2%) según el cliente.
         </div>
       </div>
+    </div>
+
+    <!-- ========== SUB: TRAZABILIDAD ========== -->
+    <div class="subpanel" data-sub-panel="cp-traza">
+
+      <div class="section" style="background:linear-gradient(135deg,#0c4a6e 0%,#0891b2 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">📦 Trazabilidad de Compra · CP → Traslado → Liquidación</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px">Cada CTG con su Carta de Porte, entregador (productor), peso, contrato de compra, contrato de venta y cerealera destino. Click en una fila para ver el detalle (COE, liquidación, comisión).</div>
+      </div>
+
+      <div class="kpis" id="tz-kpis"></div>
+
+      <div class="filterbar" id="tz-filters">
+        <div><label>ENTREGADOR</label><select id="tz-ent"><option value="">Todos</option></select></div>
+        <div><label>CEREALERA</label><select id="tz-cer"><option value="">Todas</option></select></div>
+        <div><label>PRODUCTO</label><select id="tz-prod"><option value="">Todos</option></select></div>
+        <div><label>CONTRATO COMPRA</label><select id="tz-ccomp"><option value="">Todos</option></select></div>
+        <div><label>FECHA DESDE</label><input type="date" id="tz-fdesde"/></div>
+        <div><label>FECHA HASTA</label><input type="date" id="tz-fhasta"/></div>
+        <div><label>BUSCAR</label><input type="text" id="tz-q" placeholder="CTG, CP, contrato…" /></div>
+        <button class="clear" id="tz-clear">Limpiar</button>
+        <div class="count" id="tz-count">0 / 0</div>
+      </div>
+
+      <div class="section">
+        <h3>Detalle por CTG <span class="badge">click en header para ordenar · click en fila para ver detalle</span></h3>
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="tz-tbl">
+            <thead><tr id="tz-head"></tr></thead>
+            <tbody id="tz-body"></tbody>
+            <tfoot id="tz-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <b>Cómo se lee</b>: cada fila es UN CTG (Carta de Porte). <b>Entregador</b> = quien la emitió (productor que entregó el grano). <b>Cerealera</b> = destinatario final (Cargill, LDC, etc.). <b>Contrato Compra</b> = COMPxxx (a quién le compramos), <b>Contrato Venta</b> = VENxxx (a quién se lo vendimos). Click en una fila → consulta a Finnegans en vivo y trae el detalle (COE, liquidación, comisión, factor).
+      </div>
+
     </div>
 
   </div>
@@ -6367,6 +6408,271 @@ function prfRender(){
 
 
 /* ============================================================
+   ============  TRAZABILIDAD DE COMPRA  =======================
+   ============================================================
+   Cada CTG con su Carta de Porte, entregador, contratos compra/venta,
+   peso y destinatario. Click en fila → lazy fetch a Finnegans via Worker
+   para detalle (COE, liquidacion, comision, factor). */
+
+const TZ_RAW = (PAYLOAD && Array.isArray(PAYLOAD.traza)) ? PAYLOAD.traza : [];
+const TZ_COLS = [
+  {k:"ctg",              lbl:"CTG",              num:false, w:"130px"},
+  {k:"cp",               lbl:"CP",               num:false, w:"130px"},
+  {k:"fecha",            lbl:"Fecha",            num:false, w:"95px"},
+  {k:"entregador",       lbl:"Entregador",       num:false},
+  {k:"producto",         lbl:"Grano",            num:false, w:"140px"},
+  {k:"peso_neto",        lbl:"Peso Neto (kg)",   num:true},
+  {k:"contrato_compra",  lbl:"Cto Compra",       num:false, w:"110px"},
+  {k:"contrato_venta",   lbl:"Cto Venta",        num:false, w:"110px"},
+  {k:"cerealera",        lbl:"Cerealera",        num:false},
+];
+let TZ_SORT_K = "fecha", TZ_SORT_D = -1;
+let TZ_EXPANDED = new Set();   // CTGs con detalle expandido
+
+function tzEscape(s){ return String(s||"").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+
+function tzInitFilters(){
+  const uniq = (key) => [...new Set(TZ_RAW.map(r => r[key]).filter(v => v != null && v !== ""))].sort((a,b)=>String(a).localeCompare(String(b),"es"));
+  const fillSelect = (id, vals, allLbl="Todos") => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    sel.innerHTML = `<option value="">${allLbl}</option>` +
+      vals.map(v => `<option value="${tzEscape(v)}">${tzEscape(v)}</option>`).join("");
+  };
+  fillSelect("tz-ent",  uniq("entregador"));
+  fillSelect("tz-cer",  uniq("cerealera"), "Todas");
+  fillSelect("tz-prod", uniq("producto"));
+  fillSelect("tz-ccomp",uniq("contrato_compra"));
+}
+
+function tzParseFecha(s){
+  // Finnegans devuelve "dd-mm-yyyy". Convertir a yyyy-mm-dd para comparar.
+  if(!s) return "";
+  const m = String(s).match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+  return s;
+}
+
+function tzFiltered(){
+  const ent  = document.getElementById("tz-ent").value;
+  const cer  = document.getElementById("tz-cer").value;
+  const prod = document.getElementById("tz-prod").value;
+  const cc   = document.getElementById("tz-ccomp").value;
+  const fd   = document.getElementById("tz-fdesde").value;
+  const fh   = document.getElementById("tz-fhasta").value;
+  const q    = (document.getElementById("tz-q").value||"").toLowerCase().trim();
+  return TZ_RAW.filter(r => {
+    if(ent  && r.entregador !== ent) return false;
+    if(cer  && r.cerealera  !== cer) return false;
+    if(prod && r.producto   !== prod) return false;
+    if(cc   && r.contrato_compra !== cc) return false;
+    const fIso = tzParseFecha(r.fecha);
+    if(fd && fIso && fIso < fd) return false;
+    if(fh && fIso && fIso > fh) return false;
+    if(q){
+      const blob = `${r.ctg||""} ${r.cp||""} ${r.contrato_compra||""} ${r.contrato_venta||""} ${r.entregador||""} ${r.cerealera||""}`.toLowerCase();
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function tzRenderKpis(rows){
+  const totKg = rows.reduce((s,r) => s + (Number(r.peso_neto)||0), 0);
+  const entregadores = new Set(rows.map(r => r.entregador).filter(Boolean));
+  const cerealeras = new Set(rows.map(r => r.cerealera).filter(Boolean));
+  const sinVenta = rows.filter(r => !r.contrato_venta).length;
+  document.getElementById("tz-kpis").innerHTML = `
+    <div class="kpi"><div class="lbl">CTGs (filtrados)</div><div class="val">${fmt.int(rows.length)}</div><div class="hint">de ${fmt.int(TZ_RAW.length)} totales</div></div>
+    <div class="kpi green"><div class="lbl">Total Kg</div><div class="val">${fmt.num(totKg)}</div><div class="hint">${fmt.num(totKg/1000)} tn</div></div>
+    <div class="kpi"><div class="lbl">Entregadores</div><div class="val">${fmt.int(entregadores.size)}</div></div>
+    <div class="kpi"><div class="lbl">Cerealeras</div><div class="val">${fmt.int(cerealeras.size)}</div></div>
+    <div class="kpi orange"><div class="lbl">Sin Cto Venta</div><div class="val">${fmt.int(sinVenta)}</div><div class="hint">aún en depósito o pte. vincular</div></div>
+  `;
+}
+
+function tzRender(){
+  const all = tzFiltered();
+  document.getElementById("tz-count").textContent = `${all.length} / ${TZ_RAW.length}`;
+  tzRenderKpis(all);
+
+  // Header
+  const head = TZ_COLS.map(c => {
+    const arr = (TZ_SORT_K === c.k) ? (TZ_SORT_D>0?"▲":"▼") : "";
+    const w = c.w ? `style="width:${c.w}"` : "";
+    return `<th ${w} class="${c.num?'num':''}" data-sort-tz="${c.k}" style="cursor:pointer">${c.lbl} ${arr}</th>`;
+  }).join("");
+  document.getElementById("tz-head").innerHTML = `<th style="width:24px"></th>${head}`;
+
+  // Sort
+  const col = TZ_COLS.find(c => c.k === TZ_SORT_K);
+  const sorted = all.slice().sort((a,b) => {
+    let va = a[TZ_SORT_K], vb = b[TZ_SORT_K];
+    if(TZ_SORT_K === "fecha"){ va = tzParseFecha(va); vb = tzParseFecha(vb); }
+    if(col && col.num){ va = Number(va)||0; vb = Number(vb)||0; return (va-vb)*TZ_SORT_D; }
+    va = String(va==null?"":va); vb = String(vb==null?"":vb);
+    return va.localeCompare(vb, "es", {numeric:true}) * TZ_SORT_D;
+  });
+
+  // Body (limitamos a 1500 filas por performance)
+  const body = sorted.slice(0, 1500).map(r => {
+    const exp = TZ_EXPANDED.has(r.ctg);
+    const cells = TZ_COLS.map(c => {
+      let v = r[c.k];
+      if(c.k === "peso_neto") return `<td class="num">${fmt.num(v)}</td>`;
+      if(c.k === "contrato_compra" && v) return `<td><span style="background:#dcfce7;color:#15803d;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600">${tzEscape(v)}</span></td>`;
+      if(c.k === "contrato_venta" && v)  return `<td><span style="background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600">${tzEscape(v)}</span></td>`;
+      if(c.k === "contrato_venta" && !v) return `<td><span style="color:var(--orange);font-size:11px">— sin venta</span></td>`;
+      return `<td>${tzEscape(v||"")}</td>`;
+    }).join("");
+    let row = `<tr class="tz-row" data-ctg="${tzEscape(r.ctg)}" style="cursor:pointer"><td style="text-align:center;color:var(--blue)">${exp ? "▼" : "▶"}</td>${cells}</tr>`;
+    if(exp){
+      row += `<tr class="tz-detail" data-ctg-detail="${tzEscape(r.ctg)}"><td colspan="${TZ_COLS.length+1}" style="padding:0;background:#f8fafc"><div class="tz-detail-content" id="tz-det-${tzEscape(r.ctg)}" style="padding:14px 18px;font-size:12.5px">${tzDetailPlaceholder(r)}</div></td></tr>`;
+    }
+    return row;
+  }).join("");
+  document.getElementById("tz-body").innerHTML = body || `<tr><td colspan="${TZ_COLS.length+1}" style="text-align:center;padding:30px;color:var(--muted)">Sin CTGs para los filtros aplicados</td></tr>`;
+
+  // Footer: total kg
+  const totKg = all.reduce((s,r)=>s+(Number(r.peso_neto)||0), 0);
+  document.getElementById("tz-foot").innerHTML = `<tr style="background:#eef2ff;font-weight:700">
+    <td></td>
+    <td colspan="5">TOTAL · ${all.length} CTGs</td>
+    <td class="num">${fmt.num(totKg)}</td>
+    <td colspan="3" style="color:var(--muted);font-size:11px;text-align:right">${fmt.num(totKg/1000)} tn</td>
+  </tr>`;
+
+  // Sort listeners
+  document.querySelectorAll("#tz-head [data-sort-tz]").forEach(th => {
+    th.addEventListener("click", () => {
+      const k = th.getAttribute("data-sort-tz");
+      if(TZ_SORT_K === k) TZ_SORT_D = -TZ_SORT_D;
+      else { TZ_SORT_K = k; TZ_SORT_D = -1; }
+      tzRender();
+    });
+  });
+
+  // Click en fila → expandir/colapsar + lazy fetch detalle
+  document.querySelectorAll(".tz-row").forEach(tr => {
+    tr.addEventListener("click", async () => {
+      const ctg = tr.getAttribute("data-ctg");
+      if(TZ_EXPANDED.has(ctg)) TZ_EXPANDED.delete(ctg);
+      else { TZ_EXPANDED.add(ctg); }
+      tzRender();
+      if(TZ_EXPANDED.has(ctg)){
+        // Lazy fetch del detalle si no esta cacheado
+        await tzFetchDetail(ctg);
+      }
+    });
+  });
+}
+
+function tzDetailPlaceholder(r){
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #16a34a">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🌾 Lado COMPRA</div>
+        <div><b>Entregador:</b> ${tzEscape(r.entregador||"—")}</div>
+        <div><b>Contrato:</b> ${tzEscape(r.contrato_compra||"—")}</div>
+        <div><b>Depósito Origen:</b> ${tzEscape(r.deposito_origen||"—")}</div>
+      </div>
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #3b82f6">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📦 Lado VENTA</div>
+        <div><b>Cerealera:</b> ${tzEscape(r.cerealera||"— pte. vincular")}</div>
+        <div><b>Contrato:</b> ${tzEscape(r.contrato_venta||"—")}</div>
+        <div><b>Depósito Destino:</b> ${tzEscape(r.deposito_destino||"—")}</div>
+      </div>
+    </div>
+    <div style="padding:10px;background:#fff;border-radius:8px">
+      <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">⚖️ Pesos</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <span><b>Bruto:</b> ${fmt.num(r.peso_bruto)} kg</span>
+        <span><b>Tara:</b> ${fmt.num(r.peso_tara)} kg</span>
+        <span><b>Neto:</b> ${fmt.num(r.peso_neto)} kg</span>
+        <span><b>Neto s/mermas:</b> ${fmt.num(r.peso_neto_sin_mermas)} kg</span>
+      </div>
+    </div>
+    <div id="tz-det-coe-${tzEscape(r.ctg)}" style="margin-top:10px;padding:10px;background:#fefce8;border-radius:8px;border-left:3px solid #ca8a04">
+      <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (COE + liquidación)</div>
+      <div style="color:var(--muted);font-size:12px">⏳ Consultando Finnegans…</div>
+    </div>
+  `;
+}
+
+const TZ_DETAIL_CACHE = {};
+
+async function tzFetchDetail(ctg){
+  // Cache local
+  if(TZ_DETAIL_CACHE[ctg]){
+    tzRenderDetailExtra(ctg, TZ_DETAIL_CACHE[ctg]);
+    return;
+  }
+  if(!API_AVAILABLE){
+    tzRenderDetailExtra(ctg, {error: "Sin conexión al Worker (entrá por tablero-agronasaja.workers.dev)"});
+    return;
+  }
+  try{
+    const r = await fetch(`/api/finnegans/ctg/${encodeURIComponent(ctg)}`, {credentials:"include"});
+    if(r.ok){
+      const data = await r.json();
+      TZ_DETAIL_CACHE[ctg] = data;
+      tzRenderDetailExtra(ctg, data);
+    } else if(r.status === 404){
+      tzRenderDetailExtra(ctg, {error: "Endpoint no disponible aún. La Fase 2 (lazy fetch) requiere agregar Finnegans secrets al Worker."});
+    } else {
+      tzRenderDetailExtra(ctg, {error: `HTTP ${r.status}`});
+    }
+  } catch(e){
+    tzRenderDetailExtra(ctg, {error: e.message});
+  }
+}
+
+function tzRenderDetailExtra(ctg, data){
+  const el = document.getElementById("tz-det-coe-" + ctg);
+  if(!el) return;
+  if(data.error){
+    el.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (COE + liquidación)</div><div style="color:var(--red);font-size:12px">⚠️ ${tzEscape(data.error)}</div>`;
+    return;
+  }
+  const rows = (data.cartaPorte || []).map(r => {
+    const coe = r.COE || r.coe || "";
+    return `<tr>
+      <td>${tzEscape(r.IDENTIFICACION || r.identificacion || "")}</td>
+      <td>${tzEscape(r["CARTA DE PORTE"] || r.cartaPorte || "")}</td>
+      <td>${tzEscape(coe || '— sin COE aún')}</td>
+      <td class="num">${fmt.num(r.PESONETO || r.pesoNeto || 0)}</td>
+      <td>${tzEscape(r.RAZONSOCIALORGANIZACION || r.razonSocial || "")}</td>
+    </tr>`;
+  }).join("");
+  el.innerHTML = `
+    <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (cartaPortePorCTG)</div>
+    <table style="width:100%;font-size:11.5px;border-collapse:collapse">
+      <thead><tr style="background:#fef3c7"><th style="text-align:left;padding:5px">Paso</th><th style="text-align:left;padding:5px">CP</th><th style="text-align:left;padding:5px">COE</th><th class="num" style="text-align:right;padding:5px">Peso Neto</th><th style="text-align:left;padding:5px">Organización</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// Wire-up
+(function tzInit(){
+  if(!document.getElementById("tz-tbl")) return;
+  tzInitFilters();
+  const FIDS = ["tz-ent","tz-cer","tz-prod","tz-ccomp","tz-fdesde","tz-fhasta","tz-q"];
+  FIDS.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener(id === "tz-q" ? "input" : "change", tzRender);
+  });
+  const clr = document.getElementById("tz-clear");
+  if(clr) clr.addEventListener("click", () => {
+    FIDS.forEach(id => document.getElementById(id).value = "");
+    TZ_EXPANDED.clear();
+    tzRender();
+  });
+  tzRender();
+})();
+
+
+/* ============================================================
    ============  CONTRATOS · Códigos de Contratos  =============
    ============================================================
    Estructura en KV bajo key "contratos" (shared, todos los internos):
@@ -7197,6 +7503,68 @@ def main() -> int:
     completos = sum(1 for c in cruces_list if c.get("cliente") and c.get("comprador"))
     print(f"    -> {len(cruces_list)} CTGs unicos, {completos} con cliente+comprador completos")
 
+    # Trazabilidad de Compra: INFORMETRASGRNAPI trae cada CTG con CP, entregador,
+    # contrato compra/venta, peso, cerealera destino. Cada CTG aparece 2 veces
+    # (lado compra + lado venta), las agrupamos en un solo registro.
+    print(f"\n[+] Bajando INFORMETRASGRNAPI para Trazabilidad...", flush=True)
+    try:
+        traza_raw = api.call("/reports/INFORMETRASGRNAPI", {
+            "PARAMFechaDesde": "2024-01-01",
+            "PARAMFechaHasta": "2030-12-31",
+        })
+    except Exception as e:
+        print(f"    [!] error INFORMETRASGRNAPI: {e}")
+        traza_raw = []
+    if not isinstance(traza_raw, list):
+        traza_raw = []
+    print(f"    -> {len(traza_raw)} filas raw")
+
+    traza_by_ctg = {}
+    for r in traza_raw:
+        ctg = r.get("CTG")
+        if not ctg: continue
+        if ctg not in traza_by_ctg:
+            traza_by_ctg[ctg] = {
+                "ctg": ctg,
+                "cp": r.get("NUMERODOCUMENTO"),
+                "fecha": r.get("FECHA"),
+                "producto": r.get("PRODUCTO"),
+                "peso_bruto": float(r.get("PESOBRUTO") or 0),
+                "peso_tara":  float(r.get("PESOTARA") or 0),
+                "peso_neto":  float(r.get("PESONETO") or 0),
+                "peso_neto_sin_mermas": float(r.get("PESONETOSINMERMAS") or 0),
+                "solicitante": r.get("SOLICITANTE"),
+                "entregador": None,
+                "cerealera": None,
+                "contrato_compra": None,
+                "contrato_venta": None,
+                "deposito_origen": None,
+                "deposito_destino": None,
+            }
+        item = traza_by_ctg[ctg]
+        contrato = (r.get("CONTRATO") or "").strip()
+        org = r.get("ORGANIZACION")
+        cu = contrato.upper()
+        # Lado COMPRA: el organizacion es el entregador (proveedor)
+        if cu.startswith("COMP") or "COMP" in cu and not cu.startswith("VEN"):
+            item["contrato_compra"] = contrato
+            item["entregador"] = org or item.get("solicitante")
+            if r.get("DEPOSITOORIGEN"): item["deposito_origen"] = r.get("DEPOSITOORIGEN")
+            if r.get("DEPOSITODESTINO") and not item.get("deposito_destino"):
+                item["deposito_destino"] = r.get("DEPOSITODESTINO")
+        # Lado VENTA: el organizacion es la cerealera compradora
+        elif cu.startswith("VEN") or "VEN" in cu:
+            item["contrato_venta"] = contrato
+            item["cerealera"] = org
+            if r.get("DEPOSITODESTINO"): item["deposito_destino"] = r.get("DEPOSITODESTINO")
+        else:
+            # Fila sin contrato claro (puede ser solo recepcion)
+            if not item.get("entregador") and org:
+                item["entregador"] = org
+
+    traza_list = list(traza_by_ctg.values())
+    print(f"    -> {len(traza_list)} CTGs unicos para Trazabilidad")
+
     # Precios pizarra BCR (publico, sin auth)
     print(f"\n[+] Bajando precios pizarra BCR...", flush=True)
     try:
@@ -7292,6 +7660,7 @@ def main() -> int:
         "saldos": saldos_norm,
         "bcr":    bcr,
         "cruces": cruces_list,
+        "traza": traza_list,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,
