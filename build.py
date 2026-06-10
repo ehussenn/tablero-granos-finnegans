@@ -6664,6 +6664,28 @@ async function tzFetchDetail(ctg){
   }
 }
 
+// Indice de liquidaciones por COE (rapido O(1) lookup)
+const TZ_LIQ_BY_COE = (() => {
+  const m = {};
+  const liqs = (PAYLOAD && Array.isArray(PAYLOAD.liquidaciones)) ? PAYLOAD.liquidaciones : [];
+  liqs.forEach(l => {
+    const coe = l.numerocoe || l.numerodocumento;
+    if(coe) m[String(coe)] = l;
+  });
+  // Sumar importes desde la tabla secundaria (63 filas con importes detallados)
+  const secs = (PAYLOAD && Array.isArray(PAYLOAD.liquidaciones_secu)) ? PAYLOAD.liquidaciones_secu : [];
+  secs.forEach(l => {
+    const coe = l.numerocoe || l.numerodocumento;
+    if(coe && m[String(coe)]){
+      m[String(coe)].importegravado = l.importegravado;
+      m[String(coe)].importeotros = l.importeotros;
+      m[String(coe)].importetotal = l.importetotal;
+      m[String(coe)].numerocontratointermediario = l.numerocontratointermediario;
+    }
+  });
+  return m;
+})();
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -6671,22 +6693,81 @@ function tzRenderDetailExtra(ctg, data){
     el.innerHTML = `<div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (COE + liquidación)</div><div style="color:var(--red);font-size:12px">⚠️ ${tzEscape(data.error)}</div>`;
     return;
   }
-  const rows = (data.cartaPorte || []).map(r => {
+  const cartaPorteRows = (data.cartaPorte || []);
+  // Collect unique COEs from the cartaPorte response
+  const coesEncontrados = new Set();
+  cartaPorteRows.forEach(r => {
+    const coe = r.COE || r.coe;
+    if(coe) coesEncontrados.add(String(coe));
+  });
+
+  // Buscar las liquidaciones que matchean esos COEs
+  const liquidacionesMatched = [...coesEncontrados]
+    .map(coe => TZ_LIQ_BY_COE[coe])
+    .filter(Boolean);
+
+  const cpRowsHtml = cartaPorteRows.map(r => {
     const coe = r.COE || r.coe || "";
+    const liq = coe ? TZ_LIQ_BY_COE[String(coe)] : null;
+    const liqBadge = liq ?
+      `<span style="background:#dcfce7;color:#15803d;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:600">✓ Liquidado</span>` :
+      (coe ? `<span style="background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:600">⚠ Con COE sin match</span>` : `<span style="color:var(--muted);font-size:10.5px">— sin COE aún</span>`);
     return `<tr>
-      <td>${tzEscape(r.IDENTIFICACION || r.identificacion || "")}</td>
-      <td>${tzEscape(r["CARTA DE PORTE"] || r.cartaPorte || "")}</td>
-      <td>${tzEscape(coe || '— sin COE aún')}</td>
-      <td class="num">${fmt.num(r.PESONETO || r.pesoNeto || 0)}</td>
-      <td>${tzEscape(r.RAZONSOCIALORGANIZACION || r.razonSocial || "")}</td>
+      <td style="padding:5px">${tzEscape(r.IDENTIFICACIONEXTERNA || r.IDENTIFICACION || r.identificacion || "")}</td>
+      <td style="padding:5px">${tzEscape(r["CARTA DE PORTE"] || r.cartaPorte || "")}</td>
+      <td style="padding:5px;font-family:monospace;font-size:11px">${tzEscape(coe || "—")}</td>
+      <td style="padding:5px" class="num">${fmt.num(r.PESONETO || r.pesoNeto || 0)}</td>
+      <td style="padding:5px">${liqBadge}</td>
     </tr>`;
   }).join("");
+
+  // Bloque de liquidaciones encontradas
+  let liqHtml = "";
+  if(liquidacionesMatched.length > 0){
+    liqHtml = `
+      <div style="margin-top:10px;padding:10px;background:#dcfce7;border-radius:8px;border-left:3px solid #15803d">
+        <div style="font-size:10.5px;font-weight:700;color:#14532d;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">💰 Liquidaciones matched (${liquidacionesMatched.length})</div>
+        <table style="width:100%;font-size:11.5px;border-collapse:collapse">
+          <thead><tr style="background:#bbf7d0">
+            <th style="text-align:left;padding:5px">Documento</th>
+            <th style="text-align:left;padding:5px">Tipo</th>
+            <th style="text-align:left;padding:5px">Fecha</th>
+            <th style="text-align:left;padding:5px">Cerealera</th>
+            <th class="num" style="text-align:right;padding:5px">Gravado</th>
+            <th class="num" style="text-align:right;padding:5px">Otros</th>
+            <th class="num" style="text-align:right;padding:5px">Total</th>
+          </tr></thead>
+          <tbody>
+            ${liquidacionesMatched.map(l => {
+              const tipo = (l.transaccionsubtiponombre||"").replace("Liquidación ","").replace(" Venta de Granos","");
+              return `<tr>
+                <td style="padding:5px">${tzEscape(l.documento||"")}</td>
+                <td style="padding:5px"><span style="background:#1e40af;color:#fff;padding:1px 6px;border-radius:4px;font-size:10px">${tzEscape(tipo)}</span> ${l.tipoliquidacion?'<span style="font-size:10px;color:var(--muted)">·'+tzEscape(l.tipoliquidacion)+'</span>':''}</td>
+                <td style="padding:5px">${tzEscape(l.fecha||"")}</td>
+                <td style="padding:5px">${tzEscape((l.organizacionnombre||"").slice(0,28))}</td>
+                <td style="padding:5px" class="num">${l.importegravado!=null?fmt.num(l.importegravado):'—'}</td>
+                <td style="padding:5px" class="num">${l.importeotros!=null?fmt.num(l.importeotros):'—'}</td>
+                <td style="padding:5px" class="num"><b>${l.importetotal!=null?fmt.num(l.importetotal):'—'}</b></td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+        <div style="font-size:10.5px;color:#365314;margin-top:6px">💡 Importes solo en liquidaciones secundarias. Las primarias muestran "—".</div>
+      </div>
+    `;
+  } else if(coesEncontrados.size > 0){
+    liqHtml = `<div style="margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px;font-size:11.5px;color:#78350f">⚠ Tiene COE(s) <code>${[...coesEncontrados].join(", ")}</code> pero no encontré liquidación matched en DW. Puede ser que se haya emitido hoy y el DW aún no sincronizó.</div>`;
+  } else {
+    liqHtml = `<div style="margin-top:10px;padding:10px;background:#f1f5f9;border-radius:8px;font-size:11.5px;color:var(--muted)">Sin COE asignado todavía — el CTG aún no se liquidó.</div>`;
+  }
+
   el.innerHTML = `
-    <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (cartaPortePorCTG)</div>
+    <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
-      <thead><tr style="background:#fef3c7"><th style="text-align:left;padding:5px">Paso</th><th style="text-align:left;padding:5px">CP</th><th style="text-align:left;padding:5px">COE</th><th class="num" style="text-align:right;padding:5px">Peso Neto</th><th style="text-align:left;padding:5px">Organización</th></tr></thead>
-      <tbody>${rows}</tbody>
+      <thead><tr style="background:#fef3c7"><th style="text-align:left;padding:5px">Paso</th><th style="text-align:left;padding:5px">CP</th><th style="text-align:left;padding:5px">COE</th><th class="num" style="text-align:right;padding:5px">Peso Neto</th><th style="text-align:left;padding:5px">Estado</th></tr></thead>
+      <tbody>${cpRowsHtml}</tbody>
     </table>
+    ${liqHtml}
   `;
 }
 
@@ -7864,6 +7945,54 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] Error cosechado: {e}")
 
+    # Liquidaciones VENTA (DW) — para matchear con CTGs via COE en Trazabilidad
+    print(f"\n[+] Bajando Liquidaciones VENTA desde DW...", flush=True)
+    liquidaciones_dw = []
+    liquidaciones_secu_dw = []
+    if USE_DW:
+        try:
+            import psycopg2, psycopg2.extras
+            cn = psycopg2.connect(host=os.environ["FNN_DW_HOST"], dbname="finnegansbi",
+                                  user=os.environ["FNN_DW_USER"], password=os.environ["FNN_DW_PASS"],
+                                  port=5432, sslmode="require", connect_timeout=20)
+            cr = cn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            # 2231 liquidaciones venta (primaria + secundaria) con COE
+            cr.execute("""SELECT transaccionsubtiponombre, fecha, documento, numerodocumento,
+                                 descripcion, organizacionnombre, fechacomprobante, estado,
+                                 tipoliquidacion, grano, corredor, numerocoe
+                          FROM public.agronasajasrl_liquidacion_venta_granos
+                          WHERE numerocoe IS NOT NULL AND numerocoe != ''""")
+            for r in cr.fetchall():
+                d = {}
+                for k, v in r.items():
+                    if v == "" or v is None: d[k] = None
+                    elif k in ("fecha","fechacomprobante") and isinstance(v, str): d[k] = v[:10]
+                    else: d[k] = v
+                liquidaciones_dw.append(d)
+            print(f"    -> {len(liquidaciones_dw)} liquidaciones venta con COE")
+            # 63 secundarias con importes
+            cr.execute("""SELECT transaccionsubtiponombre, fecha, documento, numerodocumento,
+                                 descripcion, organizacionnombre, fechacomprobante, estado,
+                                 tipoliquidacion, grano, corredor, numerocoe,
+                                 numerodocumentoadicional, numerocontratointermediario, transaccionid,
+                                 importegravado, importeotros, importetotal
+                          FROM public.agronasajasrl_liquidacionventagranos
+                          WHERE numerocoe IS NOT NULL AND numerocoe != ''""")
+            for r in cr.fetchall():
+                d = {}
+                for k, v in r.items():
+                    if v == "" or v is None: d[k] = None
+                    elif k in ("fecha","fechacomprobante") and isinstance(v, str): d[k] = v[:10]
+                    elif isinstance(v, str) and _DW_NUM_RE.match(v):
+                        try: d[k] = float(v) if "." in v else int(v)
+                        except: d[k] = v
+                    else: d[k] = v
+                liquidaciones_secu_dw.append(d)
+            print(f"    -> {len(liquidaciones_secu_dw)} liquidaciones secundarias con importes")
+            cn.close()
+        except Exception as e:
+            print(f"    [!] error DW liquidaciones: {e}")
+
     # Stock por Deposito -> categorizar por tipo de deposito y agregar por producto (kg -> tn)
     # DW Postgres primero, fallback a API REST
     print(f"\n[+] Bajando Stock por Deposito (DW primero)...", flush=True)
@@ -7923,6 +8052,8 @@ def main() -> int:
         "bcr":    bcr,
         "cruces": cruces_list,
         "traza": traza_list,
+        "liquidaciones": liquidaciones_dw,
+        "liquidaciones_secu": liquidaciones_secu_dw,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,
