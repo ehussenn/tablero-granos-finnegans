@@ -2090,10 +2090,19 @@ function vpFiltered(){
 
 function vpEscape(s){ return String(s||"").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
 
+// IMPORTANTE: el campo "moneda" en Finnegans esta mal etiquetado en muchos contratos.
+// Detectar la moneda REAL por la magnitud del precio (USD: 50-2000 / ARS: > 5000).
+function vpRealMoneda(precio, monedaNominal){
+  const p = Number(precio) || 0;
+  if(p <= 0) return monedaNominal || "—";
+  if(p < 5000) return "DOLARES";    // precios USD/Tn: 50-2000 para granos
+  return "PESOS";                    // precios ARS/Tn: > 5000 (típico 50k-500k)
+}
+
 function vpRender(){
   const rows = vpFiltered();
 
-  // KPIs
+  // KPIs — agrupar por moneda DETECTADA (no la del campo moneda)
   let totTn=0, totImp=0, totW=0;
   const byMon = {};
   rows.forEach(r => {
@@ -2101,11 +2110,10 @@ function vpRender(){
     const pr = Number(r.preciopromediofijado)||0;
     const im = Number(r.importefijado)||0;
     totTn += tn; totImp += im; totW += tn*pr;
-    const m = r.moneda||"—";
+    const m = vpRealMoneda(pr, r.moneda);
     if(!byMon[m]) byMon[m] = {tn:0, w:0, imp:0};
     byMon[m].tn += tn; byMon[m].w += tn*pr; byMon[m].imp += im;
   });
-  const avgPrice = totTn>0 ? totW/totTn : 0;
   const monedasStr = Object.entries(byMon).filter(x=>x[1].tn>0).map(([m,v]) => {
     const a = v.tn>0 ? v.w/v.tn : 0;
     return `${fmt.num2(a)} ${m}`;
@@ -2113,19 +2121,19 @@ function vpRender(){
   document.getElementById("vp-kpis").innerHTML = `
     <div class="kpi"><div class="lbl">Contratos</div><div class="val">${fmt.int(rows.length)}</div><div class="hint">con precio fijado</div></div>
     <div class="kpi"><div class="lbl">Tn Fijadas</div><div class="val">${fmt.num(totTn)}</div></div>
-    <div class="kpi green"><div class="lbl">Precio Prom. Ponderado</div><div class="val" style="font-size:22px">${monedasStr}</div><div class="hint">ponderado por toneladas</div></div>
+    <div class="kpi green"><div class="lbl">Precio Prom. Ponderado</div><div class="val" style="font-size:22px">${monedasStr}</div><div class="hint">ponderado por Tn · moneda detectada por magnitud (Finnegans tiene labels mezclados)</div></div>
     <div class="kpi"><div class="lbl">Importe Fijado</div><div class="val">${fmt.num(totImp)}</div></div>
   `;
   document.getElementById("vp-count").textContent = `${rows.length} / ${DATA.length}`;
 
-  // Cards por CULTIVO (grano) — precio promedio ponderado por grano
+  // Cards por CULTIVO (grano) — precio promedio ponderado por grano POR MONEDA DETECTADA
   const byGrano = {};
   rows.forEach(r => {
     const g = r.producto || "—";
     if(!byGrano[g]) byGrano[g] = {cnt:0, tn:0, imp:0, byMon:{}, cerealeras:new Set()};
     const tn = Number(r.cantidadfijada)||0;
     const pr = Number(r.preciopromediofijado)||0;
-    const mo = r.moneda || "—";
+    const mo = vpRealMoneda(pr, r.moneda);
     byGrano[g].cnt++;
     byGrano[g].tn += tn;
     byGrano[g].imp += Number(r.importefijado)||0;
@@ -2151,31 +2159,35 @@ function vpRender(){
     </div>`;
   }).join("") || '<div class="placeholder">Sin contratos con precio fijado para los filtros aplicados</div>';
 
-  // Cards por Cerealera
+  // Cards por Cerealera — agrupar precio promedio por MONEDA DETECTADA
   const byOrg = {};
   rows.forEach(r => {
     const o = r.organizacion || "—";
-    if(!byOrg[o]) byOrg[o] = {cnt:0, tn:0, imp:0, w:0, currencies:new Set(), productos:new Set()};
+    if(!byOrg[o]) byOrg[o] = {cnt:0, tn:0, imp:0, byMon:{}, productos:new Set()};
     const tn = Number(r.cantidadfijada)||0;
     const pr = Number(r.preciopromediofijado)||0;
+    const mo = vpRealMoneda(pr, r.moneda);
     byOrg[o].cnt++;
     byOrg[o].tn += tn;
     byOrg[o].imp += Number(r.importefijado)||0;
-    byOrg[o].w += tn*pr;
-    if(r.moneda) byOrg[o].currencies.add(r.moneda);
+    if(!byOrg[o].byMon[mo]) byOrg[o].byMon[mo] = {tn:0, w:0};
+    byOrg[o].byMon[mo].tn += tn;
+    byOrg[o].byMon[mo].w  += tn*pr;
     if(r.producto) byOrg[o].productos.add(r.producto);
   });
   const orgOrder = Object.entries(byOrg).sort((a,b)=>b[1].tn - a[1].tn);
-  document.getElementById("vp-meta").textContent = `${orgOrder.length} cerealeras · precio promedio ponderado por Tn`;
+  document.getElementById("vp-meta").textContent = `${orgOrder.length} cerealeras · precio promedio ponderado por Tn · moneda detectada por magnitud`;
   document.getElementById("vp-cards").innerHTML = orgOrder.map(([org, v]) => {
-    const avg = v.tn>0 ? v.w/v.tn : 0;
-    const cur = [...v.currencies].join("/") || "—";
+    const monRows = Object.entries(v.byMon).filter(([m,vm])=>vm.tn>0).sort((a,b)=>b[1].tn - a[1].tn).map(([m, vm]) => {
+      const avg = vm.tn>0 ? vm.w/vm.tn : 0;
+      return `<div class="row"><span class="k">Prom. ${escapeHtml(m)}</span><span style="color:var(--blue)"><b>${fmt.num2(avg)}</b></span></div>`;
+    }).join("");
     const prods = [...v.productos].slice(0,3).join(", ") + (v.productos.size>3 ? "…" : "");
     return `<div class="grain-card">
       <div class="name"><span title="${vpEscape(org)}">${vpEscape(org.length>34?org.slice(0,34)+"…":org)}</span><span class="cnt">${v.cnt} ctos</span></div>
       <div class="row"><span class="k">Tn Fijadas</span><span><b>${fmt.num(v.tn)}</b></span></div>
-      <div class="row"><span class="k">Precio Prom.</span><span style="color:var(--blue)"><b>${fmt.num2(avg)}</b> ${cur}</span></div>
-      <div class="row"><span class="k">Importe</span><span>${fmt.num(v.imp)} ${cur}</span></div>
+      ${monRows}
+      <div class="row"><span class="k">Importe</span><span>${fmt.num(v.imp)}</span></div>
       <div class="row"><span class="k" style="font-size:10.5px">Granos</span><span style="font-size:10.5px;color:var(--muted)">${vpEscape(prods)}</span></div>
     </div>`;
   }).join("") || '<div class="placeholder">Sin contratos con precio fijado para los filtros aplicados</div>';
@@ -2200,6 +2212,12 @@ function vpRender(){
   const body = sorted.slice(0, 1500).map(r => {
     return `<tr>${VP_COLS.map(c => {
       let v = r[c.k];
+      if(c.k === "moneda"){
+        // Mostrar moneda DETECTADA por magnitud del precio (Finnegans tiene labels mezclados)
+        const detected = vpRealMoneda(r.preciopromediofijado, r.moneda);
+        const mismatch = detected !== r.moneda;
+        return `<td title="${mismatch ? 'Original Finnegans: ' + (r.moneda||'') + ' (detectada por magnitud)' : ''}" style="${mismatch?'color:#b45309;font-weight:600':''}">${vpEscape(detected)}${mismatch?' ⚠':''}</td>`;
+      }
       if(c.num){
         if(c.k === "preciopromediofijado") v = (v==null||v===0)?'—':fmt.num2(v);
         else v = (v==null)?'—':fmt.num(v);
