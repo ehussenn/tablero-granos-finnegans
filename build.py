@@ -6568,30 +6568,67 @@ function tzRender(){
 }
 
 function tzDetailPlaceholder(r){
+  const v = (x) => (x==null || x==="") ? "—" : x;
   return `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
       <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #16a34a">
-        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🌾 Lado COMPRA</div>
-        <div><b>Entregador:</b> ${tzEscape(r.entregador||"—")}</div>
-        <div><b>Contrato:</b> ${tzEscape(r.contrato_compra||"—")}</div>
-        <div><b>Depósito Origen:</b> ${tzEscape(r.deposito_origen||"—")}</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🌾 LADO COMPRA (entrada)</div>
+        <div><b>Entregador:</b> ${tzEscape(v(r.entregador))}</div>
+        <div><b>Contrato:</b> ${tzEscape(v(r.contrato_compra))}</div>
+        <div><b>Subtipo:</b> <span style="color:var(--muted);font-size:11.5px">${tzEscape(v(r.subtipo_compra))}</span></div>
+        <div><b>Trans. ID:</b> <span style="color:var(--muted);font-size:11.5px">${tzEscape(v(r.transaccion_compra))}</span></div>
       </div>
       <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #3b82f6">
-        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📦 Lado VENTA</div>
-        <div><b>Cerealera:</b> ${tzEscape(r.cerealera||"— pte. vincular")}</div>
-        <div><b>Contrato:</b> ${tzEscape(r.contrato_venta||"—")}</div>
-        <div><b>Depósito Destino:</b> ${tzEscape(r.deposito_destino||"—")}</div>
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📦 LADO VENTA (salida)</div>
+        <div><b>Cerealera:</b> ${tzEscape(v(r.cerealera))}</div>
+        <div><b>Contrato:</b> ${tzEscape(v(r.contrato_venta))}</div>
+        <div><b>Subtipo:</b> <span style="color:var(--muted);font-size:11.5px">${tzEscape(v(r.subtipo_venta))}</span></div>
+        <div><b>Trans. ID:</b> <span style="color:var(--muted);font-size:11.5px">${tzEscape(v(r.transaccion_venta))}</span></div>
+        <div><b>Destinatario:</b> ${tzEscape(v(r.destinatario))}</div>
       </div>
     </div>
-    <div style="padding:10px;background:#fff;border-radius:8px">
-      <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">⚖️ Pesos</div>
-      <div style="display:flex;gap:18px;flex-wrap:wrap">
-        <span><b>Bruto:</b> ${fmt.num(r.peso_bruto)} kg</span>
-        <span><b>Tara:</b> ${fmt.num(r.peso_tara)} kg</span>
-        <span><b>Neto:</b> ${fmt.num(r.peso_neto)} kg</span>
-        <span><b>Neto s/mermas:</b> ${fmt.num(r.peso_neto_sin_mermas)} kg</span>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #94a3b8">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">⚖️ Pesos</div>
+        <div><b>Neto:</b> ${fmt.num(r.peso_neto)} kg</div>
+        <div><b>Neto s/mermas:</b> ${fmt.num(r.peso_neto_sin_mermas)} kg</div>
+        <div><b>Entregador:</b> ${fmt.num(r.peso_entregador)} kg</div>
+        <div><b>Factor:</b> <span style="background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:4px;font-weight:600">${tzEscape(v(r.factor))}</span></div>
+      </div>
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #84cc16">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📑 Certificación</div>
+        <div><b>Cert. 1116a:</b> ${tzEscape(v(r.certificado_1116a))}</div>
+        <div><b>Comp. 1116a:</b> ${tzEscape(v(r.comprobante_1116a))}</div>
+        <div><b>Cert. RT:</b> ${tzEscape(v(r.certificado_rt))}</div>
+        <div><b>Comp. RT:</b> ${tzEscape(v(r.comprobante_rt))}</div>
+      </div>
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #f59e0b">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🚛 Logística</div>
+        <div><b>Transportista:</b> ${tzEscape(v(r.transportista))}</div>
+        <div><b>Representante:</b> ${tzEscape(v(r.representante))}</div>
+        <div><b>Chofer:</b> ${tzEscape(v(r.chofer))}</div>
+        <div><b>KM:</b> ${tzEscape(v(r.kilometros))} · <b>Tarifa:</b> ${tzEscape(v(r.tarifa_transporte))} · <b>$:</b> ${tzEscape(v(r.importe_transporte))}</div>
       </div>
     </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #8b5cf6">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📍 Origen → Destino</div>
+        <div><b>Establecimiento:</b> ${tzEscape(v(r.establecimiento))}</div>
+        <div><b>Origen:</b> ${tzEscape(v(r.localidad_origen))} ${r.provincia_origen?'('+tzEscape(r.provincia_origen)+')':''}</div>
+        <div><b>Destino:</b> ${tzEscape(v(r.localidad_destino))} ${r.provincia_destino?'('+tzEscape(r.provincia_destino)+')':''}</div>
+        <div><b>Fecha arribo:</b> ${tzEscape(v(r.fecha_arribo))} · <b>Descarga:</b> ${tzEscape(v(r.fecha_descarga))}</div>
+      </div>
+      <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #ec4899">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🤝 Corredores · Cosecha</div>
+        <div><b>Cosecha:</b> ${tzEscape(v(r.cosecha))}</div>
+        <div><b>Corredor primario:</b> ${tzEscape(v(r.corredor_primario))}</div>
+        <div><b>Corredor secundario:</b> ${tzEscape(v(r.corredor_secundario))}</div>
+        <div><b>Estado CTG:</b> ${tzEscape(v(r.estado_ctg))}</div>
+      </div>
+    </div>
+
     <div id="tz-det-coe-${tzEscape(r.ctg)}" style="margin-top:10px;padding:10px;background:#fefce8;border-radius:8px;border-left:3px solid #ca8a04">
       <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Detalle Finnegans (COE + liquidación)</div>
       <div style="color:var(--muted);font-size:12px">⏳ Consultando Finnegans…</div>
@@ -7503,67 +7540,194 @@ def main() -> int:
     completos = sum(1 for c in cruces_list if c.get("cliente") and c.get("comprador"))
     print(f"    -> {len(cruces_list)} CTGs unicos, {completos} con cliente+comprador completos")
 
-    # Trazabilidad de Compra: INFORMETRASGRNAPI trae cada CTG con CP, entregador,
-    # contrato compra/venta, peso, cerealera destino. Cada CTG aparece 2 veces
-    # (lado compra + lado venta), las agrupamos en un solo registro.
-    print(f"\n[+] Bajando INFORMETRASGRNAPI para Trazabilidad...", flush=True)
-    try:
-        traza_raw = api.call("/reports/INFORMETRASGRNAPI", {
-            "PARAMFechaDesde": "2024-01-01",
-            "PARAMFechaHasta": "2030-12-31",
-        })
-    except Exception as e:
-        print(f"    [!] error INFORMETRASGRNAPI: {e}")
-        traza_raw = []
-    if not isinstance(traza_raw, list):
-        traza_raw = []
-    print(f"    -> {len(traza_raw)} filas raw")
+    # Trazabilidad de Compra desde DATAWAREHOUSE POSTGRES (no API REST).
+    # La tabla agronasajasrl_traslado_de_granos tiene operaciontipo Compra/Venta explicito
+    # + factor + certificado 1116a + fletes. Si las env vars de DW no existen,
+    # cae al INFORMETRASGRNAPI como fallback con heuristica.
+    print(f"\n[+] Bajando Trazabilidad desde datawarehouse...", flush=True)
+    traza_list = []
+    dw_host = os.environ.get("FNN_DW_HOST")
+    dw_user = os.environ.get("FNN_DW_USER")
+    dw_pass = os.environ.get("FNN_DW_PASS")
+    if dw_host and dw_user and dw_pass:
+        try:
+            import psycopg2, psycopg2.extras
+            cn = psycopg2.connect(host=dw_host, dbname=os.environ.get("FNN_DW_DB","finnegansbi"),
+                                   user=dw_user, password=dw_pass,
+                                   port=int(os.environ.get("FNN_DW_PORT","5432")),
+                                   sslmode="require", connect_timeout=20)
+            cr = cn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cr.execute("""
+                SELECT numerodocumentoadicional AS ctg,
+                       numerodocumento          AS cp,
+                       fecha, grano AS producto,
+                       transaccionsubtiponombre AS subtipo, operaciontipo,
+                       organizacionnombre       AS organizacion,
+                       nombrecontrato           AS contrato,
+                       pesoneto, pesonetosinmermas, pesoentregador,
+                       factor,
+                       certificado1116a, comprobantecertificado1116a,
+                       certificadort, comprobantecertificadort,
+                       transportista, representante, chofer,
+                       tarifatransporte, importetransporte, cantidadkilometros,
+                       fechaarribo, fechadescarga,
+                       destinatario, cosecha,
+                       provinciaorigen, provinciadestino,
+                       localidadorigen, localidaddestino,
+                       establecimiento,
+                       corredorprimario, corredorsecundario,
+                       transaccionid, documento,
+                       estado, codigocancelacionctg
+                FROM public.agronasajasrl_traslado_de_granos
+                WHERE numerodocumentoadicional IS NOT NULL
+                  AND numerodocumentoadicional != ''
+                ORDER BY fecha DESC
+            """)
+            dw_rows = cr.fetchall()
+            cn.close()
+            print(f"    -> {len(dw_rows)} filas raw del DW")
 
-    traza_by_ctg = {}
-    for r in traza_raw:
-        ctg = r.get("CTG")
-        if not ctg: continue
-        if ctg not in traza_by_ctg:
-            traza_by_ctg[ctg] = {
-                "ctg": ctg,
-                "cp": r.get("NUMERODOCUMENTO"),
-                "fecha": r.get("FECHA"),
-                "producto": r.get("PRODUCTO"),
-                "peso_bruto": float(r.get("PESOBRUTO") or 0),
-                "peso_tara":  float(r.get("PESOTARA") or 0),
-                "peso_neto":  float(r.get("PESONETO") or 0),
-                "peso_neto_sin_mermas": float(r.get("PESONETOSINMERMAS") or 0),
-                "solicitante": r.get("SOLICITANTE"),
-                "entregador": None,
-                "cerealera": None,
-                "contrato_compra": None,
-                "contrato_venta": None,
-                "deposito_origen": None,
-                "deposito_destino": None,
-            }
-        item = traza_by_ctg[ctg]
-        contrato = (r.get("CONTRATO") or "").strip()
-        org = r.get("ORGANIZACION")
-        cu = contrato.upper()
-        # Lado COMPRA: el organizacion es el entregador (proveedor)
-        if cu.startswith("COMP") or "COMP" in cu and not cu.startswith("VEN"):
-            item["contrato_compra"] = contrato
-            item["entregador"] = org or item.get("solicitante")
-            if r.get("DEPOSITOORIGEN"): item["deposito_origen"] = r.get("DEPOSITOORIGEN")
-            if r.get("DEPOSITODESTINO") and not item.get("deposito_destino"):
-                item["deposito_destino"] = r.get("DEPOSITODESTINO")
-        # Lado VENTA: el organizacion es la cerealera compradora
-        elif cu.startswith("VEN") or "VEN" in cu:
-            item["contrato_venta"] = contrato
-            item["cerealera"] = org
-            if r.get("DEPOSITODESTINO"): item["deposito_destino"] = r.get("DEPOSITODESTINO")
-        else:
-            # Fila sin contrato claro (puede ser solo recepcion)
-            if not item.get("entregador") and org:
-                item["entregador"] = org
+            traza_by_ctg = {}
+            for r in dw_rows:
+                ctg = (r.get("ctg") or "").strip()
+                if not ctg: continue
+                opt = (r.get("operaciontipo") or "").strip()
+                contrato = (r.get("contrato") or "").strip()
+                org = (r.get("organizacion") or "").strip()
+                if ctg not in traza_by_ctg:
+                    traza_by_ctg[ctg] = {
+                        "ctg": ctg, "cp": r.get("cp"),
+                        "fecha": (r.get("fecha") or "")[:10],  # solo yyyy-mm-dd
+                        "producto": r.get("producto"),
+                        "peso_neto": float(r.get("pesoneto") or 0),
+                        "peso_neto_sin_mermas": float(r.get("pesonetosinmermas") or 0),
+                        "peso_entregador": float(r.get("pesoentregador") or 0),
+                        "factor": r.get("factor"),
+                        "certificado_1116a": r.get("certificado1116a"),
+                        "comprobante_1116a": r.get("comprobantecertificado1116a"),
+                        "certificado_rt": r.get("certificadort"),
+                        "comprobante_rt": r.get("comprobantecertificadort"),
+                        "destinatario": r.get("destinatario"),
+                        "cosecha": r.get("cosecha"),
+                        "establecimiento": r.get("establecimiento"),
+                        "estado_ctg": r.get("estado"),
+                        "transportista": r.get("transportista"),
+                        "representante": r.get("representante"),
+                        "chofer": r.get("chofer"),
+                        "tarifa_transporte": r.get("tarifatransporte"),
+                        "importe_transporte": r.get("importetransporte"),
+                        "kilometros": r.get("cantidadkilometros"),
+                        "fecha_arribo": (r.get("fechaarribo") or "")[:10],
+                        "fecha_descarga": (r.get("fechadescarga") or "")[:10],
+                        "provincia_origen": r.get("provinciaorigen"),
+                        "provincia_destino": r.get("provinciadestino"),
+                        "localidad_origen": r.get("localidadorigen"),
+                        "localidad_destino": r.get("localidaddestino"),
+                        "corredor_primario": r.get("corredorprimario"),
+                        "corredor_secundario": r.get("corredorsecundario"),
+                        "entregador": None, "cerealera": None,
+                        "contrato_compra": None, "contrato_venta": None,
+                        "subtipo_compra": None, "subtipo_venta": None,
+                        "transaccion_compra": None, "transaccion_venta": None,
+                    }
+                item = traza_by_ctg[ctg]
+                # operaciontipo es la verdad — Compra = entrega del productor, Venta = traslado a cerealera
+                if opt == "Compra":
+                    if contrato and not item["contrato_compra"]:
+                        item["contrato_compra"] = contrato
+                    if org and not item["entregador"]:
+                        item["entregador"] = org
+                    if r.get("subtipo") and not item["subtipo_compra"]:
+                        item["subtipo_compra"] = r.get("subtipo")
+                    if r.get("transaccionid") and not item["transaccion_compra"]:
+                        item["transaccion_compra"] = r.get("transaccionid")
+                elif opt == "Venta":
+                    if contrato and not item["contrato_venta"]:
+                        item["contrato_venta"] = contrato
+                    if org and not item["cerealera"]:
+                        item["cerealera"] = org
+                    if r.get("subtipo") and not item["subtipo_venta"]:
+                        item["subtipo_venta"] = r.get("subtipo")
+                    if r.get("transaccionid") and not item["transaccion_venta"]:
+                        item["transaccion_venta"] = r.get("transaccionid")
+                    if r.get("destinatario") and not item.get("destinatario"):
+                        item["destinatario"] = r.get("destinatario")
 
-    traza_list = list(traza_by_ctg.values())
-    print(f"    -> {len(traza_list)} CTGs unicos para Trazabilidad")
+            traza_list = list(traza_by_ctg.values())
+            sin_compra = sum(1 for c in traza_list if not c.get("contrato_compra"))
+            sin_venta  = sum(1 for c in traza_list if not c.get("contrato_venta"))
+            con_ambos  = sum(1 for c in traza_list if c.get("contrato_compra") and c.get("contrato_venta"))
+            print(f"    -> {len(traza_list)} CTGs unicos: {con_ambos} con ambos contratos, {sin_compra} sin compra, {sin_venta} sin venta")
+        except Exception as e:
+            print(f"    [!] error DW: {type(e).__name__}: {str(e)[:200]}")
+            traza_list = []
+    else:
+        print("    [.] FNN_DW_HOST/USER/PASS no seteados, fallback a INFORMETRASGRNAPI con heuristica")
+
+    # Fallback: si no se pudo bajar del DW, usamos la API REST con heuristica
+    if not traza_list:
+        try:
+            traza_raw = api.call("/reports/INFORMETRASGRNAPI", {
+                "PARAMFechaDesde": "2024-01-01",
+                "PARAMFechaHasta": "2030-12-31",
+            })
+        except Exception as e:
+            print(f"    [!] error INFORMETRASGRNAPI fallback: {e}")
+            traza_raw = []
+        if not isinstance(traza_raw, list):
+            traza_raw = []
+        print(f"    -> {len(traza_raw)} filas raw (API REST fallback)")
+
+        def _traza_side(row):
+            org = (row.get("ORGANIZACION") or "").strip().upper()
+            sol = (row.get("SOLICITANTE") or "").strip().upper()
+            if org and sol:
+                return "compra" if org == sol else "venta"
+            c = (row.get("CONTRATO") or "").upper()
+            if c.startswith("COMP") or "CPRA" in c: return "compra"
+            if c.startswith("VEN") or "VTA" in c:   return "venta"
+            return None
+
+        traza_by_ctg = {}
+        for r in traza_raw:
+            ctg = r.get("CTG")
+            if not ctg: continue
+            if ctg not in traza_by_ctg:
+                traza_by_ctg[ctg] = {
+                    "ctg": ctg, "cp": r.get("NUMERODOCUMENTO"),
+                    "fecha": r.get("FECHA"), "producto": r.get("PRODUCTO"),
+                    "peso_neto": float(r.get("PESONETO") or 0),
+                    "peso_neto_sin_mermas": float(r.get("PESONETOSINMERMAS") or 0),
+                    "peso_entregador": 0,
+                    "entregador": None, "cerealera": None,
+                    "contrato_compra": None, "contrato_venta": None,
+                    "factor": None, "certificado_1116a": None, "comprobante_1116a": None,
+                    "certificado_rt": None, "comprobante_rt": None,
+                    "destinatario": None, "cosecha": None,
+                    "transportista": None, "representante": None, "chofer": None,
+                    "tarifa_transporte": None, "importe_transporte": None, "kilometros": None,
+                    "fecha_arribo": None, "fecha_descarga": None,
+                    "provincia_origen": None, "provincia_destino": None,
+                    "localidad_origen": None, "localidad_destino": None,
+                    "establecimiento": None,
+                    "corredor_primario": None, "corredor_secundario": None,
+                    "subtipo_compra": None, "subtipo_venta": None,
+                    "transaccion_compra": None, "transaccion_venta": None,
+                    "estado_ctg": None,
+                }
+            item = traza_by_ctg[ctg]
+            contrato = (r.get("CONTRATO") or "").strip()
+            org = r.get("ORGANIZACION")
+            side = _traza_side(r)
+            if side == "compra":
+                if contrato and not item["contrato_compra"]: item["contrato_compra"] = contrato
+                if org and not item["entregador"]: item["entregador"] = org
+            elif side == "venta":
+                if contrato and not item["contrato_venta"]: item["contrato_venta"] = contrato
+                if org and not item["cerealera"]: item["cerealera"] = org
+
+        traza_list = list(traza_by_ctg.values())
+        print(f"    -> {len(traza_list)} CTGs unicos via fallback")
 
     # Precios pizarra BCR (publico, sin auth)
     print(f"\n[+] Bajando precios pizarra BCR...", flush=True)
