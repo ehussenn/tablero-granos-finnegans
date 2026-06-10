@@ -963,6 +963,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="subtabs">
       <button class="subtab active" data-sub="posicion">Posición General</button>
       <button class="subtab" data-sub="financiera">Financiera</button>
+      <button class="subtab" data-sub="vt-precios">💰 Precios por Contrato</button>
     </div>
 
     <!-- ========== SUB: POSICIÓN ========== -->
@@ -1086,6 +1087,45 @@ HTML_TEMPLATE = r"""<!doctype html>
             <tfoot><tr id="cal-foot"></tr></tfoot>
           </table>
         </div>
+      </div>
+
+    </div>
+
+    <!-- ========== SUB: PRECIOS POR CONTRATO ========== -->
+    <div class="subpanel" data-sub-panel="vt-precios">
+
+      <div class="kpis" id="vp-kpis"></div>
+
+      <div class="filterbar">
+        <div><label>CEREALERA</label><select id="vp-org"><option value="">Todas</option></select></div>
+        <div><label>GRANO</label><select id="vp-prod"><option value="">Todos</option></select></div>
+        <div><label>MONEDA</label><select id="vp-mon"><option value="">Todas</option></select></div>
+        <div><label>CAMPAÑA</label><select id="vp-camp"><option value="">Todas</option></select></div>
+        <div><label>BUSCAR</label><input type="text" id="vp-q" placeholder="número contrato…" /></div>
+        <button class="clear" id="vp-clear">Limpiar</button>
+        <div class="count" id="vp-count">0 / 0</div>
+      </div>
+
+      <!-- Resumen por Cerealera (cards con precio promedio ponderado) -->
+      <div class="section">
+        <h3>Resumen por Cerealera <span class="badge" id="vp-meta">Precio promedio ponderado por toneladas fijadas</span></h3>
+        <div class="grain-grid" id="vp-cards"></div>
+      </div>
+
+      <!-- Detalle: cada contrato y su precio cerrado -->
+      <div class="section">
+        <h3>Detalle · Cada Contrato y su Precio Cerrado <span class="badge">click en encabezado para ordenar</span></h3>
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="vp-tbl">
+            <thead><tr id="vp-tbl-head"></tr></thead>
+            <tbody id="vp-tbl-body"></tbody>
+            <tfoot id="vp-tbl-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <strong>Cómo se lee</strong>: cada fila es un contrato de venta con su <b>precio fijado</b> (cerrado con la cerealera). Los cards arriba muestran el <b>precio promedio ponderado</b> por toneladas para cada cerealera — comparás qué te paga cada uno. Click en cualquier columna del header para ordenar.
       </div>
 
     </div>
@@ -1847,6 +1887,193 @@ function renderFootPos(rows){
 }
 
 render();
+
+
+/* ============================================================
+   ===========  VENTA · Precios por Contrato  =================
+   ============================================================
+   Sub-pestaña con cada contrato y su precio cerrado, agrupable por
+   cerealera (Cargill, LDC, COFCO, FYO, etc) para comparar precios. */
+
+const VP_COLS = [
+  {k:'numerointerno',          lbl:'Nº',           num:false},
+  {k:'fecha',                  lbl:'Fecha',        num:false},
+  {k:'organizacion',           lbl:'Cerealera',    num:false},
+  {k:'producto',               lbl:'Grano',        num:false},
+  {k:'tipocontrato',           lbl:'Tipo',         num:false},
+  {k:'cantidadfijada',         lbl:'Tn Fijadas',   num:true,  sum:true},
+  {k:'preciopromediofijado',   lbl:'Precio Fij.',  num:true,  sum:'avg'},
+  {k:'moneda',                 lbl:'Mon.',         num:false},
+  {k:'importefijado',          lbl:'Importe',      num:true,  sum:true},
+  {k:'campana',                lbl:'Campaña',      num:false},
+];
+
+let VP_SORT_K = "fecha", VP_SORT_D = -1;
+
+function vpInitFiltros(){
+  // Solo contratos con precio fijado o cantidad fijada > 0
+  const base = DATA.filter(r => (Number(r.cantidadfijada)>0) || (Number(r.preciopromediofijado)>0));
+  ["org","prod","mon","camp"].forEach(k => {
+    const map = {org:"organizacion", prod:"producto", mon:"moneda", camp:"campana"};
+    const vals = [...new Set(base.map(r => r[map[k]]).filter(v => v!=null && v!==""))]
+      .sort((a,b)=>String(a).localeCompare(String(b),"es"));
+    const sel = document.getElementById("vp-"+k);
+    if(sel){
+      sel.innerHTML = '<option value="">Todas</option>' +
+        vals.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
+  });
+}
+
+function vpFiltered(){
+  const o = document.getElementById("vp-org").value;
+  const p = document.getElementById("vp-prod").value;
+  const m = document.getElementById("vp-mon").value;
+  const c = document.getElementById("vp-camp").value;
+  const q = (document.getElementById("vp-q").value||"").toLowerCase().trim();
+  return DATA.filter(r => {
+    if(!((Number(r.cantidadfijada)>0) || (Number(r.preciopromediofijado)>0))) return false;
+    if(o && r.organizacion !== o) return false;
+    if(p && r.producto !== p) return false;
+    if(m && r.moneda !== m) return false;
+    if(c && r.campana !== c) return false;
+    if(q && !`${r.numerointerno||""} ${r.descripcion||""}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function vpEscape(s){ return String(s||"").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+
+function vpRender(){
+  const rows = vpFiltered();
+
+  // KPIs
+  let totTn=0, totImp=0, totW=0;
+  const byMon = {};
+  rows.forEach(r => {
+    const tn = Number(r.cantidadfijada)||0;
+    const pr = Number(r.preciopromediofijado)||0;
+    const im = Number(r.importefijado)||0;
+    totTn += tn; totImp += im; totW += tn*pr;
+    const m = r.moneda||"—";
+    if(!byMon[m]) byMon[m] = {tn:0, w:0, imp:0};
+    byMon[m].tn += tn; byMon[m].w += tn*pr; byMon[m].imp += im;
+  });
+  const avgPrice = totTn>0 ? totW/totTn : 0;
+  const monedasStr = Object.entries(byMon).filter(x=>x[1].tn>0).map(([m,v]) => {
+    const a = v.tn>0 ? v.w/v.tn : 0;
+    return `${fmt.num2(a)} ${m}`;
+  }).join(" / ") || "—";
+  document.getElementById("vp-kpis").innerHTML = `
+    <div class="kpi"><div class="lbl">Contratos</div><div class="val">${fmt.int(rows.length)}</div><div class="hint">con precio fijado</div></div>
+    <div class="kpi"><div class="lbl">Tn Fijadas</div><div class="val">${fmt.num(totTn)}</div></div>
+    <div class="kpi green"><div class="lbl">Precio Prom. Ponderado</div><div class="val" style="font-size:22px">${monedasStr}</div><div class="hint">ponderado por toneladas</div></div>
+    <div class="kpi"><div class="lbl">Importe Fijado</div><div class="val">${fmt.num(totImp)}</div></div>
+  `;
+  document.getElementById("vp-count").textContent = `${rows.length} / ${DATA.length}`;
+
+  // Cards por Cerealera
+  const byOrg = {};
+  rows.forEach(r => {
+    const o = r.organizacion || "—";
+    if(!byOrg[o]) byOrg[o] = {cnt:0, tn:0, imp:0, w:0, currencies:new Set(), productos:new Set()};
+    const tn = Number(r.cantidadfijada)||0;
+    const pr = Number(r.preciopromediofijado)||0;
+    byOrg[o].cnt++;
+    byOrg[o].tn += tn;
+    byOrg[o].imp += Number(r.importefijado)||0;
+    byOrg[o].w += tn*pr;
+    if(r.moneda) byOrg[o].currencies.add(r.moneda);
+    if(r.producto) byOrg[o].productos.add(r.producto);
+  });
+  const orgOrder = Object.entries(byOrg).sort((a,b)=>b[1].tn - a[1].tn);
+  document.getElementById("vp-meta").textContent = `${orgOrder.length} cerealeras · precio promedio ponderado por Tn`;
+  document.getElementById("vp-cards").innerHTML = orgOrder.map(([org, v]) => {
+    const avg = v.tn>0 ? v.w/v.tn : 0;
+    const cur = [...v.currencies].join("/") || "—";
+    const prods = [...v.productos].slice(0,3).join(", ") + (v.productos.size>3 ? "…" : "");
+    return `<div class="grain-card">
+      <div class="name"><span title="${vpEscape(org)}">${vpEscape(org.length>34?org.slice(0,34)+"…":org)}</span><span class="cnt">${v.cnt} ctos</span></div>
+      <div class="row"><span class="k">Tn Fijadas</span><span><b>${fmt.num(v.tn)}</b></span></div>
+      <div class="row"><span class="k">Precio Prom.</span><span style="color:var(--blue)"><b>${fmt.num2(avg)}</b> ${cur}</span></div>
+      <div class="row"><span class="k">Importe</span><span>${fmt.num(v.imp)} ${cur}</span></div>
+      <div class="row"><span class="k" style="font-size:10.5px">Granos</span><span style="font-size:10.5px;color:var(--muted)">${vpEscape(prods)}</span></div>
+    </div>`;
+  }).join("") || '<div class="placeholder">Sin contratos con precio fijado para los filtros aplicados</div>';
+
+  // Tabla detalle
+  const head = VP_COLS.map(c => {
+    const arr = (VP_SORT_K === c.k) ? (VP_SORT_D>0?'▲':'▼') : '';
+    return `<th class="${c.num?'num':''}" data-sort-vp="${c.k}" style="cursor:pointer">${c.lbl} ${arr}</th>`;
+  }).join("");
+  document.getElementById("vp-tbl-head").innerHTML = head;
+
+  let sorted = rows.slice();
+  if(VP_SORT_K){
+    const col = VP_COLS.find(c => c.k === VP_SORT_K);
+    sorted.sort((a,b) => {
+      let va = a[VP_SORT_K], vb = b[VP_SORT_K];
+      if(col && col.num){ va = Number(va)||0; vb = Number(vb)||0; return (va-vb)*VP_SORT_D; }
+      va = String(va==null?'':va); vb = String(vb==null?'':vb);
+      return va.localeCompare(vb,"es",{numeric:true})*VP_SORT_D;
+    });
+  }
+  const body = sorted.slice(0, 1500).map(r => {
+    return `<tr>${VP_COLS.map(c => {
+      let v = r[c.k];
+      if(c.num){
+        if(c.k === "preciopromediofijado") v = (v==null||v===0)?'—':fmt.num2(v);
+        else v = (v==null)?'—':fmt.num(v);
+        return `<td class="num">${v}</td>`;
+      }
+      return `<td>${vpEscape(v||'')}</td>`;
+    }).join("")}</tr>`;
+  }).join("");
+  document.getElementById("vp-tbl-body").innerHTML = body || '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">Sin contratos con precio fijado</td></tr>';
+
+  // Footer total
+  const totFoot = VP_COLS.map(c => {
+    if(c.k === "numerointerno") return `<td><b>TOTAL · ${rows.length} contratos</b></td>`;
+    if(c.sum === true){
+      const t = rows.reduce((s,r) => s + (Number(r[c.k])||0), 0);
+      return `<td class="num"><b>${fmt.num(t)}</b></td>`;
+    }
+    if(c.sum === "avg"){
+      // precio promedio ponderado por cantidadfijada
+      let w=0, t=0;
+      rows.forEach(r => { const tn=Number(r.cantidadfijada)||0; const pr=Number(r[c.k])||0; if(pr>0){w+=tn*pr; t+=tn;} });
+      const a = t>0?w/t:0;
+      return `<td class="num" title="promedio ponderado por Tn"><b>${fmt.num2(a)}</b></td>`;
+    }
+    return '<td></td>';
+  }).join("");
+  document.getElementById("vp-tbl-foot").innerHTML = `<tr>${totFoot}</tr>`;
+
+  // Sort listeners
+  document.querySelectorAll('#vp-tbl-head [data-sort-vp]').forEach(th => {
+    th.addEventListener("click", () => {
+      const k = th.getAttribute("data-sort-vp");
+      if(VP_SORT_K === k) VP_SORT_D = -VP_SORT_D;
+      else { VP_SORT_K = k; VP_SORT_D = -1; }
+      vpRender();
+    });
+  });
+}
+
+// Wire-up filtros
+(function vpInit(){
+  vpInitFiltros();
+  ["vp-org","vp-prod","vp-mon","vp-camp","vp-q"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener(id === "vp-q" ? "input" : "change", vpRender);
+  });
+  const clr = document.getElementById("vp-clear");
+  if(clr) clr.addEventListener("click", () => {
+    ["vp-org","vp-prod","vp-mon","vp-camp","vp-q"].forEach(id => document.getElementById(id).value = "");
+    vpRender();
+  });
+  vpRender();
+})();
 
 
 /* ============================================================
