@@ -135,6 +135,33 @@ def main():
         invs = fetch_all_via_browser(page, H, "/v1/invoices", "invoices")
         log(f"    -> {len(invs)} invoices")
 
+        # Bajar detalles INCREMENTALMENTE (solo de movements nuevos respecto al archivo previo)
+        details_file = DATA / "movements_detail.json"
+        existing = {}
+        if details_file.exists():
+            try: existing = json.loads(details_file.read_text(encoding="utf-8"))
+            except: existing = {}
+        todo_detail = [m for m in movs if m.get("movementNumber") and m["movementNumber"] not in existing]
+        log(f"[+] Bajando DETAILS incremental: {len(todo_detail)} nuevos (ya tengo {len(existing)})")
+        common = f"customerId={CUSTOMER_ID}&source=JDEAR&role=DXP_GPS_Role_Client"
+        results = dict(existing)
+        for i, m in enumerate(todo_detail, 1):
+            num = m["movementNumber"]
+            try:
+                r = page.context.request.get(f"{API}/v1/movements/{num}?{common}",
+                                              headers=H, timeout=15000)
+                if r.status == 200:
+                    detail = (r.json().get("data") or {}).get("movementsDetail")
+                    if detail: results[num] = detail
+            except Exception as e:
+                pass
+            if i % 200 == 0:
+                log(f"    [{i}/{len(todo_detail)}] OK={len(results)}")
+                details_file.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+            time.sleep(0.1)
+        details_file.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+        log(f"    -> {len(results)} details totales")
+
         ctx.close()
 
     if not (movs and pays and invs):
@@ -150,7 +177,8 @@ def main():
     try:
         os.chdir(str(ROOT))
         subprocess.run(["git", "add", "data/cargill/movements.json",
-                         "data/cargill/payments.json", "data/cargill/invoices.json"], check=True)
+                         "data/cargill/payments.json", "data/cargill/invoices.json",
+                         "data/cargill/movements_detail.json"], check=True)
         # Solo commitear si hay cambios
         r = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True)
         if r.stdout.strip():

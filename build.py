@@ -6707,13 +6707,29 @@ const TZ_CTO_VENTA = (() => {
 })();
 
 // Indices Cargill (movements por CTG/coe, invoices por COE, payments por contrato)
+// Nota: el legalDocument de Cargill viene como "0000000000461-10132363698"
+// donde la parte despues del ultimo "-" es el CTG.
+function tzExtractCargillCtg(legalDoc){
+  if(!legalDoc) return null;
+  const s = String(legalDoc).trim();
+  if(s.includes("-")){
+    const parts = s.split("-");
+    return parts[parts.length - 1].trim();
+  }
+  return s;
+}
 const TZ_CARGILL_MOV_BY_CTG = {};
 const TZ_CARGILL_MOV_BY_COE = {};
 const TZ_CARGILL_MOV_BY_CONTRATO = {};
 ((PAYLOAD && PAYLOAD.cargill_movements) || []).forEach(m => {
+  const ctg = tzExtractCargillCtg(m.legalDocument);
+  if(ctg){
+    (TZ_CARGILL_MOV_BY_CTG[ctg] = TZ_CARGILL_MOV_BY_CTG[ctg] || []).push(m);
+  }
+  // Tambien indexar por el legalDocument completo por si acaso
   if(m.legalDocument){
     const k = String(m.legalDocument).trim();
-    (TZ_CARGILL_MOV_BY_CTG[k] = TZ_CARGILL_MOV_BY_CTG[k] || []).push(m);
+    if(k !== ctg) (TZ_CARGILL_MOV_BY_CTG[k] = TZ_CARGILL_MOV_BY_CTG[k] || []).push(m);
   }
   if(m.coeNumber && String(m.coeNumber).trim()){
     const k = String(m.coeNumber).trim();
@@ -6895,23 +6911,154 @@ function tzRenderDetailExtra(ctg, data){
       const invs = cargContract ? (TZ_CARGILL_INV_BY_CONTRATO[String(cargContract).trim()] || []) : [];
       const pays = cargContract ? (TZ_CARGILL_PAY_BY_CONTRATO[String(cargContract).trim()] || []) : [];
 
+      // Detalle (qualityAnalysis + services) si esta disponible
+      const cargDetails = (PAYLOAD && PAYLOAD.cargill_details) || {};
+
       // Sumar descuentos
       const totDisc = cargMovs.reduce((s,m)=>s+(Number(m.totalDiscount)||0), 0);
       const totNeto = cargMovs.reduce((s,m)=>s+(Number(m.netWeight)||0), 0);
       const totBruto = cargMovs.reduce((s,m)=>s+(Number(m.grossWeight)||0), 0);
 
-      const movRows = cargMovs.slice(0, 10).map(m => `<tr>
-        <td style="padding:4px">${tzEscape(m.movementNumber||"")}</td>
-        <td style="padding:4px">${tzEscape(m.deliveryDate||"")}</td>
-        <td style="padding:4px;font-family:monospace">${tzEscape(m.legalDocument||"")}</td>
-        <td style="padding:4px;font-family:monospace">${tzEscape(m.coeNumber||"").trim()||"—"}</td>
-        <td style="padding:4px" class="num">${fmt.num(m.grossWeight)}</td>
-        <td style="padding:4px" class="num">${fmt.num(m.tareWeight)}</td>
-        <td style="padding:4px" class="num"><b>${fmt.num(m.netWeight)}</b></td>
-        <td style="padding:4px" class="num">${m.humedad?fmt.num2(m.humedad)+'%':'—'}</td>
-        <td style="padding:4px" class="num">${m.impurezas?fmt.num2(m.impurezas)+'%':'—'}</td>
-        <td style="padding:4px" class="num" style="color:#b45309">${fmt.num(m.totalDiscount)}</td>
-      </tr>`).join("");
+      // Generar tabla de descargas. Si hay detalle disponible (qualityAnalysis), usar humedad real del detalle
+      const movRows = cargMovs.slice(0, 10).map(m => {
+        const det = cargDetails[m.movementNumber];
+        // Sacar humedad del qualityAnalysis del detalle (si esta)
+        let humedadReal = m.humedad;
+        if(det && det.qualityAnalysis){
+          const hum = det.qualityAnalysis.find(a => (a.analysisType||"").toUpperCase().includes("HUMEDAD"));
+          if(hum) humedadReal = parseFloat(String(hum.valueCargill||"").replace(",",".")) || humedadReal;
+        }
+        // Quality string como fallback (formato "12,70%")
+        if(!humedadReal && m.quality){
+          const match = String(m.quality).match(/[\d,]+/);
+          if(match) humedadReal = parseFloat(match[0].replace(",",".")) || null;
+        }
+        return `<tr>
+          <td style="padding:4px;font-family:monospace;font-size:10.5px">${tzEscape(m.movementNumber||"")}</td>
+          <td style="padding:4px">${tzEscape(m.deliveryDate||"")}</td>
+          <td style="padding:4px;font-family:monospace">${tzEscape(tzExtractCargillCtg(m.legalDocument)||"")}</td>
+          <td style="padding:4px;font-family:monospace">${tzEscape(m.coeNumber||"").trim()||"—"}</td>
+          <td style="padding:4px" class="num">${fmt.num(m.grossWeight)}</td>
+          <td style="padding:4px" class="num">${fmt.num(m.tareWeight)}</td>
+          <td style="padding:4px" class="num"><b>${fmt.num(m.netWeight)}</b></td>
+          <td style="padding:4px" class="num">${humedadReal?fmt.num2(humedadReal)+'%':'—'}</td>
+          <td style="padding:4px" class="num" style="color:#b45309">${fmt.num(m.totalDiscount)}</td>
+        </tr>`;
+      }).join("");
+
+      // Detalle inline por cada movement con detalle bajado
+      const movsConDetail = cargMovs.filter(m => cargDetails[m.movementNumber]);
+      let detailHtml = "";
+      if(movsConDetail.length){
+        // Agregar TOTALES sumarizando descuentos kg + gastos comerciales totales
+        let totalDescuentoKg = 0;
+        let serviciosResumen = {};  // serviceName -> { count, totalUnitPrice (acumulado), currency }
+        movsConDetail.forEach(m => {
+          const det = cargDetails[m.movementNumber];
+          (det.qualityAnalysis||[]).forEach(a => {
+            totalDescuentoKg += (parseFloat(a.discount)||0);
+          });
+          (det.services||[]).forEach(s => {
+            const k = (s.serviceName||"OTRO").trim();
+            const up = parseFloat(String(s.unitPrice||"0").replace(",",".")) || 0;
+            const cur = s.billingCurrency || "USD";
+            if(!serviciosResumen[k]) serviciosResumen[k] = { count:0, totalUp:0, cur };
+            serviciosResumen[k].count++;
+            serviciosResumen[k].totalUp += up;
+          });
+        });
+
+        // KPIs Resumen Análisis + Servicios
+        const totalSvcEntries = Object.keys(serviciosResumen).length;
+        const kpisDetail = `
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+            <div style="background:#dcfce7;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Mov. c/ Detalle</div>
+              <div style="font-size:15px;font-weight:700">${movsConDetail.length} / ${cargMovs.length}</div>
+            </div>
+            <div style="background:#fee2e2;padding:8px;border-radius:6px;border-left:3px solid #dc2626">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Descuento kg (calidad)</div>
+              <div style="font-size:15px;font-weight:700;color:#dc2626">${fmt.num(totalDescuentoKg)} kg</div>
+            </div>
+            <div style="background:#dbeafe;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Tipos de servicio</div>
+              <div style="font-size:15px;font-weight:700">${totalSvcEntries}</div>
+            </div>
+          </div>`;
+
+        // Render detalle per movement (collapsible)
+        const detailBlocks = movsConDetail.slice(0, 20).map(m => {
+          const det = cargDetails[m.movementNumber];
+          const qa = det.qualityAnalysis || [];
+          const svc = det.services || [];
+          const qaWithValues = qa.filter(a => {
+            const v = parseFloat(String(a.valueCargill||"").replace(",",".")) || 0;
+            return v !== 0 || (parseFloat(a.discount)||0) > 0;
+          });
+          const qaRows = qaWithValues.map(a => {
+            const v = parseFloat(String(a.valueCargill||"").replace(",",".")) || 0;
+            const factor = parseFloat(a.cargillQualityDescription) || 0;
+            return `<tr>
+              <td style="padding:3px 5px">${tzEscape(a.analysisType||"")}</td>
+              <td style="padding:3px 5px" class="num"><b>${fmt.num2(v)}</b> ${tzEscape(a.analysisUnit||"%")}</td>
+              <td style="padding:3px 5px" class="num" style="color:${factor>0?'#b45309':'var(--muted)'}">${factor||""}</td>
+              <td style="padding:3px 5px" class="num" style="color:${a.discount>0?'#dc2626':'var(--muted)'}"><b>${a.discount||""}</b></td>
+            </tr>`;
+          }).join("");
+          const svcRows = svc.map(s => `<tr>
+            <td style="padding:3px 5px">${tzEscape(s.serviceName||"")}</td>
+            <td style="padding:3px 5px" class="num"><b>${tzEscape(s.unitPrice||"")}</b> ${tzEscape(s.billingCurrency||"USD")}</td>
+            <td style="padding:3px 5px" style="font-size:10.5px;color:var(--muted)">${tzEscape(s.calculationType||"")}</td>
+            <td style="padding:3px 5px">${tzEscape(s.invoiceCarrierName||s.serviceCommodityCode||"—")}</td>
+          </tr>`).join("");
+
+          return `<details style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border-left:2px solid #16a34a">
+            <summary style="cursor:pointer;font-size:11.5px;font-weight:700;color:#15803d">
+              🧪 ${tzEscape(m.movementNumber)} — ${tzEscape(m.deliveryDate||"")} · ${tzEscape(tzExtractCargillCtg(m.legalDocument)||"")}
+              ${det.cargillAnalysisId ? ` · Anal#${tzEscape(det.cargillAnalysisId)}` : ''}
+              ${det.cargillAgency ? ` · ${tzEscape(det.cargillAgency)}` : ''}
+            </summary>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+              <div>
+                <div style="font-size:10px;font-weight:700;color:#15803d;text-transform:uppercase;margin-bottom:3px">Análisis de Calidad</div>
+                ${qaRows ? `<table style="width:100%;font-size:10.5px;border-collapse:collapse;background:#f0fdf4">
+                  <thead><tr style="background:#dcfce7">
+                    <th style="text-align:left;padding:3px 5px">Tipo</th>
+                    <th class="num" style="text-align:right;padding:3px 5px">Valor</th>
+                    <th class="num" style="text-align:right;padding:3px 5px">Factor</th>
+                    <th class="num" style="text-align:right;padding:3px 5px">Desc kg</th>
+                  </tr></thead>
+                  <tbody>${qaRows}</tbody>
+                </table>` : '<div style="font-size:10.5px;color:var(--muted)">sin análisis</div>'}
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:#1e40af;text-transform:uppercase;margin-bottom:3px">Servicios / Gastos</div>
+                ${svcRows ? `<table style="width:100%;font-size:10.5px;border-collapse:collapse;background:#eff6ff">
+                  <thead><tr style="background:#dbeafe">
+                    <th style="text-align:left;padding:3px 5px">Servicio</th>
+                    <th class="num" style="text-align:right;padding:3px 5px">Precio Unit.</th>
+                    <th class="num" style="text-align:right;padding:3px 5px">Cálculo</th>
+                    <th style="text-align:left;padding:3px 5px">Carrier</th>
+                  </tr></thead>
+                  <tbody>${svcRows}</tbody>
+                </table>` : '<div style="font-size:10.5px;color:var(--muted)">sin servicios</div>'}
+              </div>
+            </div>
+          </details>`;
+        }).join("");
+
+        detailHtml = `${kpisDetail}
+          <details open style="margin-top:6px">
+            <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#7c2d12;text-transform:uppercase">🧪 Análisis de Calidad + Servicios por Mov (${movsConDetail.length})</summary>
+            ${detailBlocks}
+            ${movsConDetail.length > 20 ? `<div style="font-size:10.5px;color:#7c2d12;margin-top:4px">... y ${movsConDetail.length - 20} más</div>` : ''}
+          </details>`;
+      } else {
+        detailHtml = `<div style="margin-top:8px;padding:8px;background:#fff7ed;border-radius:6px;font-size:11.5px;color:#9a3412">
+          💡 Detalle completo (análisis de calidad + servicios) aún no descargado para estos movements.
+          Correr <code>py scripts/cargill_download_details.py</code>.
+        </div>`;
+      }
 
       const invRows = invs.slice(0, 10).map(inv => `<tr>
         <td style="padding:4px">${tzEscape(inv.invoiceTypeCode||"")}</td>
@@ -6966,16 +7113,16 @@ function tzRenderDetailExtra(ctg, data){
               <thead><tr style="background:#fed7aa">
                 <th style="text-align:left;padding:5px">Mov</th><th style="text-align:left;padding:5px">Fecha</th>
                 <th style="text-align:left;padding:5px">CTG</th><th style="text-align:left;padding:5px">COE</th>
-                <th class="num" style="text-align:right;padding:5px">Bruto</th>
-                <th class="num" style="text-align:right;padding:5px">Tara</th>
-                <th class="num" style="text-align:right;padding:5px">Neto</th>
+                <th class="num" style="text-align:right;padding:5px">Bruto kg</th>
+                <th class="num" style="text-align:right;padding:5px">Tara kg</th>
+                <th class="num" style="text-align:right;padding:5px">Neto kg</th>
                 <th class="num" style="text-align:right;padding:5px">Humedad</th>
-                <th class="num" style="text-align:right;padding:5px">Impurezas</th>
                 <th class="num" style="text-align:right;padding:5px">Descuento</th>
               </tr></thead>
               <tbody>${movRows}</tbody>
             </table>
             ${cargMovs.length > 10 ? `<div style="font-size:10.5px;color:#7c2d12;margin-top:4px">... y ${cargMovs.length - 10} más</div>` : ''}
+            ${detailHtml}
           </details>
 
           ${invs.length ? `<details style="margin-bottom:8px">
@@ -8238,16 +8385,18 @@ def main() -> int:
         print(f"    [!] error BCR: {e}")
         bcr = {"fetched_at": None, "tc_usd_ars": None, "granos": {}}
 
-    # Data scrapeada de Cargill GPS (movements + payments + invoices)
-    # Se actualiza con: py scripts/cargill_api_final.py (manual, ~1 vez/dia)
+    # Data scrapeada de Cargill GPS (movements + payments + invoices + details)
+    # Se actualiza con: py scripts/cargill_api_final.py + cargill_download_details.py
     print(f"\n[+] Cargando data Cargill GPS (si existe)...", flush=True)
     cargill_movements = []
     cargill_invoices = []
     cargill_payments = []
+    cargill_details = {}  # dict por movementNumber → detalle (qualityAnalysis + services)
     cargill_dir = Path(__file__).resolve().parent / "data" / "cargill"
     for fname, target in [("movements.json", "cargill_movements"),
                            ("invoices.json", "cargill_invoices"),
-                           ("payments.json", "cargill_payments")]:
+                           ("payments.json", "cargill_payments"),
+                           ("movements_detail.json", "cargill_details")]:
         fp = cargill_dir / fname
         if fp.exists():
             try:
@@ -8255,11 +8404,13 @@ def main() -> int:
                 if target == "cargill_movements": cargill_movements = rows
                 elif target == "cargill_invoices": cargill_invoices = rows
                 elif target == "cargill_payments": cargill_payments = rows
-                print(f"    -> {fname}: {len(rows)} filas")
+                elif target == "cargill_details": cargill_details = rows
+                ncount = len(rows) if isinstance(rows, list) else len(rows.keys())
+                print(f"    -> {fname}: {ncount} entradas")
             except Exception as e:
                 print(f"    [!] {fname} error: {e}")
         else:
-            print(f"    [.] {fp} no existe (correr scripts/cargill_api_final.py)")
+            print(f"    [.] {fp} no existe (correr scripts/cargill_api_final.py + cargill_download_details.py)")
 
     # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
     pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
@@ -8409,6 +8560,7 @@ def main() -> int:
         "cargill_movements": cargill_movements,
         "cargill_invoices": cargill_invoices,
         "cargill_payments": cargill_payments,
+        "cargill_details": cargill_details,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,

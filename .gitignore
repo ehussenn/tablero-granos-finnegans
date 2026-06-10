@@ -8,6 +8,7 @@ venv/
 # Playwright / scraping
 scripts/scraper/.profile/
 scripts/scraper/.cf_profile/
+scripts/scraper/.cargill_profile/
 scripts/scraper/out/
 *.auth.json
 
