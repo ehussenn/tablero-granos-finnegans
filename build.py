@@ -1098,13 +1098,21 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="kpis" id="vp-kpis"></div>
 
       <div class="filterbar">
+        <div><label>EMPRESA</label><select id="vp-emp"><option value="">Todas</option></select></div>
         <div><label>CEREALERA</label><select id="vp-org"><option value="">Todas</option></select></div>
+        <div><label>CORREDOR</label><select id="vp-corr"><option value="">Todos</option></select></div>
         <div><label>GRANO</label><select id="vp-prod"><option value="">Todos</option></select></div>
         <div><label>MONEDA</label><select id="vp-mon"><option value="">Todas</option></select></div>
         <div><label>CAMPAÑA</label><select id="vp-camp"><option value="">Todas</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="vp-q" placeholder="número contrato…" /></div>
         <button class="clear" id="vp-clear">Limpiar</button>
         <div class="count" id="vp-count">0 / 0</div>
+      </div>
+
+      <!-- Resumen por CULTIVO (cards con precio promedio ponderado por grano) -->
+      <div class="section">
+        <h3>Resumen por Cultivo <span class="badge" id="vp-meta-grano">Precio promedio ponderado por toneladas fijadas — un card por cultivo</span></h3>
+        <div class="grain-grid" id="vp-cards-grano"></div>
       </div>
 
       <!-- Resumen por Cerealera (cards con precio promedio ponderado) -->
@@ -1914,8 +1922,8 @@ let VP_SORT_K = "fecha", VP_SORT_D = -1;
 function vpInitFiltros(){
   // Solo contratos con precio fijado o cantidad fijada > 0
   const base = DATA.filter(r => (Number(r.cantidadfijada)>0) || (Number(r.preciopromediofijado)>0));
-  ["org","prod","mon","camp"].forEach(k => {
-    const map = {org:"organizacion", prod:"producto", mon:"moneda", camp:"campana"};
+  const map = {emp:"empresa", org:"organizacion", corr:"corredor", prod:"producto", mon:"moneda", camp:"campana"};
+  Object.keys(map).forEach(k => {
     const vals = [...new Set(base.map(r => r[map[k]]).filter(v => v!=null && v!==""))]
       .sort((a,b)=>String(a).localeCompare(String(b),"es"));
     const sel = document.getElementById("vp-"+k);
@@ -1927,17 +1935,21 @@ function vpInitFiltros(){
 }
 
 function vpFiltered(){
-  const o = document.getElementById("vp-org").value;
-  const p = document.getElementById("vp-prod").value;
-  const m = document.getElementById("vp-mon").value;
-  const c = document.getElementById("vp-camp").value;
-  const q = (document.getElementById("vp-q").value||"").toLowerCase().trim();
+  const emp  = document.getElementById("vp-emp").value;
+  const o    = document.getElementById("vp-org").value;
+  const corr = document.getElementById("vp-corr").value;
+  const p    = document.getElementById("vp-prod").value;
+  const m    = document.getElementById("vp-mon").value;
+  const c    = document.getElementById("vp-camp").value;
+  const q    = (document.getElementById("vp-q").value||"").toLowerCase().trim();
   return DATA.filter(r => {
     if(!((Number(r.cantidadfijada)>0) || (Number(r.preciopromediofijado)>0))) return false;
-    if(o && r.organizacion !== o) return false;
-    if(p && r.producto !== p) return false;
-    if(m && r.moneda !== m) return false;
-    if(c && r.campana !== c) return false;
+    if(emp  && r.empresa !== emp) return false;
+    if(o    && r.organizacion !== o) return false;
+    if(corr && r.corredor !== corr) return false;
+    if(p    && r.producto !== p) return false;
+    if(m    && r.moneda !== m) return false;
+    if(c    && r.campana !== c) return false;
     if(q && !`${r.numerointerno||""} ${r.descripcion||""}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1972,6 +1984,39 @@ function vpRender(){
     <div class="kpi"><div class="lbl">Importe Fijado</div><div class="val">${fmt.num(totImp)}</div></div>
   `;
   document.getElementById("vp-count").textContent = `${rows.length} / ${DATA.length}`;
+
+  // Cards por CULTIVO (grano) — precio promedio ponderado por grano
+  const byGrano = {};
+  rows.forEach(r => {
+    const g = r.producto || "—";
+    if(!byGrano[g]) byGrano[g] = {cnt:0, tn:0, imp:0, byMon:{}, cerealeras:new Set()};
+    const tn = Number(r.cantidadfijada)||0;
+    const pr = Number(r.preciopromediofijado)||0;
+    const mo = r.moneda || "—";
+    byGrano[g].cnt++;
+    byGrano[g].tn += tn;
+    byGrano[g].imp += Number(r.importefijado)||0;
+    if(!byGrano[g].byMon[mo]) byGrano[g].byMon[mo] = {tn:0, w:0, imp:0};
+    byGrano[g].byMon[mo].tn += tn;
+    byGrano[g].byMon[mo].w  += tn*pr;
+    byGrano[g].byMon[mo].imp += Number(r.importefijado)||0;
+    if(r.organizacion) byGrano[g].cerealeras.add(r.organizacion);
+  });
+  const granoOrder = Object.entries(byGrano).sort((a,b) => b[1].tn - a[1].tn);
+  document.getElementById("vp-meta-grano").textContent = `${granoOrder.length} cultivos · ${rows.length} contratos filtrados`;
+  document.getElementById("vp-cards-grano").innerHTML = granoOrder.map(([g, v]) => {
+    // listar precio promedio por cada moneda presente
+    const monRows = Object.entries(v.byMon).filter(([m,vm])=>vm.tn>0).sort((a,b)=>b[1].tn - a[1].tn).map(([m, vm]) => {
+      const avg = vm.tn>0 ? vm.w/vm.tn : 0;
+      return `<div class="row"><span class="k">Prom. ${escapeHtml(m)}</span><span style="color:var(--blue)"><b>${fmt.num2(avg)}</b></span></div>`;
+    }).join("");
+    return `<div class="grain-card ${grainClass(g)}">
+      <div class="name"><span>${vpEscape(g)}</span><span class="cnt">${v.cnt} ctos</span></div>
+      <div class="row"><span class="k">Tn Fijadas</span><span><b>${fmt.num(v.tn)}</b></span></div>
+      ${monRows}
+      <div class="row"><span class="k" style="font-size:10.5px">Cerealeras</span><span style="font-size:10.5px;color:var(--muted)">${v.cerealeras.size} distintas</span></div>
+    </div>`;
+  }).join("") || '<div class="placeholder">Sin contratos con precio fijado para los filtros aplicados</div>';
 
   // Cards por Cerealera
   const byOrg = {};
@@ -2064,13 +2109,14 @@ function vpRender(){
 // Wire-up filtros
 (function vpInit(){
   vpInitFiltros();
-  ["vp-org","vp-prod","vp-mon","vp-camp","vp-q"].forEach(id => {
+  const FIDS = ["vp-emp","vp-org","vp-corr","vp-prod","vp-mon","vp-camp","vp-q"];
+  FIDS.forEach(id => {
     const el = document.getElementById(id);
     if(el) el.addEventListener(id === "vp-q" ? "input" : "change", vpRender);
   });
   const clr = document.getElementById("vp-clear");
   if(clr) clr.addEventListener("click", () => {
-    ["vp-org","vp-prod","vp-mon","vp-camp","vp-q"].forEach(id => document.getElementById(id).value = "");
+    FIDS.forEach(id => document.getElementById(id).value = "");
     vpRender();
   });
   vpRender();
