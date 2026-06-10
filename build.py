@@ -7439,7 +7439,68 @@ async function mbAutoBackup(forceNow){
 
 
 # ---------- runner ----------
+_DW_NUM_RE = re.compile(r"^-?\d+(\.\d+)?$")
+
+def dw_query(table_name: str, date_cols: set | None = None) -> list[dict] | None:
+    """Query del DW Postgres. Devuelve filas con keys lowercase, strings convertidos a int/float
+    cuando parecen numericos, fechas yyyy-mm-dd HH:MM:SS.SSS recortadas a yyyy-mm-dd,
+    empty strings -> None. Devuelve None si DW no esta disponible."""
+    if not all(os.environ.get(k) for k in ("FNN_DW_HOST", "FNN_DW_USER", "FNN_DW_PASS")):
+        return None
+    try:
+        import psycopg2, psycopg2.extras
+    except ImportError:
+        print(f"    [!] psycopg2 no instalado — pip install psycopg2-binary")
+        return None
+    try:
+        cn = psycopg2.connect(
+            host=os.environ["FNN_DW_HOST"],
+            dbname=os.environ.get("FNN_DW_DB", "finnegansbi"),
+            user=os.environ["FNN_DW_USER"], password=os.environ["FNN_DW_PASS"],
+            port=int(os.environ.get("FNN_DW_PORT", "5432")),
+            sslmode="require", connect_timeout=20,
+        )
+        cur = cn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(f"SELECT * FROM public.{table_name}")
+        raw = cur.fetchall()
+        cn.close()
+    except Exception as e:
+        print(f"    [!] DW {table_name} error: {type(e).__name__}: {str(e)[:120]}")
+        return None
+    date_cols = date_cols or set()
+    out = []
+    for r in raw:
+        nr = {}
+        for k, v in r.items():
+            if v == "" or v is None:
+                nr[k] = None
+            elif k in date_cols and isinstance(v, str):
+                nr[k] = v[:10] if len(v) >= 10 else v
+            elif isinstance(v, str) and _DW_NUM_RE.match(v):
+                # Numerico: parsear
+                try:
+                    nr[k] = float(v) if "." in v else int(v)
+                except ValueError:
+                    nr[k] = v
+            else:
+                nr[k] = v
+        # alias campana <- cosecha si falta (para compat HTML)
+        if "campana" not in nr and nr.get("cosecha"):
+            nr["campana"] = nr["cosecha"]
+        out.append(nr)
+    return out
+
+
 def main() -> int:
+    # Intentar primero el DATAWAREHOUSE Postgres. Si no esta disponible o falla,
+    # se cae a la API REST (codigo original). El DW es la fuente preferida porque:
+    # - es read-only (sin riesgo)
+    # - tiene mas detalle (factor, 1116a, fletes, etc.)
+    # - no tiene rate limits
+    USE_DW = bool(os.environ.get("FNN_DW_HOST") and os.environ.get("FNN_DW_USER") and os.environ.get("FNN_DW_PASS"))
+    if USE_DW:
+        print(f"[+] DW Postgres disponible (FNN_DW_HOST seteado)", flush=True)
+
     print(f"[+] Autenticando contra API de Finnegans ...", flush=True)
     api.get_token()
     print(f"[+] Token OK", flush=True)
@@ -7447,36 +7508,61 @@ def main() -> int:
     counts = {"compra": 0, "venta": 0, "posicion": 0}
     pilot_rows: list[dict] = []
     compra_rows: list[dict] = []
+    pilot_norm: list[dict] = []
+    compra_norm: list[dict] = []
+    used_dw_pilot = False
+    used_dw_compra = False
 
-    for label, endpoint, params, tab in DATASETS:
-        print(f"  [{tab:<8}] {label:<42}  -> GET {endpoint}", flush=True)
-        try:
-            data = api.call(endpoint, params)
-        except Exception as e:
-            print(f"    [!] ERROR: {e}")
-            continue
-        if not isinstance(data, list):
-            data = []
-        raw_n = len(data)
-        # filtrar anulados: descartar cuando ESTADOANULACION incluya "anul" (case-insensitive)
-        # pero solo si la fila TIENE esa columna
-        def is_anulado(r):
-            v = (r.get("ESTADOANULACION") or r.get("estadoanulacion") or "")
-            return "anul" in str(v).lower() and "no anul" not in str(v).lower()
-        data = [r for r in data if not is_anulado(r)]
-        anulados_n = raw_n - len(data)
-        n = len(data)
-        counts[tab] += n
-        print(f"    -> {n} filas (descarté {anulados_n} anulados de {raw_n})")
-        if endpoint == PILOT_ENDPOINT:
-            pilot_rows = data
-            print(f"    [+] piloto VENTA: {len(pilot_rows)} filas")
-        elif endpoint == COMPRA_ENDPOINT:
-            compra_rows = data
-            print(f"    [+] COMPRA: {len(compra_rows)} filas")
+    DATE_COLS_CONTRATOS = {"fecha","fechaminentrega","fechamaxentrega","fechaestliq"}
 
-    pilot_norm  = normalize_pilot(pilot_rows)
-    compra_norm = normalize_pilot(compra_rows)   # misma normalizacion, mismas columnas
+    # Intentar DW primero para contratos compra y venta
+    if USE_DW:
+        print(f"[+] Bajando Contratos COMPRA desde DW...", flush=True)
+        dw_compra = dw_query("agronasajasrl_resumen_de_contrato_de_compra_de_granos", DATE_COLS_CONTRATOS)
+        if dw_compra is not None:
+            compra_norm = [r for r in dw_compra if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
+            counts["compra"] = len(compra_norm)
+            used_dw_compra = True
+            print(f"    -> {len(compra_norm)} filas (sin anulados)")
+        print(f"[+] Bajando Contratos VENTA desde DW...", flush=True)
+        dw_venta = dw_query("agronasajasrl_resumen_de_contratos_de_venta_de_granos", DATE_COLS_CONTRATOS)
+        if dw_venta is not None:
+            pilot_norm = [r for r in dw_venta if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
+            counts["venta"] = len(pilot_norm)
+            used_dw_pilot = True
+            print(f"    -> {len(pilot_norm)} filas (sin anulados)")
+
+    # Fallback API REST para los que no se pudieron bajar del DW
+    if not (used_dw_pilot and used_dw_compra):
+        print(f"[+] Fallback API REST para contratos faltantes...", flush=True)
+        for label, endpoint, params, tab in DATASETS:
+            if endpoint == PILOT_ENDPOINT and used_dw_pilot: continue
+            if endpoint == COMPRA_ENDPOINT and used_dw_compra: continue
+            print(f"  [{tab:<8}] {label:<42}  -> GET {endpoint}", flush=True)
+            try:
+                data = api.call(endpoint, params)
+            except Exception as e:
+                print(f"    [!] ERROR: {e}")
+                continue
+            if not isinstance(data, list):
+                data = []
+            raw_n = len(data)
+            def is_anulado(r):
+                v = (r.get("ESTADOANULACION") or r.get("estadoanulacion") or "")
+                return "anul" in str(v).lower() and "no anul" not in str(v).lower()
+            data = [r for r in data if not is_anulado(r)]
+            anulados_n = raw_n - len(data)
+            n = len(data)
+            counts[tab] += n
+            print(f"    -> {n} filas (descarté {anulados_n} anulados de {raw_n})")
+            if endpoint == PILOT_ENDPOINT:
+                pilot_rows = data
+            elif endpoint == COMPRA_ENDPOINT:
+                compra_rows = data
+        if not used_dw_pilot:
+            pilot_norm = normalize_pilot(pilot_rows)
+        if not used_dw_compra:
+            compra_norm = normalize_pilot(compra_rows)
 
     # Filtrar contratos ANULADOS (la API trae todos; el cierre solo cuenta los No Anulado)
     def _no_anul(r):
@@ -7487,13 +7573,15 @@ def main() -> int:
     compra_norm = [r for r in compra_norm if _no_anul(r)]
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
 
-    # Composicion de Saldos detallada (con CONDICIONPAGO y VENDEDOR) para modulo Canjes
-    print(f"\n[+] Bajando Composicion Saldo Cliente (detallada con condicion y vendedor)...", flush=True)
+    # Composicion de Saldos para modulo Canjes — usamos API REST con getCurrentDate
+    # (el DW tiene historia completa de saldos, no filtra al snapshot actual; no nos sirve)
+    print(f"\n[+] Bajando Composicion Saldo Cliente (snapshot actual via API REST)...", flush=True)
     saldos_raw = api.call("/reports/composicionSaldoCliente",
                           {"PARAMWEBREPORT_fecha": "getCurrentDate"})
     if not isinstance(saldos_raw, list):
         saldos_raw = []
     saldos_norm = [{k.lower(): v for k, v in r.items()} for r in saldos_raw]
+    print(f"    -> {len(saldos_norm)} filas")
     canjes_n = sum(1 for r in saldos_norm if "canje" in (r.get("condicionpago") or "").lower())
     print(f"    -> {len(saldos_norm)} filas de saldos, {canjes_n} con condicion 'Canje'")
 
@@ -7777,11 +7865,21 @@ def main() -> int:
         print(f"    [!] Error cosechado: {e}")
 
     # Stock por Deposito -> categorizar por tipo de deposito y agregar por producto (kg -> tn)
-    print(f"\n[+] Bajando Stock por Deposito y categorizando (SILO/SILOBOLSA/BOLSAS/DESCARTE)...", flush=True)
+    # DW Postgres primero, fallback a API REST
+    print(f"\n[+] Bajando Stock por Deposito (DW primero)...", flush=True)
     stock_silo, stock_silobolsa, stock_bolsas, stock_descarte = {}, {}, {}, {}
     try:
-        stock_raw = api.call("/reports/USR_RESSTOCKDEP", {"PARAMWEBREPORT_fecha":"getCurrentDate"})
-        if not isinstance(stock_raw, list): stock_raw = []
+        stock_raw = None
+        if USE_DW:
+            dw_stock = dw_query("agronasajasrl_reporte_stock_por_deposito")
+            if dw_stock is not None:
+                # En DW las columnas son lowercase
+                stock_raw = [{"DEPOSITO": r.get("deposito"), "PRODUCTO": r.get("producto"), "CANTIDAD1": r.get("cantidad1")} for r in dw_stock]
+                print(f"    -> {len(stock_raw)} filas desde DW")
+        if stock_raw is None:
+            stock_raw = api.call("/reports/USR_RESSTOCKDEP", {"PARAMWEBREPORT_fecha":"getCurrentDate"})
+            if not isinstance(stock_raw, list): stock_raw = []
+            print(f"    -> {len(stock_raw)} filas desde API REST (fallback)")
 
         def categorizar(dep):
             if not dep: return None
