@@ -6605,8 +6605,10 @@ function tzDetailPlaceholder(r){
       </div>
       <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #f59e0b">
         <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🚛 Logística</div>
-        <div><b>Transportista:</b> ${tzEscape(v(r.transportista))}</div>
+        <div><b>Titular CP:</b> ${tzEscape(v(r.titular))}</div>
         <div><b>Representante:</b> ${tzEscape(v(r.representante))}</div>
+        <div><b>Pagador Flete:</b> ${tzEscape(v(r.pagador_flete))}</div>
+        <div><b>Transportista:</b> ${tzEscape(v(r.transportista))}</div>
         <div><b>Chofer:</b> ${tzEscape(v(r.chofer))}</div>
         <div><b>KM:</b> ${tzEscape(v(r.kilometros))} · <b>Tarifa:</b> ${tzEscape(v(r.tarifa_transporte))} · <b>$:</b> ${tzEscape(v(r.importe_transporte))}</div>
       </div>
@@ -6618,7 +6620,8 @@ function tzDetailPlaceholder(r){
         <div><b>Establecimiento:</b> ${tzEscape(v(r.establecimiento))}</div>
         <div><b>Origen:</b> ${tzEscape(v(r.localidad_origen))} ${r.provincia_origen?'('+tzEscape(r.provincia_origen)+')':''}</div>
         <div><b>Destino:</b> ${tzEscape(v(r.localidad_destino))} ${r.provincia_destino?'('+tzEscape(r.provincia_destino)+')':''}</div>
-        <div><b>Fecha arribo:</b> ${tzEscape(v(r.fecha_arribo))} · <b>Descarga:</b> ${tzEscape(v(r.fecha_descarga))}</div>
+        <div><b>Partida:</b> ${tzEscape(v(r.fecha_partida))} ${r.hora_partida?tzEscape(r.hora_partida):''} · <b>Arribo:</b> ${tzEscape(v(r.fecha_arribo))}</div>
+        <div><b>Descarga:</b> ${tzEscape(v(r.fecha_descarga))} · <b>Doc CV:</b> ${tzEscape(v(r.documento_cv))}</div>
       </div>
       <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid #ec4899">
         <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🤝 Corredores · Cosecha</div>
@@ -7961,9 +7964,8 @@ def main() -> int:
     print(f"    -> {len(cruces_list)} CTGs unicos, {completos} con cliente+comprador completos")
 
     # Trazabilidad de Compra desde DATAWAREHOUSE POSTGRES (no API REST).
-    # La tabla agronasajasrl_traslado_de_granos tiene operaciontipo Compra/Venta explicito
-    # + factor + certificado 1116a + fletes. Si las env vars de DW no existen,
-    # cae al INFORMETRASGRNAPI como fallback con heuristica.
+    # FUENTE PRIMARIA: traslado_venta_granos_carta_porte_cruce (mas actualizada, sync OK)
+    # ENRIQUECIDA con: traslado_de_granos (factor, certif 1116a, fletes, transportista — cuando existan)
     print(f"\n[+] Bajando Trazabilidad desde datawarehouse...", flush=True)
     traza_list = []
     dw_host = os.environ.get("FNN_DW_HOST")
@@ -7977,35 +7979,96 @@ def main() -> int:
                                    port=int(os.environ.get("FNN_DW_PORT","5432")),
                                    sslmode="require", connect_timeout=20)
             cr = cn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            # 1) Trayendo la tabla CRUCE (primaria, mas actualizada)
             cr.execute("""
                 SELECT numerodocumentoadicional AS ctg,
                        numerodocumento          AS cp,
                        fecha, grano AS producto,
-                       transaccionsubtiponombre AS subtipo, operaciontipo,
+                       transaccionsubtiponombre AS subtipo,
                        organizacionnombre       AS organizacion,
                        nombrecontrato           AS contrato,
-                       pesoneto, pesonetosinmermas, pesoentregador,
-                       factor,
-                       certificado1116a, comprobantecertificado1116a,
-                       certificadort, comprobantecertificadort,
-                       transportista, representante, chofer,
-                       tarifatransporte, importetransporte, cantidadkilometros,
-                       fechaarribo, fechadescarga,
-                       destinatario, cosecha,
+                       pesoneto, pesoentregador,
+                       descripcion, destino,
+                       documento, estado_ctg,
+                       fechaarribo, fechadescarga, fechapartida, horapartida,
+                       cosecha,
                        provinciaorigen, provinciadestino,
                        localidadorigen, localidaddestino,
-                       establecimiento,
                        corredorprimario, corredorsecundario,
-                       transaccionid, documento,
-                       estado, codigocancelacionctg
+                       intermediarioflete, pagadorflete,
+                       representante, titular
+                FROM public.agronasajasrl_traslado_venta_granos_carta_porte_cruce
+                WHERE numerodocumentoadicional IS NOT NULL
+                  AND numerodocumentoadicional != ''
+            """)
+            cruce_rows = cr.fetchall()
+            print(f"    -> {len(cruce_rows)} filas raw tabla CRUCE")
+
+            # 2) Enriquecer con traslado_de_granos (puede no tener todos los CTGs si la sync fallo)
+            cr.execute("""
+                SELECT numerodocumentoadicional AS ctg,
+                       transaccionsubtiponombre AS subtipo, operaciontipo,
+                       factor, certificado1116a, comprobantecertificado1116a,
+                       certificadort, comprobantecertificadort,
+                       transportista, chofer,
+                       tarifatransporte, importetransporte, cantidadkilometros,
+                       establecimiento,
+                       destinatario,
+                       transaccionid, estado, codigocancelacionctg
                 FROM public.agronasajasrl_traslado_de_granos
                 WHERE numerodocumentoadicional IS NOT NULL
                   AND numerodocumentoadicional != ''
-                ORDER BY fecha DESC
             """)
-            dw_rows = cr.fetchall()
+            tg_rows = cr.fetchall()
             cn.close()
-            print(f"    -> {len(dw_rows)} filas raw del DW")
+            print(f"    -> {len(tg_rows)} filas raw tabla traslado_de_granos (enriquecimiento)")
+
+            # Indexar enriquecimiento por (ctg, operaciontipo)
+            tg_by_ctg = {}
+            for r in tg_rows:
+                ctg = (r.get("ctg") or "").strip()
+                opt = (r.get("operaciontipo") or "").strip()
+                key = (ctg, opt)
+                tg_by_ctg[key] = r
+
+            # Construir dw_rows fusionando: CRUCE como base + enrichment cuando hay match
+            # En CRUCE no tenemos operaciontipo, lo derivamos del subtipo
+            def derive_optipo(subtipo):
+                s = (subtipo or "").upper()
+                if "COMPRA" in s or "RECEPC" in s: return "Compra"
+                if "VENTA" in s or "TRASLADO" in s and "VTA" not in s: return "Venta"  # heuristica
+                if "VTA" in s: return "Venta"
+                return ""
+            dw_rows = []
+            for r in cruce_rows:
+                d = dict(r)
+                ctg = (d.get("ctg") or "").strip()
+                opt = derive_optipo(d.get("subtipo"))
+                d["operaciontipo"] = opt
+                # Enriquecer con traslado_de_granos si hay match
+                enr = tg_by_ctg.get((ctg, opt)) or tg_by_ctg.get((ctg, ""))
+                if enr:
+                    for k in ("factor","certificado1116a","comprobantecertificado1116a",
+                              "certificadort","comprobantecertificadort",
+                              "transportista","chofer",
+                              "tarifatransporte","importetransporte","cantidadkilometros",
+                              "establecimiento","destinatario","transaccionid","codigocancelacionctg"):
+                        if enr.get(k): d[k] = enr[k]
+                # Tambien usar pesonetosinmermas si vino del enrichment
+                # (no esta en CRUCE)
+                if enr and enr.get("pesonetosinmermas"): d["pesonetosinmermas"] = enr["pesonetosinmermas"]
+                dw_rows.append(d)
+            print(f"    -> {len(dw_rows)} filas fusionadas (CRUCE primaria + traslado_de_granos enrich)")
+
+            def _safe_float(v):
+                """Convierte a float manejando 'NULL', None, '', y strings sin float."""
+                if v is None: return 0.0
+                if isinstance(v, (int, float)): return float(v)
+                s = str(v).strip()
+                if not s or s.upper() == "NULL": return 0.0
+                try: return float(s)
+                except ValueError: return 0.0
 
             traza_by_ctg = {}
             for r in dw_rows:
@@ -8014,37 +8077,48 @@ def main() -> int:
                 opt = (r.get("operaciontipo") or "").strip()
                 contrato = (r.get("contrato") or "").strip()
                 org = (r.get("organizacion") or "").strip()
+                titular = (r.get("titular") or "").strip()
                 if ctg not in traza_by_ctg:
                     traza_by_ctg[ctg] = {
                         "ctg": ctg, "cp": r.get("cp"),
-                        "fecha": (r.get("fecha") or "")[:10],  # solo yyyy-mm-dd
+                        "fecha": (r.get("fecha") or "")[:10],
                         "producto": r.get("producto"),
-                        "peso_neto": float(r.get("pesoneto") or 0),
-                        "peso_neto_sin_mermas": float(r.get("pesonetosinmermas") or 0),
-                        "peso_entregador": float(r.get("pesoentregador") or 0),
+                        "peso_neto": _safe_float(r.get("pesoneto")),
+                        "peso_neto_sin_mermas": _safe_float(r.get("pesonetosinmermas")),
+                        "peso_entregador": _safe_float(r.get("pesoentregador")),
+                        # Campos de traslado_de_granos (enrichment, pueden ser None)
                         "factor": r.get("factor"),
                         "certificado_1116a": r.get("certificado1116a"),
                         "comprobante_1116a": r.get("comprobantecertificado1116a"),
                         "certificado_rt": r.get("certificadort"),
                         "comprobante_rt": r.get("comprobantecertificadort"),
-                        "destinatario": r.get("destinatario"),
-                        "cosecha": r.get("cosecha"),
                         "establecimiento": r.get("establecimiento"),
-                        "estado_ctg": r.get("estado"),
                         "transportista": r.get("transportista"),
-                        "representante": r.get("representante"),
                         "chofer": r.get("chofer"),
                         "tarifa_transporte": r.get("tarifatransporte"),
                         "importe_transporte": r.get("importetransporte"),
                         "kilometros": r.get("cantidadkilometros"),
+                        # Campos de la tabla CRUCE (siempre disponibles)
+                        "titular": titular or None,
+                        "representante": r.get("representante"),
+                        "pagador_flete": r.get("pagadorflete"),
+                        "intermediario_flete": r.get("intermediarioflete"),
+                        "documento_cv": r.get("documento"),
+                        "descripcion": r.get("descripcion"),
+                        "destinatario": r.get("destinatario") or r.get("destino"),
+                        "cosecha": r.get("cosecha"),
+                        "estado_ctg": r.get("estado_ctg") or r.get("estado"),
                         "fecha_arribo": (r.get("fechaarribo") or "")[:10],
                         "fecha_descarga": (r.get("fechadescarga") or "")[:10],
+                        "fecha_partida": (r.get("fechapartida") or "")[:10],
+                        "hora_partida": r.get("horapartida"),
                         "provincia_origen": r.get("provinciaorigen"),
                         "provincia_destino": r.get("provinciadestino"),
                         "localidad_origen": r.get("localidadorigen"),
                         "localidad_destino": r.get("localidaddestino"),
                         "corredor_primario": r.get("corredorprimario"),
                         "corredor_secundario": r.get("corredorsecundario"),
+                        # Datos por lado (poblados abajo)
                         "entregador": None, "cerealera": None,
                         "contrato_compra": None, "contrato_venta": None,
                         "subtipo_compra": None, "subtipo_venta": None,
@@ -8072,6 +8146,10 @@ def main() -> int:
                         item["transaccion_venta"] = r.get("transaccionid")
                     if r.get("destinatario") and not item.get("destinatario"):
                         item["destinatario"] = r.get("destinatario")
+
+                # Asegurar entregador: si no se detectó por lado COMPRA, usar TITULAR (siempre es el productor)
+                if not item.get("entregador") and titular:
+                    item["entregador"] = titular
 
             traza_list = list(traza_by_ctg.values())
             sin_compra = sum(1 for c in traza_list if not c.get("contrato_compra"))
