@@ -6672,7 +6672,6 @@ const TZ_LIQ_BY_COE = (() => {
     const coe = l.numerocoe || l.numerodocumento;
     if(coe) m[String(coe)] = l;
   });
-  // Sumar importes desde la tabla secundaria (63 filas con importes detallados)
   const secs = (PAYLOAD && Array.isArray(PAYLOAD.liquidaciones_secu)) ? PAYLOAD.liquidaciones_secu : [];
   secs.forEach(l => {
     const coe = l.numerocoe || l.numerodocumento;
@@ -6682,6 +6681,25 @@ const TZ_LIQ_BY_COE = (() => {
       m[String(coe)].importetotal = l.importetotal;
       m[String(coe)].numerocontratointermediario = l.numerocontratointermediario;
     }
+  });
+  return m;
+})();
+
+// Indice de contratos compra/venta por nombre (resumen_de_contrato_de_compra_de_granos / venta)
+const TZ_CTO_COMPRA = (() => {
+  const m = {};
+  ((PAYLOAD && PAYLOAD.compra) || []).forEach(c => {
+    // Las claves comunes son 'contrato' (largo) o 'nombre' (corto)
+    if(c.contrato) m[c.contrato] = c;
+    if(c.nombre)   m[c.nombre]   = c;
+  });
+  return m;
+})();
+const TZ_CTO_VENTA = (() => {
+  const m = {};
+  ((PAYLOAD && PAYLOAD.pilot) || []).forEach(c => {
+    if(c.contrato) m[c.contrato] = c;
+    if(c.nombre)   m[c.nombre]   = c;
   });
   return m;
 })();
@@ -6761,6 +6779,50 @@ function tzRenderDetailExtra(ctg, data){
     liqHtml = `<div style="margin-top:10px;padding:10px;background:#f1f5f9;border-radius:8px;font-size:11.5px;color:var(--muted)">Sin COE asignado todavía — el CTG aún no se liquidó.</div>`;
   }
 
+  // Info del contrato compra/venta agregada (de PAYLOAD.compra / PAYLOAD.pilot)
+  // El CTG conoce los nombres de contrato; los buscamos en el indice.
+  // Necesito acceder a la fila TZ_RAW correspondiente al CTG para obtener los nombres
+  const tzRow = TZ_RAW.find(r => r.ctg === ctg);
+  let contratoHtml = "";
+  if(tzRow){
+    const cc = tzRow.contrato_compra ? (TZ_CTO_COMPRA[tzRow.contrato_compra] || TZ_CTO_COMPRA[tzRow.contrato_compra.split(" - ")[0] + " - " + tzRow.contrato_compra.split(" - ")[1]]) : null;
+    const cv = tzRow.contrato_venta  ? (TZ_CTO_VENTA[tzRow.contrato_venta] || TZ_CTO_VENTA[tzRow.contrato_venta.split(" - ")[0] + " - " + tzRow.contrato_venta.split(" - ")[1]]) : null;
+    const ctoBlock = (cto, side, color) => {
+      if(!cto) return "";
+      const aj = Number(cto.cantidadmax)||0;
+      const ent = Number(cto.cantidadentregada)||0;
+      const liq = Number(cto.cantidadliquidada)||0;
+      const pdtLiq = Number(cto.cantidadpendienteliquidar)||(ent-liq);
+      const importeLiq = Number(cto.importeliquidado)||0;
+      const importePdt = Number(cto.importependienteliquidar)||0;
+      const precFij = Number(cto.preciopromediofijado)||0;
+      const precLiq = Number(cto.precioliquidado)||0;
+      const moneda = cto.moneda || "";
+      const pctLiq = aj>0 ? (liq/aj*100).toFixed(1) : "0.0";
+      return `
+        <div style="padding:10px;background:#fff;border-radius:8px;border-left:3px solid ${color}">
+          <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">📋 Contrato ${side}: ${tzEscape(cto.contrato||cto.nombre)}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">
+            <div><b>Ajustadas:</b> ${fmt.num(aj)} tn</div>
+            <div><b>Entregadas:</b> ${fmt.num(ent)} tn</div>
+            <div><b>Liquidadas:</b> <span style="color:#15803d"><b>${fmt.num(liq)} tn (${pctLiq}%)</b></span></div>
+            <div><b>Pdte. Liquidar:</b> <span style="color:#dc2626"><b>${fmt.num(pdtLiq)} tn</b></span></div>
+            <div><b>Precio Fij.:</b> ${precFij ? fmt.num2(precFij) : '—'} ${tzEscape(moneda)}</div>
+            <div><b>Precio Liq.:</b> ${precLiq ? fmt.num2(precLiq) : '—'} ${tzEscape(moneda)}</div>
+            <div><b>Importe Liq.:</b> ${fmt.num(importeLiq)} ${tzEscape(moneda)}</div>
+            <div><b>Importe Pdte.:</b> ${fmt.num(importePdt)} ${tzEscape(moneda)}</div>
+          </div>
+          ${cto.tipocontrato ? `<div style="font-size:11px;color:var(--muted);margin-top:6px">${tzEscape(cto.tipocontrato)} · ${tzEscape(cto.campana||cto.cosecha||'')}</div>` : ''}
+        </div>
+      `;
+    };
+    const cbCompra = ctoBlock(cc, "COMPRA", "#16a34a");
+    const cbVenta  = ctoBlock(cv, "VENTA", "#3b82f6");
+    if(cbCompra || cbVenta){
+      contratoHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">${cbCompra}${cbVenta}</div>`;
+    }
+  }
+
   el.innerHTML = `
     <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
@@ -6768,6 +6830,7 @@ function tzRenderDetailExtra(ctg, data){
       <tbody>${cpRowsHtml}</tbody>
     </table>
     ${liqHtml}
+    ${contratoHtml}
   `;
 }
 
