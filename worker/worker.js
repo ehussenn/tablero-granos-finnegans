@@ -192,7 +192,8 @@ export default {
           status: 503, headers: { "Content-Type": "application/json" },
         });
       }
-      const SHARED_KEYS = new Set(["pagos"]);
+      // SHARED: todos los usuarios internos ven la misma data (no namespaced por email)
+      const SHARED_KEYS = new Set(["pagos", "contratos"]);
       const fullKey = SHARED_KEYS.has(rawKey) ? rawKey : `${rawKey}:${email}`;
 
       if (request.method === "GET") {
