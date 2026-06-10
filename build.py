@@ -1268,6 +1268,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div><label>BUSCAR</label><input type="text" id="ct-q" placeholder="número o beneficiario…" style="min-width:280px" /></div>
       <button class="clear" id="ct-clear">Limpiar</button>
       <button class="clear" id="ct-add" style="background:#16a34a;color:#fff;border-color:#16a34a">+ Agregar contrato</button>
+      <button class="clear" id="ct-save" style="background:#1e3a8a;color:#fff;border-color:#1e3a8a;font-weight:600">💾 Guardar ahora</button>
       <div class="count" id="ct-count">0 / 0</div>
     </div>
 
@@ -5900,6 +5901,23 @@ function ctRender(){
       const inp = document.querySelector(`#ct-tbl-${CT_ACTIVE_SUB} tr[data-id="${newId}"] input[data-k="numero"]`);
       if(inp){ inp.scrollIntoView({behavior:"smooth", block:"center"}); inp.focus(); }
     });
+  });
+  // Guardar ahora: flushea el debounce y hace upload inmediato al KV
+  const saveBtn = document.getElementById("ct-save");
+  if(saveBtn) saveBtn.addEventListener("click", async () => {
+    // Hacer blur al input activo asi se commitea el valor en curso
+    if(document.activeElement && document.activeElement.tagName === "INPUT"){
+      document.activeElement.blur();
+    }
+    saveBtn.disabled = true;
+    saveBtn.textContent = "⏳ Guardando…";
+    // cancelar debounce pendiente si lo hay
+    if(_apiSaveTimers["contratos"]){ clearTimeout(_apiSaveTimers["contratos"]); _apiSaveTimers["contratos"] = null; }
+    const ok = await apiSave("contratos", CT_DATA);
+    saveBtn.textContent = ok ? "✓ Guardado" : "⚠️ Error";
+    const el = document.getElementById("ct-last-save");
+    if(el && ok) el.textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    setTimeout(() => { saveBtn.textContent = "💾 Guardar ahora"; saveBtn.disabled = false; }, 2200);
   });
   // sub-tab listeners
   document.querySelectorAll('.panel[data-panel="contratos"] .subtab').forEach(st => {
