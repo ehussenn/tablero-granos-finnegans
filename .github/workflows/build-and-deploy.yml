@@ -34,10 +34,17 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Build index.html (datos en vivo desde API Finnegans + pizarra BCR)
+      - name: Install dependencies
+        run: pip install psycopg2-binary
+
+      - name: Build index.html (DW Postgres + API Finnegans + pizarra BCR)
         env:
           FINNEGANS_CLIENT_ID: ${{ secrets.FINNEGANS_CLIENT_ID }}
           FINNEGANS_CLIENT_SECRET: ${{ secrets.FINNEGANS_CLIENT_SECRET }}
+          FNN_DW_HOST: ${{ secrets.FNN_DW_HOST }}
+          FNN_DW_USER: ${{ secrets.FNN_DW_USER }}
+          FNN_DW_PASS: ${{ secrets.FNN_DW_PASS }}
+          FNN_DW_DB: finnegansbi
         run: |
           echo "::group::Build"
           python build.py
