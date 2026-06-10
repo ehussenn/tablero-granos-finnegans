@@ -509,6 +509,9 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="nav-group">Posición General</div>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
       <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+      <div class="nav-group">Contratos</div>
+      <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-compra" data-title="Códigos de Contratos · Compra">Códigos Compra</a>
+      <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-venta" data-title="Códigos de Contratos · Venta">Códigos Venta</a>
       <div class="nav-group nav-internal" style="display:none">Personal</div>
       <a class="nav-item nav-internal" style="display:none" data-go-tab="personal" data-go-sub="mb-bandeja" data-title="Mi Bandeja · Pendientes de Mail">📬 Mi Bandeja</a>
     </nav>
@@ -532,6 +535,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="tab" data-tab="compra">COMPRA <span class="count" id="cnt-compra">0</span></div>
     <div class="tab active" data-tab="venta">VENTA <span class="count" id="cnt-venta">0</span></div>
     <div class="tab" data-tab="posicion">POSICIÓN GENERAL <span class="count" id="cnt-pos">0</span></div>
+    <div class="tab" data-tab="contratos">CONTRATOS <span class="count" id="cnt-contratos">0</span></div>
     <div class="tab nav-internal" data-tab="personal" style="display:none">PERSONAL <span class="count" id="cnt-personal">0</span></div>
   </div>
 
@@ -1244,6 +1248,66 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     </div><!-- /subpanel pn-financiera -->
 
+  </div>
+
+  <!-- ============ CONTRATOS · Códigos de Contratos ============ -->
+  <div class="panel" data-panel="contratos">
+    <div class="subtabs">
+      <button class="subtab active" data-sub="ct-compra">🌾 Compra <span class="count" id="cnt-ct-compra">0</span></button>
+      <button class="subtab" data-sub="ct-venta">📦 Venta <span class="count" id="cnt-ct-venta">0</span></button>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Total Contratos</div><div class="val" id="ct-total">0</div></div>
+      <div class="kpi green"><div class="lbl">Compra</div><div class="val" id="ct-tot-compra">0</div></div>
+      <div class="kpi"><div class="lbl">Venta</div><div class="val" id="ct-tot-venta">0</div></div>
+      <div class="kpi orange"><div class="lbl">Último guardado</div><div class="val" id="ct-last-save" style="font-size:14px">—</div></div>
+    </div>
+
+    <div class="filterbar" id="ct-filterbar">
+      <div><label>BUSCAR</label><input type="text" id="ct-q" placeholder="número o beneficiario…" style="min-width:280px" /></div>
+      <button class="clear" id="ct-clear">Limpiar</button>
+      <button class="clear" id="ct-add" style="background:#16a34a;color:#fff;border-color:#16a34a">+ Agregar contrato</button>
+      <div class="count" id="ct-count">0 / 0</div>
+    </div>
+
+    <div class="subpanel active" data-sub-panel="ct-compra">
+      <div class="section">
+        <h3>Códigos de Contratos · Compra <span class="badge">click en celdas para editar · cambios se guardan automáticamente</span></h3>
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="ct-tbl-compra">
+            <thead><tr>
+              <th style="width:32px">#</th>
+              <th style="width:180px">Nº Contrato</th>
+              <th>Beneficiario</th>
+              <th style="width:80px">Acción</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpanel" data-sub-panel="ct-venta">
+      <div class="section">
+        <h3>Códigos de Contratos · Venta <span class="badge">click en celdas para editar · cambios se guardan automáticamente</span></h3>
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="ct-tbl-venta">
+            <thead><tr>
+              <th style="width:32px">#</th>
+              <th style="width:180px">Nº Contrato</th>
+              <th>Beneficiario</th>
+              <th style="width:80px">Acción</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+      💡 <strong>Cómo se usa</strong>: click en cualquier celda para editarla. <b>+ Agregar contrato</b> abajo para sumar una fila. Los cambios se guardan automáticamente en el servidor — otros usuarios los ven sin esperar nada.
+    </div>
   </div>
 
   <!-- ============ PERSONAL · Mi Bandeja ============ -->
@@ -5683,6 +5747,169 @@ function fnRender(){
 fnInitFiltros();
 fnRender();
 
+
+/* ============================================================
+   ============  CONTRATOS · Códigos de Contratos  =============
+   ============================================================
+   Estructura en KV bajo key "contratos" (shared, todos los internos):
+     { compra: [{id, numero, beneficiario}], venta: [...], actualizado: "..." }
+   Editable inline, autosave debounced al KV. */
+
+let CT_DATA = { compra: [], venta: [], actualizado: "" };
+let CT_ACTIVE_SUB = "compra";   // "compra" | "venta"
+const CT_STORAGE_KEY = "tablero-granos-ct-v1";
+
+function ctSave(){
+  try{ localStorage.setItem(CT_STORAGE_KEY, JSON.stringify(CT_DATA)); }catch(e){}
+  if(API_AVAILABLE){
+    apiSaveDebounced("contratos", () => CT_DATA, (state) => {
+      const el = document.getElementById("ct-last-save");
+      if(!el) return;
+      if(state === "pending") el.textContent = "guardando...";
+      else if(state === "saving") el.textContent = "subiendo...";
+      else if(state === "saved") el.textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      else if(state === "error") el.textContent = "⚠️ error";
+    });
+  }
+}
+
+async function ctLoadInitial(){
+  const fromApi = await apiLoad("contratos");
+  if(fromApi && (Array.isArray(fromApi.compra) || Array.isArray(fromApi.venta))){
+    CT_DATA = {
+      compra: Array.isArray(fromApi.compra) ? fromApi.compra : [],
+      venta:  Array.isArray(fromApi.venta)  ? fromApi.venta  : [],
+      actualizado: fromApi.actualizado || ""
+    };
+    try{ localStorage.setItem(CT_STORAGE_KEY, JSON.stringify(CT_DATA)); }catch(e){}
+    return;
+  }
+  // Fallback: localStorage
+  try{
+    const ls = JSON.parse(localStorage.getItem(CT_STORAGE_KEY) || "null");
+    if(ls && (Array.isArray(ls.compra) || Array.isArray(ls.venta))){
+      CT_DATA = ls;
+    }
+  } catch(e){}
+}
+
+function ctFiltered(sub){
+  const q = (document.getElementById("ct-q").value || "").toLowerCase().trim();
+  const arr = (CT_DATA[sub] || []);
+  if(!q) return arr;
+  return arr.filter(r =>
+    (r.numero || "").toLowerCase().includes(q) ||
+    (r.beneficiario || "").toLowerCase().includes(q)
+  );
+}
+
+function ctEscape(s){
+  return String(s||"").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function ctRenderTable(sub){
+  const tbl = document.getElementById("ct-tbl-" + sub);
+  if(!tbl) return;
+  const tbody = tbl.querySelector("tbody");
+  const rows = ctFiltered(sub);
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--muted)">Sin contratos para los filtros aplicados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map((r, idx) => `
+    <tr data-id="${ctEscape(r.id)}">
+      <td style="color:var(--muted);font-size:11px;text-align:center">${idx+1}</td>
+      <td><input type="text" data-id="${ctEscape(r.id)}" data-k="numero" value="${ctEscape(r.numero)}" style="width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;font-size:12.5px;font-family:inherit;border-radius:4px"/></td>
+      <td><input type="text" data-id="${ctEscape(r.id)}" data-k="beneficiario" value="${ctEscape(r.beneficiario)}" style="width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;font-size:12.5px;font-family:inherit;border-radius:4px"/></td>
+      <td style="text-align:center">
+        <button class="row-btn" data-id="${ctEscape(r.id)}" data-act="del" style="border:1px solid #fecaca;background:#fff;color:#dc2626;cursor:pointer;padding:3px 9px;border-radius:5px;font-size:11px">🗑️</button>
+      </td>
+    </tr>
+  `).join("");
+
+  tbody.querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("focus", () => { inp.style.border = "1px solid var(--blue)"; inp.style.background = "#fff"; });
+    inp.addEventListener("blur", () => {
+      inp.style.border = "1px solid transparent"; inp.style.background = "transparent";
+      const arr = CT_DATA[sub];
+      const r = arr.find(x => x.id === inp.dataset.id);
+      if(!r) return;
+      const v = inp.value.trim();
+      if(r[inp.dataset.k] === v) return;
+      r[inp.dataset.k] = v;
+      ctSave();
+      ctRenderKpis();
+    });
+    inp.addEventListener("mouseover", () => { if(document.activeElement !== inp){ inp.style.border = "1px solid var(--line)"; inp.style.background = "#fff"; } });
+    inp.addEventListener("mouseout",  () => { if(document.activeElement !== inp){ inp.style.border = "1px solid transparent"; inp.style.background = "transparent"; } });
+  });
+  tbody.querySelectorAll("button[data-act='del']").forEach(b => {
+    b.addEventListener("click", () => {
+      const arr = CT_DATA[sub];
+      const idx = arr.findIndex(x => x.id === b.dataset.id);
+      if(idx < 0) return;
+      if(!confirm(`¿Borrar contrato "${arr[idx].numero || '(sin nº)'}" — ${arr[idx].beneficiario || '(sin beneficiario)'}?`)) return;
+      arr.splice(idx, 1);
+      ctSave();
+      ctRender();
+    });
+  });
+}
+
+function ctRenderKpis(){
+  document.getElementById("ct-tot-compra").textContent = (CT_DATA.compra || []).length;
+  document.getElementById("ct-tot-venta").textContent  = (CT_DATA.venta || []).length;
+  document.getElementById("ct-total").textContent = (CT_DATA.compra || []).length + (CT_DATA.venta || []).length;
+  document.getElementById("cnt-ct-compra").textContent = (CT_DATA.compra || []).length;
+  document.getElementById("cnt-ct-venta").textContent  = (CT_DATA.venta || []).length;
+  const cnt = document.getElementById("cnt-contratos");
+  if(cnt) cnt.textContent = (CT_DATA.compra || []).length + (CT_DATA.venta || []).length;
+  const arr = CT_DATA[CT_ACTIVE_SUB] || [];
+  const filt = ctFiltered(CT_ACTIVE_SUB);
+  document.getElementById("ct-count").textContent = `${filt.length} / ${arr.length}`;
+}
+
+function ctRender(){
+  // detectar sub-pestaña activa
+  const activeSub = document.querySelector('.panel[data-panel="contratos"] .subpanel.active');
+  if(activeSub){
+    const sp = activeSub.getAttribute("data-sub-panel") || "ct-compra";
+    CT_ACTIVE_SUB = sp.replace("ct-", "") || "compra";
+  }
+  ctRenderKpis();
+  ctRenderTable("compra");
+  ctRenderTable("venta");
+}
+
+// Wire-up
+(function ctInit(){
+  const q = document.getElementById("ct-q");
+  if(q) q.addEventListener("input", ctRender);
+  const clr = document.getElementById("ct-clear");
+  if(clr) clr.addEventListener("click", () => { q.value = ""; ctRender(); });
+  const add = document.getElementById("ct-add");
+  if(add) add.addEventListener("click", () => {
+    const arr = CT_DATA[CT_ACTIVE_SUB];
+    if(!arr) return;
+    const newId = (CT_ACTIVE_SUB === "compra" ? "c" : "v") + "-" + Date.now();
+    arr.push({ id: newId, numero: "", beneficiario: "" });
+    ctSave();
+    ctRender();
+    // foco al numero recien creado
+    requestAnimationFrame(() => {
+      const inp = document.querySelector(`#ct-tbl-${CT_ACTIVE_SUB} tr[data-id="${newId}"] input[data-k="numero"]`);
+      if(inp){ inp.scrollIntoView({behavior:"smooth", block:"center"}); inp.focus(); }
+    });
+  });
+  // sub-tab listeners
+  document.querySelectorAll('.panel[data-panel="contratos"] .subtab').forEach(st => {
+    st.addEventListener("click", () => setTimeout(ctRender, 30));
+  });
+  (async () => {
+    await ctLoadInitial();
+    ctRender();
+  })();
+})();
 
 /* ============================================================
    ============  MI BANDEJA · Notas de Mail (Personal)  ========
