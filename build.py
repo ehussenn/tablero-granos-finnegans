@@ -6804,6 +6804,15 @@ const TZ_ALLARIA_BY_CTG = {};
   (TZ_ALLARIA_BY_CTG[k] = TZ_ALLARIA_BY_CTG[k] || []).push(c);
 });
 
+// Indice FYO: CTGs entregados a FYO Acopio o con corredor FYO
+const TZ_FYO_BY_CTG = {};
+((PAYLOAD && PAYLOAD.fyo_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_FYO_BY_CTG[k] = TZ_FYO_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7324,6 +7333,59 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE FYO (pink/rosa) — datos DW: CTGs entregados a FYO Acopio o con corredor FYO
+  let fyoHtml = "";
+  const fyoRows = TZ_FYO_BY_CTG[String(ctg).trim()] || [];
+  if(fyoRows.length){
+    const fRows = fyoRows.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.corredorprimario||d.corredorsecundario||"")}</td>
+      <td style="padding:4px">${tzEscape(d.destino||d.organizacionnombre||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+    </tr>`).join("");
+    const totalPesoNeto = fyoRows.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = fyoRows.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const granos = [...new Set(fyoRows.map(d => d.grano).filter(Boolean))].join(", ");
+
+    fyoHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#fdf2f8,#fbcfe8);border-left:4px solid #db2777;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#831843;text-transform:uppercase;letter-spacing:.3px">📊 FYO (Futuros y Opciones)</span>
+          <span style="background:#db2777;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${fyoRows.length} traslado${fyoRows.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#831843">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#831843;text-transform:uppercase">📦 Traslados FYO (${fyoRows.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#fbcfe8">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Corredor</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador</th>
+            </tr></thead>
+            <tbody>${fRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#831843;background:#fbcfe8;padding:6px 8px;border-radius:6px">
+          ⚠️ Portal fyo.com requiere verificación 2FA por email — no se puede scrapear automáticamente. Datos via DW Finnegans.
+        </div>
+      </div>`;
+  }
+
   // BLOQUE ALLARIA (purple/violeta) — datos DW: CTGs donde Allaria figura como corredor
   let allariaHtml = "";
   const allariaRows = TZ_ALLARIA_BY_CTG[String(ctg).trim()] || [];
@@ -7389,6 +7451,7 @@ function tzRenderDetailExtra(ctg, data){
     ${ldcHtml}
     ${acaHtml}
     ${allariaHtml}
+    ${fyoHtml}
   `;
 }
 
@@ -8669,6 +8732,18 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] aca_ctgs.json error: {e}")
 
+    # Data FYO (Futuros y Opciones) - solo DW (portal requiere 2FA email)
+    print(f"\n[+] Cargando data FYO (si existe)...", flush=True)
+    fyo_ctgs = []
+    fyo_dir = Path(__file__).resolve().parent / "data" / "fyo"
+    fp = fyo_dir / "fyo_ctgs.json"
+    if fp.exists():
+        try:
+            fyo_ctgs = json.loads(fp.read_text(encoding="utf-8"))
+            print(f"    -> fyo_ctgs.json: {len(fyo_ctgs)} entradas")
+        except Exception as e:
+            print(f"    [!] fyo_ctgs.json: {e}")
+
     # Data Allaria (corredor con 292 CTGs DW + posicion campaña + cuenta corriente)
     print(f"\n[+] Cargando data Allaria (si existe)...", flush=True)
     allaria_ctgs = []
@@ -8843,6 +8918,7 @@ def main() -> int:
         "ldc_fixations": ldc_fixations,
         "ldc_ctgs": ldc_ctgs,
         "aca_ctgs": aca_ctgs,
+        "fyo_ctgs": fyo_ctgs,
         "allaria_ctgs": allaria_ctgs,
         "allaria_mercaderias": allaria_mercaderias,
         "allaria_cuenta_corriente": allaria_cuenta_corriente,
