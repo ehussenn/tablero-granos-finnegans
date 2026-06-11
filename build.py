@@ -6831,6 +6831,15 @@ const TZ_BUNGE_BY_CTG = {};
   (TZ_BUNGE_BY_CTG[k] = TZ_BUNGE_BY_CTG[k] || []).push(c);
 });
 
+// Indice COFCO: CTGs con destino COFCO INTERNATIONAL ARGENTINA
+const TZ_COFCO_BY_CTG = {};
+((PAYLOAD && PAYLOAD.cofco_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_COFCO_BY_CTG[k] = TZ_COFCO_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7351,6 +7360,65 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE COFCO (cyan) — datos DW: CTGs con destino COFCO INTERNATIONAL
+  let cofcoHtml = "";
+  const cofcoRows = TZ_COFCO_BY_CTG[String(ctg).trim()] || [];
+  if(cofcoRows.length){
+    const cRows = cofcoRows.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px">${tzEscape(d.destino||d.organizacionnombre||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.representante||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+      <td style="padding:4px">${tzEscape(d.localidadorigen||"")}→${tzEscape(d.localidaddestino||"")}</td>
+    </tr>`).join("");
+    const totalPesoNeto = cofcoRows.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = cofcoRows.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const granos = [...new Set(cofcoRows.map(d => d.grano).filter(Boolean))].join(", ");
+
+    cofcoHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#ecfeff,#a5f3fc);border-left:4px solid #0891b2;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#155e75;text-transform:uppercase;letter-spacing:.3px">🌾 COFCO Intl Argentina — entregado</span>
+          <span style="background:#0891b2;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${cofcoRows.length} traslado${cofcoRows.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#155e75">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Merma</div>
+            <div style="font-size:15px;font-weight:700;color:${(totalPesoEntr-totalPesoNeto)>0?'#dc2626':'#16a34a'}">${fmt.num(totalPesoEntr-totalPesoNeto)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#155e75;text-transform:uppercase">📦 Traslados a COFCO (${cofcoRows.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#a5f3fc">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th style="text-align:left;padding:5px">Representante</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador</th>
+              <th style="text-align:left;padding:5px">Origen → Destino</th>
+            </tr></thead>
+            <tbody>${cRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#155e75;background:#a5f3fc;padding:6px 8px;border-radius:6px">
+          ℹ️ Portal SAP Build Work Zone — pendiente login (a retomar después).
+        </div>
+      </div>`;
+  }
+
   // BLOQUE BUNGE (indigo) — datos DW: CTGs con destino BUNGE ARGENTINA
   let bungeHtml = "";
   const bungeRows = TZ_BUNGE_BY_CTG[String(ctg).trim()] || [];
@@ -7584,6 +7652,7 @@ function tzRenderDetailExtra(ctg, data){
     ${fyoHtml}
     ${intagroHtml}
     ${bungeHtml}
+    ${cofcoHtml}
   `;
 }
 
@@ -8901,6 +8970,18 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] bunge_ctgs.json: {e}")
 
+    # Data COFCO - sólo DW (portal SAP Fiori pendiente login)
+    print(f"\n[+] Cargando data COFCO (si existe)...", flush=True)
+    cofco_ctgs = []
+    cofco_dir = Path(__file__).resolve().parent / "data" / "cofco"
+    fp = cofco_dir / "cofco_ctgs.json"
+    if fp.exists():
+        try:
+            cofco_ctgs = json.loads(fp.read_text(encoding="utf-8"))
+            print(f"    -> cofco_ctgs.json: {len(cofco_ctgs)} entradas")
+        except Exception as e:
+            print(f"    [!] cofco_ctgs.json: {e}")
+
     # Data Allaria (corredor con 292 CTGs DW + posicion campaña + cuenta corriente)
     print(f"\n[+] Cargando data Allaria (si existe)...", flush=True)
     allaria_ctgs = []
@@ -9078,6 +9159,7 @@ def main() -> int:
         "fyo_ctgs": fyo_ctgs,
         "intagro_ctgs": intagro_ctgs,
         "bunge_ctgs": bunge_ctgs,
+        "cofco_ctgs": cofco_ctgs,
         "allaria_ctgs": allaria_ctgs,
         "allaria_mercaderias": allaria_mercaderias,
         "allaria_cuenta_corriente": allaria_cuenta_corriente,
