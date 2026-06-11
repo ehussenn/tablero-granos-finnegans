@@ -6822,6 +6822,15 @@ const TZ_INTAGRO_BY_CTG = {};
   (TZ_INTAGRO_BY_CTG[k] = TZ_INTAGRO_BY_CTG[k] || []).push(c);
 });
 
+// Indice Bunge: CTGs con destino BUNGE ARGENTINA
+const TZ_BUNGE_BY_CTG = {};
+((PAYLOAD && PAYLOAD.bunge_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_BUNGE_BY_CTG[k] = TZ_BUNGE_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7342,6 +7351,65 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE BUNGE (indigo) — datos DW: CTGs con destino BUNGE ARGENTINA
+  let bungeHtml = "";
+  const bungeRows = TZ_BUNGE_BY_CTG[String(ctg).trim()] || [];
+  if(bungeRows.length){
+    const bRows = bungeRows.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px">${tzEscape(d.destino||d.organizacionnombre||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.representante||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+      <td style="padding:4px">${tzEscape(d.localidadorigen||"")}→${tzEscape(d.localidaddestino||"")}</td>
+    </tr>`).join("");
+    const totalPesoNeto = bungeRows.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = bungeRows.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const granos = [...new Set(bungeRows.map(d => d.grano).filter(Boolean))].join(", ");
+
+    bungeHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#c7d2fe);border-left:4px solid #4338ca;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:.3px">🌾 BUNGE Argentina — entregado</span>
+          <span style="background:#4338ca;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${bungeRows.length} traslado${bungeRows.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#312e81">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Merma</div>
+            <div style="font-size:15px;font-weight:700;color:${(totalPesoEntr-totalPesoNeto)>0?'#dc2626':'#16a34a'}">${fmt.num(totalPesoEntr-totalPesoNeto)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#312e81;text-transform:uppercase">📦 Traslados a Bunge (${bungeRows.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#c7d2fe">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th style="text-align:left;padding:5px">Representante</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador</th>
+              <th style="text-align:left;padding:5px">Origen → Destino</th>
+            </tr></thead>
+            <tbody>${bRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#312e81;background:#c7d2fe;padding:6px 8px;border-radius:6px">
+          ⚠️ Portal Bunge tiene CAPTCHA — scraping requiere intervención humana cada login.
+        </div>
+      </div>`;
+  }
+
   // BLOQUE INTAGRO (teal) — datos DW: CTGs con Intagro como corredor
   let intagroHtml = "";
   const intagroRows = TZ_INTAGRO_BY_CTG[String(ctg).trim()] || [];
@@ -7515,6 +7583,7 @@ function tzRenderDetailExtra(ctg, data){
     ${allariaHtml}
     ${fyoHtml}
     ${intagroHtml}
+    ${bungeHtml}
   `;
 }
 
@@ -8808,6 +8877,7 @@ def main() -> int:
             print(f"    [!] fyo_ctgs.json: {e}")
 
     # Data Intagro - sólo DW (credencial 'agronasaja' rechazada por portal.intagro.com — necesita email)
+    # Intagro = Argentrading (misma empresa, mismo sistema)
     print(f"\n[+] Cargando data Intagro (si existe)...", flush=True)
     intagro_ctgs = []
     intagro_dir = Path(__file__).resolve().parent / "data" / "intagro"
@@ -8818,6 +8888,18 @@ def main() -> int:
             print(f"    -> intagro_ctgs.json: {len(intagro_ctgs)} entradas")
         except Exception as e:
             print(f"    [!] intagro_ctgs.json: {e}")
+
+    # Data Bunge - sólo DW (portal con CAPTCHA, scraping no automatizable)
+    print(f"\n[+] Cargando data Bunge (si existe)...", flush=True)
+    bunge_ctgs = []
+    bunge_dir = Path(__file__).resolve().parent / "data" / "bunge"
+    fp = bunge_dir / "bunge_ctgs.json"
+    if fp.exists():
+        try:
+            bunge_ctgs = json.loads(fp.read_text(encoding="utf-8"))
+            print(f"    -> bunge_ctgs.json: {len(bunge_ctgs)} entradas")
+        except Exception as e:
+            print(f"    [!] bunge_ctgs.json: {e}")
 
     # Data Allaria (corredor con 292 CTGs DW + posicion campaña + cuenta corriente)
     print(f"\n[+] Cargando data Allaria (si existe)...", flush=True)
@@ -8995,6 +9077,7 @@ def main() -> int:
         "aca_ctgs": aca_ctgs,
         "fyo_ctgs": fyo_ctgs,
         "intagro_ctgs": intagro_ctgs,
+        "bunge_ctgs": bunge_ctgs,
         "allaria_ctgs": allaria_ctgs,
         "allaria_mercaderias": allaria_mercaderias,
         "allaria_cuenta_corriente": allaria_cuenta_corriente,
