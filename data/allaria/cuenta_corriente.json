@@ -1,0 +1,134 @@
+{
+  "MTR": {
+    "id": "113235615",
+    "saldos": [
+      {
+        "descripcion": "Saldo Contable  a Hoy",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  12/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  18/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al fin de la posición",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      }
+    ]
+  },
+  "FINANCIERO": {
+    "id": "113460522",
+    "saldos": [
+      {
+        "descripcion": "Saldo Contable  a Hoy",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  12/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  18/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al fin de la posición",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      }
+    ]
+  },
+  "VENDEDOR FISICO": {
+    "id": "113231016",
+    "saldos": [
+      {
+        "descripcion": "Saldo Contable  a Hoy",
+        "pesos": "$",
+        "dolares": "473.812,90",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  12/6/2026",
+        "pesos": "$",
+        "dolares": "473.812,90",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  18/6/2026",
+        "pesos": "$",
+        "dolares": "473.812,90",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al fin de la posición",
+        "pesos": "$",
+        "dolares": "20.004.103,99",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      }
+    ]
+  },
+  "VENDEDOR CANJISTA": {
+    "id": "113236514",
+    "saldos": [
+      {
+        "descripcion": "Saldo Contable  a Hoy",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  12/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al  18/6/2026",
+        "pesos": "$",
+        "dolares": "0,00",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      },
+      {
+        "descripcion": "Saldo Contable al fin de la posición",
+        "pesos": "$",
+        "dolares": "12.445.860,61",
+        "equiv_pesos": "U$S",
+        "saldo": "0,00"
+      }
+    ]
+  }
+}

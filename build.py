@@ -6795,6 +6795,15 @@ const TZ_ACA_BY_CTG = {};
   (TZ_ACA_BY_CTG[k] = TZ_ACA_BY_CTG[k] || []).push(c);
 });
 
+// Indice Allaria: CTGs donde Allaria figura como corredor/destino
+const TZ_ALLARIA_BY_CTG = {};
+((PAYLOAD && PAYLOAD.allaria_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_ALLARIA_BY_CTG[k] = TZ_ALLARIA_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7315,6 +7324,59 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE ALLARIA (purple/violeta) — datos DW: CTGs donde Allaria figura como corredor
+  let allariaHtml = "";
+  const allariaRows = TZ_ALLARIA_BY_CTG[String(ctg).trim()] || [];
+  if(allariaRows.length){
+    const aRows = allariaRows.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.corredorprimario||d.corredorsecundario||"")}</td>
+      <td style="padding:4px">${tzEscape(d.destino||d.organizacionnombre||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+    </tr>`).join("");
+    const totalPesoNeto = allariaRows.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = allariaRows.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const granos = [...new Set(allariaRows.map(d => d.grano).filter(Boolean))].join(", ");
+
+    allariaHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#faf5ff,#e9d5ff);border-left:4px solid #7c3aed;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#581c87;text-transform:uppercase;letter-spacing:.3px">🤝 Allaria — corredor</span>
+          <span style="background:#7c3aed;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${allariaRows.length} traslado${allariaRows.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#581c87">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#581c87;text-transform:uppercase">📦 Traslados via Allaria (${allariaRows.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#ddd6fe">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Corredor</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador</th>
+            </tr></thead>
+            <tbody>${aRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#581c87;background:#ddd6fe;padding:6px 8px;border-radius:6px">
+          ℹ️ Allaria es corredor de granos — sus operaciones aparecen como contrapartida en LDC y otros destinos. Ver Posición de Campaña y Cuenta Corriente en su portal.
+        </div>
+      </div>`;
+  }
+
   el.innerHTML = `
     <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
@@ -7326,6 +7388,7 @@ function tzRenderDetailExtra(ctg, data){
     ${cargillHtml}
     ${ldcHtml}
     ${acaHtml}
+    ${allariaHtml}
   `;
 }
 
@@ -8606,6 +8669,27 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] aca_ctgs.json error: {e}")
 
+    # Data Allaria (corredor con 292 CTGs DW + posicion campaña + cuenta corriente)
+    print(f"\n[+] Cargando data Allaria (si existe)...", flush=True)
+    allaria_ctgs = []
+    allaria_mercaderias = []
+    allaria_cuenta_corriente = {}
+    allaria_dir = Path(__file__).resolve().parent / "data" / "allaria"
+    for fname, target in [("allaria_ctgs.json", "ctgs"),
+                           ("mercaderias.json", "mercaderias"),
+                           ("cuenta_corriente.json", "cuenta_corriente")]:
+        fp = allaria_dir / fname
+        if fp.exists():
+            try:
+                rows = json.loads(fp.read_text(encoding="utf-8"))
+                if target == "ctgs": allaria_ctgs = rows
+                elif target == "mercaderias": allaria_mercaderias = rows
+                elif target == "cuenta_corriente": allaria_cuenta_corriente = rows
+                n = len(rows) if isinstance(rows, list) else len(rows.keys()) if isinstance(rows, dict) else 0
+                print(f"    -> {fname}: {n} entradas")
+            except Exception as e:
+                print(f"    [!] {fname}: {e}")
+
     # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
     pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
     if pagos_path.exists():
@@ -8759,6 +8843,9 @@ def main() -> int:
         "ldc_fixations": ldc_fixations,
         "ldc_ctgs": ldc_ctgs,
         "aca_ctgs": aca_ctgs,
+        "allaria_ctgs": allaria_ctgs,
+        "allaria_mercaderias": allaria_mercaderias,
+        "allaria_cuenta_corriente": allaria_cuenta_corriente,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,

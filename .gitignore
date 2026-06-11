@@ -46,3 +46,4 @@ schemas.json
 discovery.json
 scripts/scraper/.ldc_profile/
 scripts/scraper/.aca_profile/
+scripts/scraper/.allaria_profile/
