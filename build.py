@@ -6813,6 +6813,15 @@ const TZ_FYO_BY_CTG = {};
   (TZ_FYO_BY_CTG[k] = TZ_FYO_BY_CTG[k] || []).push(c);
 });
 
+// Indice Intagro: CTGs con Intagro como corredor
+const TZ_INTAGRO_BY_CTG = {};
+((PAYLOAD && PAYLOAD.intagro_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_INTAGRO_BY_CTG[k] = TZ_INTAGRO_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7333,6 +7342,59 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE INTAGRO (teal) — datos DW: CTGs con Intagro como corredor
+  let intagroHtml = "";
+  const intagroRows = TZ_INTAGRO_BY_CTG[String(ctg).trim()] || [];
+  if(intagroRows.length){
+    const iRows = intagroRows.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.corredorprimario||d.corredorsecundario||"")}</td>
+      <td style="padding:4px">${tzEscape(d.destino||d.organizacionnombre||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+    </tr>`).join("");
+    const totalPesoNeto = intagroRows.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = intagroRows.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const granos = [...new Set(intagroRows.map(d => d.grano).filter(Boolean))].join(", ");
+
+    intagroHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#f0fdfa,#a7f3d0);border-left:4px solid #0d9488;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#134e4a;text-transform:uppercase;letter-spacing:.3px">🌿 Intagro — corredor</span>
+          <span style="background:#0d9488;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${intagroRows.length} traslado${intagroRows.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#134e4a">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#134e4a;text-transform:uppercase">📦 Traslados via Intagro (${intagroRows.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#a7f3d0">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Corredor</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador</th>
+            </tr></thead>
+            <tbody>${iRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#134e4a;background:#a7f3d0;padding:6px 8px;border-radius:6px">
+          ⚠️ Portal portal.intagro.com pide email — credencial 'agronasaja' rechazada. Solo datos via DW.
+        </div>
+      </div>`;
+  }
+
   // BLOQUE FYO (pink/rosa) — datos DW: CTGs entregados a FYO Acopio o con corredor FYO
   let fyoHtml = "";
   const fyoRows = TZ_FYO_BY_CTG[String(ctg).trim()] || [];
@@ -7452,6 +7514,7 @@ function tzRenderDetailExtra(ctg, data){
     ${acaHtml}
     ${allariaHtml}
     ${fyoHtml}
+    ${intagroHtml}
   `;
 }
 
@@ -8744,6 +8807,18 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] fyo_ctgs.json: {e}")
 
+    # Data Intagro - sólo DW (credencial 'agronasaja' rechazada por portal.intagro.com — necesita email)
+    print(f"\n[+] Cargando data Intagro (si existe)...", flush=True)
+    intagro_ctgs = []
+    intagro_dir = Path(__file__).resolve().parent / "data" / "intagro"
+    fp = intagro_dir / "intagro_ctgs.json"
+    if fp.exists():
+        try:
+            intagro_ctgs = json.loads(fp.read_text(encoding="utf-8"))
+            print(f"    -> intagro_ctgs.json: {len(intagro_ctgs)} entradas")
+        except Exception as e:
+            print(f"    [!] intagro_ctgs.json: {e}")
+
     # Data Allaria (corredor con 292 CTGs DW + posicion campaña + cuenta corriente)
     print(f"\n[+] Cargando data Allaria (si existe)...", flush=True)
     allaria_ctgs = []
@@ -8919,6 +8994,7 @@ def main() -> int:
         "ldc_ctgs": ldc_ctgs,
         "aca_ctgs": aca_ctgs,
         "fyo_ctgs": fyo_ctgs,
+        "intagro_ctgs": intagro_ctgs,
         "allaria_ctgs": allaria_ctgs,
         "allaria_mercaderias": allaria_mercaderias,
         "allaria_cuenta_corriente": allaria_cuenta_corriente,
