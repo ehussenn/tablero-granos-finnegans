@@ -6762,6 +6762,30 @@ const TZ_CARGILL_PAY_BY_CONTRATO = {};
   }
 });
 
+// Indices LDC: CTGs entregados a LDC desde el DW indexados por numerodocumentoadicional (=CTG)
+const TZ_LDC_BY_CTG = {};
+((PAYLOAD && PAYLOAD.ldc_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_LDC_BY_CTG[k] = TZ_LDC_BY_CTG[k] || []).push(c);
+});
+// Liquidaciones LDC indexadas por ContractNumber + por settlementID
+const TZ_LDC_SETTLE_BY_CONTRATO = {};
+((PAYLOAD && PAYLOAD.ldc_settlements) || []).forEach(s => {
+  if(s.ContractNumber){
+    const k = String(s.ContractNumber).trim();
+    (TZ_LDC_SETTLE_BY_CONTRATO[k] = TZ_LDC_SETTLE_BY_CONTRATO[k] || []).push(s);
+  }
+});
+const TZ_LDC_FIX_BY_CONTRATO = {};
+((PAYLOAD && PAYLOAD.ldc_fixations) || []).forEach(f => {
+  if(f.ContractNumber){
+    const k = String(f.ContractNumber).trim();
+    (TZ_LDC_FIX_BY_CONTRATO[k] = TZ_LDC_FIX_BY_CONTRATO[k] || []).push(f);
+  }
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7160,6 +7184,67 @@ function tzRenderDetailExtra(ctg, data){
     }
   }
 
+  // BLOQUE LDC: aparece si el CTG fue entregado a LDC (registro en DW)
+  let ldcHtml = "";
+  const ldcDeliveries = TZ_LDC_BY_CTG[String(ctg).trim()] || [];
+  if(ldcDeliveries.length){
+    const ldcRows = ldcDeliveries.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px">${tzEscape(d.organizacionnombre||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.representante||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+      <td style="padding:4px">${tzEscape(d.localidadorigen||"")}→${tzEscape(d.localidaddestino||"")}</td>
+    </tr>`).join("");
+    const totalPesoNeto = ldcDeliveries.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = ldcDeliveries.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const cosechas = [...new Set(ldcDeliveries.map(d => d.cosecha).filter(Boolean))].join(", ");
+    const granos = [...new Set(ldcDeliveries.map(d => d.grano).filter(Boolean))].join(", ");
+
+    ldcHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-left:4px solid #1d4ed8;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#1e3a8a;text-transform:uppercase;letter-spacing:.3px">🌾 LDC (Louis Dreyfus) — entregado</span>
+          <span style="background:#1d4ed8;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${ldcDeliveries.length} traslado${ldcDeliveries.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#1e3a8a">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+          ${cosechas ? `<span style="font-size:11px;color:#1e3a8a">Cosecha: <b>${tzEscape(cosechas)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto Total</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Diferencia (merma)</div>
+            <div style="font-size:15px;font-weight:700;color:${(totalPesoEntr-totalPesoNeto)>0?'#dc2626':'#16a34a'}">${fmt.num(totalPesoEntr-totalPesoNeto)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#1e3a8a;text-transform:uppercase">📦 Traslados a LDC (${ldcDeliveries.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#bfdbfe">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th style="text-align:left;padding:5px">Representante</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto kg</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador kg</th>
+              <th style="text-align:left;padding:5px">Origen → Destino</th>
+            </tr></thead>
+            <tbody>${ldcRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#1e3a8a;background:#dbeafe;padding:6px 8px;border-radius:6px">
+          ℹ️ El portal LDC (mildc.com) no expone aplicaciones/análisis por CTG a nivel cliente — sólo Liquidaciones por contrato (ver solapa <b>LDC</b>).
+        </div>
+      </div>`;
+  }
+
   el.innerHTML = `
     <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
@@ -7169,6 +7254,7 @@ function tzRenderDetailExtra(ctg, data){
     ${liqHtml}
     ${contratoHtml}
     ${cargillHtml}
+    ${ldcHtml}
   `;
 }
 
@@ -8412,6 +8498,30 @@ def main() -> int:
         else:
             print(f"    [.] {fp} no existe (correr scripts/cargill_api_final.py + cargill_download_details.py)")
 
+    # Data LDC (Louis Dreyfus) - mildc.com/webportal
+    # Se actualiza con: py scripts/ldc_fetch_all.py
+    print(f"\n[+] Cargando data LDC (si existe)...", flush=True)
+    ldc_settlements = []
+    ldc_fixations = []
+    ldc_ctgs = []  # CTGs LDC desde el DW
+    ldc_dir = Path(__file__).resolve().parent / "data" / "ldc"
+    for fname, target in [("settlements.json", "ldc_settlements"),
+                           ("fixations.json", "ldc_fixations"),
+                           ("ldc_ctgs.json", "ldc_ctgs")]:
+        fp = ldc_dir / fname
+        if fp.exists():
+            try:
+                rows = json.loads(fp.read_text(encoding="utf-8"))
+                # Si tiene estructura {List: [...]} extraer la lista
+                if isinstance(rows, dict) and "List" in rows: rows = rows["List"]
+                if target == "ldc_settlements": ldc_settlements = rows
+                elif target == "ldc_fixations": ldc_fixations = rows
+                elif target == "ldc_ctgs": ldc_ctgs = rows
+                ncount = len(rows) if isinstance(rows, (list, dict)) else 0
+                print(f"    -> {fname}: {ncount} entradas")
+            except Exception as e:
+                print(f"    [!] {fname} error: {e}")
+
     # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
     pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
     if pagos_path.exists():
@@ -8561,6 +8671,9 @@ def main() -> int:
         "cargill_invoices": cargill_invoices,
         "cargill_payments": cargill_payments,
         "cargill_details": cargill_details,
+        "ldc_settlements": ldc_settlements,
+        "ldc_fixations": ldc_fixations,
+        "ldc_ctgs": ldc_ctgs,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,

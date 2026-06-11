@@ -44,3 +44,4 @@ index.html
 # Schemas/discovery historicos (ya no se usan; mantenemos solo el swagger en scripts/)
 schemas.json
 discovery.json
+scripts/scraper/.ldc_profile/

@@ -1,0 +1,17 @@
+[
+  {
+    "SocietyID": null,
+    "CounterpartID": null,
+    "ProductID": 23,
+    "PortID": null,
+    "DateFrom": null,
+    "DateUntil": null,
+    "CarriageDocumentNumber": null,
+    "CTG": null,
+    "ProductName": "SOJA",
+    "Quantity": 88.73,
+    "UnitID": 210,
+    "ID": 0,
+    "Name": null
+  }
+]
