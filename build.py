@@ -6786,6 +6786,15 @@ const TZ_LDC_FIX_BY_CONTRATO = {};
   }
 });
 
+// Indice ACA: CTGs entregados a ACA Asoc de Cooperativas desde el DW
+const TZ_ACA_BY_CTG = {};
+((PAYLOAD && PAYLOAD.aca_ctgs) || []).forEach(c => {
+  const ctg = c.numerodocumentoadicional;
+  if(!ctg) return;
+  const k = String(ctg).trim();
+  (TZ_ACA_BY_CTG[k] = TZ_ACA_BY_CTG[k] || []).push(c);
+});
+
 function tzRenderDetailExtra(ctg, data){
   const el = document.getElementById("tz-det-coe-" + ctg);
   if(!el) return;
@@ -7245,6 +7254,67 @@ function tzRenderDetailExtra(ctg, data){
       </div>`;
   }
 
+  // BLOQUE ACA (verde) — datos del DW, no del portal (cuenta agronasaja sin atributos)
+  let acaHtml = "";
+  const acaDeliveries = TZ_ACA_BY_CTG[String(ctg).trim()] || [];
+  if(acaDeliveries.length){
+    const acaRows = acaDeliveries.map(d => `<tr>
+      <td style="padding:4px">${tzEscape(d.documento||"")}</td>
+      <td style="padding:4px">${tzEscape(d.fechadescarga||d.fechaarribo||d.fecha||"")}</td>
+      <td style="padding:4px">${tzEscape(d.organizacionnombre||d.destino||"")}</td>
+      <td style="padding:4px;font-size:10.5px">${tzEscape(d.representante||"")}</td>
+      <td style="padding:4px" class="num"><b>${fmt.num(d.pesoneto)}</b></td>
+      <td style="padding:4px" class="num">${fmt.num(d.pesoentregador)}</td>
+      <td style="padding:4px">${tzEscape(d.localidadorigen||"")}→${tzEscape(d.localidaddestino||"")}</td>
+    </tr>`).join("");
+    const totalPesoNeto = acaDeliveries.reduce((s,d)=>s+(Number(d.pesoneto)||0),0);
+    const totalPesoEntr = acaDeliveries.reduce((s,d)=>s+(Number(d.pesoentregador)||0),0);
+    const cosechas = [...new Set(acaDeliveries.map(d => d.cosecha).filter(Boolean))].join(", ");
+    const granos = [...new Set(acaDeliveries.map(d => d.grano).filter(Boolean))].join(", ");
+
+    acaHtml = `
+      <div style="margin-top:14px;border-radius:10px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left:4px solid #16a34a;padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:#14532d;text-transform:uppercase;letter-spacing:.3px">🌾 ACA (Asoc Cooperativas Argentinas) — entregado</span>
+          <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:10.5px;font-weight:600">${acaDeliveries.length} traslado${acaDeliveries.length>1?'s':''}</span>
+          ${granos ? `<span style="font-size:11px;color:#14532d">Grano: <b>${tzEscape(granos)}</b></span>` : ''}
+          ${cosechas ? `<span style="font-size:11px;color:#14532d">Cosecha: <b>${tzEscape(cosechas)}</b></span>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #16a34a">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Neto Total</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoNeto)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #3b82f6">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Peso Entregador</div>
+            <div style="font-size:15px;font-weight:700">${fmt.num(totalPesoEntr)} kg</div>
+          </div>
+          <div style="background:#fff;padding:8px;border-radius:6px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">Merma</div>
+            <div style="font-size:15px;font-weight:700;color:${(totalPesoEntr-totalPesoNeto)>0?'#dc2626':'#16a34a'}">${fmt.num(totalPesoEntr-totalPesoNeto)} kg</div>
+          </div>
+        </div>
+        <details open style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:11px;font-weight:700;color:#14532d;text-transform:uppercase">📦 Traslados a ACA (${acaDeliveries.length})</summary>
+          <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:6px;background:#fff;border-radius:6px;overflow:hidden">
+            <thead><tr style="background:#bbf7d0">
+              <th style="text-align:left;padding:5px">Documento</th>
+              <th style="text-align:left;padding:5px">Fecha</th>
+              <th style="text-align:left;padding:5px">Destino</th>
+              <th style="text-align:left;padding:5px">Representante</th>
+              <th class="num" style="text-align:right;padding:5px">Peso Neto kg</th>
+              <th class="num" style="text-align:right;padding:5px">Entregador kg</th>
+              <th style="text-align:left;padding:5px">Origen → Destino</th>
+            </tr></thead>
+            <tbody>${acaRows}</tbody>
+          </table>
+        </details>
+        <div style="font-size:10.5px;color:#14532d;background:#dcfce7;padding:6px 8px;border-radius:6px">
+          ℹ️ Cuenta 'agronasaja' en acabase.com.ar tiene permisos de mercados/pizarra solamente — sin acceso a movimientos/liquidaciones del cliente.
+        </div>
+      </div>`;
+  }
+
   el.innerHTML = `
     <div style="font-size:10.5px;font-weight:700;color:#854d0e;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">🔍 Cadena completa CP → COE → Liquidación</div>
     <table style="width:100%;font-size:11.5px;border-collapse:collapse">
@@ -7255,6 +7325,7 @@ function tzRenderDetailExtra(ctg, data){
     ${contratoHtml}
     ${cargillHtml}
     ${ldcHtml}
+    ${acaHtml}
   `;
 }
 
@@ -8522,6 +8593,19 @@ def main() -> int:
             except Exception as e:
                 print(f"    [!] {fname} error: {e}")
 
+    # Data ACA (Asociacion de Cooperativas Argentinas) - SÓLO datos DW
+    # El portal acabase.com.ar con la cuenta 'agronasaja' no expone operaciones
+    print(f"\n[+] Cargando data ACA (si existe)...", flush=True)
+    aca_ctgs = []
+    aca_dir = Path(__file__).resolve().parent / "data" / "aca"
+    fp = aca_dir / "aca_ctgs.json"
+    if fp.exists():
+        try:
+            aca_ctgs = json.loads(fp.read_text(encoding="utf-8"))
+            print(f"    -> aca_ctgs.json: {len(aca_ctgs)} entradas")
+        except Exception as e:
+            print(f"    [!] aca_ctgs.json error: {e}")
+
     # Datos del Excel "Proyectado de Pagos Granos" (carga inicial, despues editable en HTML)
     pagos_path = Path(__file__).resolve().parent / "data" / "proyectado_pagos.json"
     if pagos_path.exists():
@@ -8674,6 +8758,7 @@ def main() -> int:
         "ldc_settlements": ldc_settlements,
         "ldc_fixations": ldc_fixations,
         "ldc_ctgs": ldc_ctgs,
+        "aca_ctgs": aca_ctgs,
         "pagos_iniciales": pagos_iniciales,
         "stock_silo":      stock_silo,
         "stock_silobolsa": stock_silobolsa,
