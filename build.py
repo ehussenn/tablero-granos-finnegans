@@ -3824,8 +3824,40 @@ const CJ_TABLE_COLS = [
   {k:'usdFaltante',     lbl:'USD Faltante',     num:true, sum:true},
   {k:'tnFaltante',      lbl:'Tn Faltante',      num:true, sum:true},
   {k:'precio',          lbl:'Precio USD',       num:true, sum:'avg'},
+  {k:'_ctosDetalle',    lbl:'Contratos del Grano', num:false, html:true},
   {k:'_estado',         lbl:'Estado',           num:false, html:true},
 ];
+
+// Render del detalle de contratos del grano (para columna "Contratos del Grano")
+function cjCtosDetalleHtml(r){
+  const ctos = r.ctosDelGrano || [];
+  if(!ctos.length) return '<span style="color:#dc2626;font-weight:600">— sin contratos —</span>';
+  // Mostrar resumen breve: "3 ctos · 561 tn · vence May/Jul 2026"
+  const tn = ctos.reduce((s,c)=>s+(Number(c.cantidadmax)||0),0);
+  const entregada = ctos.reduce((s,c)=>s+(Number(c.cantidadentregada)||0),0);
+  const pendEnt = tn - entregada;
+  // Sacar meses únicos de fechamaxentrega
+  const meses = new Set();
+  const MES_ABREV = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  ctos.forEach(c => {
+    const f = c.fechamaxentrega || c.fechaminentrega || c.fecha;
+    const m = String(f||'').match(/(\d{4})-(\d{2})/);
+    if(m) meses.add(`${MES_ABREV[parseInt(m[2])-1]}/${m[1].slice(2)}`);
+  });
+  const mesesStr = [...meses].slice(0,4).join(', ');
+  // Tooltip con detalle por contrato
+  const tooltip = ctos.slice(0,12).map(c => {
+    const f = c.fechamaxentrega || c.fechaminentrega;
+    const fStr = String(f||'').match(/(\d{4})-(\d{2})-(\d{2})/);
+    const fDate = fStr ? `${fStr[3]}/${fStr[2]}/${fStr[1].slice(2)}` : '';
+    return `${c.numerodocumento || c.contrato || '?'}: ${fmt.num(c.cantidadmax||0)} tn (entreg ${fStr ? fDate : '?'})`;
+  }).join(' | ');
+  return `<span title="${escapeHtml(tooltip)}" style="font-size:10.5px">
+    <b>${ctos.length}</b> cto${ctos.length>1?'s':''} · <b>${fmt.num(tn)}</b> tn
+    ${pendEnt>0 ? `<span style="color:#b45309"> · pend ${fmt.num(pendEnt)}</span>` : ''}
+    ${mesesStr ? `<br><span style="color:var(--muted)">${escapeHtml(mesesStr)}</span>` : ''}
+  </span>`;
+}
 
 let cjFiltered = [];
 let cjSortKey = null, cjSortDir = 1;
@@ -3880,6 +3912,33 @@ function cjGetSelectedConds(){
   return [...sel.selectedOptions].map(o => o.value);
 }
 
+// Normaliza un nombre de cliente para hacer matching robusto
+// (quita SA, SRL, puntos, acentos, espacios extra, todo en MAYÚS)
+function cjNormName(s){
+  if(!s) return '';
+  return String(s).toUpperCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')   // quita acentos
+    .replace(/\bS\.?A\.?C?\.?I?\.?F?\.?I?\.?\b/g,'')   // SA, SAC, SACIFI, etc
+    .replace(/\bS\.?R\.?L\.?\b/g,'')                    // SRL
+    .replace(/\bS\.?A\.?S\.?\b/g,'')                    // SAS
+    .replace(/[.,()]/g,'')                              // puntuación
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+// Si la condición de pago es de canje, sacar el mes-año (1-12, año)
+function cjMesAnio(cond){
+  const MES_NUM = {
+    enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6,
+    julio:7, agosto:8, septiembre:9, setiembre:9, octubre:10, noviembre:11, diciembre:12,
+  };
+  const m = (cond||'').toLowerCase().match(/canje\s+([a-záéíóúñ]+)\s+(\d{4})/i);
+  if(!m) return null;
+  const mes = MES_NUM[m[1].normalize('NFD').replace(/[̀-ͯ]/g,'')] || null;
+  if(!mes) return null;
+  return {mes, anio: parseInt(m[2], 10)};
+}
+
 function cjBuildRows(){
   const condSel = cjGetSelectedConds();
   const vendSel = document.getElementById('cj-vend').value;
@@ -3904,21 +3963,24 @@ function cjBuildRows(){
         cuit: s.cuit || '',
         saldoArs:0, saldoUsd:0,
         meses: new Set(),
+        mesesParsed: [],  // [{mes, anio}]
         condiciones: new Set(),
       };
     }
     byClient[id].saldoArs += s.importemonppal || 0;
     byClient[id].saldoUsd += s.importemonsecundaria || 0;
     if(s.condicionpago) byClient[id].condiciones.add(s.condicionpago);
-    // extraer mes de la condicion para mostrar "Meses Canje"
     const m = (s.condicionpago||'').match(/canje\s+(\w+)\s+(\d{4})/i);
     if(m) byClient[id].meses.add(m[1] + ' ' + m[2]);
+    const ma = cjMesAnio(s.condicionpago);
+    if(ma) byClient[id].mesesParsed.push(ma);
   });
 
-  // Agrupar contratos de compra POR CLIENTE (proveedor en compra = cliente en canjes)
+  // Agrupar contratos de compra POR CLIENTE — matching normalizado (S.A. ≡ SA, etc)
   const ctosByClient = {};
   (DATA_CP || []).forEach(c => {
-    const k = (c.organizacion||'').trim().toUpperCase();
+    const k = cjNormName(c.organizacion);
+    if(!k) return;
     if(!ctosByClient[k]) ctosByClient[k] = [];
     ctosByClient[k].push(c);
   });
@@ -3927,18 +3989,26 @@ function cjBuildRows(){
   const granoSel = document.getElementById('cj-grano').value;
   const rows = [];
   Object.values(byClient).forEach(b => {
-    const nameKey = (b.cliente||'').trim().toUpperCase();
+    const nameKey = cjNormName(b.cliente);
     const ctos = ctosByClient[nameKey] || [];
 
-    // determinar grano: si el usuario eligió uno fijo, usar ese.
-    // si "auto": tomar el grano del primer contrato del cliente, sino soja por default
+    // determinar grano:
+    //  - si el usuario eligió uno fijo, usar ese (forzado)
+    //  - si "auto": (1) primer contrato del cliente; (2) si no tiene contratos, inferir
+    //    por el mes de canje: julio-diciembre suele ser MAÍZ (campaña de invierno
+    //    tardía), enero-junio suele ser SOJA (campaña gruesa). Sin info, soja.
     let grano = granoSel === 'auto' ? null : granoSel;
     if(!grano){
       for(const c of ctos){
         const g = granoBCR(c.producto);
         if(g){ grano = g; break; }
       }
-      if(!grano) grano = 'soja';
+      if(!grano){
+        // inferir por mes
+        const meses = b.mesesParsed.map(x => x.mes);
+        const algunoTardio = meses.some(m => m >= 6);  // junio-diciembre
+        grano = algunoTardio ? 'maiz' : 'soja';
+      }
     }
 
     const precio = CJ_PX[grano] || 0;
@@ -3948,10 +4018,13 @@ function cjBuildRows(){
       : (tc>0 ? b.saldoArs / tc : 0);
     const tnCanje = precio > 0 ? saldoUSDeff / precio : 0;
 
+    // Contratos del cliente del grano elegido — separamos por entregado/pendiente
     let tnContratadas = 0;
+    const ctosDelGrano = [];
     ctos.forEach(c => {
       if(granoBCR(c.producto) === grano){
         tnContratadas += c.cantidadmax || 0;
+        ctosDelGrano.push(c);
       }
     });
 
@@ -3970,6 +4043,7 @@ function cjBuildRows(){
       saldoArs: b.saldoArs, saldoUsd: saldoUSDeff,
       tnCanje, tnContratadas, usdCubierto, usdFaltante, tnFaltante,
       precio,
+      ctosDelGrano,   // array de contratos del grano elegido (para mostrar detalle)
       _estado: estado,
     });
   });
@@ -4076,6 +4150,7 @@ function cjRender(){
     const selCls = SEL_CJ.has(id) ? ' class="row-sel"' : '';
     return `<tr data-id="${id}" data-i="${i}"${selCls}>`+CJ_TABLE_COLS.map(c=>{
       if(c.k==='_estado') return '<td>'+cjEstadoChip(r)+'</td>';
+      if(c.k==='_ctosDetalle') return '<td>'+cjCtosDetalleHtml(r)+'</td>';
       const v = r[c.k];
       if(c.k === 'grano') return `<td><span class="chip ${grainClass(v) || 'neutral'}" style="background:#f1f5f9;color:#475569;text-transform:capitalize">${v}</span></td>`;
       if(c.num) return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
