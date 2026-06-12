@@ -5793,9 +5793,62 @@ function pnFiltrarOps(){
     return true;
   };
   return {
-    compras: (DATA_CP || []).filter(filtra),
-    ventas:  (DATA    || []).filter(filtra),
+    compras: (DATA_CP || []).filter(filtra).map(pnMaizSplit),
+    ventas:  (DATA    || []).filter(filtra).map(pnMaizSplit),
   };
+}
+
+// pnMaizSplit: divide "Grano Maíz" en "Grano Maíz 1ra" o "Grano Maíz 2da"
+// según fecha de entrega vs 01/07/<año_cosecha>.
+// - 1ra: entrega ANTES del 01/07 del año-cosecha
+// - 2da: entrega DESDE el 01/07 inclusive
+// Respeta la campaña (ej 25/26 → corte 01/07/2026; 26/27 → corte 01/07/2027).
+// Solo aplica a "Grano Maíz" puro (no a semillas, pisingallo, descarte, etc).
+function pnMaizSplit(c){
+  if(!c || !c.producto) return c;
+  const p = String(c.producto).trim();
+  // Solo "Grano Maíz" o "Grano Maiz" exactos (sin "Pisingallo", sin "Semilla", etc)
+  const isMaizPuro = /^grano\s+ma[ií]z\s*$/i.test(p);
+  if(!isMaizPuro) return c;
+  // Sacar año-cosecha de la campaña (formatos típicos: "25/26", "2025/2026", "25-26", "26")
+  let anioCos = null;
+  const camp = String(c.campana || "").trim();
+  // Buscar último número de 2-4 dígitos
+  const m = camp.match(/(\d{2,4})\s*[\/\-]?\s*(\d{2,4})?/);
+  if(m){
+    const a2 = m[2] || m[1];
+    const num = parseInt(a2, 10);
+    if(!isNaN(num)) anioCos = num < 100 ? 2000 + num : num;
+  }
+  // Si no podemos sacar año, fallback al año de la fecha del contrato +1
+  if(!anioCos){
+    const f = c.fecha || c.fechaminentrega || c.fechamaxentrega;
+    if(f){
+      const ym = String(f).match(/(\d{4})/);
+      if(ym) anioCos = parseInt(ym[1], 10) + 1;
+    }
+  }
+  if(!anioCos) return c;  // no podemos clasificar, dejarlo como Maíz genérico
+
+  const corte = new Date(anioCos, 6, 1);  // 01/07/anioCos (mes 6 = julio)
+  // Usar fechaminentrega para clasificar (cuándo empieza a entregar)
+  // Si no hay, caer a fechamaxentrega
+  let entregaStr = c.fechaminentrega || c.fechamaxentrega;
+  if(!entregaStr) return c;
+  // Normalizar (puede venir "2026-07-15 00:00:00.0" o "2026-07-15" o "15/07/2026")
+  let entrega = null;
+  const isoM = String(entregaStr).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(isoM){
+    entrega = new Date(parseInt(isoM[1]), parseInt(isoM[2])-1, parseInt(isoM[3]));
+  } else {
+    const dmy = String(entregaStr).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if(dmy) entrega = new Date(parseInt(dmy[3]), parseInt(dmy[2])-1, parseInt(dmy[1]));
+  }
+  if(!entrega || isNaN(entrega.getTime())) return c;
+
+  const variante = entrega < corte ? "1ra" : "2da";
+  // Clonar el contrato cambiando solo el producto
+  return Object.assign({}, c, { producto: `Grano Maíz ${variante}` });
 }
 
 // Familias cuyas semillas estan expandidas (en memoria, se cierra al recargar)
