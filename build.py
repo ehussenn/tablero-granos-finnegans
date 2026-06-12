@@ -546,7 +546,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
       <div class="topbar-right">
         <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__</div>
-        <button class="admin-pill" id="btn-admin">Administración</button>
+        <button class="admin-pill" id="btn-admin" style="display:none">Administración</button>
         <a class="logout-btn" href="/logout">⤴ Salir</a>
       </div>
     </header>
@@ -1743,6 +1743,18 @@ NAV_ITEMS.forEach(item => {
 });
 
 /* ============== ADMINISTRACIÓN (abre config de editor/PAT) ============== */
+// Solo visible para el "usuario madre" (ehussen). Otros usuarios internos no lo ven.
+(function showAdminOnlyForOwner(){
+  try{
+    const m = (document.cookie||"").match(/(?:^|; )agronasaja_user=([^;]*)/);
+    const user = m ? decodeURIComponent(m[1]).toLowerCase() : "";
+    const ADMIN_USERS = new Set(["ehussen@agronasaja.com.ar"]);
+    if(ADMIN_USERS.has(user)){
+      const btn = document.getElementById('btn-admin');
+      if(btn) btn.style.display = "";
+    }
+  } catch(e){}
+})();
 document.getElementById('btn-admin').addEventListener('click', () => {
   const m = document.getElementById('pg-autobackup-modal');
   if(!m) return;
