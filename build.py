@@ -235,6 +235,15 @@ HTML_TEMPLATE = r"""<!doctype html>
   .section{background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid var(--line)}
   .section h3{margin:0 0 12px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
   .section h3 .badge{font-size:11px;font-weight:500;color:var(--muted)}
+  /* Section collapsible (<details>) */
+  details.section-collapsible{padding:18px}
+  details.section-collapsible > summary{margin:0 0 0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;list-style:none;user-select:none}
+  details.section-collapsible > summary::-webkit-details-marker{display:none}
+  details.section-collapsible[open] > summary{margin-bottom:12px}
+  details.section-collapsible > summary .badge{font-size:11px;font-weight:500;color:var(--muted);margin-left:auto}
+  details.section-collapsible > summary:hover{color:#1e3a8a}
+  details.section-collapsible .collapse-arrow{display:inline-block;width:14px;font-size:11px;color:#1e3a8a;transition:transform .15s}
+  details.section-collapsible:not([open]) .collapse-arrow{transform:rotate(-90deg)}
 
   /* cards por grano */
   .grain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
@@ -696,10 +705,10 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="count" id="row-count-cp">0 / 0 contratos</div>
       </div>
 
-      <div class="section">
-        <h3>Resumen por Producto <span class="badge" id="grain-meta-cp"></span></h3>
+      <details class="section section-collapsible" data-collapse="resumen-cp" open>
+        <summary><span class="collapse-arrow">▾</span> Resumen por Producto <span class="badge" id="grain-meta-cp"></span></summary>
         <div class="grain-grid" id="grain-grid-cp"></div>
-      </div>
+      </details>
 
       <div class="row2">
         <div class="section">
@@ -1265,10 +1274,10 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <!-- RESUMEN POR GRANO -->
-      <div class="section">
-        <h3>Resumen por Grano <span class="badge" id="grain-meta"></span></h3>
+      <details class="section section-collapsible" data-collapse="resumen-vt" open>
+        <summary><span class="collapse-arrow">▾</span> Resumen por Grano <span class="badge" id="grain-meta"></span></summary>
         <div class="grain-grid" id="grain-grid"></div>
-      </div>
+      </details>
 
       <!-- DONUT + TOP -->
       <div class="row2">
@@ -1942,6 +1951,23 @@ document.getElementById('btn-admin').addEventListener('click', () => {
 /* ============== Toggle del menú en mobile ============== */
 const _mt = document.getElementById('menu-toggle');
 if(_mt) _mt.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+/* ============== Secciones colapsables <details data-collapse="..."> ============== */
+(function(){
+  const KEY = 'tablero-granos-section-collapsed-v1';
+  let closed;
+  try { closed = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); }
+  catch(e){ closed = new Set(); }
+  document.querySelectorAll('details.section-collapsible[data-collapse]').forEach(d => {
+    const name = d.dataset.collapse;
+    if(closed.has(name)) d.removeAttribute('open');
+    d.addEventListener('toggle', () => {
+      if(d.open) closed.delete(name);
+      else closed.add(name);
+      try { localStorage.setItem(KEY, JSON.stringify([...closed])); } catch(e){}
+    });
+  });
+})();
 
 /* ============== Sidebar: secciones colapsables ============== */
 (function(){
