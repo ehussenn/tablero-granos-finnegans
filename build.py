@@ -143,6 +143,34 @@ HTML_TEMPLATE = r"""<!doctype html>
   .sidebar .brand-name{font-weight:800;letter-spacing:1px;color:#fff;font-size:15px;line-height:1.1}
   .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#8ea3c4;text-transform:uppercase;margin-top:2px}
   .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#60a5fa;text-transform:uppercase;font-weight:700;border-top:1px solid #24375f;padding-top:12px}
+  .sidebar .campana-home{display:block;text-decoration:none;cursor:pointer;padding:10px 18px 10px 18px;margin:0;border-top:1px solid #24375f;border-radius:0;transition:background .15s,color .15s;font-size:11px}
+  .sidebar .campana-home:hover{background:#1c2f54;color:#fff}
+  .sidebar .campana-home.active{background:linear-gradient(90deg,#1c2f54,#16a34a44);color:#fff;border-left:3px solid #16a34a}
+
+  /* ===== PORTADA / HOME ===== */
+  .home-hero{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#14532d 0%,#16a34a 35%,#84cc16 75%,#fde68a 100%);color:#fff;padding:0;margin-bottom:22px;box-shadow:0 10px 30px rgba(20,83,45,.25)}
+  .home-hero-bg{position:absolute;inset:0;opacity:.18;background-image:
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,.4) 0%, transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,.3) 0%, transparent 25%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'><g fill='%23fff' opacity='.5'><ellipse cx='40' cy='180' rx='12' ry='4'/><ellipse cx='80' cy='185' rx='10' ry='3'/><ellipse cx='160' cy='178' rx='14' ry='4'/><ellipse cx='220' cy='182' rx='11' ry='3'/><ellipse cx='280' cy='186' rx='13' ry='4'/><ellipse cx='340' cy='180' rx='12' ry='3'/><path d='M40 180 L40 130 M37 155 L43 145 M37 145 L43 135 M37 165 L43 155'/><path d='M80 185 L80 140 M77 165 L83 155 M77 155 L83 145' stroke='%23fff' stroke-width='1' fill='none'/><path d='M160 178 L160 125 M157 152 L163 142 M157 142 L163 132 M157 162 L163 152' stroke='%23fff' stroke-width='1' fill='none'/><path d='M220 182 L220 138 M217 160 L223 150 M217 150 L223 140' stroke='%23fff' stroke-width='1' fill='none'/><path d='M280 186 L280 135 M277 162 L283 152 M277 152 L283 142 M277 172 L283 162' stroke='%23fff' stroke-width='1' fill='none'/><path d='M340 180 L340 130 M337 155 L343 145 M337 145 L343 135' stroke='%23fff' stroke-width='1' fill='none'/></g></svg>");
+    background-size:cover,cover,400px}
+  .home-hero-content{position:relative;padding:36px 38px 30px;z-index:2}
+  .home-greet-eyebrow{font-size:11.5px;letter-spacing:2.5px;font-weight:700;color:#bbf7d0;text-transform:uppercase;margin-bottom:6px;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .home-title{font-size:32px;font-weight:800;margin:0 0 6px;letter-spacing:-.5px;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .home-sub{font-size:14px;opacity:.95;max-width:720px;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .home-kpis{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .home-kpi{background:rgba(255,255,255,.95);color:#14532d;border-radius:10px;padding:14px 16px;backdrop-filter:blur(6px);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .home-kpi-label{font-size:10.5px;font-weight:700;color:#16a34a;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px}
+  .home-kpi-value{font-size:22px;font-weight:800;color:#14532d;font-variant-numeric:tabular-nums}
+  .home-kpi-sub{font-size:11.5px;color:#65a30d;margin-top:2px;font-weight:600}
+
+  .home-shortcuts{padding:0 4px}
+  .home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .home-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;cursor:pointer;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column;gap:8px}
+  .home-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08);border-color:#16a34a}
+  .home-card-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600}
+  .home-card-title{font-size:15px;font-weight:700;color:var(--ink)}
+  .home-card-desc{font-size:11.5px;color:var(--muted);line-height:1.4}
   .nav{padding:4px 10px 28px}
   .nav-group{font-size:10px;letter-spacing:1.5px;color:#6b80a6;text-transform:uppercase;font-weight:700;margin:16px 10px 6px;background:none;border:none;width:calc(100% - 20px);text-align:left;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;gap:4px;font-family:inherit;transition:color .15s}
   .nav-group:hover{color:#bfdbfe;background:#1c2f54}
@@ -517,7 +545,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="brand-sub">Portal de Granos</div>
       </div>
     </div>
-    <div class="campana">Resumen comercial</div>
+    <a class="campana campana-home" data-go-tab="home" data-title="Resumen Comercial">🏠 Resumen comercial</a>
     <nav class="nav">
       <div class="nav-section" data-section="compra">
         <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Compra</button>
@@ -535,7 +563,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="nav-section" data-section="venta">
         <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Venta</button>
         <div class="nav-items">
-          <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
         </div>
@@ -567,7 +595,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <header class="topbar">
       <div style="display:flex;align-items:center;gap:12px">
         <button class="menu-toggle" id="menu-toggle" aria-label="Menú">☰</button>
-        <div class="topbar-title" id="topbar-title">Venta · Posición General</div>
+        <div class="topbar-title" id="topbar-title">Resumen Comercial</div>
       </div>
       <div class="topbar-right">
         <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__</div>
@@ -578,11 +606,63 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="content">
 
   <div class="tabs">
+    <div class="tab active" data-tab="home">INICIO</div>
     <div class="tab" data-tab="compra">COMPRA <span class="count" id="cnt-compra">0</span></div>
-    <div class="tab active" data-tab="venta">VENTA <span class="count" id="cnt-venta">0</span></div>
+    <div class="tab" data-tab="venta">VENTA <span class="count" id="cnt-venta">0</span></div>
     <div class="tab" data-tab="posicion">POSICIÓN GENERAL <span class="count" id="cnt-pos">0</span></div>
     <div class="tab" data-tab="contratos">CONTRATOS <span class="count" id="cnt-contratos">0</span></div>
     <div class="tab nav-internal" data-tab="personal" style="display:none">PERSONAL <span class="count" id="cnt-personal">0</span></div>
+  </div>
+
+  <!-- ============ HOME / PORTADA ============ -->
+  <div class="panel active" data-panel="home">
+    <div class="home-hero">
+      <div class="home-hero-bg"></div>
+      <div class="home-hero-content">
+        <div class="home-greeting">
+          <div class="home-greet-eyebrow">PORTAL DE GRANOS · AGRONASAJA SRL</div>
+          <h1 class="home-title">Bienvenido al tablero comercial 🌾</h1>
+          <div class="home-sub">Resumen consolidado de la operación de granos · Compra · Venta · Stock · Cerealeras</div>
+        </div>
+        <div class="home-kpis" id="home-kpis"></div>
+      </div>
+    </div>
+
+    <div class="home-shortcuts">
+      <h3 style="margin:0 0 12px;color:var(--ink);font-size:15px">Atajos</h3>
+      <div class="home-cards">
+        <a class="home-card" data-go-tab="compra" data-go-sub="cp-posicion">
+          <div class="home-card-icon" style="background:#dbeafe;color:#1e3a8a">📥</div>
+          <div class="home-card-title">Compra</div>
+          <div class="home-card-desc">Posición · Canjes · Calculadores · Trazabilidad</div>
+        </a>
+        <a class="home-card" data-go-tab="venta" data-go-sub="posicion">
+          <div class="home-card-icon" style="background:#fde68a;color:#92400e">📤</div>
+          <div class="home-card-title">Venta</div>
+          <div class="home-card-desc">Contratos · Precios · Financiera</div>
+        </a>
+        <a class="home-card" data-go-tab="posicion" data-go-sub="pn-granaria">
+          <div class="home-card-icon" style="background:#dcfce7;color:#166534">📊</div>
+          <div class="home-card-title">Posición Granaria</div>
+          <div class="home-card-desc">Cosecha × Producto · Stock vs Comprometido</div>
+        </a>
+        <a class="home-card" data-go-tab="compra" data-go-sub="cp-traza">
+          <div class="home-card-icon" style="background:#fed7aa;color:#7c2d12">📦</div>
+          <div class="home-card-title">Trazabilidad</div>
+          <div class="home-card-desc">CTG → Cerealera · Cargill · LDC · ACA · Allaria · FYO · Bunge · COFCO · Intagro</div>
+        </a>
+        <a class="home-card" data-go-tab="compra" data-go-sub="pg-pagos">
+          <div class="home-card-icon" style="background:#fce7f3;color:#9f1239">💰</div>
+          <div class="home-card-title">Proyectado Pagos</div>
+          <div class="home-card-desc">Calendario · KV sincronizado</div>
+        </a>
+        <a class="home-card" data-go-tab="contratos" data-go-sub="ct-compra">
+          <div class="home-card-icon" style="background:#e9d5ff;color:#581c87">📋</div>
+          <div class="home-card-title">Códigos de Contratos</div>
+          <div class="home-card-desc">Compra · Venta</div>
+        </a>
+      </div>
+    </div>
   </div>
 
   <!-- ============ COMPRA ============ -->
@@ -1157,7 +1237,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   </div>
 
   <!-- ============ VENTA ============ -->
-  <div class="panel active" data-panel="venta">
+  <div class="panel" data-panel="venta">
 
     <!-- SUB-TABS dentro de VENTA -->
     <div class="subtabs">
@@ -1760,12 +1840,75 @@ NAV_ITEMS.forEach(item => {
     }
     NAV_ITEMS.forEach(x => x.classList.remove('active'));
     item.classList.add('active');
+    document.querySelector('.campana-home').classList.remove('active');
     const t = document.getElementById('topbar-title');
     if(t) t.textContent = item.dataset.title || item.textContent.trim();
     // cerrar el sidebar en mobile
     document.getElementById('sidebar').classList.remove('open');
   });
 });
+
+/* ============== HOME (Resumen Comercial) ============== */
+function goHome(){
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="home"]').classList.add('active');
+  document.querySelector('.panel[data-panel="home"]').classList.add('active');
+  NAV_ITEMS.forEach(x => x.classList.remove('active'));
+  document.querySelector('.campana-home').classList.add('active');
+  const t = document.getElementById('topbar-title');
+  if(t) t.textContent = 'Resumen Comercial';
+  document.getElementById('sidebar').classList.remove('open');
+  homeRenderKpis();
+}
+document.querySelector('.campana-home').addEventListener('click', (ev) => { ev.preventDefault(); goHome(); });
+// Tarjetas de atajos en la portada
+document.querySelectorAll('.home-card').forEach(c => {
+  c.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    const tab = c.dataset.goTab, sub = c.dataset.goSub;
+    const tabEl = document.querySelector(`.tab[data-tab="${tab}"]`);
+    if(tabEl) tabEl.click();
+    if(sub){
+      const stEl = document.querySelector(`.panel[data-panel="${tab}"] .subtab[data-sub="${sub}"]`);
+      if(stEl) stEl.click();
+    }
+    // Activar el nav-item correspondiente
+    const navEl = document.querySelector(`.nav-item[data-go-tab="${tab}"][data-go-sub="${sub}"]`);
+    if(navEl) {
+      NAV_ITEMS.forEach(x => x.classList.remove('active'));
+      navEl.classList.add('active');
+      document.querySelector('.campana-home').classList.remove('active');
+      const t2 = document.getElementById('topbar-title');
+      if(t2) t2.textContent = navEl.dataset.title || navEl.textContent.trim();
+    }
+  });
+});
+
+// Render KPIs de la portada (a partir de PAYLOAD ya cargado)
+function homeRenderKpis(){
+  const el = document.getElementById('home-kpis');
+  if(!el) return;
+  const compraN = (PAYLOAD.counts && PAYLOAD.counts.compra) || (DATA_CP||[]).length || 0;
+  const ventaN  = (PAYLOAD.counts && PAYLOAD.counts.venta)  || (DATA   ||[]).length || 0;
+  const tnVta = (DATA||[]).reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
+  const tnCpa = (DATA_CP||[]).reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
+  const cerealeras = new Set();
+  (DATA||[]).forEach(r => { if(r.organizacion) cerealeras.add(r.organizacion); });
+  const kpis = [
+    {lbl:'Contratos Compra', val:compraN.toLocaleString('es-AR'), sub: (tnCpa/1000).toFixed(1) + ' k tn'},
+    {lbl:'Contratos Venta',  val:ventaN.toLocaleString('es-AR'),  sub: (tnVta/1000).toFixed(1) + ' k tn'},
+    {lbl:'Cerealeras Activas', val:cerealeras.size.toLocaleString('es-AR'), sub:'Cargill · LDC · ACA · Allaria · FYO · COFCO · Bunge · Intagro'.slice(0,40)+'…'},
+    {lbl:'Actualizado', val: '__BUILD_TIME__'.split(' ')[0] || '—', sub: '__BUILD_TIME__'.split(' ').slice(1).join(' ') || ''},
+  ];
+  el.innerHTML = kpis.map(k => `
+    <div class="home-kpi">
+      <div class="home-kpi-label">${k.lbl}</div>
+      <div class="home-kpi-value">${k.val}</div>
+      <div class="home-kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+homeRenderKpis();
 
 /* ============== ADMINISTRACIÓN (abre config de editor/PAT) ============== */
 // Solo visible para el "usuario madre" (ehussen). Otros usuarios internos no lo ven.
