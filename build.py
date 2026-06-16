@@ -235,6 +235,14 @@ HTML_TEMPLATE = r"""<!doctype html>
   .section{background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid var(--line)}
   .section h3{margin:0 0 12px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
   .section h3 .badge{font-size:11px;font-weight:500;color:var(--muted)}
+  /* Tablas con columnas redimensionables (drag desde borde derecho del th) */
+  table.resizable-cols{table-layout:fixed}
+  table.resizable-cols th{position:relative}
+  table.resizable-cols th .col-resize{position:absolute;top:0;right:0;bottom:0;width:6px;cursor:col-resize;user-select:none;z-index:2}
+  table.resizable-cols th .col-resize:hover,table.resizable-cols th .col-resize.dragging{background:rgba(59,130,246,.4)}
+  table.resizable-cols td,table.resizable-cols th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  table.resizable-cols td.allow-wrap{white-space:normal}
+
   /* Section collapsible (<details>) */
   details.section-collapsible{padding:18px}
   details.section-collapsible > summary{margin:0 0 0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;list-style:none;user-select:none}
@@ -1951,6 +1959,67 @@ document.getElementById('btn-admin').addEventListener('click', () => {
 /* ============== Toggle del menú en mobile ============== */
 const _mt = document.getElementById('menu-toggle');
 if(_mt) _mt.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+/* ============== Tablas con columnas redimensionables ============== */
+// Aplica handles de resize a los <th> de una tabla, persistiendo widths en localStorage.
+// Llamada repetidamente es safe (no agrega handles duplicados ni rompe estilos).
+function makeColumnsResizable(tableEl, persistKey){
+  if(!tableEl) return;
+  tableEl.classList.add('resizable-cols');
+  const ths = tableEl.querySelectorAll('thead th');
+  if(!ths.length) return;
+
+  // Restaurar widths guardados
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('tbl-cols-' + persistKey) || '{}') || {}; } catch(e){}
+  ths.forEach((th, idx) => {
+    if(saved[idx]){ th.style.width = saved[idx] + 'px'; }
+  });
+
+  // Agregar handles (idempotente)
+  ths.forEach((th, idx) => {
+    if(th.querySelector('.col-resize')) return;
+    const handle = document.createElement('span');
+    handle.className = 'col-resize';
+    handle.title = 'Arrastrá para cambiar el ancho';
+    th.appendChild(handle);
+    // Evitar que el click en handle dispare el sort del th
+    handle.addEventListener('click', e => e.stopPropagation());
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      handle.classList.add('dragging');
+      const startX = e.pageX;
+      const startW = th.offsetWidth;
+      const onMove = (ev) => {
+        const w = Math.max(50, startW + (ev.pageX - startX));
+        th.style.width = w + 'px';
+      };
+      const onUp = () => {
+        handle.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        // persistir todos los widths actuales
+        const out = {};
+        ths.forEach((t, i) => { if(t.style.width) out[i] = parseInt(t.style.width); });
+        try { localStorage.setItem('tbl-cols-' + persistKey, JSON.stringify(out)); } catch(e){}
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+// Aplicar al cargar — y re-aplicar después de que cada tabla se haya renderizado
+function applyResizableTables(){
+  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos');     // Compra · Posición Física
+  makeColumnsResizable(document.getElementById('tbl'),         'venta-pos');     // Venta · Posición Física
+  makeColumnsResizable(document.getElementById('tbl-cpfin'),  'compra-fin');     // Compra · Financiera
+  makeColumnsResizable(document.getElementById('tbl-fin'),     'venta-fin');     // Venta · Financiera
+  makeColumnsResizable(document.getElementById('tbl-canjes'), 'compra-canjes'); // Compra · Canjes
+}
+// Esperar a que el DOM y los renders iniciales hayan poblado los thead
+setTimeout(applyResizableTables, 200);
+setTimeout(applyResizableTables, 1000);  // por si tarda en renderizar
 
 /* ============== Secciones colapsables <details data-collapse="..."> ============== */
 (function(){
