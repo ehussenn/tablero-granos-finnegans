@@ -1885,16 +1885,19 @@ document.querySelectorAll('.home-card').forEach(c => {
   });
 });
 
-// Render KPIs de la portada (a partir de PAYLOAD ya cargado)
+// Render KPIs de la portada — usa typeof DATA para no romper si DATA/DATA_CP
+// todavía no se definieron (se ejecuta antes en el script y necesita resiliencia).
 function homeRenderKpis(){
   const el = document.getElementById('home-kpis');
   if(!el) return;
-  const compraN = (PAYLOAD.counts && PAYLOAD.counts.compra) || (DATA_CP||[]).length || 0;
-  const ventaN  = (PAYLOAD.counts && PAYLOAD.counts.venta)  || (DATA   ||[]).length || 0;
-  const tnVta = (DATA||[]).reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
-  const tnCpa = (DATA_CP||[]).reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
+  const dataCp = (typeof DATA_CP !== 'undefined') ? DATA_CP : [];
+  const data   = (typeof DATA    !== 'undefined') ? DATA    : [];
+  const compraN = (PAYLOAD.counts && PAYLOAD.counts.compra) || dataCp.length || 0;
+  const ventaN  = (PAYLOAD.counts && PAYLOAD.counts.venta)  || data.length || 0;
+  const tnVta = data.reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
+  const tnCpa = dataCp.reduce((s,r)=>s+(Number(r.cantidadmax)||0),0);
   const cerealeras = new Set();
-  (DATA||[]).forEach(r => { if(r.organizacion) cerealeras.add(r.organizacion); });
+  data.forEach(r => { if(r.organizacion) cerealeras.add(r.organizacion); });
   const kpis = [
     {lbl:'Contratos Compra', val:compraN.toLocaleString('es-AR'), sub: (tnCpa/1000).toFixed(1) + ' k tn'},
     {lbl:'Contratos Venta',  val:ventaN.toLocaleString('es-AR'),  sub: (tnVta/1000).toFixed(1) + ' k tn'},
@@ -1908,7 +1911,8 @@ function homeRenderKpis(){
       <div class="home-kpi-sub">${k.sub}</div>
     </div>`).join('');
 }
-homeRenderKpis();
+// Render diferido — esperamos a que DATA/DATA_CP estén definidos
+setTimeout(homeRenderKpis, 0);
 
 /* ============== ADMINISTRACIÓN (abre config de editor/PAT) ============== */
 // Solo visible para el "usuario madre" (ehussen). Otros usuarios internos no lo ven.
