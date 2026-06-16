@@ -2017,9 +2017,9 @@ function applyResizableTables(){
   makeColumnsResizable(document.getElementById('tbl-fin'),     'venta-fin');     // Venta · Financiera
   makeColumnsResizable(document.getElementById('tbl-canjes'), 'compra-canjes'); // Compra · Canjes
 }
-// Esperar a que el DOM y los renders iniciales hayan poblado los thead
-setTimeout(applyResizableTables, 200);
-setTimeout(applyResizableTables, 1000);  // por si tarda en renderizar
+// Esperar a que el DOM y los renders iniciales hayan poblado los thead.
+// requestIdleCallback corre cuando el browser está idle (no bloquea load inicial).
+(window.requestIdleCallback || ((fn) => setTimeout(fn, 500)))(applyResizableTables);
 
 /* ============== Secciones colapsables <details data-collapse="..."> ============== */
 (function(){
@@ -2094,8 +2094,10 @@ document.getElementById('cnt-pos').textContent     = (PAYLOAD.counts.posicion||0
 // Aplica a "Grano Maíz" puro (no pisingallo, semillas, etc).
 function maizSplit(c){
   if(!c || !c.producto) return c;
-  const p = String(c.producto).trim();
-  if(!/^grano\s+ma[ií]z\s*$/i.test(p)) return c;
+  const p = c.producto;
+  // Early-exit ultra rápido: si no contiene "aíz" o "aiz", no es Maíz puro
+  if(p.length > 14 || (p.indexOf('aíz') < 0 && p.indexOf('aiz') < 0)) return c;
+  if(!/^grano\s+ma[ií]z\s*$/i.test(p.trim())) return c;
   let anioCos = null;
   const camp = String(c.campana || "").trim();
   const m = camp.match(/(\d{2,4})\s*[\/\-]?\s*(\d{2,4})?/);
@@ -2252,8 +2254,8 @@ function applyFilters(){
   render();
 }
 
-// build inicial de los selects
-rebuildSelects();
+// build inicial de los selects — diferimos: panel default es 'home'.
+(window.requestIdleCallback || ((fn) => setTimeout(fn, 100)))(rebuildSelects);
 
 /* ----- KPIs + resumen grano + charts + tabla ----- */
 let chartTop=null, chartDonut=null;
@@ -3775,8 +3777,13 @@ function renderFootCpf(rows){
   document.getElementById('tbl-foot-cpfin').innerHTML = totalRow + selRow;
 }
 
-cpfRebuildSelects();
-cpfRender();
+// Diferimos: el panel default es 'home', no urge renderizar Compra · Posición.
+// Si el usuario navega a Compra rápido, el render aún se ejecuta inmediato porque
+// requestIdleCallback corre dentro de 50-300ms.
+(window.requestIdleCallback || ((fn) => setTimeout(fn, 50)))(() => {
+  cpfRebuildSelects();
+  cpfRender();
+});
 
 
 /* ---------- COMPRA: CALENDARIO DE PAGOS ---------- */
@@ -4594,7 +4601,8 @@ function cjRenderVendedores(rows){
 }
 
 cjInitFilters();
-cjApply();
+// Diferimos: solo se ve si el usuario navega a Compra · Canjes.
+(window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(cjApply);
 
 
 /* ============================================================
