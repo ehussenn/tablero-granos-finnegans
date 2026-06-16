@@ -144,7 +144,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#8ea3c4;text-transform:uppercase;margin-top:2px}
   .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#60a5fa;text-transform:uppercase;font-weight:700;border-top:1px solid #24375f;padding-top:12px}
   .nav{padding:4px 10px 28px}
-  .nav-group{font-size:10px;letter-spacing:1.5px;color:#6b80a6;text-transform:uppercase;font-weight:700;margin:16px 10px 6px}
+  .nav-group{font-size:10px;letter-spacing:1.5px;color:#6b80a6;text-transform:uppercase;font-weight:700;margin:16px 10px 6px;background:none;border:none;width:calc(100% - 20px);text-align:left;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;gap:4px;font-family:inherit;transition:color .15s}
+  .nav-group:hover{color:#bfdbfe;background:#1c2f54}
+  .nav-arrow{display:inline-block;width:10px;font-size:9px;transition:transform .15s;color:#3b82f6}
+  .nav-section.collapsed .nav-arrow{transform:rotate(-90deg)}
+  .nav-section.collapsed .nav-items{display:none}
+  .nav-items{display:block}
   .nav-item{display:block;padding:9px 12px;border-radius:8px;color:#c2cee3;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
   .nav-item:hover{background:#1c2f54;color:#fff}
   .nav-item.active{background:#1c2f54;color:#bfdbfe;border-left-color:#3b82f6;font-weight:600}
@@ -514,27 +519,47 @@ HTML_TEMPLATE = r"""<!doctype html>
     </div>
     <div class="campana">Resumen comercial</div>
     <nav class="nav">
-      <div class="nav-group">Compra</div>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-posicion" data-title="Compra · Posición General">Posición General</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
-      <a class="nav-item" data-go-tab="compra" data-go-sub="cp-traza" data-title="Compra · Trazabilidad">📦 Trazabilidad</a>
-      <div class="nav-group">Venta</div>
-      <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
-      <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
-      <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
-      <div class="nav-group">Posición General</div>
-      <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
-      <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
-      <div class="nav-group">Contratos</div>
-      <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-compra" data-title="Códigos de Contratos · Compra">Códigos Compra</a>
-      <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-venta" data-title="Códigos de Contratos · Venta">Códigos Venta</a>
-      <div class="nav-group nav-internal" style="display:none">Personal</div>
-      <a class="nav-item nav-internal" style="display:none" data-go-tab="personal" data-go-sub="mb-bandeja" data-title="Mi Bandeja · Pendientes de Mail">📬 Mi Bandeja</a>
+      <div class="nav-section" data-section="compra">
+        <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Compra</button>
+        <div class="nav-items">
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-posicion" data-title="Compra · Posición General">Posición General</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-traza" data-title="Compra · Trazabilidad">📦 Trazabilidad</a>
+        </div>
+      </div>
+      <div class="nav-section" data-section="venta">
+        <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Venta</button>
+        <div class="nav-items">
+          <a class="nav-item active" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
+        </div>
+      </div>
+      <div class="nav-section" data-section="posicion">
+        <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Posición General</button>
+        <div class="nav-items">
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+        </div>
+      </div>
+      <div class="nav-section" data-section="contratos">
+        <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Contratos</button>
+        <div class="nav-items">
+          <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-compra" data-title="Códigos de Contratos · Compra">Códigos Compra</a>
+          <a class="nav-item" data-go-tab="contratos" data-go-sub="ct-venta" data-title="Códigos de Contratos · Venta">Códigos Venta</a>
+        </div>
+      </div>
+      <div class="nav-section nav-internal" data-section="personal" style="display:none">
+        <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Personal</button>
+        <div class="nav-items">
+          <a class="nav-item" data-go-tab="personal" data-go-sub="mb-bandeja" data-title="Mi Bandeja · Pendientes de Mail">📬 Mi Bandeja</a>
+        </div>
+      </div>
     </nav>
   </aside>
 
@@ -1770,6 +1795,48 @@ document.getElementById('btn-admin').addEventListener('click', () => {
 /* ============== Toggle del menú en mobile ============== */
 const _mt = document.getElementById('menu-toggle');
 if(_mt) _mt.addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));
+
+/* ============== Sidebar: secciones colapsables ============== */
+(function(){
+  const KEY = 'tablero-granos-nav-collapsed-v1';
+  let collapsed;
+  try { collapsed = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); }
+  catch(e){ collapsed = new Set(); }
+  const sections = document.querySelectorAll('.nav-section');
+
+  function applyState(){
+    sections.forEach(sec => {
+      const name = sec.dataset.section;
+      // si la sección tiene el item activo, forzamos expandido (para que se vea)
+      const hasActive = sec.querySelector('.nav-item.active');
+      if(hasActive){ sec.classList.remove('collapsed'); collapsed.delete(name); }
+      else if(collapsed.has(name)) sec.classList.add('collapsed');
+      else sec.classList.remove('collapsed');
+      const btn = sec.querySelector('.nav-group');
+      if(btn) btn.setAttribute('aria-expanded', sec.classList.contains('collapsed') ? 'false' : 'true');
+    });
+  }
+
+  sections.forEach(sec => {
+    const btn = sec.querySelector('.nav-group');
+    if(!btn) return;
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const name = sec.dataset.section;
+      sec.classList.toggle('collapsed');
+      if(sec.classList.contains('collapsed')) collapsed.add(name);
+      else collapsed.delete(name);
+      try { localStorage.setItem(KEY, JSON.stringify([...collapsed])); } catch(e){}
+      btn.setAttribute('aria-expanded', sec.classList.contains('collapsed') ? 'false' : 'true');
+    });
+  });
+
+  applyState();
+  // Cuando se cambia de sub-pestaña, re-aplicamos para abrir la sección activa
+  document.addEventListener('click', (e) => {
+    if(e.target.closest('.nav-item')) setTimeout(applyState, 50);
+  });
+})();
 
 /* ============== TAB COUNTS ============== */
 document.getElementById('cnt-compra').textContent  = (PAYLOAD.counts.compra||0).toLocaleString('es-AR');
