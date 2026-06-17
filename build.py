@@ -6141,9 +6141,9 @@ const PN_COLS = [
 // Defaults embebidos: valores manuales que vienen del cierre — el usuario los puede sobreescribir
 // editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
 const PN_DEFAULTS = {
-  "Grano Maíz 2da": { pendcos: 29000 },
-  // legacy (antes del split 1ra/2da)
-  "Maiz Segunda":   { pendcos: 29000 },
+  // Total estimado a cosechar de Maíz 2da: 29.000 tn.
+  // El sistema calcula Pend Cos = campoest - cosechado (auto-decrece con la cosecha).
+  "Grano Maíz 2da": { campoest: 29000 },
 };
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
@@ -6176,12 +6176,18 @@ function pnCalcRow(producto, opsCompra, opsVenta){
 
   // PRODUCCIÓN
   // Cosechado AUTO desde traslados (Traslado CPE Agronasaja + Rec Sem PROPIA, origen Dep Cosecha)
-  // Pend Cos y Campo Est siguen siendo manuales
-  const pendCos    = pnGetMan(producto, "pendcos");
+  // Campo Est: total estimado a cosechar (manual o default embebido)
+  // Pend Cos: AUTO = Campo Est - Cosechado (decrece a medida que se cosecha).
+  //           Si el usuario carga un valor manual de pendcos, ese override prevalece.
   const cosechadoAuto = (PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0;
   const cosechado  = cosechadoAuto || pnGetMan(producto, "cosechado");
   const campoEst   = pnGetMan(producto, "campoest");
-  const prodTot    = pendCos + cosechado + campoEst;
+  const pendCosManual = pnGetMan(producto, "pendcos");
+  // Si el usuario cargó pend cos manual, usar ese. Sino, calcular Campo Est - Cosechado
+  const pendCos    = pendCosManual > 0 ? pendCosManual : Math.max(0, campoEst - cosechado);
+  // prodTot = lo que SE VA A COSECHAR EN TOTAL = pendiente + ya cosechado.
+  // Si hay campoEst, ese ES el total (no sumar pendCos para no duplicar).
+  const prodTot    = campoEst > 0 ? campoEst : (pendCos + cosechado);
 
   // COMPRA (auto desde contratos de compra)
   let compraTot = 0, compraEntr = 0;
