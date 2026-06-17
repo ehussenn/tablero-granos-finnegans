@@ -6141,7 +6141,9 @@ const PN_COLS = [
 // Defaults embebidos: valores manuales que vienen del cierre — el usuario los puede sobreescribir
 // editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
 const PN_DEFAULTS = {
-  "Maiz Segunda": { pendcos: 26802 },
+  "Grano Maíz 2da": { pendcos: 29000 },
+  // legacy (antes del split 1ra/2da)
+  "Maiz Segunda":   { pendcos: 29000 },
 };
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
