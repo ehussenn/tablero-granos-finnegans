@@ -204,7 +204,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .panel{display:none}
   .panel.active{display:block}
   .subpanel{display:none}
-  .subpanel.active{display:block}
+  /* perf: aislar el layout/estilo de cada subpanel (contención) y no renderizar lo
+     que queda fuera de pantalla -> cambiar de panel deja de forzar recálculo global. */
+  .subpanel.active{display:block;content-visibility:auto;contain-intrinsic-size:0 1200px}
 
   /* kpi cards */
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:14px 0}
@@ -242,6 +244,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   table.resizable-cols th .col-resize:hover,table.resizable-cols th .col-resize.dragging{background:rgba(59,130,246,.4)}
   table.resizable-cols td,table.resizable-cols th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   table.resizable-cols td.allow-wrap{white-space:normal}
+  /* encabezados legibles: que el titulo se acomode en varias lineas en vez de cortarse con "..." */
+  table.resizable-cols thead th{white-space:normal;text-overflow:clip;line-height:1.12;vertical-align:bottom}
 
   /* Section collapsible (<details>) */
   details.section-collapsible{padding:18px}
@@ -276,6 +280,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   thead th.sort-asc .arrow, thead th.sort-desc .arrow{opacity:1}
   tbody td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
   tbody tr:nth-child(even){background:var(--row-alt)}
+  /* perf: no renderizar las filas fuera de pantalla -> scroll fluido en tablas largas.
+     Se excluyen la matriz de cruce y los calendarios (celdas sticky a la izquierda). */
+  .tbl-wrap table:not(#cx-matrix):not(#cal-tbl):not(#cal-cp-tbl) tbody tr{content-visibility:auto;contain-intrinsic-size:0 32px}
   tbody tr:hover{background:#eff5ff}
   td.num{text-align:right;font-variant-numeric:tabular-nums}
   td.muted{color:var(--muted)}
@@ -836,6 +843,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="filterbar">
         <div><label>CONDICIÓN PAGO</label><select id="cj-cond" multiple size="1" style="min-width:200px"></select></div>
         <div><label>VENDEDOR</label><select id="cj-vend"><option value="">Todos</option></select></div>
+        <div><label>CAMPAÑA</label><select id="cj-camp"><option value="">Todas</option></select></div>
         <div><label>GRANO PREFERIDO</label><select id="cj-grano"><option value="auto">Auto-detectar</option><option value="soja">Soja</option><option value="maiz">Maíz</option><option value="trigo">Trigo</option><option value="girasol">Girasol</option><option value="sorgo">Sorgo</option></select></div>
         <div><label>ESTADO</label><select id="cj-estado"><option value="">Todos</option><option value="OK">Contrato OK</option><option value="PARCIAL">Con contrato parcial</option><option value="SIN">Sin contrato</option></select></div>
         <div><label>BUSCAR CLIENTE</label><input type="text" id="cj-q" placeholder="razón social…" style="min-width:240px" /></div>
@@ -1990,11 +1998,21 @@ function makeColumnsResizable(tableEl, persistKey){
       handle.classList.add('dragging');
       const startX = e.pageX;
       const startW = th.offsetWidth;
+      // Throttle por frame: el reflow de la tabla (table-layout:fixed) es caro,
+      // así que aplicamos el nuevo ancho como mucho 1 vez por frame en vez de
+      // en cada mousemove (que dispara decenas de veces por segundo y cuelga).
+      let rafId = null, lastX = startX;
       const onMove = (ev) => {
-        const w = Math.max(50, startW + (ev.pageX - startX));
-        th.style.width = w + 'px';
+        lastX = ev.pageX;
+        if(rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          th.style.width = Math.max(50, startW + (lastX - startX)) + 'px';
+        });
       };
       const onUp = () => {
+        if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+        th.style.width = Math.max(50, startW + (lastX - startX)) + 'px';
         handle.classList.remove('dragging');
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -2363,7 +2381,7 @@ function render(){
     });
   }
 
-  const MAX = 1000;   // proteccion DOM
+  const MAX = 400;   // proteccion DOM
   const visibleRows = rows.slice(0,MAX);
   const body = visibleRows.map((r,i) => {
     const id = rowId(r);
@@ -2615,7 +2633,7 @@ function vpRender(){
       return va.localeCompare(vb,"es",{numeric:true})*VP_SORT_D;
     });
   }
-  const body = sorted.slice(0, 1500).map(r => {
+  const body = sorted.slice(0, 400).map(r => {
     return `<tr>${VP_COLS.map(c => {
       let v = r[c.k];
       if(c.k === "moneda"){
@@ -2875,7 +2893,7 @@ function finRender(){
       return va.localeCompare(vb,'es',{numeric:true})*finSortDir;
     });
   }
-  const MAX = 1000;
+  const MAX = 400;
   const visibleFin = rows.slice(0,MAX);
   document.getElementById('tbl-body-fin').innerHTML = visibleFin.map((r,i) => {
     const id = rowId(r);
@@ -3453,7 +3471,7 @@ function cpRender(){
       return va.localeCompare(vb,'es',{numeric:true})*cpSortDir;
     });
   }
-  const MAX = 1000;
+  const MAX = 400;
   const visibleRows = rows.slice(0,MAX);
   document.getElementById('tbl-body-cp').innerHTML = visibleRows.map((r,i) => {
     const id = rowId(r);
@@ -3704,7 +3722,7 @@ function cpfRender(){
       return va.localeCompare(vb,'es',{numeric:true})*cpfSortDir;
     });
   }
-  const MAX = 1000;
+  const MAX = 400;
   const visibleCpf = rows.slice(0,MAX);
   document.getElementById('tbl-body-cpfin').innerHTML = visibleCpf.map((r,i) => {
     const id = rowId(r);
@@ -4136,6 +4154,7 @@ const CJ_TABLE_COLS = [
   {k:'saldoUsd',        lbl:'USD Canje',        num:true, sum:true},
   {k:'tnCanje',         lbl:'Tn Canje',         num:true, sum:true},
   {k:'tnContratadas',   lbl:'Tn Contratadas',   num:true, sum:true},
+  {k:'pctFijado',       lbl:'¿A Precio?',       num:true, html:true},
   {k:'usdCubierto',     lbl:'USD Cubierto',     num:true, sum:true},
   {k:'usdFaltante',     lbl:'USD Faltante',     num:true, sum:true},
   {k:'tnFaltante',      lbl:'Tn Faltante',      num:true, sum:true},
@@ -4219,8 +4238,16 @@ function cjInitFilters(){
   vendSel.innerHTML = '<option value="">Todos</option>' +
     allVends.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
 
+  // campañas: todas las que aparezcan en los contratos de compra (más reciente primero)
+  const campSel = document.getElementById('cj-camp');
+  const allCamps = [...new Set((DATA_CP || []).map(c => c.campana).filter(v => v))]
+    .sort((a, b) => String(b).localeCompare(String(a), 'es', {numeric:true}));
+  campSel.innerHTML = '<option value="">Todas</option>' +
+    allCamps.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+
   condSel.addEventListener('change', cjApply);
   vendSel.addEventListener('change', cjApply);
+  campSel.addEventListener('change', cjApply);
 }
 
 function cjGetSelectedConds(){
@@ -4293,8 +4320,12 @@ function cjBuildRows(){
   });
 
   // Agrupar contratos de compra POR CLIENTE — matching normalizado (S.A. ≡ SA, etc)
+  // SALDOS no trae campaña, así que el filtro por campaña se aplica acá, sobre los
+  // contratos que se consideran como "cobertura" del canje.
+  const campSel = document.getElementById('cj-camp').value;
   const ctosByClient = {};
   (DATA_CP || []).forEach(c => {
+    if(campSel && c.campana !== campSel) return;
     const k = cjNormName(c.organizacion);
     if(!k) return;
     if(!ctosByClient[k]) ctosByClient[k] = [];
@@ -4335,14 +4366,21 @@ function cjBuildRows(){
     const tnCanje = precio > 0 ? saldoUSDeff / precio : 0;
 
     // Contratos del cliente del grano elegido — separamos por entregado/pendiente
-    let tnContratadas = 0;
+    // y medimos cuánto está "a precio" (fijado) vs "a fijar".
+    let tnContratadas = 0, tnFijada = 0;
     const ctosDelGrano = [];
     ctos.forEach(c => {
       if(granoBCR(c.producto) === grano){
-        tnContratadas += c.cantidadmax || 0;
+        const max = Number(c.cantidadmax) || 0;
+        tnContratadas += max;
+        // cantidadfijada = tn con precio cerrado (puede venir negativa o > max → clamp)
+        const fij = Math.min(Math.max(Number(c.cantidadfijada) || 0, 0), max);
+        tnFijada += fij;
         ctosDelGrano.push(c);
       }
     });
+    // % de las tn contratadas que ya tienen precio cerrado (0..1)
+    const pctFijado = tnContratadas > 0 ? tnFijada / tnContratadas : 0;
 
     const usdCubierto = Math.min(tnContratadas, Math.max(tnCanje, 0)) * precio;
     const usdFaltante = Math.max(saldoUSDeff - usdCubierto, 0);
@@ -4359,6 +4397,7 @@ function cjBuildRows(){
       saldoArs: b.saldoArs, saldoUsd: saldoUSDeff,
       tnCanje, tnContratadas, usdCubierto, usdFaltante, tnFaltante,
       precio,
+      tnFijada, pctFijado,
       ctosDelGrano,   // array de contratos del grano elegido (para mostrar detalle)
       _estado: estado,
     });
@@ -4370,6 +4409,16 @@ function cjEstadoChip(r){
   if(r._estado === 'OK')      return '<span class="chip ok">Contrato OK</span>';
   if(r._estado === 'PARCIAL') return '<span class="chip warn">Con contrato parcial</span>';
   return '<span class="chip err">Sin contrato</span>';
+}
+
+// ¿Los contratos que cubren el canje tienen precio cerrado o están a fijar?
+function cjPrecioChip(r){
+  if(!r.ctosDelGrano || !r.ctosDelGrano.length)
+    return '<span class="muted">— sin contratos —</span>';
+  const p = r.pctFijado || 0;
+  if(p >= 0.995) return '<span class="chip ok">A precio</span>';
+  if(p <= 0.005) return '<span class="chip err">A fijar</span>';
+  return `<span class="chip warn" title="${fmt.num(r.tnFijada||0)} de ${fmt.num(r.tnContratadas||0)} tn a precio">Parcial ${fmt.pct(p)}</span>`;
 }
 
 function cjApply(){
@@ -4391,6 +4440,7 @@ document.getElementById('cj-clear').addEventListener('click', () => {
   document.getElementById('cj-grano').value = 'auto';
   document.getElementById('cj-estado').value = '';
   document.getElementById('cj-vend').value = '';
+  document.getElementById('cj-camp').value = '';
   document.getElementById('cj-q').value = '';
   // condiciones: restaurar las que tienen "2026"
   [...document.getElementById('cj-cond').options].forEach(o => o.selected = o.value.includes('2026'));
@@ -4459,13 +4509,14 @@ function cjRender(){
     sorted = rows.slice().sort((a,b) => (b.saldoUsd||0) - (a.saldoUsd||0));
   }
 
-  const MAX = 1000;
+  const MAX = 400;
   const visible = sorted.slice(0,MAX);
   document.getElementById('tbl-body-canjes').innerHTML = visible.map((r,i) => {
     const id = String(r.id);
     const selCls = SEL_CJ.has(id) ? ' class="row-sel"' : '';
     return `<tr data-id="${id}" data-i="${i}"${selCls}>`+CJ_TABLE_COLS.map(c=>{
       if(c.k==='_estado') return '<td>'+cjEstadoChip(r)+'</td>';
+      if(c.k==='pctFijado') return '<td class="num">'+cjPrecioChip(r)+'</td>';
       if(c.k==='_ctosDetalle') return '<td>'+cjCtosDetalleHtml(r)+'</td>';
       const v = r[c.k];
       if(c.k === 'grano') return `<td><span class="chip ${grainClass(v) || 'neutral'}" style="background:#f1f5f9;color:#475569;text-transform:capitalize">${v}</span></td>`;
@@ -6970,7 +7021,7 @@ function tzRender(){
   });
 
   // Body (limitamos a 1500 filas por performance)
-  const body = sorted.slice(0, 1500).map(r => {
+  const body = sorted.slice(0, 400).map(r => {
     const exp = TZ_EXPANDED.has(r.ctg);
     const cells = TZ_COLS.map(c => {
       let v = r[c.k];
