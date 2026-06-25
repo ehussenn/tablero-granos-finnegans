@@ -45,6 +45,8 @@ jobs:
           FNN_DW_USER: ${{ secrets.FNN_DW_USER }}
           FNN_DW_PASS: ${{ secrets.FNN_DW_PASS }}
           FNN_DW_DB: finnegansbi
+          BALANZA_USER: ${{ secrets.BALANZA_USER }}
+          BALANZA_PASS: ${{ secrets.BALANZA_PASS }}
         run: |
           echo "::group::Build"
           python build.py

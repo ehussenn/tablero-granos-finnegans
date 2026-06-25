@@ -44,6 +44,24 @@ async function getFinnegansToken(env) {
   return token;
 }
 
+// ---- cache del token de Balanza (api.agronasaja.com), in-memory por isolate ----
+let _balToken = null;
+let _balTokenExp = 0;
+async function getBalanzaToken(env) {
+  if (_balToken && Date.now() < _balTokenExp) return _balToken;
+  const r = await fetch("https://api.agronasaja.com/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: env.BALANZA_USER, password: env.BALANZA_PASS }),
+  });
+  if (!r.ok) throw new Error("Balanza auth HTTP " + r.status);
+  const j = await r.json();
+  if (!j.token) throw new Error("Balanza login sin token");
+  _balToken = j.token;
+  _balTokenExp = Date.now() + 30 * 60 * 1000;  // 30 min
+  return _balToken;
+}
+
 // ---- helpers de firma (HMAC-SHA256 via Web Crypto) ----
 async function hmac(data, secret) {
   const key = await crypto.subtle.importKey(
@@ -254,6 +272,36 @@ export default {
       return new Response(JSON.stringify({ email }), {
         status: 200, headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // ---- /api/balanza/liquidacion?search=<contrato|ctg|cartaporte> ----
+    // Proxy autenticado a la balanza (api.agronasaja.com) para "Finales de Compra".
+    // Credenciales en secrets BALANZA_USER + BALANZA_PASS. Token cacheado 30 min.
+    if (url.pathname === "/api/balanza/liquidacion") {
+      if (!env.BALANZA_USER || !env.BALANZA_PASS) {
+        return new Response(JSON.stringify({ error: "balanza no configurada (faltan BALANZA_USER/BALANZA_PASS)" }), {
+          status: 503, headers: { "Content-Type": "application/json" } });
+      }
+      const search = (url.searchParams.get("search") || "").trim();
+      if (!search) {
+        return new Response(JSON.stringify({ error: "falta parametro search" }), {
+          status: 400, headers: { "Content-Type": "application/json" } });
+      }
+      try {
+        const callBalanza = (t) => fetch(
+          `https://api.agronasaja.com/api/liquidacionescompras/page?page=1&pageSize=50&search=${encodeURIComponent(search)}`,
+          { headers: { "Authorization": "Bearer " + t } });
+        let tok = await getBalanzaToken(env);
+        let r = await callBalanza(tok);
+        if (r.status === 401) { _balToken = null; tok = await getBalanzaToken(env); r = await callBalanza(tok); }
+        const body = await r.text();
+        return new Response(body, {
+          status: r.status,
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: "balanza error: " + String(e) }), {
+          status: 502, headers: { "Content-Type": "application/json" } });
+      }
     }
 
     // ---- /api/finnegans/ctg/<CTG>: proxy autenticado al detalle de un CTG en Finnegans ----

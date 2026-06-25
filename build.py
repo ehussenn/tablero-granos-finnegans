@@ -21,6 +21,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 import finnegans_api as api
 import bcr_pizarra
+import balanza_finales
 
 # ---------- datasets a bajar via API ----------
 # (label_UI, endpoint_api, params_default, "tab_destino")
@@ -282,7 +283,28 @@ HTML_TEMPLATE = r"""<!doctype html>
   tbody tr:nth-child(even){background:var(--row-alt)}
   /* perf: no renderizar las filas fuera de pantalla -> scroll fluido en tablas largas.
      Se excluyen la matriz de cruce y los calendarios (celdas sticky a la izquierda). */
-  .tbl-wrap table:not(#cx-matrix):not(#cal-tbl):not(#cal-cp-tbl) tbody tr{content-visibility:auto;contain-intrinsic-size:0 32px}
+  .tbl-wrap table:not(#cx-matrix):not(#cal-tbl):not(#cal-cp-tbl):not(#pl-tbl) tbody tr{content-visibility:auto;contain-intrinsic-size:0 32px}
+  /* Calendario de Cobranzas (pendiente de liquidar) */
+  .pl-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;display:block;margin-bottom:4px}
+  .pl-inp{padding:7px 9px;border:1px solid var(--line);border-radius:6px}
+  #pl-tbl{border-collapse:separate;border-spacing:0;font-size:12px}
+  #pl-tbl th,#pl-tbl td{white-space:nowrap;border-bottom:1px solid var(--line);border-right:1px solid #eef1f6;padding:6px 8px}
+  #pl-tbl thead th{position:sticky;top:0;background:#1e3a8a;color:#fff;z-index:2;text-align:right}
+  #pl-tbl thead th.pl-month{background:#172e6b;text-align:center;top:0}
+  #pl-tbl thead tr:nth-child(2) th{top:30px;background:#24407e}
+  #pl-tbl .pl-fz{position:sticky;background:#fff;z-index:1;text-align:left}
+  #pl-tbl tbody tr:nth-child(even) .pl-fz{background:var(--row-alt)}
+  #pl-tbl thead th.pl-fz{z-index:5;background:#1e3a8a;color:#fff}
+  #pl-tbl tfoot td{position:sticky;bottom:0;background:#dbeafe;font-weight:700;z-index:1}
+  #pl-tbl tfoot td.pl-fz{z-index:3;background:#cbe0f7}
+  #pl-tbl td.pl-day{padding:1px}
+  #pl-tbl input.pl-cell{width:84px;border:1px solid transparent;background:transparent;text-align:right;padding:5px 6px;border-radius:4px;font-variant-numeric:tabular-nums;font-size:12px}
+  #pl-tbl input.pl-cell:hover{border-color:var(--line)}
+  #pl-tbl input.pl-cell:focus{border-color:var(--blue);outline:none;background:#fff}
+  #pl-tbl input.pl-num{width:62px}
+  #pl-tbl thead th.pl-month{background:#172e6b;text-align:center}
+  #pl-tbl td.pl-cobrar,#pl-tbl td.pl-estim{background:#f0f9ff;color:#0c4a6e;font-weight:600}
+  #pl-tbl tbody tr:nth-child(even) td.pl-cobrar,#pl-tbl tbody tr:nth-child(even) td.pl-estim{background:#e0f2fe}
   tbody tr:hover{background:#eff5ff}
   td.num{text-align:right;font-variant-numeric:tabular-nums}
   td.muted{color:var(--muted)}
@@ -577,6 +599,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-posicion" data-title="Compra · Posición General">Posición General</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales" data-title="Compra · Finales de Compra">🧮 Finales de Compra</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
@@ -697,6 +720,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab active" data-sub="cp-posicion">Posición General</button>
       <button class="subtab" data-sub="cp-financiera">Financiera</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
+      <button class="subtab" data-sub="cp-finales">🧮 Finales de Compra</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
       <button class="subtab" data-sub="cp-calc-canje">🔄 Calc. Canje</button>
@@ -817,6 +841,37 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
 
+    </div>
+
+    <!-- ========== SUB: FINALES DE COMPRA ========== -->
+    <div class="subpanel" data-sub-panel="cp-finales">
+      <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <h3>🧮 Finales de Compra — Verificador de Factor <span class="badge" id="fl-meta"></span></h3>
+        <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
+          Datos traídos de la <b>balanza</b>. Calculo el <b>factor oficial de cámara</b> (soja: daños 5% → −1/pt; verdes 5% → −0,2/pt; quebrados 20%; mat. extraña 1%) y lo comparo con el de la cerealera.
+          <b>⚠️ Revisar</b> = difieren (puede ser error de la cerealera o un ajuste comercial). <b>Calc.</b> = lo calculé yo (la cerealera no lo cargó).
+        </p>
+      </div>
+
+      <div class="filterbar">
+        <div style="flex:1"><label>AGREGAR CONTRATO / CTG / CARTA PORTE</label>
+          <input type="text" id="fl-add" placeholder="escribí el nº de contrato o CTG y Enter…" style="min-width:300px"></div>
+        <button class="clear" id="fl-add-btn" style="background:#1e3a8a;color:#fff;border-color:#1e3a8a">+ Agregar</button>
+        <button class="clear" id="fl-clear" style="color:var(--red);border-color:#fecaca">🗑️ Vaciar lista</button>
+        <button class="clear" id="fl-xls" style="background:#16a34a;color:#fff;border-color:#16a34a">⬇️ Excel</button>
+        <div class="count" id="fl-count">0 cargados</div>
+      </div>
+      <div id="fl-msg" style="margin:0 0 10px;font-size:12.5px;min-height:18px"></div>
+
+      <div class="section">
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="fl-tbl">
+            <thead><tr id="fl-head"></tr></thead>
+            <tbody id="fl-body"></tbody>
+            <tfoot id="fl-foot"></tfoot>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- ========== SUB: CANJES ========== -->
@@ -1345,6 +1400,26 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="grain-grid" id="grain-grid-fin"></div>
       </div>
 
+      <!-- CALENDARIO DE COBRANZAS (tipo Excel FinancieroVenta) -->
+      <div class="section" id="pl-section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <h3>📅 Calendario de Cobranzas — Pendiente de Liquidar <span class="badge" id="pl-meta"></span></h3>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+          <div><label class="pl-lbl">Campaña</label><select id="pl-camp" class="pl-inp"></select></div>
+          <div><label class="pl-lbl">Desde</label><input type="date" id="pl-start" value="2026-06-16" class="pl-inp"></div>
+          <div><label class="pl-lbl">Días</label><input type="number" id="pl-days" value="45" min="7" max="180" class="pl-inp" style="width:80px"></div>
+          <div><label class="pl-lbl">TC ARS/USD</label><input type="text" id="pl-tc" class="pl-inp" style="width:90px;text-align:right"></div>
+          <button class="clear" id="pl-clear-manual" style="color:var(--red);border-color:#fecaca">🗑️ Borrar cargas manuales</button>
+          <span class="badge" style="margin-left:auto">Pend. Liquidar viene del sistema · Precio, Liq. pend. de pasar e importes por día se cargan a mano (se guardan en tu navegador)</span>
+        </div>
+        <div class="tbl-wrap" id="pl-wrap" style="max-height:680px;overflow:auto">
+          <table id="pl-tbl">
+            <thead id="pl-head"></thead>
+            <tbody id="pl-body"></tbody>
+            <tfoot id="pl-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
       <!-- CHARTS FIN -->
       <div class="row2">
         <div class="section">
@@ -1357,17 +1432,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
 
-      <!-- DETALLE FIN -->
-      <div class="section">
-        <h3>Detalle Financiero <span class="badge">Click en encabezado para ordenar</span></h3>
-        <div class="tbl-wrap">
-          <table id="tbl-fin">
-            <thead><tr id="tbl-head-fin"></tr></thead>
-            <tbody id="tbl-body-fin"></tbody>
-            <tfoot id="tbl-foot-fin"></tfoot>
-          </table>
-        </div>
-      </div>
+      <!-- (Detalle Financiero retirado a pedido — ver Calendario de Cobranzas abajo) -->
 
       <!-- CALENDARIO COBRANZAS -->
       <div class="section">
@@ -2868,7 +2933,8 @@ function finRender(){
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt.num(c.parsed.y)}}}, scales:{y:{ticks:{callback:v=>v.toLocaleString('es-AR')}}}}
   });
 
-  // Tabla detallada financiera
+  // Tabla detallada financiera (se omite si se sacó la sección del HTML)
+  if(document.getElementById('tbl-head-fin')){
   const head = FIN_TABLE_COLS.map(c => {
     const ar = (finSortKey===c.k) ? (finSortDir>0?'▲':'▼') : '';
     const cls = (finSortKey===c.k) ? (finSortDir>0?'sort-asc':'sort-desc') : '';
@@ -2929,6 +2995,7 @@ function finRender(){
   document.getElementById('row-count-fin').textContent =
     `${rows.length.toLocaleString('es-AR')} / ${DATA.length.toLocaleString('es-AR')} contratos` +
     (rows.length>MAX ? ` (mostrando ${MAX})` : '');
+  }
 }
 
 function renderFootFin(rows){
@@ -2969,6 +3036,225 @@ function renderFootFin(rows){
 
 finRebuildSelects();
 finRender();
+
+
+/* ============================================================
+   ===  CALENDARIO DE COBRANZAS — PENDIENTE DE LIQUIDAR     ===
+   ===  Filas: Producto x Cerealera (Venta, campaña sel.)   ===
+   ===  Pend. Liq = cantidadentregadapendienteliquidar       ===
+   ===  Precio / Liq pend de pasar / importes por día: manual ==
+   ===  (persistido en localStorage, scopeado por campaña)   ===
+   ============================================================ */
+const PL_KEY = 'tablero-granos-cobranzas-v1';
+let PL_DATA = { precio:{}, liqpend:{}, precioEst:{}, dias:{}, tc:null };
+try { const s = JSON.parse(localStorage.getItem(PL_KEY)||'null'); if(s) PL_DATA = Object.assign({precio:{},liqpend:{},precioEst:{},dias:{},tc:null}, s); } catch(e){}
+function plSave(){ try{ localStorage.setItem(PL_KEY, JSON.stringify(PL_DATA)); }catch(e){} }
+function plNum(x){ const v = parseFloat(String(x==null?'':x).replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,'')); return isNaN(v)?0:v; }
+function plCleanProd(p){ return (String(p||'—').replace(/^grano\s+/i,'').trim()) || '—'; }
+
+let PL_ROWS = [], PL_DAYS = [], PL_MONTHS = [];
+const PL_GRAIN_PX = {soja:325, maiz:180, trigo:205, girasol:null, sorgo:null, otros:null}; // precio estimado default USD/Tn
+const PL_FIX = [
+  {key:'prod',  lbl:'Producto',          w:96},
+  {key:'org',   lbl:'Organización',      w:210},
+  {key:'pend',  lbl:'Pend. Liq. (Tn)',   w:84},
+  {key:'precio',lbl:'Precio',            w:64},
+  {key:'liq',   lbl:'Liq. Pend. pasar',  w:88},
+  {key:'real',  lbl:'Real Pend. Liq.',   w:92},
+];
+(function(){ let l=0; PL_FIX.forEach(c=>{ c.left=l; l+=c.w; }); })();
+// columnas finales (igual al Excel), después de los días
+const PL_END = [
+  {key:'pxest', lbl:'Precio estimado',      w:96},
+  {key:'cobrar',lbl:'Pend. a cobrar (ARS)', w:140},
+  {key:'estim', lbl:'Estimado a cobrar',    w:130},
+];
+function plTC(){ return plNum(PL_DATA.tc) || 0; }
+function plPxEst(row){
+  const v = PL_DATA.precioEst[row.k];
+  if(v!=null && v!=='') return plNum(v);
+  const d = PL_GRAIN_PX[row.gk];
+  return d!=null ? d : 0;
+}
+
+function plInitCamp(){
+  const sel = document.getElementById('pl-camp');
+  const camps = uniqSorted(DATA, 'campana').filter(Boolean)
+    .sort((a,b)=>String(b).localeCompare(String(a),'es',{numeric:true}));
+  sel.innerHTML = camps.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  sel.value = camps.find(c => /25\s*-\s*26/.test(c)) || camps[0] || '';
+}
+function plBuildDays(){
+  const start = document.getElementById('pl-start').value || '2026-06-16';
+  const n = Math.max(1, Math.min(365, parseInt(document.getElementById('pl-days').value,10)||45));
+  const WD = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const p = start.split('-').map(Number);
+  const dt = new Date(p[0], (p[1]||1)-1, p[2]||1);
+  const out = [];
+  for(let i=0;i<n;i++){
+    const iso = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+    out.push({iso, wd:WD[dt.getDay()], d:dt.getDate(), monthLbl:MO[dt.getMonth()]+' '+dt.getFullYear()});
+    dt.setDate(dt.getDate()+1);
+  }
+  return out;
+}
+function plBuildRows(){
+  const camp = document.getElementById('pl-camp').value;
+  const order = {soja:0,maiz:1,trigo:2,girasol:3,sorgo:4,otros:9};
+  const map = {};
+  DATA.forEach(r => {
+    if(camp && r.campana !== camp) return;
+    const tn = Number(r.cantidadentregadapendienteliquidar)||0;
+    if(tn <= 0.0001) return;
+    const prod = plCleanProd(r.producto), org = (r.organizacion||'—').trim();
+    const k = [camp, prod, org].join('§');   // key scopeada por campaña
+    if(!map[k]) map[k] = {k, prod, org, pend:0, gk:(granoBCR(r.producto)||'otros')};
+    map[k].pend += tn;
+  });
+  return Object.values(map).sort((a,b)=>
+    (order[a.gk]-order[b.gk]) || a.prod.localeCompare(b.prod,'es') || (b.pend-a.pend));
+}
+function plBuildMonths(days){
+  const months = []; let i=0;
+  while(i<days.length){
+    let j=i; while(j<days.length && days[j].monthLbl===days[i].monthLbl) j++;
+    months.push({lbl:days[i].monthLbl, days:days.slice(i,j)}); i=j;
+  }
+  return months;
+}
+function plRender(){
+  PL_ROWS = plBuildRows();
+  PL_DAYS = plBuildDays();
+  PL_MONTHS = plBuildMonths(PL_DAYS);
+  const tc = plTC();
+
+  // THEAD 2 niveles: fila1 = fijas(rowspan2) + meses(colspan) + finales(rowspan2); fila2 = días
+  const fixTh = PL_FIX.map(c=>`<th class="pl-fz" rowspan="2" style="left:${c.left}px;min-width:${c.w}px;width:${c.w}px">${escapeHtml(c.lbl)}</th>`).join('');
+  const monthTh = PL_MONTHS.map(m=>`<th class="pl-month" colspan="${m.days.length}">${escapeHtml(m.lbl)}</th>`).join('');
+  const endTh = PL_END.map(c=>`<th rowspan="2" style="min-width:${c.w}px">${escapeHtml(c.lbl)}</th>`).join('');
+  const dayTh = PL_DAYS.map(d=>`<th class="pl-dayh" style="min-width:64px" title="${d.iso}">${d.wd} ${d.d}</th>`).join('');
+  document.getElementById('pl-head').innerHTML = `<tr>${fixTh}${monthTh}${endTh}</tr><tr>${dayTh}</tr>`;
+
+  // TBODY
+  const body = PL_ROWS.map((row,ri)=>{
+    const md = PL_DATA.dias[row.k] || {};
+    const precio = PL_DATA.precio[row.k];
+    const liq = PL_DATA.liqpend[row.k];
+    const real = row.pend - plNum(liq);
+    const pxEst = plPxEst(row);
+    const pxEstShown = (PL_DATA.precioEst[row.k]!=null && PL_DATA.precioEst[row.k]!=='') ? PL_DATA.precioEst[row.k]
+                      : (PL_GRAIN_PX[row.gk]!=null ? PL_GRAIN_PX[row.gk] : '');
+    const cobrar = (real>0 && pxEst>0 && tc>0) ? real*pxEst*tc : 0;
+    const estim = (plNum(precio)>0) ? row.pend*plNum(precio) : 0;
+    const dayTds = PL_DAYS.map(d=>{
+      const val = md[d.iso];
+      return `<td class="pl-day"><input class="pl-cell" data-k="${escapeHtml(row.k)}" data-d="${d.iso}" value="${val!=null?escapeHtml(val):''}"></td>`;
+    }).join('');
+    return `<tr>
+      <td class="pl-fz" style="left:${PL_FIX[0].left}px">${escapeHtml(row.prod)}</td>
+      <td class="pl-fz" style="left:${PL_FIX[1].left}px" title="${escapeHtml(row.org)}">${escapeHtml(row.org)}</td>
+      <td class="pl-fz num" style="left:${PL_FIX[2].left}px">${fmt.num(row.pend)}</td>
+      <td class="pl-fz" style="left:${PL_FIX[3].left}px"><input class="pl-cell pl-num" data-k="${escapeHtml(row.k)}" data-f="precio" value="${precio!=null?escapeHtml(precio):''}"></td>
+      <td class="pl-fz" style="left:${PL_FIX[4].left}px"><input class="pl-cell pl-num" data-k="${escapeHtml(row.k)}" data-f="liq" value="${liq!=null?escapeHtml(liq):''}"></td>
+      <td class="pl-fz num" id="pl-real-${ri}" style="left:${PL_FIX[5].left}px">${fmt.num(real)}</td>
+      ${dayTds}
+      <td class="pl-day"><input class="pl-cell pl-num" data-k="${escapeHtml(row.k)}" data-f="pxest" value="${pxEstShown!==''?escapeHtml(pxEstShown):''}"></td>
+      <td class="num pl-cobrar" id="pl-cob-${ri}">${cobrar?fmt.num(cobrar):''}</td>
+      <td class="num pl-estim" id="pl-est-${ri}">${estim?fmt.num(estim):''}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pl-body').innerHTML = body ||
+    `<tr><td colspan="${PL_FIX.length+PL_DAYS.length+PL_END.length}" style="padding:24px;text-align:center;color:var(--muted)">Sin pendiente de liquidar para esta campaña</td></tr>`;
+  plRenderFoot();
+  const totPend = PL_ROWS.reduce((s,r)=>s+r.pend,0);
+  document.getElementById('pl-meta').textContent =
+    `${document.getElementById('pl-camp').value||'todas'} · ${PL_ROWS.length} filas · ${fmt.num(totPend)} tn pend. liq.`;
+}
+function plRenderFoot(){
+  const tc = plTC();
+  const dayCols = PL_DAYS.map(d=>{ let s=0; PL_ROWS.forEach(row=> s+=plNum((PL_DATA.dias[row.k]||{})[d.iso])); return s; });
+  let totPend=0, totReal=0, totCob=0, totEst=0;
+  PL_ROWS.forEach(row=>{
+    totPend += row.pend;
+    const real = row.pend - plNum(PL_DATA.liqpend[row.k]);
+    totReal += real;
+    const pxEst = plPxEst(row);
+    if(real>0 && pxEst>0 && tc>0) totCob += real*pxEst*tc;
+    const pr = plNum(PL_DATA.precio[row.k]);
+    if(pr>0) totEst += row.pend*pr;
+  });
+  let acum=0;
+  const dayTot  = dayCols.map(s=>`<td class="num">${s?fmt.num(s):''}</td>`).join('');
+  const dayAcum = dayCols.map(s=>{ acum+=s; return `<td class="num">${acum?fmt.num(acum):''}</td>`; }).join('');
+  const endTot   = `<td></td><td class="num">${totCob?fmt.num(totCob):''}</td><td class="num">${totEst?fmt.num(totEst):''}</td>`;
+  const endBlank = `<td></td><td></td><td></td>`;
+  document.getElementById('pl-foot').innerHTML = `
+    <tr>
+      <td class="pl-fz" style="left:${PL_FIX[0].left}px" colspan="2">A cobrar (día)</td>
+      <td class="pl-fz num" style="left:${PL_FIX[2].left}px">${fmt.num(totPend)}</td>
+      <td class="pl-fz" style="left:${PL_FIX[3].left}px"></td>
+      <td class="pl-fz" style="left:${PL_FIX[4].left}px"></td>
+      <td class="pl-fz num" style="left:${PL_FIX[5].left}px">${fmt.num(totReal)}</td>
+      ${dayTot}${endTot}
+    </tr>
+    <tr>
+      <td class="pl-fz" style="left:${PL_FIX[0].left}px" colspan="6">Acumulado</td>
+      ${dayAcum}${endBlank}
+    </tr>`;
+}
+// recalcula Real / Pend a cobrar / Estimado de una fila sin re-render total
+function plUpdateRow(k){
+  const row = PL_ROWS.find(r=>r.k===k); if(!row) return;
+  const ri = PL_ROWS.indexOf(row);
+  const real = row.pend - plNum(PL_DATA.liqpend[row.k]);
+  const tc = plTC(), pxEst = plPxEst(row);
+  const cobrar = (real>0 && pxEst>0 && tc>0) ? real*pxEst*tc : 0;
+  const pr = plNum(PL_DATA.precio[row.k]);
+  const estim = pr>0 ? row.pend*pr : 0;
+  const rc=document.getElementById('pl-real-'+ri); if(rc) rc.textContent = fmt.num(real);
+  const cc=document.getElementById('pl-cob-'+ri);  if(cc) cc.textContent = cobrar?fmt.num(cobrar):'';
+  const ec=document.getElementById('pl-est-'+ri);  if(ec) ec.textContent = estim?fmt.num(estim):'';
+}
+// edición con delegación (un solo listener para todas las celdas)
+document.getElementById('pl-body').addEventListener('change', (ev)=>{
+  const inp = ev.target;
+  if(!inp || !inp.classList || !inp.classList.contains('pl-cell')) return;
+  const k = inp.dataset.k, val = inp.value.trim(), f = inp.dataset.f;
+  if(f === 'precio'){
+    if(val==='') delete PL_DATA.precio[k]; else PL_DATA.precio[k]=val;
+    plUpdateRow(k); plRenderFoot();
+  } else if(f === 'liq'){
+    if(val==='') delete PL_DATA.liqpend[k]; else PL_DATA.liqpend[k]=val;
+    plUpdateRow(k); plRenderFoot();
+  } else if(f === 'pxest'){
+    if(val==='') delete PL_DATA.precioEst[k]; else PL_DATA.precioEst[k]=val;
+    plUpdateRow(k); plRenderFoot();
+  } else {
+    const d = inp.dataset.d;
+    if(!PL_DATA.dias[k]) PL_DATA.dias[k]={};
+    if(val==='') delete PL_DATA.dias[k][d]; else PL_DATA.dias[k][d]=val;
+    plRenderFoot();
+  }
+  plSave();
+});
+plInitCamp();
+if(PL_DATA.tc==null) PL_DATA.tc = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 1428.5;
+document.getElementById('pl-tc').value = fmt.num2(PL_DATA.tc);
+document.getElementById('pl-camp').addEventListener('change', plRender);
+document.getElementById('pl-start').addEventListener('change', plRender);
+document.getElementById('pl-days').addEventListener('change', plRender);
+document.getElementById('pl-tc').addEventListener('blur', ()=>{
+  const t = parseFloat((document.getElementById('pl-tc').value||'').replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''));
+  PL_DATA.tc = isNaN(t)?null:t; plSave(); plRender();
+});
+document.getElementById('pl-clear-manual').addEventListener('click', ()=>{
+  if(!confirm('¿Borrar todas las cargas manuales (precio, liq. pend. de pasar, precio estimado e importes por día)?')) return;
+  const tc = PL_DATA.tc;
+  PL_DATA = { precio:{}, liqpend:{}, precioEst:{}, dias:{}, tc };
+  plSave(); plRender();
+});
+plRender();
 
 
 /* ============================================================
@@ -4654,6 +4940,235 @@ function cjRenderVendedores(rows){
 cjInitFilters();
 // Diferimos: solo se ve si el usuario navega a Compra · Canjes.
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 200)))(cjApply);
+
+
+/* ============================================================
+   =====  FINALES DE COMPRA — verificador de factor  =========
+   ============================================================ */
+// Datos de balanza embebidos (fuente de búsqueda). La lista que ve el usuario
+// arranca VACÍA y se va llenando a medida que carga códigos de contrato.
+const FINALES = PAYLOAD.finales || [];
+const FL_GEN = (PAYLOAD.generated_at || '').slice(0,10);   // fecha del último refresco
+const FL_KEY = 'tablero-finales-lista-v1';
+const FL_BAK_KEY = 'tablero-finales-lista-backup-v1';   // respaldo automático
+let FL_LIST = [];
+try { const s=JSON.parse(localStorage.getItem(FL_KEY)||'[]'); if(Array.isArray(s)) FL_LIST=s; } catch(e){}
+// Si la lista principal está vacía pero hay respaldo con datos, ofrecer recuperar
+try {
+  const bak=JSON.parse(localStorage.getItem(FL_BAK_KEY)||'[]');
+  if(Array.isArray(bak) && bak.length && !FL_LIST.length){ FL_LIST = bak; }
+} catch(e){}
+let FL_OPEN = new Set();   // contratos con el detalle desplegado
+let FL_UNDO = null;        // snapshot para "Deshacer" el último borrado
+function flSave(){
+  try{
+    localStorage.setItem(FL_KEY, JSON.stringify(FL_LIST));
+    if(FL_LIST.length) localStorage.setItem(FL_BAK_KEY, JSON.stringify(FL_LIST));  // respaldo solo si hay datos
+  }catch(e){}
+}
+function flSnapshot(){ FL_UNDO = JSON.parse(JSON.stringify(FL_LIST)); }
+function flGroupKey(r){ return String(r.contrato || ('CTG '+r.ctg)); }
+
+const FL_TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 0;
+const FL_COLS = [
+  {k:'contrato',     lbl:'Contrato'},
+  {k:'ctg',          lbl:'CTG'},
+  {k:'cliente',      lbl:'Cliente'},
+  {k:'grano',        lbl:'Grano'},
+  {k:'humedad',      lbl:'Hum. %', num:true},
+  {k:'danos',        lbl:'Daños %', num:true},
+  {k:'verdes',       lbl:'Verdes %', num:true},
+  {k:'quebrados',    lbl:'Queb. %', num:true},
+  {k:'precio',       lbl:'Precio', num:true},
+  {k:'factorCereal', lbl:'F. Cereal.', num:true},
+  {k:'factorOficial',lbl:'F. Oficial', num:true},
+  {k:'_difpct',      lbl:'Dif. %', num:true, html:true},
+  {k:'_camara',      lbl:'Cámara'},
+  {k:'_flete',       lbl:'Flete'},
+  {k:'_estado',      lbl:'Estado', html:true},
+  {k:'_pneto',       lbl:'P. neto', num:true},
+  {k:'_totalusd',    lbl:'Total USD (±)', num:true, html:true},
+];
+function flTn(r){ const v=Number(r.kgAplicar)||0; return v>2000 ? v/1000 : v; }   // >2000 => viene en kg
+function flIsUsd(r){ return /usd|dol/i.test(String(r.moneda||'')) || (Number(r.precio)||0) < 2000; }
+// factor que se aplicó en la liquidación: el de la cerealera; si no lo cargó, el oficial
+function flFactorAplic(r){ return r.factorCereal!=null ? r.factorCereal : (r.factorOficial!=null ? r.factorOficial : null); }
+// Dif % = 100 − factor (el descuento que aplica el factor). + = descuento, − = bonificación.
+function flDifPct(r){ const f=flFactorAplic(r); return f==null ? null : Math.round((100-f)*100)/100; }
+function flTotalUSD(r){
+  const d=flDifPct(r); if(d==null) return null;
+  const precio=Number(r.precio)||0, tn=flTn(r);
+  let tot=precio*(d/100)*tn;        // + = a descontar, − = a bonificar
+  if(!flIsUsd(r) && FL_TC) tot=tot/FL_TC;
+  return tot;
+}
+function flCamara(r){ const v=r.condCamara; return (v==null||v==='')?'—':String(v); }
+function flFlete(r){
+  if(r.condFlete) return String(r.condFlete);
+  if((r.fleteCorto&&String(r.fleteCorto).trim())||(r.fleteLargo&&String(r.fleteLargo).trim())) return 'Sí';
+  return '—';
+}
+function flDifChip(r){
+  const d=flDifPct(r); if(d==null) return '<span class="muted">—</span>';
+  if(Math.abs(d)<0.005) return '<span style="color:var(--muted)">0</span>';
+  const desc=d>0;  // 100−factor>0 => descuento
+  return `<span title="${desc?'descuento':'bonificación'}" style="color:${desc?'#b45309':'var(--green)'};font-weight:600">${fmt.num2(d)}%</span>`;
+}
+function flTotChip(r){
+  const t=flTotalUSD(r); if(t==null) return '<span class="muted">—</span>';
+  if(Math.abs(t)<0.005) return '<span style="color:var(--muted)">0</span>';
+  const desc=t>0;  // + = a descontar
+  return `<span title="${desc?'a descontar':'a bonificar'}" style="color:${desc?'#b45309':'var(--green)'};font-weight:700">${fmt.num2(Math.abs(t))} ${desc?'desc.':'bonif.'}</span>`;
+}
+function flEstadoChip(r){
+  const e=r.estado;
+  if(e==='revisar')     return '<span class="chip err">⚠ Revisar</span>';
+  if(e==='ok')          return '<span class="chip ok">✅ OK</span>';
+  if(e==='calc_only')   return '<span class="chip" style="background:#dbeafe;color:#1e40af">🧮 Calculado</span>';
+  if(e==='solo_cereal') return '<span class="chip warn">Solo cereal</span>';
+  return '<span class="muted">— s/factor —</span>';
+}
+function flPNeto(r){
+  const f=(r.factorOficial!=null)?r.factorOficial:r.factorCereal;
+  const p=Number(r.precio)||0;
+  return (f!=null && p) ? p*f/100 : null;
+}
+function flMsg(html,color){ const e=document.getElementById('fl-msg'); e.innerHTML=html; e.style.color=color||'var(--muted)'; }
+
+// Busca en los datos de balanza por contrato / CTG / carta porte
+function flBuscar(code){
+  const q=String(code||'').toLowerCase().trim();
+  if(!q) return [];
+  return FINALES.filter(r=>{
+    const ct=String(r.contrato||'').toLowerCase();
+    const cg=String(r.ctg||'').toLowerCase();
+    return ct.includes(q) || cg.includes(q) || q===cg || q===ct;
+  });
+}
+function flAdd(){
+  const inp=document.getElementById('fl-add');
+  const code=inp.value.trim();
+  if(!code){ return; }
+  const hits=flBuscar(code);
+  if(!hits.length){
+    flMsg(`❌ No encontré <b>"${escapeHtml(code)}"</b> en balanza (último refresco ${FL_GEN}). Puede que aún no esté finalizado — avisame y actualizo.`,'var(--red)');
+    return;
+  }
+  let added=0;
+  hits.forEach(h=>{
+    if(!FL_LIST.some(x=>String(x.ctg)===String(h.ctg) && x.contrato===h.contrato)){
+      FL_LIST.push(h); added++;
+    }
+  });
+  flSave(); flRender();
+  flMsg(added ? `✅ Agregado: <b>${escapeHtml(hits[0].contrato||code)}</b> (${added} ${added>1?'liquidaciones':'liquidación'})` : 'Ese contrato ya estaba en la lista.', added?'var(--green)':'var(--orange)');
+  inp.value=''; inp.focus();
+}
+const FL_EST_RANK={revisar:5,solo_cereal:4,calc_only:3,ok:2,sin_factor:1};
+function flWorst(rows){ return rows.slice().sort((a,b)=>(FL_EST_RANK[b.estado]||0)-(FL_EST_RANK[a.estado]||0))[0].estado; }
+function flRender(){
+  document.getElementById('fl-head').innerHTML=
+    FL_COLS.map(c=>`<th class="${c.num?'num':''}">${c.lbl}</th>`).join('')+'<th></th>';
+  // agrupar por contrato, en orden de carga
+  const order=[], groups={};
+  FL_LIST.forEach(r=>{ const k=flGroupKey(r); if(!groups[k]){groups[k]={k,rows:[]};order.push(k);} groups[k].rows.push(r); });
+  let html='';
+  order.forEach(k=>{
+    const g=groups[k], open=FL_OPEN.has(k), r0=g.rows[0], worst=flWorst(g.rows);
+    // total USD del contrato (suma de las diferencias a descontar/bonificar)
+    let gtot=0, gany=false;
+    g.rows.forEach(r=>{ const t=flTotalUSD(r); if(t!=null){ gtot+=t; gany=true; } });
+    const gtotChip = (!gany||Math.abs(gtot)<0.005) ? '' : `<span title="${gtot>0?'a descontar':'a bonificar'}" style="color:${gtot>0?'#b45309':'var(--green)'};font-weight:700">${fmt.num2(Math.abs(gtot))} ${gtot>0?'desc.':'bonif.'}</span>`;
+    html+=`<tr class="fl-grp" data-c="${escapeHtml(k)}" style="cursor:pointer;background:#eef2ff;font-weight:600">
+      <td>${open?'▼':'▶'} ${escapeHtml(String(r0.contrato||k))}</td>
+      <td class="num">${g.rows.length} liq</td>
+      <td>${escapeHtml(String(r0.cliente||''))}</td>
+      <td>${escapeHtml(String(r0.grano||''))}</td>
+      <td colspan="10" style="color:var(--muted);font-weight:400">${open?'':'(click para ver el detalle)'}</td>
+      <td>${flEstadoChip({estado:worst})}</td>
+      <td></td>
+      <td class="num">${gtotChip}</td>
+      <td style="white-space:nowrap"><a href="#" class="fl-dl" data-c="${escapeHtml(k)}" title="Descargar este contrato en Excel" style="text-decoration:none;margin-right:8px">📥</a><a href="#" class="fl-rmg" data-c="${escapeHtml(k)}" title="Quitar contrato" style="color:var(--red);text-decoration:none">✕</a></td>
+    </tr>`;
+    if(open){
+      g.rows.forEach(r=>{
+        const gi=FL_LIST.indexOf(r);
+        html+='<tr style="background:#fff">'+FL_COLS.map(c=>{
+          if(c.k==='_estado')  return '<td>'+flEstadoChip(r)+'</td>';
+          if(c.k==='_difpct')  return '<td class="num">'+flDifChip(r)+'</td>';
+          if(c.k==='_totalusd')return '<td class="num">'+flTotChip(r)+'</td>';
+          if(c.k==='_camara')  return '<td>'+escapeHtml(flCamara(r))+'</td>';
+          if(c.k==='_flete')   return '<td>'+escapeHtml(flFlete(r))+'</td>';
+          if(c.k==='_pneto'){ const v=flPNeto(r); return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num2(v)}</td>`; }
+          if(c.k==='contrato') return `<td style="padding-left:20px;color:var(--muted)">↳</td>`;
+          let v=r[c.k];
+          if(c.num) return `<td class="num">${v==null||v===''?'<span class=muted>—</span>':fmt.num2(Number(v))}</td>`;
+          return `<td>${v==null?'':escapeHtml(String(v))}</td>`;
+        }).join('')+`<td><a href="#" class="fl-rm" data-i="${gi}" title="Quitar liquidación" style="color:var(--red);text-decoration:none">✕</a></td>`+'</tr>';
+      });
+    }
+  });
+  document.getElementById('fl-body').innerHTML = html ||
+    `<tr><td colspan="${FL_COLS.length+1}" style="padding:30px;text-align:center;color:var(--muted)">Lista vacía — agregá un contrato arriba ☝️</td></tr>`;
+  const rev=FL_LIST.filter(r=>r.estado==='revisar').length;
+  document.getElementById('fl-count').textContent=`${order.length} contratos · ${FL_LIST.length} liq`;
+  document.getElementById('fl-meta').textContent=`${order.length} contratos`+(rev?` · ${rev} ⚠ a revisar`:'')+` · balanza al ${FL_GEN}`;
+}
+function flUndo(){ if(FL_UNDO){ FL_LIST=FL_UNDO; FL_UNDO=null; flSave(); flRender(); flMsg('↩ Restaurado.','var(--green)'); } }
+function flMsgUndo(txt){ document.getElementById('fl-msg').innerHTML=`${txt} <a href="#" id="fl-undo" style="margin-left:8px;font-weight:600">↩ Deshacer</a>`; document.getElementById('fl-msg').style.color='var(--orange)'; }
+function flExcelRows(rows, fname){
+  if(!rows.length){ flMsg('No hay nada para exportar.','var(--orange)'); return; }
+  const hdr=FL_COLS.map(c=>c.lbl);
+  const line=a=>a.map(v=>{ v=(v==null?'':String(v)).replace(/"/g,'""'); return /[";\n]/.test(v)?`"${v}"`:v; }).join(';');
+  const out=[line(hdr)];
+  rows.forEach(r=>{
+    out.push(line(FL_COLS.map(c=>{
+      if(c.k==='_estado') return ({revisar:'A REVISAR',ok:'OK',calc_only:'CALCULADO',solo_cereal:'SOLO CEREAL',sin_factor:'SIN FACTOR'})[r.estado]||r.estado;
+      if(c.k==='_pneto'){ const v=flPNeto(r); return v==null?'':v.toFixed(2).replace('.',','); }
+      if(c.k==='_difpct'){ const v=flDifPct(r); return v==null?'':String(v).replace('.',','); }
+      if(c.k==='_totalusd'){ const v=flTotalUSD(r); return v==null?'':v.toFixed(2).replace('.',','); }
+      if(c.k==='_camara') return flCamara(r)==='—'?'':flCamara(r);
+      if(c.k==='_flete') return flFlete(r)==='—'?'':flFlete(r);
+      let v=r[c.k]; if(v==null) return '';
+      if(c.num) return String(v).replace('.',',');
+      return v;
+    })));
+  });
+  const blob=new Blob(['﻿'+out.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=fname; a.click();
+}
+function flExcel(){ if(!FL_LIST.length){ flMsg('No hay nada cargado para exportar.','var(--orange)'); return; } flExcelRows(FL_LIST, 'finales_compra_'+(FL_GEN||'')+'.csv'); }
+function flExcelGrupo(k){
+  const rows=FL_LIST.filter(r=>flGroupKey(r)===k);
+  const nom=String((rows[0]&&rows[0].contrato)||k).replace(/[^a-zA-Z0-9_-]+/g,'_');
+  flExcelRows(rows, 'final_'+nom+'.csv');
+  flMsg('⬇️ Descargado el contrato '+(rows[0]&&rows[0].contrato||k),'var(--green)');
+}
+document.getElementById('fl-add-btn').addEventListener('click',flAdd);
+document.getElementById('fl-add').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); flAdd(); } });
+document.getElementById('fl-clear').addEventListener('click',()=>{
+  if(FL_LIST.length && !confirm('¿Vaciar TODA la lista? (vas a poder deshacer)')) return;
+  flSnapshot(); FL_LIST=[]; try{localStorage.removeItem(FL_BAK_KEY);}catch(e){} flSave(); flRender();
+  flMsgUndo('🗑️ Lista vaciada.');
+});
+document.getElementById('fl-xls').addEventListener('click',flExcel);
+document.getElementById('fl-body').addEventListener('click',e=>{
+  // descargar contrato individual en Excel
+  const dl=e.target.closest('.fl-dl');
+  if(dl){ e.preventDefault(); e.stopPropagation(); flExcelGrupo(dl.dataset.c); return; }
+  // toggle abrir/cerrar contrato
+  const grp=e.target.closest('.fl-grp');
+  if(grp && !e.target.closest('.fl-rmg') && !e.target.closest('.fl-dl')){ const k=grp.dataset.c; if(FL_OPEN.has(k))FL_OPEN.delete(k);else FL_OPEN.add(k); flRender(); return; }
+  // quitar contrato entero
+  const rmg=e.target.closest('.fl-rmg');
+  if(rmg){ e.preventDefault(); const k=rmg.dataset.c; flSnapshot(); FL_LIST=FL_LIST.filter(r=>flGroupKey(r)!==k); flSave(); flRender(); flMsgUndo('🗑️ Contrato quitado.'); return; }
+  // quitar una liquidación
+  const rm=e.target.closest('.fl-rm');
+  if(rm){ e.preventDefault(); const i=parseInt(rm.dataset.i,10); flSnapshot(); FL_LIST.splice(i,1); flSave(); flRender(); flMsgUndo('🗑️ Liquidación quitada.'); return; }
+});
+document.getElementById('fl-msg').addEventListener('click',e=>{ if(e.target.id==='fl-undo'){ e.preventDefault(); flUndo(); } });
+(window.requestIdleCallback || ((fn)=>setTimeout(fn,300)))(flRender);
 
 
 /* ============================================================
@@ -9643,9 +10158,21 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] Error stock por deposito: {e}")
 
+    # Finales de Compra: análisis + factor desde la Balanza (api.agronasaja.com)
+    print(f"\n[+] Bajando Finales de Compra (balanza) + calculando factor...", flush=True)
+    try:
+        finales = balanza_finales.fetch_finales()
+        from collections import Counter as _C
+        _est = _C(r["estado"] for r in finales)
+        print(f"    -> {len(finales)} liquidaciones · estados: {dict(_est)}")
+    except Exception as e:
+        print(f"    [!] error finales: {e}")
+        finales = []
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
+        "finales": finales,
         "pilot":  pilot_norm,
         "compra": compra_norm,
         "saldos": saldos_norm,
