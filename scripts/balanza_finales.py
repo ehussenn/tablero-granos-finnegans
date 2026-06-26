@@ -115,8 +115,19 @@ def _load_cargill_quality() -> dict:
         except Exception: return {}
     return {}
 
+def _load_ldc_quality() -> dict:
+    """data/ldc/quality.json keyed por CTG; normaliza calidad a {HEADING:{'valor':v}}."""
+    f = Path(__file__).resolve().parent.parent / "data" / "ldc" / "quality.json"
+    if not f.exists(): return {}
+    try: raw = json.loads(f.read_text(encoding="utf-8"))
+    except Exception: return {}
+    for ctg, r in raw.items():
+        cal = r.get("calidad") or {}
+        r["calidad"] = {k: (v if isinstance(v, dict) else {"valor": v}) for k, v in cal.items()}
+    return raw
+
 def _cargill_to_rubros(cal: dict) -> dict:
-    """Mapea los nombres de Cargill a las claves de parse_analisis (para el simulador)."""
+    """Mapea los nombres de calidad (Cargill/LDC) a las claves de parse_analisis (simulador)."""
     g = lambda *names: next((cal[n]["valor"] for n in names if n in cal and cal[n].get("valor") not in (None,"")), None)
     return {
         "danos":   g("GRANOS DAÑADOS","GRANOS DA#ADOS","DAÑADOS"),
@@ -147,28 +158,30 @@ def fetch_finales() -> list[dict]:
         if p > 60: break
     out = []
     cargill_q = _load_cargill_quality()
+    ldc_q = _load_ldc_quality()
     for i in items:
         obs = str(i.get("observaciones") or "")
         a = parse_analisis(obs)
         grano = str(i.get("grano") or "")
-        # ¿Hay calidad de la FUENTE Cargill para este CTG? -> calidad+factor de la fuente
-        cg = cargill_q.get(str(i.get("numeroCtg") or ""))
+        ctgs = str(i.get("numeroCtg") or "")
+        # ¿Hay calidad de la FUENTE (extranet) para este CTG? Cargill o LDC.
+        cg = cargill_q.get(ctgs); lq = ldc_q.get(ctgs) if ctgs not in cargill_q else None
+        src = cg or lq
         cargill_extra = {}
-        if cg:
-            cr = _cargill_to_rubros(cg.get("calidad", {}))
+        if src:
+            cr = _cargill_to_rubros(src.get("calidad", {}))
             cargill_extra = {
-                "fuente": "Cargill",
-                "cargillGrado": cg.get("grado"),
-                "cargillCalidad": {k: v.get("valor") for k, v in (cg.get("calidad") or {}).items() if v.get("valor") not in (None, "")},
-                "cargillServicios": cg.get("servicios"),
-                "cargillDestino": cg.get("destino"),
-                "factorCargill": factor_sim(grano, cr),
+                "fuente": "Cargill" if cg else "LDC",
+                "fuenteGrado": src.get("grado"),
+                "fuenteCalidad": {k: v.get("valor") for k, v in (src.get("calidad") or {}).items() if v.get("valor") not in (None, "")},
+                "fuenteServicios": src.get("servicios"),
+                "fuenteFlete": src.get("destino") if cg else src.get("pagaFlete"),
+                "factorFuente": factor_sim(grano, cr),
             }
-        # Si hay calidad de la FUENTE Cargill, el análisis y el factor oficial salen
-        # de ahí (la fuente real). Si no, usamos lo parseado de balanza (soja) / simulador.
-        if cg:
-            aeff = _cargill_to_rubros(cg.get("calidad", {}))
-            of = cargill_extra.get("factorCargill")
+        # Si hay calidad de la fuente, el análisis y el factor salen de ahí; si no, balanza/simulador.
+        if src:
+            aeff = _cargill_to_rubros(src.get("calidad", {}))
+            of = cargill_extra.get("factorFuente")
         else:
             aeff = a
             of = factor_oficial(a) if "soja" in grano.lower() else factor_sim(grano, a)
