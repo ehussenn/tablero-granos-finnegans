@@ -143,6 +143,18 @@ def _load_bunge_quality() -> dict:
         out[k] = r
     return out
 
+def _load_intagro_quality() -> dict:
+    """data/intagro/quality.json (Intagro/Argentrading) keyed por CTG. OJO: Intagro solo
+    expone HUMEDAD + observaciones (no el desglose de daños/quebrados). CTG formato 11 díg = balanza."""
+    f = Path(__file__).resolve().parent.parent / "data" / "intagro" / "quality.json"
+    if not f.exists(): return {}
+    try: raw = json.loads(f.read_text(encoding="utf-8"))
+    except Exception: return {}
+    for ctg, r in raw.items():
+        cal = r.get("calidad") or {}
+        r["calidad"] = {str(k).upper(): {"valor": v} for k, v in cal.items()}
+    return raw
+
 def _cargill_to_rubros(cal: dict) -> dict:
     """Mapea los nombres de calidad (Cargill/LDC) a las claves de parse_analisis (simulador)."""
     g = lambda *names: next((cal[n]["valor"] for n in names if n in cal and cal[n].get("valor") not in (None,"")), None)
@@ -177,6 +189,7 @@ def fetch_finales() -> list[dict]:
     cargill_q = _load_cargill_quality()
     ldc_q = _load_ldc_quality()
     bunge_q = _load_bunge_quality()
+    intagro_q = _load_intagro_quality()
     for i in items:
         obs = str(i.get("observaciones") or "")
         a = parse_analisis(obs)
@@ -186,8 +199,9 @@ def fetch_finales() -> list[dict]:
         cg = cargill_q.get(ctgs)
         lq = ldc_q.get(ctgs) if ctgs not in cargill_q else None
         bq = bunge_q.get(ctgs) if (ctgs not in cargill_q and ctgs not in ldc_q) else None
-        src = cg or lq or bq
-        fuente = "Cargill" if cg else ("LDC" if lq else "Bunge")
+        iq = intagro_q.get(ctgs) if (ctgs not in cargill_q and ctgs not in ldc_q and ctgs not in bunge_q) else None
+        src = cg or lq or bq or iq
+        fuente = "Cargill" if cg else ("LDC" if lq else ("Bunge" if bq else "Intagro"))
         cargill_extra = {}
         if src:
             cr = _cargill_to_rubros(src.get("calidad", {}))
@@ -198,6 +212,7 @@ def fetch_finales() -> list[dict]:
                 "fuenteServicios": src.get("servicios"),
                 "fuenteFlete": src.get("destino") if cg else src.get("pagaFlete"),
                 "fuenteHonorariosCamara": bq.get("honorariosCamara") if bq else None,
+                "fuenteObs": iq.get("observaciones") if iq else None,
                 "factorFuente": factor_sim(grano, cr),
             }
         # Si hay calidad de la fuente, el análisis y el factor salen de ahí; si no, balanza/simulador.
