@@ -11,6 +11,7 @@ Devuelve lista de dicts lista para embeber en el tablero.
 from __future__ import annotations
 import os, re, json
 import urllib.request
+from pathlib import Path
 
 API = "https://api.agronasaja.com/api"
 
@@ -106,6 +107,31 @@ def factor_sim(grano: str, a: dict):
     return f
 
 
+def _load_cargill_quality() -> dict:
+    """data/cargill/quality.json keyed por CTG (calidad+servicios de la fuente Cargill)."""
+    f = Path(__file__).resolve().parent.parent / "data" / "cargill" / "quality.json"
+    if f.exists():
+        try: return json.loads(f.read_text(encoding="utf-8"))
+        except Exception: return {}
+    return {}
+
+def _cargill_to_rubros(cal: dict) -> dict:
+    """Mapea los nombres de Cargill a las claves de parse_analisis (para el simulador)."""
+    g = lambda *names: next((cal[n]["valor"] for n in names if n in cal and cal[n].get("valor") not in (None,"")), None)
+    return {
+        "danos":   g("GRANOS DAÑADOS","GRANOS DA#ADOS","DAÑADOS"),
+        "verdes":  g("GRANOS VERDES","VERDES"),
+        "quebrados": g("GRANOS QUEBRADOS/CHUZOS","GRANOS QUEBRADOS","QUEBRADOS"),
+        "matExtrana": g("MATERIAS EXTRAÑAS","MATERIAS EXTRA#AS","CUERPOS EXTRAÑOS"),
+        "pesoHl":  g("PESO HECTOLITRICO"),
+        "picados": g("GRANOS PICADOS"),
+        "materiaGrasa": g("MATERIA GRASA"),
+        "proteina": g("PROTEINAS","PROTEINA"),
+        "humedad": g("HUMEDAD"),
+        "factorCereal": None,
+    }
+
+
 def fetch_finales() -> list[dict]:
     user = os.environ.get("BALANZA_USER"); pwd = os.environ.get("BALANZA_PASS")
     if not (user and pwd):
@@ -120,20 +146,39 @@ def fetch_finales() -> list[dict]:
         p += 1
         if p > 60: break
     out = []
+    cargill_q = _load_cargill_quality()
     for i in items:
         obs = str(i.get("observaciones") or "")
         a = parse_analisis(obs)
         grano = str(i.get("grano") or "")
-        # El factor oficial SOLO está implementado para SOJA (bases propias por cultivo).
-        # Para otros granos no calculamos oficial (no inventamos) hasta tener su tabla.
-        of = factor_oficial(a) if "soja" in grano.lower() else factor_sim(grano, a)
+        # ¿Hay calidad de la FUENTE Cargill para este CTG? -> calidad+factor de la fuente
+        cg = cargill_q.get(str(i.get("numeroCtg") or ""))
+        cargill_extra = {}
+        if cg:
+            cr = _cargill_to_rubros(cg.get("calidad", {}))
+            cargill_extra = {
+                "fuente": "Cargill",
+                "cargillGrado": cg.get("grado"),
+                "cargillCalidad": {k: v.get("valor") for k, v in (cg.get("calidad") or {}).items() if v.get("valor") not in (None, "")},
+                "cargillServicios": cg.get("servicios"),
+                "cargillDestino": cg.get("destino"),
+                "factorCargill": factor_sim(grano, cr),
+            }
+        # Si hay calidad de la FUENTE Cargill, el análisis y el factor oficial salen
+        # de ahí (la fuente real). Si no, usamos lo parseado de balanza (soja) / simulador.
+        if cg:
+            aeff = _cargill_to_rubros(cg.get("calidad", {}))
+            of = cargill_extra.get("factorCargill")
+        else:
+            aeff = a
+            of = factor_oficial(a) if "soja" in grano.lower() else factor_sim(grano, a)
         fc = a["factorCereal"]
         if fc is None and of is None:
             estado = "sin_factor"
         elif fc is None:
-            estado = "calc_only"      # calculamos pero la cereal no lo cargó
+            estado = "calc_only"      # calculamos (fuente/simulador) pero la cereal no lo cargó
         elif of is None:
-            estado = "solo_cereal"    # cereal cargó factor pero sin análisis para chequear
+            estado = "solo_cereal"
         else:
             estado = "ok" if abs(fc - of) <= 0.25 else "revisar"
         out.append({
@@ -147,9 +192,11 @@ def fetch_finales() -> list[dict]:
             "fleteCorto": i.get("fleteCorto"), "fleteLargo": i.get("fleteLargo"),
             "kgDescarga": i.get("kgDescarga"), "kgAplicar": i.get("kgAplicar"),
             "factorCereal": fc, "factorOficial": of, "estado": estado,
-            "danos": a["danos"], "verdes": a["verdes"], "quebrados": a["quebrados"],
-            "matExtrana": a["matExtrana"], "humedad": a["humedad"] if a["humedad"] is not None else i.get("humedad"),
+            "danos": aeff.get("danos"), "verdes": aeff.get("verdes"), "quebrados": aeff.get("quebrados"),
+            "matExtrana": aeff.get("matExtrana"),
+            "humedad": (aeff.get("humedad") if aeff.get("humedad") is not None else i.get("humedad")),
             "observaciones": obs,
+            **cargill_extra,
         })
     return out
 
