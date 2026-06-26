@@ -126,6 +126,23 @@ def _load_ldc_quality() -> dict:
         r["calidad"] = {k: (v if isinstance(v, dict) else {"valor": v}) for k, v in cal.items()}
     return raw
 
+def _load_bunge_quality() -> dict:
+    """data/bunge/quality.json keyed por CTG; calidad {Heading:valor} -> {HEADING:{'valor':v}}
+    (mayúsculas para que matchee _cargill_to_rubros)."""
+    f = Path(__file__).resolve().parent.parent / "data" / "bunge" / "quality.json"
+    if not f.exists(): return {}
+    try: raw = json.loads(f.read_text(encoding="utf-8"))
+    except Exception: return {}
+    out = {}
+    for ctg, r in raw.items():
+        cal = r.get("calidad") or {}
+        r["calidad"] = {str(k).upper(): {"valor": v} for k, v in cal.items()}
+        # Bunge trae el CTG con un 0 adelante (12 díg); balanza usa 11 -> normalizo
+        k = str(ctg)
+        if len(k) == 12 and k.startswith("0"): k = k[1:]
+        out[k] = r
+    return out
+
 def _cargill_to_rubros(cal: dict) -> dict:
     """Mapea los nombres de calidad (Cargill/LDC) a las claves de parse_analisis (simulador)."""
     g = lambda *names: next((cal[n]["valor"] for n in names if n in cal and cal[n].get("valor") not in (None,"")), None)
@@ -159,23 +176,28 @@ def fetch_finales() -> list[dict]:
     out = []
     cargill_q = _load_cargill_quality()
     ldc_q = _load_ldc_quality()
+    bunge_q = _load_bunge_quality()
     for i in items:
         obs = str(i.get("observaciones") or "")
         a = parse_analisis(obs)
         grano = str(i.get("grano") or "")
         ctgs = str(i.get("numeroCtg") or "")
         # ¿Hay calidad de la FUENTE (extranet) para este CTG? Cargill o LDC.
-        cg = cargill_q.get(ctgs); lq = ldc_q.get(ctgs) if ctgs not in cargill_q else None
-        src = cg or lq
+        cg = cargill_q.get(ctgs)
+        lq = ldc_q.get(ctgs) if ctgs not in cargill_q else None
+        bq = bunge_q.get(ctgs) if (ctgs not in cargill_q and ctgs not in ldc_q) else None
+        src = cg or lq or bq
+        fuente = "Cargill" if cg else ("LDC" if lq else "Bunge")
         cargill_extra = {}
         if src:
             cr = _cargill_to_rubros(src.get("calidad", {}))
             cargill_extra = {
-                "fuente": "Cargill" if cg else "LDC",
+                "fuente": fuente,
                 "fuenteGrado": src.get("grado"),
                 "fuenteCalidad": {k: v.get("valor") for k, v in (src.get("calidad") or {}).items() if v.get("valor") not in (None, "")},
                 "fuenteServicios": src.get("servicios"),
                 "fuenteFlete": src.get("destino") if cg else src.get("pagaFlete"),
+                "fuenteHonorariosCamara": bq.get("honorariosCamara") if bq else None,
                 "factorFuente": factor_sim(grano, cr),
             }
         # Si hay calidad de la fuente, el análisis y el factor salen de ahí; si no, balanza/simulador.
