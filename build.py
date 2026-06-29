@@ -6728,16 +6728,20 @@ function pnSetMan(prod, k, v){
   pnSave();
 }
 
-function pnCalcRow(producto, opsCompra, opsVenta){
+function pnCalcRow(producto, opsCompra, opsVenta, incluyeOrigen){
+  // incluyeOrigen=false => campaña forward (ej. 26/27, sin cosecha física): PLANTA y PRODUCCIÓN
+  // (stock físico, cosechado, campo estimado) NO pertenecen a esa campaña, van en 0.
+  // (Compra y Venta sí se muestran: son contratos reales filtrados por campaña.)
+  const origen = (incluyeOrigen === false) ? false : true;
   // PLANTA: TODO auto desde Stock por Deposito (USR_RESSTOCKDEP), categorizado por nombre de deposito
   // SILO (silos físicos sin "bolsa", "descarte", "ventas"), SILOBOLSA, BOLSAS (DEPOSITO VENTAS ...)
   // Si no hay valor en la API, cae a lo cargado manualmente (PN_MANUAL) para no perder data vieja.
-  const siloAuto      = (PAYLOAD.stock_silo      && PAYLOAD.stock_silo[producto])      || 0;
-  const bolsasAuto    = (PAYLOAD.stock_bolsas    && PAYLOAD.stock_bolsas[producto])    || 0;
-  const silobolsaAuto = (PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0;
-  const silo       = siloAuto      || pnGetMan(producto, "silo");
-  const bolsas     = bolsasAuto    || pnGetMan(producto, "bolsas");
-  const silobolsa  = silobolsaAuto || pnGetMan(producto, "silobolsa");
+  const siloAuto      = origen ? ((PAYLOAD.stock_silo      && PAYLOAD.stock_silo[producto])      || 0) : 0;
+  const bolsasAuto    = origen ? ((PAYLOAD.stock_bolsas    && PAYLOAD.stock_bolsas[producto])    || 0) : 0;
+  const silobolsaAuto = origen ? ((PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0) : 0;
+  const silo       = origen ? (siloAuto      || pnGetMan(producto, "silo"))      : 0;
+  const bolsas     = origen ? (bolsasAuto    || pnGetMan(producto, "bolsas"))     : 0;
+  const silobolsa  = origen ? (silobolsaAuto || pnGetMan(producto, "silobolsa"))  : 0;
   const plantaTot  = silo + bolsas + silobolsa;
 
   // PRODUCCIÓN
@@ -6745,10 +6749,10 @@ function pnCalcRow(producto, opsCompra, opsVenta){
   // Campo Est: total estimado a cosechar (manual o default embebido)
   // Pend Cos: AUTO = Campo Est - Cosechado (decrece a medida que se cosecha).
   //           Si el usuario carga un valor manual de pendcos, ese override prevalece.
-  const cosechadoAuto = (PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0;
-  const cosechado  = cosechadoAuto || pnGetMan(producto, "cosechado");
-  const campoEst   = pnGetMan(producto, "campoest");
-  const pendCosManual = pnGetMan(producto, "pendcos");
+  const cosechadoAuto = origen ? ((PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0) : 0;
+  const cosechado  = origen ? (cosechadoAuto || pnGetMan(producto, "cosechado")) : 0;
+  const campoEst   = origen ? pnGetMan(producto, "campoest") : 0;
+  const pendCosManual = origen ? pnGetMan(producto, "pendcos") : 0;
   // Si el usuario cargó pend cos manual, usar ese. Sino, calcular Campo Est - Cosechado
   const pendCos    = pendCosManual > 0 ? pendCosManual : Math.max(0, campoEst - cosechado);
   // prodTot = lo que SE VA A COSECHAR EN TOTAL = pendiente + ya cosechado.
@@ -6823,15 +6827,36 @@ function pnFiltrarOps(){
 const PN_SEM_EXPANDED = new Set();
 function pnRender(){
   const {compras, ventas} = pnFiltrarOps();
+  // PLANTA y PRODUCCIÓN (stock físico + cosecha) pertenecen a la CAMPAÑA DE COSECHA VIGENTE,
+  // no a campañas forward (ej. 26/27, que solo tiene contratos compra/venta sin grano físico).
+  // Cosecha vigente = la campaña MÁS RECIENTE con grano realmente entregado (>=20% del máximo
+  // entregado de cualquier campaña). Así 25/26 (miles de tn) cuenta y 26/27 (forward) no.
+  // Auto-mantiene: cuando 26/27 empiece a recibir grano de verdad, pasa a ser la vigente.
+  const selCamp = document.getElementById("pn-campana").value;
+  const entrPorCamp = {};
+  (DATA_CP || []).forEach(c => {
+    if(!c.campana) return;
+    entrPorCamp[c.campana] = (entrPorCamp[c.campana] || 0) + (Number(c.cantidadentregada) || 0);
+  });
+  const maxEntr = Math.max(0, ...Object.values(entrPorCamp));
+  const umbral = maxEntr * 0.2;
+  let campCosecha = null;
+  Object.keys(entrPorCamp).forEach(k => {
+    if(entrPorCamp[k] >= umbral && entrPorCamp[k] > 0 && (campCosecha === null || k > campCosecha)) campCosecha = k;
+  });
+  // incluyeOrigen: mostramos planta/producción solo en la cosecha vigente (o sin filtro de campaña)
+  const incluyeOrigen = !selCamp || selCamp === campCosecha;
   document.getElementById("pn-info").textContent =
-    `${compras.length} contratos compra · ${ventas.length} contratos venta`;
+    `${compras.length} contratos compra · ${ventas.length} contratos venta` +
+    (incluyeOrigen ? "" : " · forward: solo compra/venta (sin planta/producción)");
 
   // Productos únicos en los filtros aplicados
   const prods = new Set();
   compras.forEach(c => { if(c.producto) prods.add(c.producto); });
   ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
-  // También incluir productos con datos manuales cargados
-  Object.keys(PN_MANUAL).forEach(p => prods.add(p));
+  // También incluir productos con datos manuales cargados — solo si la campaña tiene origen
+  // (en campañas solo-venta no corresponde mostrar producción/planta manual de otra campaña).
+  if(incluyeOrigen) Object.keys(PN_MANUAL).forEach(p => prods.add(p));
   const prodList = [...prods].sort();
 
   // Agrupar por familia
@@ -6851,7 +6876,7 @@ function pnRender(){
   prodList.forEach(p => {
     const cp = compras.filter(c => c.producto === p);
     const vp = ventas.filter(c  => c.producto === p);
-    dataPorProd[p] = pnCalcRow(p, cp, vp);
+    dataPorProd[p] = pnCalcRow(p, cp, vp, incluyeOrigen);
   });
 
   // Render Header tabla con grupos
