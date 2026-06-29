@@ -6707,9 +6707,17 @@ const PN_COLS = [
 // Defaults embebidos: valores manuales que vienen del cierre — el usuario los puede sobreescribir
 // editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
 const PN_DEFAULTS = {
-  // Total estimado a cosechar de Maíz 2da: 29.000 tn.
-  // El sistema calcula Pend Cos = campoest - cosechado (auto-decrece con la cosecha).
-  "Grano Maíz 2da": { campoest: 29000 },
+  // Producción propia 25/26 — fuente: planilla "Kg por Beneficiario" (cosechado AGNSJ) +
+  // "Estimado por Cosechar" (pendiente AGNSJ). Valores en tn.
+  // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" SIN separar 1ra/2da
+  // (y las filas de la posición sí están separadas, así que el auto cae en 0).
+  // Pend Cos = lo que falta cosechar; prodTot = pendcos + cosechado (total a cosechar).
+  "Grano Soja":             { cosechado: 24728.2, pendcos: 62 },
+  "Grano Maíz 1ra":         { cosechado: 13577.6 },
+  "Grano Maíz 2da":         { cosechado: 4403.3, pendcos: 25859 },
+  "Grano Maíz Pisingallo":  { cosechado: 227.8 },
+  "Grano Girasol":          { cosechado: 895.8, pendcos: 6 },
+  "Grano Sorgo":            { pendcos: 113 },
 };
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
@@ -6750,7 +6758,9 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyeOrigen){
   // Pend Cos: AUTO = Campo Est - Cosechado (decrece a medida que se cosecha).
   //           Si el usuario carga un valor manual de pendcos, ese override prevalece.
   const cosechadoAuto = origen ? ((PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0) : 0;
-  const cosechado  = origen ? (cosechadoAuto || pnGetMan(producto, "cosechado")) : 0;
+  const cosechadoMan  = origen ? pnGetMan(producto, "cosechado") : 0;  // manual (localStorage) o default embebido
+  // El valor cargado (real, de la planilla de producción) tiene prioridad sobre el auto de traslados.
+  const cosechado  = cosechadoMan > 0 ? cosechadoMan : cosechadoAuto;
   const campoEst   = origen ? pnGetMan(producto, "campoest") : 0;
   const pendCosManual = origen ? pnGetMan(producto, "pendcos") : 0;
   // Si el usuario cargó pend cos manual, usar ese. Sino, calcular Campo Est - Cosechado
@@ -6854,9 +6864,12 @@ function pnRender(){
   const prods = new Set();
   compras.forEach(c => { if(c.producto) prods.add(c.producto); });
   ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
-  // También incluir productos con datos manuales cargados — solo si la campaña tiene origen
-  // (en campañas solo-venta no corresponde mostrar producción/planta manual de otra campaña).
-  if(incluyeOrigen) Object.keys(PN_MANUAL).forEach(p => prods.add(p));
+  // También incluir productos con datos manuales/producción cargada — solo si la campaña
+  // es la de cosecha vigente (en forward no corresponde mostrar producción de otra campaña).
+  if(incluyeOrigen){
+    Object.keys(PN_MANUAL).forEach(p => prods.add(p));
+    Object.keys(PN_DEFAULTS).forEach(p => prods.add(p));
+  }
   const prodList = [...prods].sort();
 
   // Agrupar por familia
