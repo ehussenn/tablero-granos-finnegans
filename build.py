@@ -1692,7 +1692,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     <div class="subpanel active" data-sub-panel="ct-compra">
       <div class="section">
-        <h3>Códigos de Contratos · Compra <span class="badge">click en celdas para editar · cambios se guardan automáticamente</span></h3>
+        <h3>Códigos de Contratos · Compra <span class="badge">click en celdas para editar · se guarda y sincroniza en vivo (vos + tu compañera)</span></h3>
         <div class="tbl-wrap" style="max-height:680px">
           <table id="ct-tbl-compra">
             <thead><tr>
@@ -1709,7 +1709,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     <div class="subpanel" data-sub-panel="ct-venta">
       <div class="section">
-        <h3>Códigos de Contratos · Venta <span class="badge">click en celdas para editar · cambios se guardan automáticamente</span></h3>
+        <h3>Códigos de Contratos · Venta <span class="badge">click en celdas para editar · se guarda y sincroniza en vivo (vos + tu compañera)</span></h3>
         <div class="tbl-wrap" style="max-height:680px">
           <table id="ct-tbl-venta">
             <thead><tr>
@@ -8762,18 +8762,93 @@ let CT_DATA = { compra: [], venta: [], actualizado: "" };
 let CT_ACTIVE_SUB = "compra";   // "compra" | "venta"
 const CT_STORAGE_KEY = "tablero-granos-ct-v1";
 
+function ctSetStatus(state){
+  const el = document.getElementById("ct-last-save");
+  if(!el) return;
+  if(state === "pending") el.textContent = "guardando...";
+  else if(state === "saving") el.textContent = "subiendo...";
+  else if(state === "saved") el.textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  else if(state === "error") el.textContent = "⚠️ error";
+}
+
+// Próximo número de contrato (autocompletar): max numérico existente + 1
+function ctNextNumero(sub){
+  const nums = (CT_DATA[sub] || [])
+    .map(r => parseInt(String(r.numero || "").replace(/[^\d]/g, ""), 10))
+    .filter(n => !isNaN(n));
+  return nums.length ? String(Math.max(...nums) + 1) : "";
+}
+
+// Mergea el estado remoto (KV) con el local SIN pisar: une filas por id, prefiere
+// la versión con ts más nuevo, respeta la fila que se está editando y los borrados (tombstones).
+function ctMerge(remote){
+  if(!remote) return false;
+  const ae = document.activeElement;
+  const editingId = (ae && ae.tagName === "INPUT" && ae.dataset) ? ae.dataset.id : null;
+  let changed = false;
+  CT_DATA._del = CT_DATA._del || {};
+  const rdel = remote._del || {};
+  Object.keys(rdel).forEach(id => {
+    if((rdel[id] || 0) > (CT_DATA._del[id] || 0)){ CT_DATA._del[id] = rdel[id]; changed = true; }
+  });
+  const tomb = CT_DATA._del;
+  ["compra","venta"].forEach(sub => {
+    const local = Array.isArray(CT_DATA[sub]) ? CT_DATA[sub] : [];
+    const rem   = Array.isArray(remote[sub]) ? remote[sub] : [];
+    const map = new Map();
+    local.forEach(r => map.set(r.id, r));
+    rem.forEach(rr => {
+      const lr = map.get(rr.id);
+      if(!lr){ map.set(rr.id, rr); changed = true; }
+      else if(rr.id !== editingId && (rr.ts || 0) > (lr.ts || 0)){ map.set(rr.id, rr); changed = true; }
+    });
+    // aplicar borrados (salvo que la fila se haya re-editado después del borrado, o se esté editando)
+    Array.from(map.keys()).forEach(id => {
+      const r = map.get(id);
+      if(tomb[id] && tomb[id] >= (r.ts || 0) && id !== editingId){ map.delete(id); changed = true; }
+    });
+    CT_DATA[sub] = Array.from(map.values());
+  });
+  return changed;
+}
+
+let _ctSaveTimer = null;
+// Guarda con read-merge-write: trae lo último del KV, mergea, y recién ahí sube (no se pisan).
+async function ctFlushSave(){
+  if(_ctSaveTimer){ clearTimeout(_ctSaveTimer); _ctSaveTimer = null; }
+  try{ localStorage.setItem(CT_STORAGE_KEY, JSON.stringify(CT_DATA)); }catch(e){}
+  if(!API_AVAILABLE) return true;
+  ctSetStatus("saving");
+  const remote = await apiLoad("contratos");
+  const merged = remote ? ctMerge(remote) : false;
+  CT_DATA.actualizado = new Date().toISOString();
+  const ok = await apiSave("contratos", CT_DATA);
+  ctSetStatus(ok ? "saved" : "error");
+  // si el merge trajo filas del compañero, refrescar la tabla (si no se está editando)
+  if(merged && !(document.activeElement && document.activeElement.tagName === "INPUT")) ctRender();
+  return ok;
+}
 function ctSave(){
   try{ localStorage.setItem(CT_STORAGE_KEY, JSON.stringify(CT_DATA)); }catch(e){}
-  if(API_AVAILABLE){
-    apiSaveDebounced("contratos", () => CT_DATA, (state) => {
-      const el = document.getElementById("ct-last-save");
-      if(!el) return;
-      if(state === "pending") el.textContent = "guardando...";
-      else if(state === "saving") el.textContent = "subiendo...";
-      else if(state === "saved") el.textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-      else if(state === "error") el.textContent = "⚠️ error";
-    });
-  }
+  if(!API_AVAILABLE) return;
+  ctSetStatus("pending");
+  if(_ctSaveTimer) clearTimeout(_ctSaveTimer);
+  _ctSaveTimer = setTimeout(() => { _ctSaveTimer = null; ctFlushSave(); }, 1500);
+}
+
+// Refresco en vivo: cada 12s trae el KV y mergea para ver los cambios del compañero.
+let _ctPollTimer = null;
+function ctStartPolling(){
+  if(!API_AVAILABLE || _ctPollTimer) return;
+  _ctPollTimer = setInterval(async () => {
+    if(_ctSaveTimer) return;                 // hay un guardado pendiente, esperar
+    const remote = await apiLoad("contratos");
+    if(!remote) return;
+    const changed = ctMerge(remote);
+    if(changed && !(document.activeElement && document.activeElement.tagName === "INPUT")){
+      ctRender();
+    }
+  }, 12000);
 }
 
 async function ctLoadInitial(){
@@ -8782,7 +8857,8 @@ async function ctLoadInitial(){
     CT_DATA = {
       compra: Array.isArray(fromApi.compra) ? fromApi.compra : [],
       venta:  Array.isArray(fromApi.venta)  ? fromApi.venta  : [],
-      actualizado: fromApi.actualizado || ""
+      actualizado: fromApi.actualizado || "",
+      _del: (fromApi._del && typeof fromApi._del === "object") ? fromApi._del : {}
     };
     try{ localStorage.setItem(CT_STORAGE_KEY, JSON.stringify(CT_DATA)); }catch(e){}
     return;
@@ -8840,6 +8916,7 @@ function ctRenderTable(sub){
       const v = inp.value.trim();
       if(r[inp.dataset.k] === v) return;
       r[inp.dataset.k] = v;
+      r.ts = Date.now();
       ctSave();
       ctRenderKpis();
     });
@@ -8852,6 +8929,8 @@ function ctRenderTable(sub){
       const idx = arr.findIndex(x => x.id === b.dataset.id);
       if(idx < 0) return;
       if(!confirm(`¿Borrar contrato "${arr[idx].numero || '(sin nº)'}" — ${arr[idx].beneficiario || '(sin beneficiario)'}?`)) return;
+      CT_DATA._del = CT_DATA._del || {};
+      CT_DATA._del[arr[idx].id] = Date.now();   // tombstone para que el borrado se respete entre usuarios
       arr.splice(idx, 1);
       ctSave();
       ctRender();
@@ -8895,7 +8974,7 @@ function ctRender(){
     const arr = CT_DATA[CT_ACTIVE_SUB];
     if(!arr) return;
     const newId = (CT_ACTIVE_SUB === "compra" ? "c" : "v") + "-" + Date.now();
-    arr.push({ id: newId, numero: "", beneficiario: "" });
+    arr.push({ id: newId, numero: ctNextNumero(CT_ACTIVE_SUB), beneficiario: "", ts: Date.now() });
     ctSave();
     ctRender();
     // foco al numero recien creado
@@ -8913,12 +8992,8 @@ function ctRender(){
     }
     saveBtn.disabled = true;
     saveBtn.textContent = "⏳ Guardando…";
-    // cancelar debounce pendiente si lo hay
-    if(_apiSaveTimers["contratos"]){ clearTimeout(_apiSaveTimers["contratos"]); _apiSaveTimers["contratos"] = null; }
-    const ok = await apiSave("contratos", CT_DATA);
+    const ok = await ctFlushSave();   // read-merge-write: no pisa los cambios del compañero
     saveBtn.textContent = ok ? "✓ Guardado" : "⚠️ Error";
-    const el = document.getElementById("ct-last-save");
-    if(el && ok) el.textContent = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     setTimeout(() => { saveBtn.textContent = "💾 Guardar ahora"; saveBtn.disabled = false; }, 2200);
   });
   // sub-tab listeners
@@ -8928,6 +9003,7 @@ function ctRender(){
   (async () => {
     await ctLoadInitial();
     ctRender();
+    ctStartPolling();   // refresco en vivo para ver los cambios del compañero
   })();
 })();
 
