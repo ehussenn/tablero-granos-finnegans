@@ -6712,12 +6712,24 @@ const PN_DEFAULTS = {
   // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" SIN separar 1ra/2da
   // (y las filas de la posición sí están separadas, así que el auto cae en 0).
   // Pend Cos = lo que falta cosechar; prodTot = pendcos + cosechado (total a cosechar).
-  "Grano Soja":             { cosechado: 24728.2, pendcos: 62 },
+  "Grano Soja":             { cosechado: 24728.2, pendcos: 62, silobolsa: 519.2 },
   "Grano Maíz 1ra":         { cosechado: 13577.6 },
-  "Grano Maíz 2da":         { cosechado: 4403.3, pendcos: 25859 },
+  "Grano Maíz 2da":         { cosechado: 4403.3, pendcos: 25859, silobolsa: 770 },
   "Grano Maíz Pisingallo":  { cosechado: 227.8 },
   "Grano Girasol":          { cosechado: 895.8, pendcos: 6 },
   "Grano Sorgo":            { pendcos: 113 },
+  "Grano Arveja":           { silobolsa: 262 },
+  // Stock en silobolsa (bajada Finnegans "Stock en silobolsas · todo Agronasaja") — semillas, tn
+  "SEM. GRANEL SOJA DM 46E25 ORIGINAL":  { silobolsa: 972.5 },
+  "SEM. GRANEL SOJA DM 50E25 ORIGINAL":  { silobolsa: 627.9 },
+  "SEM. GRANEL SOJA DM 40E25 ORIGINAL":  { silobolsa: 261.4 },
+  "SEM. GRANEL SOJA DM 52E21 STS PRIMU": { silobolsa: 241.8 },
+  "SEM. GRANEL SOJA DM 50E22 SE PRIMU":  { silobolsa: 205 },
+  "SEM. GRANEL SOJA DM 46I20 PRIMU":     { silobolsa: 104.5 },
+  "SEM. GRANEL TRIGO DM CASUARINA PRIMU":{ silobolsa: 498.5 },
+  "SEM. GRANEL TRIGO DM AROMO PRIMU":    { silobolsa: 127 },
+  "SEM. GRANEL TRIGO DM PEHUEN PRIMU":   { silobolsa: 6.7 },
+  "SEM. GRANEL ARVEJA ROSITA":           { silobolsa: 59.8 },
 };
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
@@ -6747,9 +6759,14 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyeOrigen){
   const siloAuto      = origen ? ((PAYLOAD.stock_silo      && PAYLOAD.stock_silo[producto])      || 0) : 0;
   const bolsasAuto    = origen ? ((PAYLOAD.stock_bolsas    && PAYLOAD.stock_bolsas[producto])    || 0) : 0;
   const silobolsaAuto = origen ? ((PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0) : 0;
-  const silo       = origen ? (siloAuto      || pnGetMan(producto, "silo"))      : 0;
-  const bolsas     = origen ? (bolsasAuto    || pnGetMan(producto, "bolsas"))     : 0;
-  const silobolsa  = origen ? (silobolsaAuto || pnGetMan(producto, "silobolsa"))  : 0;
+  // El valor cargado (manual en localStorage o default embebido de la bajada) tiene prioridad
+  // sobre el auto de USR_RESSTOCKDEP; si no hay cargado, usa el auto.
+  const siloMan      = origen ? pnGetMan(producto, "silo")      : 0;
+  const bolsasMan    = origen ? pnGetMan(producto, "bolsas")    : 0;
+  const silobolsaMan = origen ? pnGetMan(producto, "silobolsa") : 0;
+  const silo       = siloMan      > 0 ? siloMan      : siloAuto;
+  const bolsas     = bolsasMan    > 0 ? bolsasMan    : bolsasAuto;
+  const silobolsa  = silobolsaMan > 0 ? silobolsaMan : silobolsaAuto;
   const plantaTot  = silo + bolsas + silobolsa;
 
   // PRODUCCIÓN
