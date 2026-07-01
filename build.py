@@ -605,7 +605,6 @@ HTML_TEMPLATE = r"""<!doctype html>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-traza" data-title="Compra · Trazabilidad">📦 Trazabilidad</a>
-          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-taqueo" data-title="Compra · Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
       <div class="nav-section" data-section="venta">
@@ -621,6 +620,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="nav-items">
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
       <div class="nav-section" data-section="contratos">
@@ -1315,36 +1315,6 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     </div>
 
-    <!-- ===== SUBPANEL: Taqueo CTG ===== -->
-    <div class="subpanel" data-sub-panel="cp-taqueo">
-      <div class="panel-hd" style="background:linear-gradient(135deg,#0f766e,#115e59)">
-        <h3 style="color:#fff;margin:0">🔎 Taqueo CTG · Seguimiento fino Finnegans</h3>
-        <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff" id="tq-ventana">—</div>
-      </div>
-
-      <div class="kpis" id="tq-kpis" style="margin-top:14px"></div>
-
-      <div class="card" style="margin-top:14px">
-        <h3>Seguimiento por grano × flujo <span class="badge">sale de campo (propio) · consignación (compra↔venta)</span></h3>
-        <div style="overflow-x:auto"><table class="tbl" id="tq-seg"><thead></thead><tbody></tbody></table></div>
-      </div>
-
-      <div class="card" style="margin-top:14px">
-        <h3>💧 Pendiente de liquidar (de lo entregado) · por cerealera <span class="badge">click en una cerealera para ver contratos y CTGs</span></h3>
-        <div id="tq-pend"></div>
-      </div>
-
-      <div class="card" style="margin-top:14px">
-        <h3>⚠️ Alertas <span class="badge">duplicados y CTGs que faltan vincular</span></h3>
-        <div id="tq-alertas"></div>
-      </div>
-
-      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
-        💡 <b>Fuente</b>: Finnegans (traslados + contratos de venta) cruzado con los extranets scrapeados (Cargill/LDC/Bunge/Intagro). <b>Sale de campo</b> = producción propia (Traslado CPE). <b>Consignación</b> = pasaje compra CV → venta CV (misma carta). <b>Pendiente de liquidar</b> = campo <code>cantidadentregadapendienteliquidar</code> de Finnegans, con los CTG de cada contrato. Se actualiza en cada deploy.
-      </div>
-
-    </div>
-
   </div>
 
   <!-- ============ VENTA ============ -->
@@ -1548,6 +1518,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="subtabs">
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
+      <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
     <!-- ========== SUB: GRANARIA ========== -->
@@ -1696,6 +1667,36 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
     </div><!-- /subpanel pn-financiera -->
+
+    <!-- ===== SUBPANEL: Taqueo CTG ===== -->
+    <div class="subpanel" data-sub-panel="pn-taqueo">
+      <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🔎 Taqueo CTG · Seguimiento fino Finnegans</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff" id="tq-ventana">—</div>
+      </div>
+
+      <div class="kpis" id="tq-kpis" style="margin-top:14px"></div>
+
+      <div class="section">
+        <h3>Seguimiento por grano × flujo <span class="badge">sale de campo (propio) · consignación (compra↔venta)</span></h3>
+        <div style="overflow-x:auto"><table class="tbl" id="tq-seg"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="section">
+        <h3>💧 Pendiente de liquidar (de lo entregado) · por cerealera <span class="badge">click en una cerealera para ver contratos y CTGs</span></h3>
+        <div id="tq-pend"></div>
+      </div>
+
+      <div class="section">
+        <h3>⚠️ Alertas <span class="badge">duplicados y CTGs que faltan vincular</span></h3>
+        <div id="tq-alertas"></div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <b>Fuente</b>: Finnegans (traslados + contratos de venta) cruzado con los extranets scrapeados (Cargill/LDC/Bunge/Intagro). <b>Sale de campo</b> = producción propia (Traslado CPE). <b>Consignación</b> = pasaje compra CV → venta CV (misma carta). <b>Pendiente de liquidar</b> = campo <code>cantidadentregadapendienteliquidar</code> de Finnegans, con los CTG de cada contrato. Se actualiza en cada deploy.
+      </div>
+
+    </div><!-- /subpanel pn-taqueo -->
 
   </div>
 
@@ -9082,22 +9083,33 @@ function ctRender(){
     segTbl.querySelector("thead").innerHTML = th;
     segTbl.querySelector("tbody").innerHTML = body || `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Sin datos</td></tr>`;
 
-    // ---- Pendiente de liquidar por cerealera (expandible) ----
+    // ---- Pendiente de liquidar por cerealera (LAZY: el detalle de CTGs se arma al desplegar) ----
     const pc = pl.por_cerealera || {};
     const cers = Object.keys(pc);
-    document.getElementById("tq-pend").innerHTML = cers.length ? cers.map(cer => {
+    const pend = document.getElementById("tq-pend");
+    pend.innerHTML = cers.length ? cers.map((cer,i) => {
       const c = pc[cer];
-      const rows = (c.contratos||[]).map(ct => {
-        const ctgs = (ct.ctgs||[]).map(x=>x.ctg);
-        const ctgStr = ctgs.length ? ctgs.join(", ") : '<span style="color:var(--muted)">— sin CTG linkeado</span>';
-        return `<tr><td>${esc(ct.num)}</td><td>${esc(ct.grano||"")}</td><td style="text-align:right;font-weight:600">${n(ct.tn)}</td><td style="font-size:11px;color:#475569">${ctgStr}</td></tr>`;
-      }).join("");
-      return `<details style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+      return `<details data-cer="${i}" style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
         <summary style="cursor:pointer;padding:10px 14px;background:#f8fafc;font-weight:600;display:flex;justify-content:space-between">
           <span>${esc(cer)}</span><span>${n(c.tn)} tn · ${c.n_contratos} contratos</span></summary>
-        <div style="overflow-x:auto"><table class="tbl" style="margin:0"><thead><tr><th>Contrato</th><th>Grano</th><th style="text-align:right">Tn pend.</th><th>CTGs</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="tq-cer-body" style="padding:8px;color:var(--muted);font-size:12px">cargando…</div>
       </details>`;
     }).join("") : '<div style="color:var(--muted);padding:14px">Sin pendientes.</div>';
+    // armar el detalle recién al abrir cada cerealera (evita construir miles de CTG de una)
+    pend.querySelectorAll("details[data-cer]").forEach(d => {
+      d.addEventListener("toggle", () => {
+        if(!d.open || d.dataset.done) return;
+        d.dataset.done = "1";
+        const c = pc[cers[+d.dataset.cer]];
+        const rows = (c.contratos||[]).map(ct => {
+          const ctgs = (ct.ctgs||[]).map(x=>x.ctg);
+          const ctgStr = ctgs.length ? ctgs.join(", ") : '<span style="color:var(--muted)">— sin CTG linkeado</span>';
+          return `<tr><td>${esc(ct.num)}</td><td>${esc(ct.grano||"")}</td><td style="text-align:right;font-weight:600">${n(ct.tn)}</td><td style="font-size:11px;color:#475569;word-break:break-word">${ctgStr}</td></tr>`;
+        }).join("");
+        d.querySelector(".tq-cer-body").outerHTML =
+          `<div style="overflow-x:auto"><table class="tbl" style="margin:0"><thead><tr><th>Contrato</th><th>Grano</th><th style="text-align:right">Tn pend.</th><th>CTGs</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      });
+    });
 
     // ---- Alertas: duplicados + falta vincular ----
     let al = "";
@@ -9112,9 +9124,11 @@ function ctRender(){
     }).join("");
     document.getElementById("tq-alertas").innerHTML = al;
   }
-  // render al mostrar la subpestaña (y una vez al inicio)
-  document.querySelectorAll('[data-go-sub="cp-taqueo"]').forEach(a => a.addEventListener("click", () => setTimeout(render, 40)));
-  render();
+  // LAZY: renderiza recién cuando se abre la subpestaña (evita trabar la carga inicial)
+  let _rendered = false;
+  function showAndRender(){ if(!_rendered){ _rendered = true; } render(); }
+  document.querySelectorAll('[data-go-sub="pn-taqueo"], .subtab[data-sub="pn-taqueo"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(showAndRender, 50)));
 })();
 
 /* ============================================================
