@@ -82,28 +82,64 @@ def compute(ventas_contratos, desde="2026-01-01", hasta=None):
         }
     res["seguimiento"]=seg
 
-    # ---- 2) falta vincular vs extranets (universo = todo Finnegans venta) ----
+    # ---- 2) taqueo BIDIRECCIONAL por cerealera (como el romaneo manual) ----
+    # universo Finnegans venta (todas las fechas) para saber si un CTG está o no en Finnegans
     fnn_all=set(_norm(r.get("NUMERODOCUMENTOADICIONAL")) for r in allrows
                if r.get("OPERACIONTIPO")=="Venta" and _norm(r.get("NUMERODOCUMENTOADICIONAL")))
+    # CTGs de Finnegans venta destinados a cada cerealera, EN LA VENTANA
+    fnn_por_cer=defaultdict(set)
+    for r in win:
+        if r.get("OPERACIONTIPO")!="Venta": continue
+        c=_norm(r.get("NUMERODOCUMENTOADICIONAL"))
+        if not c: continue
+        cer=_cerealera(r.get("DESTINATARIO")) or _cerealera(r.get("ORGANIZACIONNOMBRE"))
+        if cer: fnn_por_cer[cer].add(c)
+
     fv={}
     for cer,path in _EXTRANETS.items():
-        fp=ROOT/path; ext={}
-        if fp.exists():
-            try: ext=json.loads(fp.read_text(encoding="utf-8"))
-            except: ext={}
-        tiene_f=any(isinstance(v,dict) and v.get("fecha") for v in ext.values())
-        ext_win={}
-        for k,v in ext.items():
-            n=_norm(k)
-            if not n: continue
-            f=(v or {}).get("fecha") if isinstance(v,dict) else None
-            d=_pf(f)
-            if tiene_f and d and not (d0<=d<=d1): continue
-            ext_win[n]=v
-        falta=[{"ctg":c,"producto":(ext_win[c].get("producto") if isinstance(ext_win[c],dict) else None),
-                "fecha":(ext_win[c].get("fecha") if isinstance(ext_win[c],dict) else None)}
-               for c in sorted(ext_win) if c not in fnn_all]
-        fv[cer]={"extranet":len(ext_win),"vinculados":len([c for c in ext_win if c in fnn_all]),"falta_vincular":falta}
+        # fuente EXTRANET más completa disponible por cerealera
+        ext_ctgs=set(); fuente="quality"; completo=False
+        if cer=="Cargill":
+            # Cargill: movements.json (Excel completo). CTG = parte tras el guión de legalDocument.
+            fpm=ROOT/"data"/"cargill"/"movements.json"
+            if fpm.exists():
+                try: mov=json.loads(fpm.read_text(encoding="utf-8"))
+                except: mov=[]
+                for m in mov:
+                    if not str(m.get("movementType","")).lower().startswith("recepcion"): continue  # solo lo recibido
+                    ld=str(m.get("legalDocument") or "")
+                    c=_norm(ld.split("-")[-1]) if "-" in ld else ""
+                    if not c: continue
+                    d=_pf(m.get("deliveryDate") or m.get("applicationDate"))
+                    if d and not (d0<=d<=d1): continue
+                    ext_ctgs.add(c)
+                fuente="movements (Excel completo)"; completo=True
+        if not ext_ctgs:
+            fp=ROOT/path; ext={}
+            if fp.exists():
+                try: ext=json.loads(fp.read_text(encoding="utf-8"))
+                except: ext={}
+            tiene_f=any(isinstance(v,dict) and v.get("fecha") for v in ext.values())
+            for k,v in ext.items():
+                n=_norm(k)
+                if not n: continue
+                f=(v or {}).get("fecha") if isinstance(v,dict) else None
+                d=_pf(f)
+                if tiene_f and d and not (d0<=d<=d1): continue
+                ext_ctgs.add(n)
+            # OJO: quality/análisis NO es la descarga completa de entregas -> la dirección
+            # Finnegans->cerealera no es confiable. Solo se marca completo la fuente movements (Cargill).
+            completo=False
+        fnn_cer=fnn_por_cer.get(cer,set())
+        falta_finnegans=sorted(ext_ctgs - fnn_all)        # en extranet, no en Finnegans -> ingresar en Finnegans
+        falta_extranet =sorted(fnn_cer - ext_ctgs) if completo else []  # en Finnegans, no en extranet -> ingresar en cerealera
+        fv[cer]={
+            "fuente":fuente, "completo":completo,
+            "extranet":len(ext_ctgs), "finnegans_ventana":len(fnn_cer),
+            "coinciden":len(ext_ctgs & fnn_all),
+            "falta_en_finnegans":falta_finnegans,
+            "falta_en_extranet":falta_extranet,
+        }
     res["falta_vincular"]=fv
 
     # ---- 3) pendiente de liquidar (entregado) por cerealera, con CTGs ----

@@ -9060,7 +9060,7 @@ function ctRender(){
       totDup += (g.propio?.duplicados?.length||0)+(g.compra?.duplicados?.length||0)+(g.venta?.duplicados?.length||0);
       totDescalce += (g.compra_sin_venta?.length||0)+(g.venta_sin_compra?.length||0);
     });
-    Object.values(fv).forEach(c => totFV += (c.falta_vincular?.length||0));
+    Object.values(fv).forEach(c => totFV += (c.falta_en_finnegans?.length||0)+(c.falta_en_extranet?.length||0));
     const kpis = [
       {lbl:"Pendiente de liquidar", val:n(pl.total_tn)+" tn", cls:"orange", hint:"de lo entregado"},
       {lbl:"CTGs duplicados", val:totDup, cls: totDup?"red":"", hint:"misma carta 2 veces"},
@@ -9118,9 +9118,19 @@ function ctRender(){
       ["propio","compra","venta"].forEach(fl => (s[fl]?.duplicados||[]).forEach(c => dupList.push(`${c} · ${g} · ${fl}`)));
     });
     al += `<div style="margin-bottom:10px"><b>🔴 Duplicados (${dupList.length})</b>${dupList.length?"<ul style='margin:6px 0 0 18px'>"+dupList.map(d=>`<li>${esc(d)}</li>`).join("")+"</ul>":" <span style='color:#16a34a'>ninguno</span>"}</div>`;
+    const listCtgs = (arr) => arr.slice(0,25).map(x=>esc(typeof x==="string"?x:x.ctg)).join(", ") + (arr.length>25?` (+${arr.length-25})`:"");
+    al += `<div style="font-weight:600;margin:10px 0 4px">🔗 Taqueo por cerealera (bidireccional)</div>`;
     al += Object.entries(fv).map(([cer,c]) => {
-      const lst = c.falta_vincular||[];
-      return `<div style="margin-bottom:6px"><b>${esc(cer)}</b>: ${lst.length} falta vincular${lst.length?" — "+lst.slice(0,20).map(x=>esc(x.ctg)).join(", ")+(lst.length>20?` (+${lst.length-20})`:""):" <span style='color:#16a34a'>✓</span>"}</div>`;
+      const ff = c.falta_en_finnegans||[]; const fe = c.falta_en_extranet||[];
+      let s = `<div style="margin-bottom:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px">
+        <b>${esc(cer)}</b> <span style="font-size:11px;color:var(--muted)">· fuente: ${esc(c.fuente||"")} · coinciden ${c.coinciden||0}</span><br>`;
+      s += `<span style="color:${ff.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>Finnegans</b>: ${ff.length}</span>` + (ff.length?` <span style="font-size:11px;color:#475569">${listCtgs(ff)}</span>`:" ✓") + "<br>";
+      if(c.completo){
+        s += `<span style="color:${fe.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>${esc(cer)}</b>: ${fe.length}</span>` + (fe.length?` <span style="font-size:11px;color:#475569">${listCtgs(fe)}</span>`:" ✓");
+      } else {
+        s += `<span style="font-size:11px;color:var(--muted)">→ falta ingresar en ${esc(cer)}: (necesito la descarga completa del extranet para taquear esta dirección)</span>`;
+      }
+      return s + "</div>";
     }).join("");
     document.getElementById("tq-alertas").innerHTML = al;
   }
