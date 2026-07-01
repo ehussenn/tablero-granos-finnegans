@@ -605,6 +605,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-proforma" data-title="Compra · Calculador de Proforma">📄 Calculador Proforma</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-traza" data-title="Compra · Trazabilidad">📦 Trazabilidad</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-taqueo" data-title="Compra · Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
       <div class="nav-section" data-section="venta">
@@ -1310,6 +1311,36 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
         💡 <b>Cómo se lee</b>: cada fila es UN CTG (Carta de Porte). <b>Entregador</b> = quien la emitió (productor que entregó el grano). <b>Cerealera</b> = destinatario final (Cargill, LDC, etc.). <b>Contrato Compra</b> = COMPxxx (a quién le compramos), <b>Contrato Venta</b> = VENxxx (a quién se lo vendimos). Click en una fila → consulta a Finnegans en vivo y trae el detalle (COE, liquidación, comisión, factor).
+      </div>
+
+    </div>
+
+    <!-- ===== SUBPANEL: Taqueo CTG ===== -->
+    <div class="subpanel" data-sub-panel="cp-taqueo">
+      <div class="panel-hd" style="background:linear-gradient(135deg,#0f766e,#115e59)">
+        <h3 style="color:#fff;margin:0">🔎 Taqueo CTG · Seguimiento fino Finnegans</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff" id="tq-ventana">—</div>
+      </div>
+
+      <div class="kpis" id="tq-kpis" style="margin-top:14px"></div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Seguimiento por grano × flujo <span class="badge">sale de campo (propio) · consignación (compra↔venta)</span></h3>
+        <div style="overflow-x:auto"><table class="tbl" id="tq-seg"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>💧 Pendiente de liquidar (de lo entregado) · por cerealera <span class="badge">click en una cerealera para ver contratos y CTGs</span></h3>
+        <div id="tq-pend"></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>⚠️ Alertas <span class="badge">duplicados y CTGs que faltan vincular</span></h3>
+        <div id="tq-alertas"></div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <b>Fuente</b>: Finnegans (traslados + contratos de venta) cruzado con los extranets scrapeados (Cargill/LDC/Bunge/Intagro). <b>Sale de campo</b> = producción propia (Traslado CPE). <b>Consignación</b> = pasaje compra CV → venta CV (misma carta). <b>Pendiente de liquidar</b> = campo <code>cantidadentregadapendienteliquidar</code> de Finnegans, con los CTG de cada contrato. Se actualiza en cada deploy.
       </div>
 
     </div>
@@ -9008,6 +9039,85 @@ function ctRender(){
 })();
 
 /* ============================================================
+   ============  TAQUEO CTG · Seguimiento fino  ================
+   ============================================================ */
+(function tqInit(){
+  const T = PAYLOAD.taqueo || {};
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n = v => (v==null?0:Number(v)).toLocaleString('es-AR',{maximumFractionDigits:1});
+  function render(){
+    if(!document.getElementById("tq-seg")) return;
+    const vent = T.ventana ? `${T.ventana[0]} → ${T.ventana[1]}` : "—";
+    const gel = document.getElementById("tq-ventana"); if(gel) gel.textContent = `Ventana: ${vent}`;
+    const seg = T.seguimiento || {};
+    const pl  = T.pendiente_liquidar || {};
+    const fv  = T.falta_vincular || {};
+
+    // ---- KPIs ----
+    let totDup = 0, totFV = 0, totDescalce = 0;
+    Object.values(seg).forEach(g => {
+      totDup += (g.propio?.duplicados?.length||0)+(g.compra?.duplicados?.length||0)+(g.venta?.duplicados?.length||0);
+      totDescalce += (g.compra_sin_venta?.length||0)+(g.venta_sin_compra?.length||0);
+    });
+    Object.values(fv).forEach(c => totFV += (c.falta_vincular?.length||0));
+    const kpis = [
+      {lbl:"Pendiente de liquidar", val:n(pl.total_tn)+" tn", cls:"orange", hint:"de lo entregado"},
+      {lbl:"CTGs duplicados", val:totDup, cls: totDup?"red":"", hint:"misma carta 2 veces"},
+      {lbl:"Falta vincular", val:totFV, cls: totFV?"red":"", hint:"en extranet, no en Finnegans"},
+      {lbl:"Descalce compra↔venta", val:totDescalce, cls: totDescalce?"red":"green", hint:"consignación sin cerrar"},
+    ];
+    document.getElementById("tq-kpis").innerHTML = kpis.map(k =>
+      `<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join("");
+
+    // ---- Seguimiento por grano × flujo ----
+    const th = `<tr><th>Grano</th><th>Sale de campo (propio)</th><th>Consignación compra</th><th>Consignación venta</th><th>Cruce</th></tr>`;
+    const body = ["Soja","Maíz","Trigo Pan"].map(g => {
+      const s = seg[g]; if(!s) return "";
+      const desc = (s.compra_sin_venta?.length||0)+(s.venta_sin_compra?.length||0);
+      const cruce = desc ? `<span style="color:#dc2626;font-weight:600">⚠ ${desc} sin cerrar</span>` : `<span style="color:#16a34a">✓ ${s.cierran} cierran</span>`;
+      const cell = (o) => `${o.ctgs} CTG · ${n(o.tn)} tn${o.duplicados&&o.duplicados.length?` <span style="color:#dc2626">⚠${o.duplicados.length}dup</span>`:""}`;
+      return `<tr><td style="font-weight:600">${g}</td><td>${cell(s.propio)}</td><td>${cell(s.compra)}</td><td>${cell(s.venta)}</td><td>${cruce}</td></tr>`;
+    }).join("");
+    const segTbl = document.getElementById("tq-seg");
+    segTbl.querySelector("thead").innerHTML = th;
+    segTbl.querySelector("tbody").innerHTML = body || `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Sin datos</td></tr>`;
+
+    // ---- Pendiente de liquidar por cerealera (expandible) ----
+    const pc = pl.por_cerealera || {};
+    const cers = Object.keys(pc);
+    document.getElementById("tq-pend").innerHTML = cers.length ? cers.map(cer => {
+      const c = pc[cer];
+      const rows = (c.contratos||[]).map(ct => {
+        const ctgs = (ct.ctgs||[]).map(x=>x.ctg);
+        const ctgStr = ctgs.length ? ctgs.join(", ") : '<span style="color:var(--muted)">— sin CTG linkeado</span>';
+        return `<tr><td>${esc(ct.num)}</td><td>${esc(ct.grano||"")}</td><td style="text-align:right;font-weight:600">${n(ct.tn)}</td><td style="font-size:11px;color:#475569">${ctgStr}</td></tr>`;
+      }).join("");
+      return `<details style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <summary style="cursor:pointer;padding:10px 14px;background:#f8fafc;font-weight:600;display:flex;justify-content:space-between">
+          <span>${esc(cer)}</span><span>${n(c.tn)} tn · ${c.n_contratos} contratos</span></summary>
+        <div style="overflow-x:auto"><table class="tbl" style="margin:0"><thead><tr><th>Contrato</th><th>Grano</th><th style="text-align:right">Tn pend.</th><th>CTGs</th></tr></thead><tbody>${rows}</tbody></table></div>
+      </details>`;
+    }).join("") : '<div style="color:var(--muted);padding:14px">Sin pendientes.</div>';
+
+    // ---- Alertas: duplicados + falta vincular ----
+    let al = "";
+    const dupList = [];
+    Object.entries(seg).forEach(([g,s]) => {
+      ["propio","compra","venta"].forEach(fl => (s[fl]?.duplicados||[]).forEach(c => dupList.push(`${c} · ${g} · ${fl}`)));
+    });
+    al += `<div style="margin-bottom:10px"><b>🔴 Duplicados (${dupList.length})</b>${dupList.length?"<ul style='margin:6px 0 0 18px'>"+dupList.map(d=>`<li>${esc(d)}</li>`).join("")+"</ul>":" <span style='color:#16a34a'>ninguno</span>"}</div>`;
+    al += Object.entries(fv).map(([cer,c]) => {
+      const lst = c.falta_vincular||[];
+      return `<div style="margin-bottom:6px"><b>${esc(cer)}</b>: ${lst.length} falta vincular${lst.length?" — "+lst.slice(0,20).map(x=>esc(x.ctg)).join(", ")+(lst.length>20?` (+${lst.length-20})`:""):" <span style='color:#16a34a'>✓</span>"}</div>`;
+    }).join("");
+    document.getElementById("tq-alertas").innerHTML = al;
+  }
+  // render al mostrar la subpestaña (y una vez al inicio)
+  document.querySelectorAll('[data-go-sub="cp-taqueo"]').forEach(a => a.addEventListener("click", () => setTimeout(render, 40)));
+  render();
+})();
+
+/* ============================================================
    ============  MI BANDEJA · Notas de Mail (Personal)  ========
    ============================================================
    Cada usuario interno (@agronasaja.com.ar) tiene su propia bandeja
@@ -10300,10 +10410,22 @@ def main() -> int:
         print(f"    [!] error finales: {e}")
         finales = []
 
+    # Taqueo / Seguimiento fino de CTG (por grano × flujo, falta vincular, pendiente liquidar)
+    print(f"\n[+] Calculando Taqueo CTG (seguimiento fino + pendiente liquidar)...", flush=True)
+    try:
+        import taqueo
+        taqueo_data = taqueo.compute(pilot_norm, desde="2026-01-01")
+        _pl = taqueo_data.get("pendiente_liquidar", {})
+        print(f"    -> pendiente liquidar: {_pl.get('total_tn')} tn · duplicados/falta-vincular calculados")
+    except Exception as e:
+        print(f"    [!] error taqueo: {e}")
+        taqueo_data = {}
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
         "finales": finales,
+        "taqueo": taqueo_data,
         "pilot":  pilot_norm,
         "compra": compra_norm,
         "saldos": saldos_norm,
