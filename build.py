@@ -1688,12 +1688,18 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div class="section">
-        <h3>⚠️ Alertas <span class="badge">duplicados y CTGs que faltan vincular</span></h3>
+        <h3>🔗 Taqueo por rango de fechas <span class="badge">elegí el período y cruza Finnegans ↔ extranet (como tu romaneo)</span></h3>
+        <div class="filterbar" style="margin-bottom:10px">
+          <div><label>DESDE</label><input type="date" id="tq-desde" value="2026-01-01"></div>
+          <div><label>HASTA</label><input type="date" id="tq-hasta"></div>
+          <button class="clear" id="tq-cruzar">🔄 Cruzar</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="tq-cruce-info"></span>
+        </div>
         <div id="tq-alertas"></div>
       </div>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
-        💡 <b>Fuente</b>: Finnegans (traslados + contratos de venta) cruzado con los extranets scrapeados (Cargill/LDC/Bunge/Intagro). <b>Sale de campo</b> = producción propia (Traslado CPE). <b>Consignación</b> = pasaje compra CV → venta CV (misma carta). <b>Pendiente de liquidar</b> = campo <code>cantidadentregadapendienteliquidar</code> de Finnegans, con los CTG de cada contrato. Se actualiza en cada deploy.
+        💡 <b>Fuente</b>: Finnegans (traslados + contratos de venta) cruzado con los extranets. <b>Cargill</b> usa la descarga completa (movements) → cruce en ambas direcciones. Las demás usan calidad/análisis (parcial) → por ahora solo "falta en Finnegans". <b>Elegí el rango de fechas</b> arriba y apretá Cruzar: se filtran los dos lados a ese período, se sacan duplicados y se muestran los que faltan ingresar en cada sistema. Se actualiza en cada deploy.
       </div>
 
     </div><!-- /subpanel pn-taqueo -->
@@ -9111,34 +9117,59 @@ function ctRender(){
       });
     });
 
-    // ---- Alertas: duplicados + falta vincular ----
-    let al = "";
-    const dupList = [];
-    Object.entries(seg).forEach(([g,s]) => {
-      ["propio","compra","venta"].forEach(fl => (s[fl]?.duplicados||[]).forEach(c => dupList.push(`${c} · ${g} · ${fl}`)));
-    });
-    al += `<div style="margin-bottom:10px"><b>🔴 Duplicados (${dupList.length})</b>${dupList.length?"<ul style='margin:6px 0 0 18px'>"+dupList.map(d=>`<li>${esc(d)}</li>`).join("")+"</ul>":" <span style='color:#16a34a'>ninguno</span>"}</div>`;
-    const listCtgs = (arr) => arr.slice(0,25).map(x=>esc(typeof x==="string"?x:x.ctg)).join(", ") + (arr.length>25?` (+${arr.length-25})`:"");
-    al += `<div style="font-weight:600;margin:10px 0 4px">🔗 Taqueo por cerealera (bidireccional)</div>`;
-    al += Object.entries(fv).map(([cer,c]) => {
-      const ff = c.falta_en_finnegans||[]; const fe = c.falta_en_extranet||[];
-      let s = `<div style="margin-bottom:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px">
-        <b>${esc(cer)}</b> <span style="font-size:11px;color:var(--muted)">· fuente: ${esc(c.fuente||"")} · coinciden ${c.coinciden||0}</span><br>`;
-      s += `<span style="color:${ff.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>Finnegans</b>: ${ff.length}</span>` + (ff.length?` <span style="font-size:11px;color:#475569">${listCtgs(ff)}</span>`:" ✓") + "<br>";
-      if(c.completo){
-        s += `<span style="color:${fe.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>${esc(cer)}</b>: ${fe.length}</span>` + (fe.length?` <span style="font-size:11px;color:#475569">${listCtgs(fe)}</span>`:" ✓");
-      } else {
-        s += `<span style="font-size:11px;color:var(--muted)">→ falta ingresar en ${esc(cer)}: (necesito la descarga completa del extranet para taquear esta dirección)</span>`;
-      }
-      return s + "</div>";
-    }).join("");
-    document.getElementById("tq-alertas").innerHTML = al;
+    // ---- Taqueo por rango: se calcula aparte (crossRange) según las fechas elegidas ----
+    const hhEl = document.getElementById("tq-hasta");
+    if(hhEl && !hhEl.value){ hhEl.value = new Date().toISOString().slice(0,10); }
+    crossRange();
   }
-  // LAZY: renderiza recién cuando se abre la subpestaña (evita trabar la carga inicial)
+
+  // Cruce en vivo por rango de fechas, desde los CTG crudos embebidos (T.raw)
+  function crossRange(){
+    const raw = T.raw || {};
+    const ddEl=document.getElementById("tq-desde"), hhEl=document.getElementById("tq-hasta");
+    const cont=document.getElementById("tq-alertas");
+    if(!ddEl || !cont) return;
+    const dd=ddEl.value, hh=hhEl.value;
+    const inR = f => f && (!dd||f>=dd) && (!hh||f<=hh);
+    const listC = a => a.slice(0,30).map(esc).join(", ") + (a.length>30?` (+${a.length-30})`:"");
+    let al="", totFnn=0, totExt=0, totDup=0;
+    const keys=Object.keys(raw);
+    if(!keys.length){ cont.innerHTML='<div style="color:var(--muted);padding:10px">Sin datos crudos (rebuild pendiente).</div>'; return; }
+    keys.forEach(cer => {
+      const r=raw[cer], F={}, E={};
+      (r.finnegans||[]).forEach(a=>{ if(inR(a[1])) F[a[0]]=(F[a[0]]||0)+1; });
+      (r.extranet ||[]).forEach(a=>{ if(inR(a[1])) E[a[0]]=(E[a[0]]||0)+1; });
+      const fK=Object.keys(F), eK=Object.keys(E);
+      const faltaFnn=eK.filter(c=>!F[c]);      // en extranet, no en Finnegans
+      const faltaExt=fK.filter(c=>!E[c]);      // en Finnegans, no en extranet
+      const coinc=eK.filter(c=>F[c]).length;
+      const dupF=fK.filter(c=>F[c]>1), dupE=eK.filter(c=>E[c]>1);
+      totFnn+=faltaFnn.length; if(r.completo) totExt+=faltaExt.length; totDup+=dupF.length+dupE.length;
+      let s=`<details style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden" ${cer==="Cargill"?"open":""}>
+        <summary style="cursor:pointer;padding:10px 14px;background:#f8fafc;font-weight:600">${esc(cer)}
+          <span style="font-size:11px;color:var(--muted)">· ${esc(r.fuente)} · Finnegans ${fK.length} / extranet ${eK.length} · coinciden ${coinc}</span></summary>
+        <div style="padding:10px 14px">`;
+      s+=`<div style="margin-bottom:6px;color:${faltaFnn.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>Finnegans</b>: ${faltaFnn.length}${faltaFnn.length?` <span style="font-size:11px;color:#475569">${listC(faltaFnn)}</span>`:" ✓"}</div>`;
+      if(r.completo){
+        s+=`<div style="margin-bottom:6px;color:${faltaExt.length?'#dc2626':'#16a34a'}">→ falta ingresar en <b>${esc(cer)}</b>: ${faltaExt.length}${faltaExt.length?` <span style="font-size:11px;color:#475569">${listC(faltaExt)}</span>`:" ✓"}</div>`;
+      } else {
+        s+=`<div style="margin-bottom:6px;font-size:11px;color:var(--muted)">→ falta ingresar en ${esc(cer)}: necesito la descarga completa del extranet</div>`;
+      }
+      if(dupF.length||dupE.length) s+=`<div style="color:#dc2626;font-size:12px">🔴 duplicados en Finnegans: ${dupF.length}${dupF.length?" ("+listC(dupF)+")":""}${dupE.length?` · en extranet: ${dupE.length}`:""}</div>`;
+      al+=s+"</div></details>";
+    });
+    cont.innerHTML=al;
+    const inf=document.getElementById("tq-cruce-info");
+    if(inf) inf.textContent=`faltan ${totFnn} en Finnegans · ${totExt} en cerealeras · ${totDup} duplicados`;
+  }
+
+  // LAZY: renderiza recién al abrir la subpestaña
   let _rendered = false;
-  function showAndRender(){ if(!_rendered){ _rendered = true; } render(); }
+  function showAndRender(){ _rendered = true; render(); }
   document.querySelectorAll('[data-go-sub="pn-taqueo"], .subtab[data-sub="pn-taqueo"]')
     .forEach(a => a.addEventListener("click", () => setTimeout(showAndRender, 50)));
+  ["tq-desde","tq-hasta"].forEach(id => { const e=document.getElementById(id); if(e) e.addEventListener("change", crossRange); });
+  const btn=document.getElementById("tq-cruzar"); if(btn) btn.addEventListener("click", crossRange);
 })();
 
 /* ============================================================

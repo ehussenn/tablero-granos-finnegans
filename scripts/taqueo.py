@@ -142,6 +142,45 @@ def compute(ventas_contratos, desde="2026-01-01", hasta=None):
         }
     res["falta_vincular"]=fv
 
+    # ---- 2b) CTG crudos con fecha (los dos lados) para cruce INTERACTIVO por rango en el panel ----
+    raw={}
+    for cer,path in _EXTRANETS.items():
+        # lado Finnegans: venta destino cerealera, TODAS las fechas -> [ctg, fecha ISO]
+        fnn_l=[]
+        for r in allrows:
+            if r.get("OPERACIONTIPO")!="Venta": continue
+            c=_norm(r.get("NUMERODOCUMENTOADICIONAL"))
+            if not c: continue
+            if (_cerealera(r.get("DESTINATARIO")) or _cerealera(r.get("ORGANIZACIONNOMBRE")))==cer:
+                d=_pf(r.get("FECHA")); fnn_l.append([c, d.isoformat() if d else None])
+        # lado Extranet (completo donde se puede)
+        ext_l=[]; fuente="quality"; completo=False
+        if cer=="Cargill":
+            fpm=ROOT/"data"/"cargill"/"movements.json"
+            if fpm.exists():
+                try: mov=json.loads(fpm.read_text(encoding="utf-8"))
+                except: mov=[]
+                for m in mov:
+                    if not str(m.get("movementType","")).lower().startswith("recepcion"): continue
+                    ld=str(m.get("legalDocument") or "")
+                    c=_norm(ld.split("-")[-1]) if "-" in ld else ""
+                    if not c: continue
+                    d=_pf(m.get("deliveryDate") or m.get("applicationDate"))
+                    ext_l.append([c, d.isoformat() if d else None])
+                fuente="movements (descarga completa)"; completo=True
+        else:
+            fp=ROOT/path; ext={}
+            if fp.exists():
+                try: ext=json.loads(fp.read_text(encoding="utf-8"))
+                except: ext={}
+            for k,v in ext.items():
+                c=_norm(k)
+                if not c: continue
+                f=(v or {}).get("fecha") if isinstance(v,dict) else None
+                d=_pf(f); ext_l.append([c, d.isoformat() if d else None])
+        raw[cer]={"fuente":fuente,"completo":completo,"finnegans":fnn_l,"extranet":ext_l}
+    res["raw"]=raw
+
     # ---- 3) pendiente de liquidar (entregado) por cerealera, con CTGs ----
     pend={}
     for r in (ventas_contratos or []):
