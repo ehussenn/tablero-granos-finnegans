@@ -92,7 +92,7 @@ def compute(ventas_contratos, desde="2026-01-01", hasta=None):
         if r.get("OPERACIONTIPO")!="Venta": continue
         c=_norm(r.get("NUMERODOCUMENTOADICIONAL"))
         if not c: continue
-        cer=_cerealera(r.get("DESTINATARIO")) or _cerealera(r.get("ORGANIZACIONNOMBRE"))
+        cer=_cerealera(r.get("ORGANIZACIONNOMBRE")) or _cerealera(r.get("DESTINATARIO"))
         if cer: fnn_por_cer[cer].add(c)
 
     fv={}
@@ -151,7 +151,7 @@ def compute(ventas_contratos, desde="2026-01-01", hasta=None):
             if r.get("OPERACIONTIPO")!="Venta": continue
             c=_norm(r.get("NUMERODOCUMENTOADICIONAL"))
             if not c: continue
-            if (_cerealera(r.get("DESTINATARIO")) or _cerealera(r.get("ORGANIZACIONNOMBRE")))==cer:
+            if (_cerealera(r.get("ORGANIZACIONNOMBRE")) or _cerealera(r.get("DESTINATARIO")))==cer:
                 d=_pf(r.get("FECHA")); fnn_l.append([c, d.isoformat() if d else None])
         # lado Extranet (completo donde se puede)
         ext_l=[]; fuente="quality"; completo=False
@@ -200,7 +200,7 @@ def compute(ventas_contratos, desde="2026-01-01", hasta=None):
             if c not in [x["ctg"] for x in e["ctgs"]]:
                 e["ctgs"].append({"ctg":c,"fecha":r.get("FECHA"),"tn":round(float(r.get("PESONETO") or 0)/1000,2)})
             if not e["cerealera"]:
-                e["cerealera"]=_cerealera(r.get("DESTINATARIO")) or _cerealera(r.get("ORGANIZACIONNOMBRE"))
+                e["cerealera"]=_cerealera(r.get("ORGANIZACIONNOMBRE")) or _cerealera(r.get("DESTINATARIO"))
     porcer=defaultdict(lambda:{"tn":0.0,"contratos":[]})
     for num,e in pend.items():
         cer=e["cerealera"] or "(sin asignar)"
