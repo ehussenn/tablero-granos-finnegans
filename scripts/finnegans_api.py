@@ -59,13 +59,26 @@ def call(path: str, params: dict | None = None, timeout: int = 120) -> dict | li
     qs = urllib.parse.urlencode({k: v for k, v in (params or {}).items() if v is not None and v != ""})
     url = f"{BASE}{path}" + ("?" + qs if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}", "Accept": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            body = resp.read().decode("utf-8")
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"HTTP {e.code} en {url}\n  body: {err_body[:500]}") from None
-    return json.loads(body)
+    # Reintentos ante timeouts / errores de red transitorios (la API de Finnegans se pone
+    # flaky y hacía fallar todo el build de CI). 3 intentos con backoff.
+    last_err = None
+    for intento in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = resp.read().decode("utf-8")
+            return json.loads(body)
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="replace")
+            if 500 <= e.code < 600 and intento < 2:      # 5xx: reintentar
+                last_err = e; time.sleep(2 * (intento + 1)); continue
+            raise RuntimeError(f"HTTP {e.code} en {url}\n  body: {err_body[:500]}") from None
+        except Exception as e:                            # timeout / URLError / socket: reintentar
+            last_err = e
+            if intento < 2:
+                sys.stderr.write(f"    [retry {intento+1}/3] {path}: {str(e)[:60]}\n")
+                time.sleep(2 * (intento + 1)); continue
+            raise
+    raise last_err
 
 
 # Mapeo de cada dataset a su endpoint + params default
