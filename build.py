@@ -4933,6 +4933,10 @@ function cjRenderVendedores(rows){
     cobertura: v.usdCanje > 0 ? v.usdCubierto/v.usdCanje : 0,
   })).sort((a,b) => b.usdCanje - a.usdCanje);
 
+  // detalle de clientes por vendedor (para el botón Copiar / enviar)
+  CJ_VEND_DETALLE = {};
+  rows.forEach(r => { const v = r.vendedor || '— sin vendedor —'; (CJ_VEND_DETALLE[v] = CJ_VEND_DETALLE[v] || []).push(r); });
+
   document.getElementById('cj-vend-meta').textContent = `${arr.length} vendedores`;
 
   const head = `
@@ -4945,6 +4949,7 @@ function cjRenderVendedores(rows){
     <th class="num">OK</th>
     <th class="num">Parcial</th>
     <th class="num">Sin Contrato</th>
+    <th>Enviar</th>
   `;
   document.getElementById('tbl-vend-head').innerHTML = head;
 
@@ -4968,6 +4973,7 @@ function cjRenderVendedores(rows){
       <td class="num" style="color:var(--green)">${v.ok || '—'}</td>
       <td class="num" style="color:var(--orange)">${v.parcial || '—'}</td>
       <td class="num" style="color:var(--red)">${v.sin || '—'}</td>
+      <td><button class="clear" style="padding:3px 9px;font-size:11px" onclick="cjCopyVend(this)" data-v="${escapeHtml(v.vendedor)}">📋 Copiar</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="99" style="text-align:center;padding:20px;color:var(--muted)">Sin vendedores con datos</td></tr>';
 
@@ -4991,7 +4997,30 @@ function cjRenderVendedores(rows){
       <td class="num">${tot.ok}</td>
       <td class="num">${tot.p}</td>
       <td class="num">${tot.s}</td>
+      <td></td>
     </tr>`;
+}
+
+// Detalle de clientes por vendedor (poblado en cjRenderVendedores) para el botón Copiar
+let CJ_VEND_DETALLE = {};
+function cjCopyVend(btn){
+  const v = btn.dataset.v;
+  const rows = (CJ_VEND_DETALLE[v] || []).slice().sort((a,b) => (b.saldoUsd||0) - (a.saldoUsd||0));
+  if(!rows.length){ return; }
+  const conds = [...new Set(rows.flatMap(r => [...(r.condiciones||[])]))].join(', ');
+  let tot = 0, totFalt = 0;
+  let txt = `Canjes ${conds} — ${v}\n\n`;
+  rows.forEach(r => {
+    tot += r.saldoUsd || 0; totFalt += r.usdFaltante || 0;
+    const vto = r.meses && r.meses.size ? ` · vto ${[...r.meses].join(', ')}` : '';
+    const falta = (r.usdFaltante||0) > 1 ? `  ⚠ FALTA CONTRATO USD ${fmt.num(r.usdFaltante)}` : '';
+    txt += `• ${r.cliente}: USD ${fmt.num(r.saldoUsd)}${vto}${falta}\n`;
+  });
+  txt += `\nTOTAL canje: USD ${fmt.num(tot)}`;
+  if(totFalt > 1) txt += `\nFalta cubrir con contrato de compra: USD ${fmt.num(totFalt)}`;
+  navigator.clipboard.writeText(txt).then(() => {
+    const o = btn.textContent; btn.textContent = '✓ Copiado'; setTimeout(() => btn.textContent = o, 1500);
+  }).catch(() => alert(txt));
 }
 
 cjInitFilters();
