@@ -2132,7 +2132,7 @@ function makeColumnsResizable(tableEl, persistKey){
 
 // Aplicar al cargar — y re-aplicar después de que cada tabla se haya renderizado
 function applyResizableTables(){
-  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos');     // Compra · Posición Física
+  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos-v2');  // Compra · Posición Física (v2: reset anchos, Proveedor 240)
   makeColumnsResizable(document.getElementById('tbl'),         'venta-pos');     // Venta · Posición Física
   makeColumnsResizable(document.getElementById('tbl-cpfin'),  'compra-fin');     // Compra · Financiera
   makeColumnsResizable(document.getElementById('tbl-fin'),     'venta-fin');     // Venta · Financiera
@@ -3788,7 +3788,7 @@ function cpRender(){
   const head = CP_TABLE_COLS.map(c => {
     const ar = (cpSortKey===c.k) ? (cpSortDir>0?'▲':'▼') : '';
     const cls = (cpSortKey===c.k) ? (cpSortDir>0?'sort-asc':'sort-desc') : '';
-    const st = c.w ? ` style="min-width:${c.w}"` : '';
+    const st = c.w ? ` style="width:${c.w};min-width:${c.w}"` : '';
     return `<th class="${cls}" data-k="${c.k}" data-num="${c.num?1:0}"${st}>${c.lbl}<span class="arrow">${ar||'⇅'}</span></th>`;
   }).join('');
   document.getElementById('tbl-head-cp').innerHTML = head;
