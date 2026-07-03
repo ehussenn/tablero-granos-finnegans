@@ -3619,9 +3619,10 @@ let lastClickIdxCp = null;
 const CP_TABLE_COLS = [
   {k:'fecha',                       lbl:'Fecha',           num:false},
   {k:'numerointerno',               lbl:'Nº',              num:false},
-  {k:'organizacion',                lbl:'Proveedor',       num:false},
+  {k:'organizacion',                lbl:'Proveedor',       num:false, w:'240px'},
   {k:'producto',                    lbl:'Producto',        num:false},
   {k:'tipocontrato',                lbl:'Tipo',            num:false},
+  {k:'_cpFijado',                   lbl:'¿A Precio?',      num:false, html:true},
   {k:'cantidadmax',                 lbl:'Tn Ajustadas',    num:true, sum:true},
   {k:'cantidadentregada',           lbl:'Tn Recibidas',    num:true, sum:true},
   {k:'_cpPdteRecibir',              lbl:'Tn Pdte Recibir', num:true, sum:true},
@@ -3640,7 +3641,22 @@ function cpGetVal(r, k){
   if(k==='_cpEstado') return r.estadoanulacion||'';
   if(k==='_cpPdteRecibir') return (r.cantidadmax||0) - (r.cantidadentregada||0);
   if(k==='_cpPdteLiquidar') return (r.cantidadentregada||0) - (r.cantidadliquidada||0);
+  if(k==='_cpFijado'){ const aj=r.cantidadmax||0, fj=r.cantidadfijada||0;
+    const t=(r.tipocontrato||'').toLowerCase();
+    if(t.includes('a precio')) return 2;               // ordena: a precio arriba
+    return aj>0 ? Math.min(1, fj/aj) : 0; }            // % fijado como valor de orden
   return r[k];
+}
+// ¿El contrato de compra tiene precio / fijación?
+function cpFijadoChip(r){
+  const t=(r.tipocontrato||'').toLowerCase();
+  const aj=r.cantidadmax||0, fj=r.cantidadfijada||0, px=r.preciopromediofijado||0;
+  const pxTxt = px>0 ? ` <span style="color:var(--muted);font-weight:400">$${fmt.num(px)}</span>` : '';
+  if(t.includes('a precio'))       return '<span class="chip ok">A precio</span>'+pxTxt;
+  if(t.includes('contra entrega')) return '<span class="chip neutral">C/Entrega</span>';
+  if(aj>0 && fj>=aj*0.999)         return '<span class="chip ok">Fijado</span>'+pxTxt;
+  if(fj>0)                          return `<span class="chip warn">Fijado ${fmt.pct(fj/aj)}</span>`+pxTxt;
+  return '<span class="chip info">A fijar (sin precio)</span>';
 }
 function cpEstadoChip(r){
   const e = (r.estadoanulacion||'').toLowerCase();
@@ -3772,7 +3788,8 @@ function cpRender(){
   const head = CP_TABLE_COLS.map(c => {
     const ar = (cpSortKey===c.k) ? (cpSortDir>0?'▲':'▼') : '';
     const cls = (cpSortKey===c.k) ? (cpSortDir>0?'sort-asc':'sort-desc') : '';
-    return `<th class="${cls}" data-k="${c.k}" data-num="${c.num?1:0}">${c.lbl}<span class="arrow">${ar||'⇅'}</span></th>`;
+    const st = c.w ? ` style="min-width:${c.w}"` : '';
+    return `<th class="${cls}" data-k="${c.k}" data-num="${c.num?1:0}"${st}>${c.lbl}<span class="arrow">${ar||'⇅'}</span></th>`;
   }).join('');
   document.getElementById('tbl-head-cp').innerHTML = head;
   document.querySelectorAll('#tbl-head-cp th').forEach(th => {
@@ -3802,6 +3819,8 @@ function cpRender(){
     const selCls = SEL_CP.has(id) ? ' class="row-sel"' : '';
     return `<tr data-id="${id}" data-i="${i}"${selCls}>`+CP_TABLE_COLS.map(c=>{
       if(c.k==='_cpEstado') return '<td>'+cpEstadoChip(r)+'</td>';
+      if(c.k==='_cpFijado') return '<td>'+cpFijadoChip(r)+'</td>';
+      if(c.k==='organizacion'){ const o=r.organizacion||''; return `<td style="min-width:${c.w}" title="${o.replace(/"/g,'&quot;')}">${o||'<span class=muted>—</span>'}</td>`; }
       const v = cpGetVal(r, c.k);
       if(c.num) return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
       return `<td>${v==null?'<span class=muted>—</span>':String(v)}</td>`;
