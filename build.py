@@ -2132,7 +2132,7 @@ function makeColumnsResizable(tableEl, persistKey){
 
 // Aplicar al cargar — y re-aplicar después de que cada tabla se haya renderizado
 function applyResizableTables(){
-  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos-v2');  // Compra · Posición Física (v2: reset anchos, Proveedor 240)
+  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos-v3');  // Compra · Posición Física (v3: anchos por defecto más amplios)
   makeColumnsResizable(document.getElementById('tbl'),         'venta-pos');     // Venta · Posición Física
   makeColumnsResizable(document.getElementById('tbl-cpfin'),  'compra-fin');     // Compra · Financiera
   makeColumnsResizable(document.getElementById('tbl-fin'),     'venta-fin');     // Venta · Financiera
@@ -3617,24 +3617,24 @@ const SEL_CP = new Set();
 let lastClickIdxCp = null;
 
 const CP_TABLE_COLS = [
-  {k:'fecha',                       lbl:'Fecha',           num:false},
-  {k:'numerointerno',               lbl:'Nº',              num:false},
+  {k:'fecha',                       lbl:'Fecha',           num:false, w:'100px'},
+  {k:'numerointerno',               lbl:'Nº',              num:false, w:'70px'},
   {k:'organizacion',                lbl:'Proveedor',       num:false, w:'240px'},
-  {k:'producto',                    lbl:'Producto',        num:false},
-  {k:'tipocontrato',                lbl:'Tipo',            num:false},
-  {k:'_cpFijado',                   lbl:'¿A Precio?',      num:false, html:true},
-  {k:'cantidadmax',                 lbl:'Tn Ajustadas',    num:true, sum:true},
-  {k:'cantidadentregada',           lbl:'Tn Recibidas',    num:true, sum:true},
-  {k:'_cpPdteRecibir',              lbl:'Tn Pdte Recibir', num:true, sum:true},
-  {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true},
-  {k:'_cpPdteLiquidar',             lbl:'Tn Pdte Liquidar',num:true, sum:true},
-  {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
-  {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
-  {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
-  {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false},
-  {k:'campana',                     lbl:'Campaña',         num:false},
-  {k:'corredor',                    lbl:'Corredor',        num:false},
-  {k:'_cpEstado',                   lbl:'Estado',          num:false, html:true},
+  {k:'producto',                    lbl:'Producto',        num:false, w:'150px'},
+  {k:'tipocontrato',                lbl:'Tipo',            num:false, w:'155px'},
+  {k:'_cpFijado',                   lbl:'¿A Precio?',      num:false, html:true, w:'130px'},
+  {k:'cantidadmax',                 lbl:'Tn Ajustadas',    num:true, sum:true, w:'95px'},
+  {k:'cantidadentregada',           lbl:'Tn Recibidas',    num:true, sum:true, w:'95px'},
+  {k:'_cpPdteRecibir',              lbl:'Tn Pdte Recibir', num:true, sum:true, w:'95px'},
+  {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true, w:'95px'},
+  {k:'_cpPdteLiquidar',             lbl:'Tn Pdte Liquidar',num:true, sum:true, w:'95px'},
+  {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true, w:'90px'},
+  {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true, w:'90px'},
+  {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false, w:'110px'},
+  {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false, w:'110px'},
+  {k:'campana',                     lbl:'Campaña',         num:false, w:'150px'},
+  {k:'corredor',                    lbl:'Corredor',        num:false, w:'150px'},
+  {k:'_cpEstado',                   lbl:'Estado',          num:false, html:true, w:'110px'},
 ];
 
 function cpGetVal(r, k){
@@ -3823,7 +3823,8 @@ function cpRender(){
       if(c.k==='organizacion'){ const o=r.organizacion||''; return `<td style="min-width:${c.w}" title="${o.replace(/"/g,'&quot;')}">${o||'<span class=muted>—</span>'}</td>`; }
       const v = cpGetVal(r, c.k);
       if(c.num) return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
-      return `<td>${v==null?'<span class=muted>—</span>':String(v)}</td>`;
+      const sv = v==null?'':String(v);
+      return `<td title="${sv.replace(/"/g,'&quot;')}">${sv||'<span class=muted>—</span>'}</td>`;
     }).join('')+'</tr>';
   }).join('') || '<tr><td colspan="99" style="padding:30px;text-align:center;color:var(--muted)">Sin resultados</td></tr>';
 
