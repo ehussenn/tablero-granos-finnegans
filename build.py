@@ -8860,10 +8860,17 @@ function ctSetStatus(state){
 
 // Próximo número de contrato (autocompletar): max numérico existente + 1
 function ctNextNumero(sub){
-  const nums = (CT_DATA[sub] || [])
-    .map(r => parseInt(String(r.numero || "").replace(/[^\d]/g, ""), 10))
-    .filter(n => !isNaN(n));
-  return nums.length ? String(Math.max(...nums) + 1) : "";
+  // Toma el código con el mayor número y le suma 1, PRESERVANDO el prefijo y el
+  // relleno de ceros. Ej: "VEN209" -> "VEN210", "COMP-0045" -> "COMP-0046".
+  let bestNum = -1, bestPrefix = "", bestPad = 0;
+  (CT_DATA[sub] || []).forEach(r => {
+    const m = String(r.numero || "").trim().match(/^(.*?)(\d+)\s*$/);  // prefijo + número final
+    if(!m) return;
+    const num = parseInt(m[2], 10);
+    if(!isNaN(num) && num > bestNum){ bestNum = num; bestPrefix = m[1]; bestPad = m[2].length; }
+  });
+  if(bestNum < 0) return "";
+  return bestPrefix + String(bestNum + 1).padStart(bestPad, "0");
 }
 
 // Mergea el estado remoto (KV) con el local SIN pisar: une filas por id, prefiere
@@ -8935,7 +8942,7 @@ function ctStartPolling(){
     if(changed && !(document.activeElement && document.activeElement.tagName === "INPUT")){
       ctRender();
     }
-  }, 12000);
+  }, 8000);
 }
 
 async function ctLoadInitial(){
