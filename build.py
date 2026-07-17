@@ -105,8 +105,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 <style>
   :root{
     --bg:#f4f6fa; --card:#ffffff; --ink:#1a2233; --muted:#6c7a8c;
-    --blue:#1e3a8a; --blue2:#3b82f6; --green:#16a34a; --red:#dc2626;
-    --orange:#f59e0b; --line:#e5e9f2; --chip:#eef2ff;
+    --blue:#15803d; --blue2:#22c55e; --green:#16a34a; --red:#dc2626;
+    --orange:#f59e0b; --line:#e5e9f2; --chip:#ecfdf5;
     --row-alt:#f8fafd;
   }
   *{box-sizing:border-box}
@@ -114,7 +114,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .wrap{max-width:1500px;margin:0 auto;padding:18px}
 
   /* header */
-  .hero{background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border-radius:14px;padding:22px 28px;display:flex;justify-content:space-between;align-items:flex-start;box-shadow:0 4px 20px rgba(30,58,138,.18)}
+  .hero{background:linear-gradient(135deg,#15803d 0%,#22c55e 100%);color:#fff;border-radius:14px;padding:22px 28px;display:flex;justify-content:space-between;align-items:flex-start;box-shadow:0 4px 20px rgba(21,128,61,.18)}
   .hero h1{margin:0;font-size:22px;font-weight:600;letter-spacing:.2px}
   .hero .sub{margin-top:4px;opacity:.85;font-size:13px}
   .hero .meta{font-size:12px;text-align:right;opacity:.9;line-height:1.6}
@@ -124,9 +124,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .tabs{display:flex;gap:6px;margin:18px 0 14px}
   .tab{padding:10px 22px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;font-weight:500;color:var(--muted);transition:all .15s}
   .tab:hover{color:var(--ink);border-color:#c7d2e2}
-  .tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(30,58,138,.25)}
+  .tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 8px rgba(21,128,61,.25)}
   .tab .count{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;background:rgba(255,255,255,.18);font-size:11px;font-weight:600}
-  .tab:not(.active) .count{background:#eef2ff;color:var(--blue)}
+  .tab:not(.active) .count{background:#ecfdf5;color:var(--blue)}
 
   /* sub-tabs (dentro de cada panel) */
   .subtabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin:6px 0 16px}
@@ -138,15 +138,15 @@ HTML_TEMPLATE = r"""<!doctype html>
   .tabs{display:none !important}      /* reemplazadas por el sidebar */
   .subtabs{display:none !important}   /* idem (siguen funcionando por JS) */
   .app-shell{display:flex;min-height:100vh}
-  .sidebar{width:248px;flex:0 0 248px;background:#14264a;color:#aebbd2;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid #24375f;z-index:30}
+  .sidebar{width:248px;flex:0 0 248px;background:#123524;color:#b3c6ba;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid #1e4634;z-index:30}
   .sidebar .brand{display:flex;align-items:center;gap:10px;padding:18px 18px 4px}
-  .sidebar .brand-logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px}
+  .sidebar .brand-logo{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,#15803d,#22c55e);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px}
   .sidebar .brand-name{font-weight:800;letter-spacing:1px;color:#fff;font-size:15px;line-height:1.1}
-  .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#8ea3c4;text-transform:uppercase;margin-top:2px}
-  .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#60a5fa;text-transform:uppercase;font-weight:700;border-top:1px solid #24375f;padding-top:12px}
-  .sidebar .campana-home{display:block;text-decoration:none;cursor:pointer;padding:10px 18px 10px 18px;margin:0;border-top:1px solid #24375f;border-radius:0;transition:background .15s,color .15s;font-size:11px}
-  .sidebar .campana-home:hover{background:#1c2f54;color:#fff}
-  .sidebar .campana-home.active{background:linear-gradient(90deg,#1c2f54,#16a34a44);color:#fff;border-left:3px solid #16a34a}
+  .sidebar .brand-sub{font-size:10px;letter-spacing:2px;color:#93b8a4;text-transform:uppercase;margin-top:2px}
+  .sidebar .campana{margin:14px 18px 4px;font-size:10px;letter-spacing:1.5px;color:#4ade80;text-transform:uppercase;font-weight:700;border-top:1px solid #1e4634;padding-top:12px}
+  .sidebar .campana-home{display:block;text-decoration:none;cursor:pointer;padding:10px 18px 10px 18px;margin:0;border-top:1px solid #1e4634;border-radius:0;transition:background .15s,color .15s;font-size:11px}
+  .sidebar .campana-home:hover{background:#17402e;color:#fff}
+  .sidebar .campana-home.active{background:linear-gradient(90deg,#17402e,#16a34a44);color:#fff;border-left:3px solid #16a34a}
 
   /* ===== PORTADA / HOME ===== */
   .home-hero{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#14532d 0%,#16a34a 35%,#84cc16 75%,#fde68a 100%);color:#fff;padding:0;margin-bottom:22px;box-shadow:0 10px 30px rgba(20,83,45,.25)}
@@ -173,23 +173,23 @@ HTML_TEMPLATE = r"""<!doctype html>
   .home-card-title{font-size:15px;font-weight:700;color:var(--ink)}
   .home-card-desc{font-size:11.5px;color:var(--muted);line-height:1.4}
   .nav{padding:4px 10px 28px}
-  .nav-group{font-size:10px;letter-spacing:1.5px;color:#6b80a6;text-transform:uppercase;font-weight:700;margin:16px 10px 6px;background:none;border:none;width:calc(100% - 20px);text-align:left;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;gap:4px;font-family:inherit;transition:color .15s}
-  .nav-group:hover{color:#bfdbfe;background:#1c2f54}
-  .nav-arrow{display:inline-block;width:10px;font-size:9px;transition:transform .15s;color:#3b82f6}
+  .nav-group{font-size:10px;letter-spacing:1.5px;color:#7d9c8a;text-transform:uppercase;font-weight:700;margin:16px 10px 6px;background:none;border:none;width:calc(100% - 20px);text-align:left;cursor:pointer;padding:4px 6px;border-radius:6px;display:flex;align-items:center;gap:4px;font-family:inherit;transition:color .15s}
+  .nav-group:hover{color:#bbf7d0;background:#17402e}
+  .nav-arrow{display:inline-block;width:10px;font-size:9px;transition:transform .15s;color:#22c55e}
   .nav-section.collapsed .nav-arrow{transform:rotate(-90deg)}
   .nav-section.collapsed .nav-items{display:none}
   .nav-items{display:block}
   .nav-item{display:block;padding:9px 12px;border-radius:8px;color:#c2cee3;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
-  .nav-item:hover{background:#1c2f54;color:#fff}
-  .nav-item.active{background:#1c2f54;color:#bfdbfe;border-left-color:#3b82f6;font-weight:600}
+  .nav-item:hover{background:#17402e;color:#fff}
+  .nav-item.active{background:#17402e;color:#bbf7d0;border-left-color:#22c55e;font-weight:600}
   .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
   .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:11px 24px;display:flex;justify-content:space-between;align-items:center;z-index:25;gap:16px}
   .topbar-title{font-size:18px;font-weight:700;color:var(--ink)}
   .topbar-right{display:flex;align-items:center;gap:14px}
   .topbar-meta{font-size:11px;color:var(--muted);text-align:right;line-height:1.35}
   .topbar-meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:5px;box-shadow:0 0 0 3px rgba(34,197,94,.25)}
-  .admin-pill{background:#dbeafe;color:#1e3a8a;border:1px solid #bfdbfe;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-  .admin-pill:hover{background:#bfdbfe}
+  .admin-pill{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .admin-pill:hover{background:#bbf7d0}
   .logout-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);color:var(--ink);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
   .logout-btn:hover{border-color:#dc2626;color:#dc2626}
   .content{padding:20px 24px;max-width:1560px;width:100%}
@@ -211,14 +211,14 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   /* kpi cards */
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:14px 0}
-  .kpi{background:#fff;border-radius:12px;padding:18px 20px;border-top:3px solid var(--blue2);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .kpi{background:#fff;border-radius:14px;padding:18px 20px;border-top:3px solid var(--blue2);box-shadow:0 2px 10px rgba(16,64,40,.06)}
   .kpi.green{border-top-color:var(--green)}
   .kpi.red{border-top-color:var(--red)}
   .kpi.orange{border-top-color:var(--orange)}
   .kpi.yellow{border-top-color:#eab308}
   .kpi.pink{border-top-color:#ec4899}
   .kpi .lbl{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
-  .kpi .val{font-size:28px;font-weight:700;margin-top:4px;color:var(--ink)}
+  .kpi .val{font-size:31px;font-weight:800;margin-top:4px;color:var(--ink);letter-spacing:-.3px}
   .kpi.green .val{color:var(--green)}
   .kpi.red .val{color:var(--red)}
   .kpi.orange .val{color:var(--orange)}
@@ -235,7 +235,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .filterbar .count{margin-left:auto;font-size:12px;color:var(--muted);align-self:center}
 
   /* secciones */
-  .section{background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;border:1px solid var(--line)}
+  .section{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:1px solid var(--line);box-shadow:0 2px 10px rgba(16,64,40,.04)}
   .section h3{margin:0 0 12px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
   .section h3 .badge{font-size:11px;font-weight:500;color:var(--muted)}
   /* Tablas con columnas redimensionables (drag desde borde derecho del th) */
@@ -254,8 +254,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   details.section-collapsible > summary::-webkit-details-marker{display:none}
   details.section-collapsible[open] > summary{margin-bottom:12px}
   details.section-collapsible > summary .badge{font-size:11px;font-weight:500;color:var(--muted);margin-left:auto}
-  details.section-collapsible > summary:hover{color:#1e3a8a}
-  details.section-collapsible .collapse-arrow{display:inline-block;width:14px;font-size:11px;color:#1e3a8a;transition:transform .15s}
+  details.section-collapsible > summary:hover{color:#15803d}
+  details.section-collapsible .collapse-arrow{display:inline-block;width:14px;font-size:11px;color:#15803d;transition:transform .15s}
   details.section-collapsible:not([open]) .collapse-arrow{transform:rotate(-90deg)}
 
   /* cards por grano */
@@ -289,13 +289,13 @@ HTML_TEMPLATE = r"""<!doctype html>
   .pl-inp{padding:7px 9px;border:1px solid var(--line);border-radius:6px}
   #pl-tbl{border-collapse:separate;border-spacing:0;font-size:12px}
   #pl-tbl th,#pl-tbl td{white-space:nowrap;border-bottom:1px solid var(--line);border-right:1px solid #eef1f6;padding:6px 8px}
-  #pl-tbl thead th{position:sticky;top:0;background:#1e3a8a;color:#fff;z-index:2;text-align:right}
+  #pl-tbl thead th{position:sticky;top:0;background:#15803d;color:#fff;z-index:2;text-align:right}
   #pl-tbl thead th.pl-month{background:#172e6b;text-align:center;top:0}
   #pl-tbl thead tr:nth-child(2) th{top:30px;background:#24407e}
   #pl-tbl .pl-fz{position:sticky;background:#fff;z-index:1;text-align:left}
   #pl-tbl tbody tr:nth-child(even) .pl-fz{background:var(--row-alt)}
-  #pl-tbl thead th.pl-fz{z-index:5;background:#1e3a8a;color:#fff}
-  #pl-tbl tfoot td{position:sticky;bottom:0;background:#dbeafe;font-weight:700;z-index:1}
+  #pl-tbl thead th.pl-fz{z-index:5;background:#15803d;color:#fff}
+  #pl-tbl tfoot td{position:sticky;bottom:0;background:#dcfce7;font-weight:700;z-index:1}
   #pl-tbl tfoot td.pl-fz{z-index:3;background:#cbe0f7}
   #pl-tbl td.pl-day{padding:1px}
   #pl-tbl input.pl-cell{width:84px;border:1px solid transparent;background:transparent;text-align:right;padding:5px 6px;border-radius:4px;font-variant-numeric:tabular-nums;font-size:12px}
@@ -314,7 +314,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .chip.ok{background:#dcfce7;color:#15803d}
   .chip.warn{background:#fef3c7;color:#a16207}
   .chip.err{background:#fee2e2;color:#b91c1c}
-  .chip.info{background:#dbeafe;color:#1e40af}
+  .chip.info{background:#dcfce7;color:#1e40af}
   .chip.neutral{background:#f1f5f9;color:#475569}
 
   /* chart container */
@@ -326,11 +326,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   /* calendario de cobranzas */
   #cal-tbl{font-size:12px}
   #cal-tbl thead th{cursor:default;font-size:10.5px;padding:6px 8px}
-  #cal-tbl thead th.cal-month{background:#1e3a8a;cursor:pointer}
+  #cal-tbl thead th.cal-month{background:#15803d;cursor:pointer}
   #cal-tbl thead th.cal-month:hover{background:#172e6b}
-  #cal-tbl thead th.cal-day{background:#3b82f6;font-weight:500;padding:4px 6px;min-width:40px}
+  #cal-tbl thead th.cal-day{background:#22c55e;font-weight:500;padding:4px 6px;min-width:40px}
   #cal-tbl thead th.cal-day .dn{font-size:9px;opacity:.75;display:block}
-  #cal-tbl thead th.cal-org{background:#1e3a8a;text-align:left;min-width:260px;position:sticky;left:0;z-index:2}
+  #cal-tbl thead th.cal-org{background:#15803d;text-align:left;min-width:260px;position:sticky;left:0;z-index:2}
   #cal-tbl tbody td.cal-org-cell{text-align:left;font-weight:500;background:#fff;position:sticky;left:0;z-index:1;border-right:2px solid var(--line)}
   #cal-tbl tbody tr.cal-contrato td.cal-org-cell{padding-left:24px;font-weight:400;color:var(--muted);font-size:11px}
   #cal-tbl tbody tr.cal-org > td.cal-org-cell{cursor:pointer}
@@ -343,18 +343,18 @@ HTML_TEMPLATE = r"""<!doctype html>
   #cal-tbl tbody td.cal-num input[data-has-value="1"]{font-weight:600;color:var(--green);background:#f0fdf4}
   #cal-tbl tbody tr.cal-contrato td.cal-num{background:#fafbff}
   #cal-tbl tbody tr.cal-contrato td.cal-num input{font-size:10px}
-  #cal-tbl tfoot td{background:#eef2ff;font-weight:700;padding:6px 8px;font-size:11.5px}
+  #cal-tbl tfoot td{background:#ecfdf5;font-weight:700;padding:6px 8px;font-size:11.5px}
   #cal-tbl tfoot td.cal-num{text-align:right}
-  #cal-tbl tfoot td.cal-org-cell{position:sticky;left:0;background:#dbeafe;text-align:left}
+  #cal-tbl tfoot td.cal-org-cell{position:sticky;left:0;background:#dcfce7;text-align:left}
 
   /* calendario de pagos (Compra) — mismo estilo */
   #cal-cp-tbl{font-size:12px}
   #cal-cp-tbl thead th{cursor:default;font-size:10.5px;padding:6px 8px}
-  #cal-cp-tbl thead th.cal-month{background:#1e3a8a;cursor:pointer}
+  #cal-cp-tbl thead th.cal-month{background:#15803d;cursor:pointer}
   #cal-cp-tbl thead th.cal-month:hover{background:#172e6b}
-  #cal-cp-tbl thead th.cal-day{background:#3b82f6;font-weight:500;padding:4px 6px;min-width:40px}
+  #cal-cp-tbl thead th.cal-day{background:#22c55e;font-weight:500;padding:4px 6px;min-width:40px}
   #cal-cp-tbl thead th.cal-day .dn{font-size:9px;opacity:.75;display:block}
-  #cal-cp-tbl thead th.cal-org{background:#1e3a8a;text-align:left;min-width:260px;position:sticky;left:0;z-index:2}
+  #cal-cp-tbl thead th.cal-org{background:#15803d;text-align:left;min-width:260px;position:sticky;left:0;z-index:2}
   #cal-cp-tbl tbody td.cal-org-cell{text-align:left;font-weight:500;background:#fff;position:sticky;left:0;z-index:1;border-right:2px solid var(--line)}
   #cal-cp-tbl tbody tr.cal-contrato td.cal-org-cell{padding-left:24px;font-weight:400;color:var(--muted);font-size:11px}
   #cal-cp-tbl tbody tr.cal-org > td.cal-org-cell{cursor:pointer}
@@ -373,11 +373,11 @@ HTML_TEMPLATE = r"""<!doctype html>
 
   /* Cruce Cliente x Comprador (matrix) */
   #cx-matrix{font-size:11.5px}
-  #cx-matrix thead th{background:#1e3a8a;color:#fff;padding:8px 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;text-align:center;border-right:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:1}
+  #cx-matrix thead th{background:#15803d;color:#fff;padding:8px 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.2px;text-align:center;border-right:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:1}
   #cx-matrix thead th.cx-cliente-h{text-align:left;background:#0f172a;min-width:240px;position:sticky;left:0;z-index:3}
   #cx-matrix thead th.cx-pct-cli{background:#7c2d12;min-width:60px}
   #cx-matrix thead th.cx-precio-cli{background:#0d9488;min-width:75px}
-  #cx-matrix thead th.cx-comprador{background:#1e3a8a;min-width:95px;cursor:default}
+  #cx-matrix thead th.cx-comprador{background:#15803d;min-width:95px;cursor:default}
   #cx-matrix thead th.cx-comprador .pct{display:block;font-size:9.5px;background:#f59e0b;color:#451a03;padding:1px 4px;border-radius:8px;margin-top:3px;font-weight:600}
   #cx-matrix thead th.cx-comprador .pct.zero{background:#fee2e2;color:#7f1d1d}
   #cx-matrix tbody td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
@@ -387,8 +387,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   #cx-matrix tbody td.cx-pct-cell{background:#fef3c7;color:#92400e;font-weight:600}
   #cx-matrix tbody td.cx-precio-cell{background:#ccfbf1;color:#134e4a;font-weight:600}
   #cx-matrix tbody td.cx-empty{color:#cbd5e1}
-  #cx-matrix tfoot td{background:#eef2ff;font-weight:700;padding:8px 6px;font-size:11.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1;text-align:right}
-  #cx-matrix tfoot td.cx-foot-lbl{text-align:left;background:#dbeafe;color:var(--blue);position:sticky;left:0;z-index:2}
+  #cx-matrix tfoot td{background:#ecfdf5;font-weight:700;padding:8px 6px;font-size:11.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1;text-align:right}
+  #cx-matrix tfoot td.cx-foot-lbl{text-align:left;background:#dcfce7;color:var(--blue);position:sticky;left:0;z-index:2}
 
   /* Cards de cultivos (variante con balance) */
   .cult-card{padding:14px;border-radius:10px;border-left:4px solid #94a3b8;background:#fafbff}
@@ -409,19 +409,19 @@ HTML_TEMPLATE = r"""<!doctype html>
   .vista-toggle.active{background:#16a34a;border-color:#16a34a;color:#fff;box-shadow:0 2px 6px rgba(22,163,74,.3)}
 
   /* Posicion Granaria */
-  #pn-tabla thead th{background:#1e3a8a;color:#fff;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-right:1px solid rgba(255,255,255,.1);text-align:center}
+  #pn-tabla thead th{background:#15803d;color:#fff;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-right:1px solid rgba(255,255,255,.1);text-align:center}
   #pn-tabla thead th.pn-prod{background:#0f172a;text-align:left;position:sticky;left:0;z-index:3;min-width:180px}
   #pn-tabla thead th.grp{background:#7c2d12;border-bottom:2px solid #fed7aa}
   #pn-tabla thead th.grp-prod{background:#15803d;border-bottom:2px solid #86efac}
-  #pn-tabla thead th.grp-compra{background:#1e3a8a;border-bottom:2px solid #93c5fd}
+  #pn-tabla thead th.grp-compra{background:#15803d;border-bottom:2px solid #93c5fd}
   #pn-tabla thead th.grp-venta{background:#9a3412;border-bottom:2px solid #fdba74}
   #pn-tabla thead th.grp-resultado{background:#581c87;border-bottom:2px solid #d8b4fe}
   #pn-tabla tbody td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
   #pn-tabla tbody td.pn-prod-cell{text-align:left;font-weight:500;background:#fff;position:sticky;left:0;z-index:2;border-right:2px solid var(--line)}
   #pn-tabla tbody tr.pn-grupo td{background:#fffbeb;font-weight:700;color:#92400e;border-top:2px solid #fcd34d;font-size:12px}
   #pn-tabla tbody tr.pn-grupo td.pn-prod-cell{background:#fef3c7}
-  #pn-tabla tbody tr.pn-total td{background:#dbeafe;font-weight:700;color:#1e3a8a;border-top:2px solid var(--blue);font-size:12px}
-  #pn-tabla tbody tr.pn-total td.pn-prod-cell{background:#bfdbfe}
+  #pn-tabla tbody tr.pn-total td{background:#dcfce7;font-weight:700;color:#15803d;border-top:2px solid var(--blue);font-size:12px}
+  #pn-tabla tbody tr.pn-total td.pn-prod-cell{background:#bbf7d0}
   #pn-tabla tbody td input{width:100%;border:1px solid transparent;background:transparent;padding:2px 4px;text-align:right;font-size:11px;font-family:inherit;font-variant-numeric:tabular-nums;border-radius:3px;color:inherit}
   #pn-tabla tbody td input:hover{border-color:var(--line);background:#fff}
   #pn-tabla tbody td input:focus{border-color:var(--blue);background:#fff;outline:none;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
@@ -430,7 +430,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   #pn-tabla tbody td.calc{background:#f0fdf4;color:#15803d;font-weight:500}
   #pn-tabla tbody td.pos-pos{background:#dcfce7;color:#15803d;font-weight:700}
   #pn-tabla tbody td.pos-neg{background:#fee2e2;color:#991b1b;font-weight:700}
-  #pn-tabla tfoot td{background:#1e3a8a;color:#fff;font-weight:700;padding:6px 8px;font-size:12px;border-top:2px solid #0f172a;position:sticky;bottom:0}
+  #pn-tabla tfoot td{background:#15803d;color:#fff;font-weight:700;padding:6px 8px;font-size:12px;border-top:2px solid #0f172a;position:sticky;bottom:0}
   #pn-tabla tfoot td.pn-prod-cell{background:#0f172a;position:sticky;left:0;z-index:1}
 
   /* Cards de cultivo posicion */
@@ -446,7 +446,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .pn-card .pos-val.neg{color:var(--red)}
   .pn-card .of-de{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px}
   .pn-card .bar-cobertura{margin-top:8px;height:6px;background:#e5e9f2;border-radius:4px;overflow:hidden}
-  .pn-card .bar-cobertura > div{height:100%;background:linear-gradient(90deg,#3b82f6,#1e3a8a)}
+  .pn-card .bar-cobertura > div{height:100%;background:linear-gradient(90deg,#22c55e,#15803d)}
   .pn-card .pct{text-align:right;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px}
 
   /* Pagos Granos (POSICION GENERAL) */
@@ -482,7 +482,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   #pg-tbl tbody td .row-btn.pay{background:#16a34a;color:#fff;border-color:#16a34a}
   #pg-tbl tbody td .row-btn.del{background:#fff;color:var(--red);border-color:#fecaca}
   #pg-tbl tbody td .row-btn:hover{filter:brightness(0.95)}
-  #pg-tbl tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:13px;border-top:2px solid var(--blue);position:sticky;bottom:0}
+  #pg-tbl tfoot td{background:#ecfdf5;font-weight:700;padding:8px 10px;font-size:13px;border-top:2px solid var(--blue);position:sticky;bottom:0}
   #pg-tbl tfoot td.num{text-align:right;color:var(--blue);font-variant-numeric:tabular-nums}
 
   /* Modo lectura (sin PAT configurado):
@@ -494,7 +494,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   body.pg-reader #pg-reader-banner .lbl{font-weight:700}
 
   /* tabla con fila de totales sticky al pie */
-  table tfoot td{background:#eef2ff;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
+  table tfoot td{background:#ecfdf5;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
   table tfoot tr.sel td{background:#fef3c7;border-top:2px solid var(--orange);bottom:33px}
   table tfoot td.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--blue)}
   table tfoot tr.sel td.num{color:#a16207}
@@ -527,7 +527,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .calc-card .lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
   .calc-card .val{font-size:22px;font-weight:700;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums}
   .calc-card .hint{font-size:11px;color:var(--muted);margin-top:2px}
-  .calc-card.highlight{background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);border:none}
+  .calc-card.highlight{background:linear-gradient(135deg,#15803d 0%,#22c55e 100%);border:none}
   .calc-card.highlight .lbl{color:rgba(255,255,255,.85)}
   .calc-card.highlight .val{color:#fff;font-size:28px}
   .calc-card.highlight .hint{color:rgba(255,255,255,.75)}
@@ -551,9 +551,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   .mb-chip.urg-alta{background:#fee2e2;color:#991b1b}
   .mb-chip.urg-media{background:#fef3c7;color:#92400e}
   .mb-chip.urg-baja{background:#f1f5f9;color:#475569}
-  .mb-chip.cat{background:#dbeafe;color:#1e40af}
+  .mb-chip.cat{background:#dcfce7;color:#1e40af}
   .mb-meta{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .mb-meta .sender{font-weight:600;color:#1e3a8a}
+  .mb-meta .sender{font-weight:600;color:#15803d}
   .mb-section-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
   .mb-card textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-family:inherit;font-size:12.5px;resize:vertical;min-height:46px;color:var(--ink);background:#fff;line-height:1.45}
   .mb-card textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
@@ -1525,7 +1525,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="subpanel active" data-sub-panel="pn-granaria">
 
     <!-- Header -->
-    <div class="section" style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border:none">
+    <div class="section" style="background:linear-gradient(135deg,#15803d 0%,#22c55e 100%);color:#fff;border:none">
       <h3 style="color:#fff;margin:0">📊 Posición Granaria · Agronasaja</h3>
       <div style="font-size:12px;opacity:.85;margin-top:4px">Análisis comercial · Compra · Venta · Cobertura — datos en vivo + carga manual de Planta y Producción</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
@@ -1569,7 +1569,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <div class="subpanel" data-sub-panel="pn-financiera">
 
       <!-- Header -->
-      <div class="section" style="background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:#fff;border:none">
+      <div class="section" style="background:linear-gradient(135deg,#15803d 0%,#22c55e 100%);color:#fff;border:none">
         <h3 style="color:#fff;margin:0">💰 Posición Financiera · Agronasaja</h3>
         <div style="font-size:12px;opacity:.85;margin-top:4px">Valorización de pendientes de liquidar + Stock físico — para cierre patrimonial</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
