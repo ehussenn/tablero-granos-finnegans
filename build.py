@@ -6697,6 +6697,7 @@ function pnFamilia(prod){
   if(p.includes("arveja")) return "ARVEJA";
   if(p.includes("centeno")) return "CENTENO";
   if(p.includes("camelina")) return "CAMELINA";
+  if(p.includes("colza")) return "COLZA";
   if(p.includes("rabanito")) return "RABANITO";
   return "OTROS";
 }
@@ -6793,18 +6794,11 @@ const PN_COLS = [
 
 // Defaults embebidos: valores manuales que vienen del cierre — el usuario los puede sobreescribir
 // editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
+// PLANTA / stock físico embebido (silobolsa de la bajada de Finnegans). Es físico = pertenece
+// a la campaña de COSECHA VIGENTE (25/26). La PRODUCCIÓN va aparte, por campaña (PN_PROD_BY_CAMP).
 const PN_DEFAULTS = {
-  // Producción propia 25/26 — fuente: planilla "Kg por Beneficiario" (cosechado AGNSJ) +
-  // "Estimado por Cosechar" (pendiente AGNSJ). Valores en tn.
-  // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" SIN separar 1ra/2da
-  // (y las filas de la posición sí están separadas, así que el auto cae en 0).
-  // Pend Cos = lo que falta cosechar; prodTot = pendcos + cosechado (total a cosechar).
-  "Grano Soja":             { cosechado: 24728.2, pendcos: 62, silobolsa: 519.2 },
-  "Grano Maíz 1ra":         { cosechado: 13577.6 },
-  "Grano Maíz 2da":         { cosechado: 4403.3, pendcos: 25859, silobolsa: 770 },
-  "Grano Maíz Pisingallo":  { cosechado: 227.8 },
-  "Grano Girasol":          { cosechado: 895.8, pendcos: 6 },
-  "Grano Sorgo":            { pendcos: 113 },
+  "Grano Soja":             { silobolsa: 519.2 },
+  "Grano Maíz 2da":         { silobolsa: 770 },
   "Grano Arveja":           { silobolsa: 262 },
   // Stock en silobolsa (bajada Finnegans "Stock en silobolsas · todo Agronasaja") — semillas, tn
   "SEM. GRANEL SOJA DM 46E25 ORIGINAL":  { silobolsa: 972.5 },
@@ -6818,9 +6812,38 @@ const PN_DEFAULTS = {
   "SEM. GRANEL TRIGO DM PEHUEN PRIMU":   { silobolsa: 6.7 },
   "SEM. GRANEL ARVEJA ROSITA":           { silobolsa: 59.8 },
 };
+// Producción propia POR CAMPAÑA (cosechado + pendiente a cosechar, en tn). Cada campaña con
+// sus cultivos. La producción se muestra según la campaña SELECCIONADA en el filtro.
+const PN_PROD_BY_CAMP = {
+  // 25/26 = gruesa. Fuente: planilla "Kg por Beneficiario" (cosechado) + "Estimado por Cosechar".
+  // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" sin separar 1ra/2da.
+  "CAMPAÑA 25-26": {
+    "Grano Soja":            { cosechado: 24728.2, pendcos: 62 },
+    "Grano Maíz 1ra":        { cosechado: 13577.6 },
+    "Grano Maíz 2da":        { cosechado: 4403.3, pendcos: 25859 },
+    "Grano Maíz Pisingallo": { cosechado: 227.8 },
+    "Grano Girasol":         { cosechado: 895.8, pendcos: 6 },
+    "Grano Sorgo":           { pendcos: 113 },
+  },
+  // 26/27 = fina (recién sembrada). ha confirmadas de Agronasaja × rinde aprox -> todo pendiente.
+  "CAMPAÑA 26-27": {
+    "Grano Trigo Pan":        { pendcos: 9104 },   // 2.023 ha × 4,5
+    "Grano CEBADA":           { pendcos: 1787 },   // 397 ha × 4,5
+    "Grano Camelina":         { pendcos: 263 },    // 202 ha × 1,3
+    "Grano Colza":            { pendcos: 187 },    // 85 ha × 2,2
+    "Grano Cebada Cervecera": { pendcos: 171 },    // 38 ha × 4,5
+  },
+};
+const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
+let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
   if(o[k] !== undefined && o[k] !== null && o[k] !== "") return Number(o[k]) || 0;
+  // producción (cosechado/pendcos/campoest) sale de la campaña seleccionada
+  if(PN_PROD_KEYS.has(k)){
+    const camp = PN_PROD_BY_CAMP[PN_SEL_CAMP] || {};
+    return Number((camp[prod] || {})[k]) || 0;
+  }
   const d = PN_DEFAULTS[prod] || {};
   return Number(d[k]) || 0;
 }
@@ -6835,11 +6858,11 @@ function pnSetMan(prod, k, v){
   pnSave();
 }
 
-function pnCalcRow(producto, opsCompra, opsVenta, incluyeOrigen){
-  // incluyeOrigen=false => campaña forward (ej. 26/27, sin cosecha física): PLANTA y PRODUCCIÓN
-  // (stock físico, cosechado, campo estimado) NO pertenecen a esa campaña, van en 0.
-  // (Compra y Venta sí se muestran: son contratos reales filtrados por campaña.)
-  const origen = (incluyeOrigen === false) ? false : true;
+function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
+  // incluyePlanta=false => campaña NO vigente: el STOCK FÍSICO (silo/bolsas/silobolsa y el
+  // cosechado auto de traslados) no le pertenece, va en 0. La PRODUCCIÓN (cosechado/pendiente
+  // cargados) sí se muestra según la campaña seleccionada (viene de PN_PROD_BY_CAMP).
+  const origen = (incluyePlanta === false) ? false : true;
   // PLANTA: TODO auto desde Stock por Deposito (USR_RESSTOCKDEP), categorizado por nombre de deposito
   // SILO (silos físicos sin "bolsa", "descarte", "ventas"), SILOBOLSA, BOLSAS (DEPOSITO VENTAS ...)
   // Si no hay valor en la API, cae a lo cargado manualmente (PN_MANUAL) para no perder data vieja.
@@ -6862,11 +6885,11 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyeOrigen){
   // Pend Cos: AUTO = Campo Est - Cosechado (decrece a medida que se cosecha).
   //           Si el usuario carga un valor manual de pendcos, ese override prevalece.
   const cosechadoAuto = origen ? ((PAYLOAD.cosechado && PAYLOAD.cosechado[producto]) || 0) : 0;
-  const cosechadoMan  = origen ? pnGetMan(producto, "cosechado") : 0;  // manual (localStorage) o default embebido
+  const cosechadoMan  = pnGetMan(producto, "cosechado");  // producción de la campaña seleccionada
   // El valor cargado (real, de la planilla de producción) tiene prioridad sobre el auto de traslados.
   const cosechado  = cosechadoMan > 0 ? cosechadoMan : cosechadoAuto;
-  const campoEst   = origen ? pnGetMan(producto, "campoest") : 0;
-  const pendCosManual = origen ? pnGetMan(producto, "pendcos") : 0;
+  const campoEst   = pnGetMan(producto, "campoest");
+  const pendCosManual = pnGetMan(producto, "pendcos");
   // Si el usuario cargó pend cos manual, usar ese. Sino, calcular Campo Est - Cosechado
   const pendCos    = pendCosManual > 0 ? pendCosManual : Math.max(0, campoEst - cosechado);
   // prodTot = lo que SE VA A COSECHAR EN TOTAL = pendiente + ya cosechado.
@@ -6958,19 +6981,24 @@ function pnRender(){
   Object.keys(entrPorCamp).forEach(k => {
     if(entrPorCamp[k] >= umbral && entrPorCamp[k] > 0 && (campCosecha === null || k > campCosecha)) campCosecha = k;
   });
-  // incluyeOrigen: mostramos planta/producción solo en la cosecha vigente (o sin filtro de campaña)
-  const incluyeOrigen = !selCamp || selCamp === campCosecha;
+  // incluyePlanta: el STOCK FÍSICO (silo/bolsas/silobolsa) solo en la cosecha vigente (o "Todas").
+  // La PRODUCCIÓN se muestra por campaña (PN_PROD_BY_CAMP) sin importar cuál sea la vigente.
+  PN_SEL_CAMP = selCamp;   // usado por pnGetMan para elegir la producción de la campaña
+  const incluyePlanta = !selCamp || selCamp === campCosecha;
+  const tieneProd = !!(PN_PROD_BY_CAMP[selCamp]);
   document.getElementById("pn-info").textContent =
     `${compras.length} contratos compra · ${ventas.length} contratos venta` +
-    (incluyeOrigen ? "" : " · forward: solo compra/venta (sin planta/producción)");
+    (incluyePlanta ? "" : " · sin stock físico (campaña no vigente)") +
+    (tieneProd ? " · con producción estimada" : "");
 
   // Productos únicos en los filtros aplicados
   const prods = new Set();
   compras.forEach(c => { if(c.producto) prods.add(c.producto); });
   ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
-  // También incluir productos con datos manuales/producción cargada — solo si la campaña
-  // es la de cosecha vigente (en forward no corresponde mostrar producción de otra campaña).
-  if(incluyeOrigen){
+  // Productos con PRODUCCIÓN cargada para la campaña seleccionada (siempre se muestran)
+  Object.keys(PN_PROD_BY_CAMP[selCamp] || {}).forEach(p => prods.add(p));
+  // Productos con stock físico / manual — solo si la campaña es la vigente
+  if(incluyePlanta){
     Object.keys(PN_MANUAL).forEach(p => prods.add(p));
     Object.keys(PN_DEFAULTS).forEach(p => prods.add(p));
   }
@@ -6993,7 +7021,7 @@ function pnRender(){
   prodList.forEach(p => {
     const cp = compras.filter(c => c.producto === p);
     const vp = ventas.filter(c  => c.producto === p);
-    dataPorProd[p] = pnCalcRow(p, cp, vp, incluyeOrigen);
+    dataPorProd[p] = pnCalcRow(p, cp, vp, incluyePlanta);
   });
 
   // Render Header tabla con grupos
