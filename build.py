@@ -1688,9 +1688,16 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div class="section">
-        <h3>🧾 Entregado SIN liquidar · CTG exactos por contrato <span class="badge" id="tq-liq-badge">Finnegans: entregas ↔ liquidaciones</span></h3>
+        <h3>🧾 Entregado SIN liquidar · verificador de CTG <span class="badge" id="tq-liq-badge">Finnegans: entregas ↔ liquidaciones</span></h3>
         <div style="font-size:12px;color:var(--muted);margin:-4px 0 10px">
-          CTG que ya entregaste pero <b>todavía no entraron en ninguna liquidación</b> del contrato (los COE con traslado que faltan liquidar). Click en una cerealera para abrir sus contratos y las cartas de porte.
+          Elegí <b>campaña</b>, <b>organización</b> y <b>cultivo</b> para ver las cartas de porte entregadas que todavía <b>no entraron en ninguna liquidación</b> del contrato — así verificás por qué no están liquidadas, si falta una liquidación o si la CP está mal cargada.
+        </div>
+        <div class="filterbar" id="tq-liq-filters" style="margin-bottom:12px">
+          <div><label>CAMPAÑA</label><select id="tql-camp"><option value="">Todas</option></select></div>
+          <div><label>ORGANIZACIÓN</label><select id="tql-org"><option value="">Todas</option></select></div>
+          <div><label>CULTIVO</label><select id="tql-prod"><option value="">Todos</option></select></div>
+          <div><label>BUSCAR CTG / CARTA DE PORTE</label><input type="text" id="tql-q" placeholder="nº CTG o cp…" style="min-width:180px"></div>
+          <button class="clear" id="tql-reset">Limpiar</button>
         </div>
         <div class="kpis" id="tq-liq-kpis" style="margin-bottom:12px"></div>
         <div id="tq-liq"></div>
@@ -9222,7 +9229,9 @@ function ctRender(){
     crossRange();
   }
 
-  // Entregado SIN liquidar: agrupa por cerealera -> contratos -> CTG exactos (lazy)
+  // Entregado SIN liquidar: vista filtrable (campaña / organización / cultivo) -> tabla de CTG
+  let _liqRows = null;
+  function campShort(c){ const m=String(c||"").match(/(\d{2}\s*[-\/]\s*\d{2})/); return m?m[1].replace(/\s/g,""):String(c||""); }
   function renderLiq(){
     const cont = document.getElementById("tq-liq");
     if(!cont) return;
@@ -9236,52 +9245,69 @@ function ctRender(){
       return;
     }
     if(bdg && L.generated_at) bdg.textContent = "actualizado " + String(L.generated_at).slice(0,10);
-    // KPIs
-    const kpis = [
-      {lbl:"CTG sin liquidar", val:n(L.total_ctg), cls:"orange", hint:"entregados, aún sin liquidar"},
-      {lbl:"Tn sin liquidar", val:n(L.total_tn)+" tn", cls:"orange", hint:"de lo entregado"},
-      {lbl:"Contratos", val:n(L.total_contratos), cls:"", hint:"con CTG pendiente"},
-    ];
-    if(kp) kp.innerHTML = kpis.map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join("");
-    // agrupar por cerealera
-    const ORDEN = ["Cargill","LDC","Bunge","Intagro","ACA","COFCO","Viterra","Molinos","AGD","Allaria","FYO","Otros"];
-    const grp = {};
-    cts.forEach(c => { (grp[c.cerealera] = grp[c.cerealera] || []).push(c); });
-    const cers = Object.keys(grp).sort((a,b)=>{
-      const ia=ORDEN.indexOf(a), ib=ORDEN.indexOf(b);
-      if(ia>=0&&ib>=0) return ia-ib; if(ia>=0) return -1; if(ib>=0) return 1;
-      return a.localeCompare(b);
-    });
-    cont.innerHTML = cers.map((cer,i) => {
-      const arr = grp[cer];
-      const tn = arr.reduce((s,c)=>s+(c.tn_sin_liquidar||0),0);
-      const nctg = arr.reduce((s,c)=>s+(c.sin_liquidar||[]).length,0);
-      return `<details data-liq="${i}" style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
-        <summary style="cursor:pointer;padding:10px 14px;background:#f8fafc;font-weight:600;display:flex;justify-content:space-between">
-          <span>${esc(cer)}</span><span>${n(nctg)} CTG · ${n(tn)} tn · ${arr.length} ctos</span></summary>
-        <div class="tq-liq-body" style="padding:8px;color:var(--muted);font-size:12px">cargando…</div>
-      </details>`;
-    }).join("");
-    cont.querySelectorAll("details[data-liq]").forEach(d => {
-      d.addEventListener("toggle", () => {
-        if(!d.open || d.dataset.done) return;
-        d.dataset.done = "1";
-        const arr = grp[cers[+d.dataset.liq]];
-        const rows = arr.map(ct => {
-          const dets = (ct.sin_liquidar||[]).concat(ct.sin_liquidar_raras||[]);
-          const ctgStr = dets.map(x => {
-            const rara = x.ok_11d===false;
-            return `<span style="display:inline-block;margin:1px 4px 1px 0;${rara?'color:#b45309':'color:#334155'}" title="cp ${esc(x.cp)} · ${esc(x.fecha)} · ${n(x.tn)} tn">${esc(x.ctg)}${rara?' ⚠':''}</span>`;
-          }).join("");
-          return `<tr><td style="font-weight:600">${esc(ct.contrato)}</td><td style="font-size:11px">${esc(ct.producto||"")} ${esc(String(ct.cosecha||"").slice(-5))}</td>`+
-            `<td style="text-align:right;font-weight:600">${n(ct.tn_sin_liquidar)}</td>`+
-            `<td style="text-align:right;font-size:11px;color:var(--muted)">${(ct.sin_liquidar||[]).length}/${ct.entregas_ctg}</td>`+
-            `<td style="font-size:11px;word-break:break-word">${ctgStr}</td></tr>`;
-        }).join("");
-        d.querySelector(".tq-liq-body").outerHTML =
-          `<div style="overflow-x:auto"><table class="tbl" style="margin:0"><thead><tr><th>Contrato</th><th>Producto</th><th style="text-align:right">Tn s/liq</th><th style="text-align:right">CTG s/liq</th><th>Cartas de porte sin liquidar</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+    // aplanar a filas de CTG (una vez)
+    if(!_liqRows){
+      _liqRows = [];
+      cts.forEach(c => {
+        const base = {camp:c.cosecha||"", campS:campShort(c.cosecha), org:c.org||"", cer:c.cerealera||"",
+                      prod:c.producto||"", contrato:c.contrato};
+        (c.sin_liquidar||[]).forEach(x => _liqRows.push({...base, ctg:x.ctg, cp:x.cp, fecha:x.fecha, tn:x.tn, rara:false}));
+        (c.sin_liquidar_raras||[]).forEach(x => _liqRows.push({...base, ctg:x.ctg, cp:x.cp, fecha:x.fecha, tn:x.tn, rara:true}));
       });
-    });
+    }
+
+    // poblar filtros (una vez)
+    const selC=document.getElementById("tql-camp"), selO=document.getElementById("tql-org"), selP=document.getElementById("tql-prod");
+    const q=document.getElementById("tql-q"), reset=document.getElementById("tql-reset");
+    if(selC && !selC.dataset.init){
+      selC.dataset.init="1";
+      const uniq=(k)=>[...new Set(_liqRows.map(r=>r[k]).filter(Boolean))];
+      const camps=[...new Set(_liqRows.map(r=>r.camp).filter(Boolean))].sort().reverse();
+      camps.forEach(c=>selC.insertAdjacentHTML("beforeend",`<option value="${esc(c)}">${esc(campShort(c))}</option>`));
+      uniq("org").sort().forEach(o=>selO.insertAdjacentHTML("beforeend",`<option value="${esc(o)}">${esc(o)}</option>`));
+      uniq("prod").sort().forEach(p=>selP.insertAdjacentHTML("beforeend",`<option value="${esc(p)}">${esc(p)}</option>`));
+      [selC,selO,selP].forEach(s=>s.addEventListener("change",applyLiq));
+      if(q) q.addEventListener("input",applyLiq);
+      if(reset) reset.addEventListener("click",()=>{selC.value="";selO.value="";selP.value="";if(q)q.value="";applyLiq();});
+    }
+    applyLiq();
+  }
+
+  function applyLiq(){
+    const cont=document.getElementById("tq-liq"); if(!cont||!_liqRows) return;
+    const cv=(document.getElementById("tql-camp")||{}).value||"";
+    const ov=(document.getElementById("tql-org")||{}).value||"";
+    const pv=(document.getElementById("tql-prod")||{}).value||"";
+    const qv=((document.getElementById("tql-q")||{}).value||"").replace(/\D/g,"");
+    const rows=_liqRows.filter(r =>
+      (!cv||r.camp===cv) && (!ov||r.org===ov) && (!pv||r.prod===pv) &&
+      (!qv || String(r.ctg).includes(qv) || String(r.cp).replace(/\D/g,"").includes(qv)));
+    // KPIs dinámicos
+    const kp=document.getElementById("tq-liq-kpis");
+    const tn=rows.reduce((s,r)=>s+(r.tn||0),0);
+    const nctos=new Set(rows.map(r=>r.contrato+"|"+r.camp)).size;
+    if(kp) kp.innerHTML=[
+      {lbl:"CTG sin liquidar",val:n(rows.length),cls:"orange",hint:"con el filtro actual"},
+      {lbl:"Tn sin liquidar",val:n(tn)+" tn",cls:"orange",hint:"de lo entregado"},
+      {lbl:"Contratos",val:n(nctos),cls:"",hint:"distintos"},
+    ].map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join("");
+    // ordenar: campaña desc, org, contrato, fecha
+    rows.sort((a,b)=> (b.camp||"").localeCompare(a.camp||"") || (a.org||"").localeCompare(b.org||"")
+      || String(a.contrato).localeCompare(String(b.contrato),undefined,{numeric:true}) || String(a.fecha).localeCompare(String(b.fecha)));
+    if(!rows.length){ cont.innerHTML='<div style="color:var(--muted);padding:14px">Sin CTG para ese filtro.</div>'; return; }
+    const body=rows.map(r=>`<tr${r.rara?' style="background:#fffbeb"':''}>`+
+      `<td style="font-size:11px">${esc(r.campS)}</td>`+
+      `<td style="font-size:11px">${esc(r.prod.replace(/^Grano\s+/,""))}</td>`+
+      `<td style="font-size:11px">${esc(r.org)}</td>`+
+      `<td style="font-weight:600">${esc(r.contrato)}</td>`+
+      `<td style="font-family:monospace;font-size:12px">${esc(r.ctg)}${r.rara?' <span title="no es carta de porte válida (12 díg.)" style="color:#b45309">⚠</span>':''}</td>`+
+      `<td style="font-size:11px;color:#475569">${esc(r.cp)}</td>`+
+      `<td style="font-size:11px">${esc(r.fecha)}</td>`+
+      `<td style="text-align:right;font-weight:600">${n(r.tn)}</td></tr>`).join("");
+    cont.innerHTML=`<div style="overflow-x:auto"><table class="tbl" style="margin:0">
+      <thead><tr><th>Campaña</th><th>Cultivo</th><th>Organización</th><th>Contrato</th><th>CTG</th><th>Carta de porte</th><th>Fecha</th><th style="text-align:right">Tn</th></tr></thead>
+      <tbody>${body}</tbody></table></div>`;
   }
 
   // Cruce en vivo por rango de fechas, desde los CTG crudos embebidos (T.raw)
