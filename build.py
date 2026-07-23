@@ -1688,6 +1688,15 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div class="section">
+        <h3>🧾 Entregado SIN liquidar · CTG exactos por contrato <span class="badge" id="tq-liq-badge">Finnegans: entregas ↔ liquidaciones</span></h3>
+        <div style="font-size:12px;color:var(--muted);margin:-4px 0 10px">
+          CTG que ya entregaste pero <b>todavía no entraron en ninguna liquidación</b> del contrato (los COE con traslado que faltan liquidar). Click en una cerealera para abrir sus contratos y las cartas de porte.
+        </div>
+        <div class="kpis" id="tq-liq-kpis" style="margin-bottom:12px"></div>
+        <div id="tq-liq"></div>
+      </div>
+
+      <div class="section">
         <h3>🔗 Taqueo por rango de fechas <span class="badge">elegí el período y cruza Finnegans ↔ extranet (como tu romaneo)</span></h3>
         <div class="filterbar" style="margin-bottom:10px">
           <div><label>DESDE</label><input type="date" id="tq-desde" value="2026-01-01"></div>
@@ -9204,10 +9213,75 @@ function ctRender(){
       });
     });
 
+    // ---- Entregado sin liquidar por contrato (Finnegans BSA) ----
+    renderLiq();
+
     // ---- Taqueo por rango: se calcula aparte (crossRange) según las fechas elegidas ----
     const hhEl = document.getElementById("tq-hasta");
     if(hhEl && !hhEl.value){ hhEl.value = new Date().toISOString().slice(0,10); }
     crossRange();
+  }
+
+  // Entregado SIN liquidar: agrupa por cerealera -> contratos -> CTG exactos (lazy)
+  function renderLiq(){
+    const cont = document.getElementById("tq-liq");
+    if(!cont) return;
+    const L = PAYLOAD.taqueo_liq || {};
+    const cts = L.contratos || [];
+    const kp = document.getElementById("tq-liq-kpis");
+    const bdg = document.getElementById("tq-liq-badge");
+    if(!cts.length){
+      if(kp) kp.innerHTML = "";
+      cont.innerHTML = '<div style="color:var(--muted);padding:14px">Sin datos. Corré <code>scripts/finn_taqueo_ctg.py</code> (sesión Finnegans GO abierta) y recommiteá <code>data/taqueo_liquidar.json</code>.</div>';
+      return;
+    }
+    if(bdg && L.generated_at) bdg.textContent = "actualizado " + String(L.generated_at).slice(0,10);
+    // KPIs
+    const kpis = [
+      {lbl:"CTG sin liquidar", val:n(L.total_ctg), cls:"orange", hint:"entregados, aún sin liquidar"},
+      {lbl:"Tn sin liquidar", val:n(L.total_tn)+" tn", cls:"orange", hint:"de lo entregado"},
+      {lbl:"Contratos", val:n(L.total_contratos), cls:"", hint:"con CTG pendiente"},
+    ];
+    if(kp) kp.innerHTML = kpis.map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join("");
+    // agrupar por cerealera
+    const ORDEN = ["Cargill","LDC","Bunge","Intagro","ACA","COFCO","Viterra","Molinos","AGD","Allaria","FYO","Otros"];
+    const grp = {};
+    cts.forEach(c => { (grp[c.cerealera] = grp[c.cerealera] || []).push(c); });
+    const cers = Object.keys(grp).sort((a,b)=>{
+      const ia=ORDEN.indexOf(a), ib=ORDEN.indexOf(b);
+      if(ia>=0&&ib>=0) return ia-ib; if(ia>=0) return -1; if(ib>=0) return 1;
+      return a.localeCompare(b);
+    });
+    cont.innerHTML = cers.map((cer,i) => {
+      const arr = grp[cer];
+      const tn = arr.reduce((s,c)=>s+(c.tn_sin_liquidar||0),0);
+      const nctg = arr.reduce((s,c)=>s+(c.sin_liquidar||[]).length,0);
+      return `<details data-liq="${i}" style="margin-bottom:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+        <summary style="cursor:pointer;padding:10px 14px;background:#f8fafc;font-weight:600;display:flex;justify-content:space-between">
+          <span>${esc(cer)}</span><span>${n(nctg)} CTG · ${n(tn)} tn · ${arr.length} ctos</span></summary>
+        <div class="tq-liq-body" style="padding:8px;color:var(--muted);font-size:12px">cargando…</div>
+      </details>`;
+    }).join("");
+    cont.querySelectorAll("details[data-liq]").forEach(d => {
+      d.addEventListener("toggle", () => {
+        if(!d.open || d.dataset.done) return;
+        d.dataset.done = "1";
+        const arr = grp[cers[+d.dataset.liq]];
+        const rows = arr.map(ct => {
+          const dets = (ct.sin_liquidar||[]).concat(ct.sin_liquidar_raras||[]);
+          const ctgStr = dets.map(x => {
+            const rara = x.ok_11d===false;
+            return `<span style="display:inline-block;margin:1px 4px 1px 0;${rara?'color:#b45309':'color:#334155'}" title="cp ${esc(x.cp)} · ${esc(x.fecha)} · ${n(x.tn)} tn">${esc(x.ctg)}${rara?' ⚠':''}</span>`;
+          }).join("");
+          return `<tr><td style="font-weight:600">${esc(ct.contrato)}</td><td style="font-size:11px">${esc(ct.producto||"")} ${esc(String(ct.cosecha||"").slice(-5))}</td>`+
+            `<td style="text-align:right;font-weight:600">${n(ct.tn_sin_liquidar)}</td>`+
+            `<td style="text-align:right;font-size:11px;color:var(--muted)">${(ct.sin_liquidar||[]).length}/${ct.entregas_ctg}</td>`+
+            `<td style="font-size:11px;word-break:break-word">${ctgStr}</td></tr>`;
+        }).join("");
+        d.querySelector(".tq-liq-body").outerHTML =
+          `<div style="overflow-x:auto"><table class="tbl" style="margin:0"><thead><tr><th>Contrato</th><th>Producto</th><th style="text-align:right">Tn s/liq</th><th style="text-align:right">CTG s/liq</th><th>Cartas de porte sin liquidar</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      });
+    });
   }
 
   // Cruce en vivo por rango de fechas, desde los CTG crudos embebidos (T.raw)
@@ -10563,11 +10637,25 @@ def main() -> int:
         print(f"    [!] error taqueo: {e}")
         taqueo_data = {}
 
+    # Taqueo "entregado sin liquidar" por contrato (fuente: Finnegans GO/BSA, scrapeado
+    # localmente con scripts/finn_taqueo_ctg.py -> data/taqueo_liquidar.json). No se puede
+    # generar en CI (requiere sesión logueada de Finnegans GO); se refresca a mano y commitea.
+    print(f"\n[+] Cargando Taqueo entregado-sin-liquidar (si existe)...", flush=True)
+    taqueo_liq = {}
+    tliq_path = Path(__file__).resolve().parent / "data" / "taqueo_liquidar.json"
+    if tliq_path.exists():
+        try:
+            taqueo_liq = json.loads(tliq_path.read_text(encoding="utf-8"))
+            print(f"    -> taqueo_liquidar.json: {taqueo_liq.get('total_contratos')} contratos · {taqueo_liq.get('total_ctg')} CTG · {taqueo_liq.get('total_tn')} tn")
+        except Exception as e:
+            print(f"    [!] taqueo_liquidar.json: {e}")
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
         "finales": finales,
         "taqueo": taqueo_data,
+        "taqueo_liq": taqueo_liq,
         "pilot":  pilot_norm,
         "compra": compra_norm,
         "saldos": saldos_norm,
