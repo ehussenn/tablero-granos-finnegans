@@ -6685,20 +6685,12 @@ function pnSave(){ localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL)); }
 
 // Mapeo de producto Finnegans a "familia" agrupadora
 function pnFamilia(prod){
-  if(!prod) return "Otros";
+  if(!prod) return "OTROS";
   const p = prod.toLowerCase();
   if(p.includes("soja")) return "SOJA";
   if(p.includes("maíz") || p.includes("maiz")) return "MAÍZ";
   if(p.includes("trigo")) return "TRIGO";
-  if(p.includes("girasol")) return "GIRASOL";
-  if(p.includes("sorgo")) return "SORGO";
-  if(p.includes("cebada")) return "CEBADA";
-  if(p.includes("avena")) return "AVENA";
-  if(p.includes("arveja")) return "ARVEJA";
-  if(p.includes("centeno")) return "CENTENO";
-  if(p.includes("camelina")) return "CAMELINA";
-  if(p.includes("colza")) return "COLZA";
-  if(p.includes("rabanito")) return "RABANITO";
+  // el resto (cebada, camelina, colza, girasol, sorgo, arveja, avena, centeno, etc.) -> OTROS
   return "OTROS";
 }
 function pnSubtipo(prod){
@@ -7014,7 +7006,7 @@ function pnRender(){
     byFamilia[f].push(p);
   });
   const familias = Object.keys(byFamilia).sort((a,b) => {
-    const orden = ["SOJA","MAÍZ","TRIGO","GIRASOL","SORGO","CEBADA","AVENA","ARVEJA","CENTENO","CAMELINA","RABANITO","OTROS"];
+    const orden = ["SOJA","MAÍZ","TRIGO","OTROS"];
     return orden.indexOf(a) - orden.indexOf(b);
   });
 
