@@ -9428,13 +9428,16 @@ function ctRender(){
     compra.forEach(c => {
       if(!String(c.producto||'').trim().toLowerCase().startsWith('grano')) return;   // solo granos
       if(String(c.estadoanulacion||'').toLowerCase().indexOf('no anul')<0 && String(c.estadoanulacion||'').toLowerCase().includes('anul')) return;
-      const pend = Number(c.cantidadentregadapendienteliquidar)||0;
+      const entregada = Number(c.cantidadentregada)||0, liquidada = Number(c.cantidadliquidada)||0;
+      // pendiente = entregado - liquidado (calculado; el campo cantidadentregadapendienteliquidar
+      // del API viene inestable/0). Es exactamente la diferencia que se quiere seguir.
+      const pend = Math.max(0, entregada - liquidada);
       if(pend <= 0.05) return;
       _rows.push({
         comercial: com[norm(c.organizacion)] || '— sin comercial —',
         proveedor: c.organizacion||'', grano: (c.producto||'').replace(/^Grano\s+/i,''),
         campana: c.campana||'', campS: campShort(c.campana), contrato: c.numerointerno||c.contrato||'',
-        entregada: Number(c.cantidadentregada)||0, liquidada: Number(c.cantidadliquidada)||0,
+        entregada, liquidada,
         pend, precio: Number(c.preciopromediofijado)||0, precioClass: precioClass(c),
         chip: (typeof cpFijadoChip==='function') ? cpFijadoChip(c) : '', raw:c,
       });
