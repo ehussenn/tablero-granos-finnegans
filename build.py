@@ -599,6 +599,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-posicion" data-title="Compra · Posición General">Posición General</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales" data-title="Compra · Finales de Compra">🧮 Finales de Compra</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
@@ -721,6 +722,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab active" data-sub="cp-posicion">Posición General</button>
       <button class="subtab" data-sub="cp-financiera">Financiera</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
+      <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
       <button class="subtab" data-sub="cp-finales">🧮 Finales de Compra</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
@@ -931,6 +933,41 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
 
+    </div>
+
+    <!-- ========== SUB: ANÁLISIS DE CANJE DE COMPRAS (pendiente liquidar por comercial) ========== -->
+    <div class="subpanel" data-sub-panel="cp-canje-liq">
+      <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🔄 Análisis de Canje de Compras · Pendiente de liquidar por comercial</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff">
+          Contratos de <b>compra de granos</b> con mercadería <b>entregada que falta liquidar</b> (entregado − liquidado), y si esa cantidad <b>tiene precio (fijación)</b> o no. Filtrá por comercial para ir cerrando con cada uno.
+        </div>
+      </div>
+
+      <div class="kpis" id="clq-kpis" style="margin-top:14px"></div>
+
+      <div class="filterbar" style="margin-top:12px">
+        <div><label>COMERCIAL</label><select id="clq-com"><option value="">Todos</option></select></div>
+        <div><label>GRANO</label><select id="clq-grano"><option value="">Todos</option></select></div>
+        <div><label>CAMPAÑA</label><select id="clq-camp"><option value="">Todas</option></select></div>
+        <div><label>¿A PRECIO?</label><select id="clq-precio"><option value="">Todos</option><option value="si">Con precio</option><option value="parcial">Parcial</option><option value="no">Sin precio</option></select></div>
+        <div><label>BUSCAR PROVEEDOR / CONTRATO</label><input type="text" id="clq-q" placeholder="razón social o nº…" style="min-width:200px"></div>
+        <button class="clear" id="clq-reset">Limpiar</button>
+      </div>
+
+      <div class="section">
+        <h3>Resumen por comercial <span class="badge">tn entregado sin liquidar · cuánto tiene precio</span></h3>
+        <div style="overflow-x:auto"><table class="tbl" id="clq-resumen"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="section">
+        <h3>Detalle por contrato <span class="badge" id="clq-det-meta">—</span></h3>
+        <div style="overflow-x:auto"><table class="tbl" id="clq-detalle"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <b>Pendiente liquidar</b> = tn entregadas por el proveedor que todavía no liquidaste (entregado − liquidado, campo de Finnegans). <b>¿A precio?</b> sale de la fijación del contrato de compra: <span class="chip ok">A precio</span>/<span class="chip ok">Fijado</span> = tiene precio cerrado · <span class="chip warn">Fijado X%</span> = parcial · <span class="chip info">A fijar (sin precio)</span> = falta ponerle precio. El <b>comercial</b> se toma de la cuenta del proveedor (composición de saldos).
+      </div>
     </div>
 
     <!-- ========== SUB: CRUCE CLIENTE x COMPRADOR ========== -->
@@ -9357,6 +9394,132 @@ function ctRender(){
     .forEach(a => a.addEventListener("click", () => setTimeout(showAndRender, 50)));
   ["tq-desde","tq-hasta"].forEach(id => { const e=document.getElementById(id); if(e) e.addEventListener("change", crossRange); });
   const btn=document.getElementById("tq-cruzar"); if(btn) btn.addEventListener("click", crossRange);
+})();
+
+/* ============================================================
+   ====  ANÁLISIS DE CANJE DE COMPRAS · pend. liquidar  =======
+   Contratos de compra de GRANOS con entregado sin liquidar,
+   agrupado por comercial, mostrando si tiene precio (fijación).
+   ============================================================ */
+(function clqInit(){
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n = v => (v==null?0:Number(v)).toLocaleString('es-AR',{maximumFractionDigits:1});
+  const norm = s => String(s||'').replace(/\s+/g,' ').trim().toUpperCase();
+  const campShort = c => { const m=String(c||'').match(/(\d{2}\s*[-\/]\s*\d{2})/); return m?m[1].replace(/\s/g,''):String(c||''); };
+  // clasificación de precio (espeja cpFijadoChip)
+  function precioClass(r){
+    const t=(r.tipocontrato||'').toLowerCase();
+    const aj=r.cantidadmax||0, fj=r.cantidadfijada||0;
+    if(t.includes('a precio')) return 'si';
+    if(t.includes('contra entrega')) return 'si';
+    if(aj>0 && fj>=aj*0.999) return 'si';
+    if(fj>0) return 'parcial';
+    return 'no';
+  }
+  let _rows = null;
+  function build(){
+    if(_rows) return _rows;
+    const compra = PAYLOAD.compra || [];
+    const saldos = PAYLOAD.saldos || [];
+    // mapa organización -> comercial (vendedor) desde composición de saldos
+    const com = {};
+    saldos.forEach(s => { const o=norm(s.organizacion), v=s.vendedor; if(o && v && !com[o]) com[o]=v; });
+    _rows = [];
+    compra.forEach(c => {
+      if(!String(c.producto||'').trim().toLowerCase().startsWith('grano')) return;   // solo granos
+      if(String(c.estadoanulacion||'').toLowerCase().indexOf('no anul')<0 && String(c.estadoanulacion||'').toLowerCase().includes('anul')) return;
+      const pend = Number(c.cantidadentregadapendienteliquidar)||0;
+      if(pend <= 0.05) return;
+      _rows.push({
+        comercial: com[norm(c.organizacion)] || '— sin comercial —',
+        proveedor: c.organizacion||'', grano: (c.producto||'').replace(/^Grano\s+/i,''),
+        campana: c.campana||'', campS: campShort(c.campana), contrato: c.numerointerno||c.contrato||'',
+        entregada: Number(c.cantidadentregada)||0, liquidada: Number(c.cantidadliquidada)||0,
+        pend, precio: Number(c.preciopromediofijado)||0, precioClass: precioClass(c),
+        chip: (typeof cpFijadoChip==='function') ? cpFijadoChip(c) : '', raw:c,
+      });
+    });
+    return _rows;
+  }
+  function filtered(){
+    const rows = build();
+    const cv=(document.getElementById('clq-com')||{}).value||'';
+    const gv=(document.getElementById('clq-grano')||{}).value||'';
+    const kv=(document.getElementById('clq-camp')||{}).value||'';
+    const pv=(document.getElementById('clq-precio')||{}).value||'';
+    const qv=norm((document.getElementById('clq-q')||{}).value||'');
+    return rows.filter(r =>
+      (!cv||r.comercial===cv) && (!gv||r.grano===gv) && (!kv||r.campana===kv) &&
+      (!pv||r.precioClass===pv) &&
+      (!qv || norm(r.proveedor).includes(qv) || norm(r.contrato).includes(qv)));
+  }
+  function render(){
+    if(!document.getElementById('clq-detalle')) return;
+    const rows = build();
+    // poblar filtros una vez
+    const selC=document.getElementById('clq-com'), selG=document.getElementById('clq-grano'), selK=document.getElementById('clq-camp');
+    if(selC && !selC.dataset.init){
+      selC.dataset.init='1';
+      [...new Set(rows.map(r=>r.comercial))].sort().forEach(v=>selC.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`));
+      [...new Set(rows.map(r=>r.grano))].sort().forEach(v=>selG.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`));
+      [...new Set(rows.map(r=>r.campana).filter(Boolean))].sort().reverse().forEach(v=>selK.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(campShort(v))}</option>`));
+      ['clq-com','clq-grano','clq-camp','clq-precio'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',draw);});
+      const q=document.getElementById('clq-q'); if(q) q.addEventListener('input',draw);
+      const rst=document.getElementById('clq-reset'); if(rst) rst.addEventListener('click',()=>{['clq-com','clq-grano','clq-camp','clq-precio','clq-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); draw();});
+    }
+    draw();
+  }
+  function draw(){
+    const rows = filtered();
+    // KPIs
+    const tnPend=rows.reduce((s,r)=>s+r.pend,0);
+    const tnConPrecio=rows.filter(r=>r.precioClass==='si').reduce((s,r)=>s+r.pend,0);
+    const tnSinPrecio=rows.filter(r=>r.precioClass==='no').reduce((s,r)=>s+r.pend,0);
+    const kp=document.getElementById('clq-kpis');
+    if(kp) kp.innerHTML=[
+      {lbl:'Tn pend. liquidar',val:n(tnPend)+' tn',cls:'orange',hint:'entregado − liquidado'},
+      {lbl:'Con precio',val:n(tnConPrecio)+' tn',cls:'green',hint:'fijación cerrada'},
+      {lbl:'Sin precio',val:n(tnSinPrecio)+' tn',cls: tnSinPrecio?'red':'',hint:'falta fijar'},
+      {lbl:'Contratos',val:n(rows.length),cls:'',hint:'con pendiente'},
+    ].map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join('');
+    // resumen por comercial
+    const by={};
+    rows.forEach(r=>{ const b=by[r.comercial]=by[r.comercial]||{com:r.comercial,ctos:0,pend:0,conP:0,parc:0,sinP:0}; b.ctos++; b.pend+=r.pend;
+      if(r.precioClass==='si') b.conP+=r.pend; else if(r.precioClass==='parcial') b.parc+=r.pend; else b.sinP+=r.pend; });
+    const rt=document.getElementById('clq-resumen');
+    const coms=Object.values(by).sort((a,b)=>b.pend-a.pend);
+    rt.querySelector('thead').innerHTML='<tr><th>Comercial</th><th style="text-align:right">Contratos</th><th style="text-align:right">Tn pend. liq.</th><th style="text-align:right">Con precio</th><th style="text-align:right">Parcial</th><th style="text-align:right">Sin precio</th></tr>';
+    rt.querySelector('tbody').innerHTML = coms.map(b=>
+      `<tr class="clq-com-row" data-com="${esc(b.com)}" style="cursor:pointer">`+
+      `<td style="font-weight:600">${esc(b.com)}</td><td style="text-align:right">${b.ctos}</td>`+
+      `<td style="text-align:right;font-weight:600">${n(b.pend)}</td>`+
+      `<td style="text-align:right;color:#16a34a">${n(b.conP)}</td>`+
+      `<td style="text-align:right;color:#b45309">${n(b.parc)}</td>`+
+      `<td style="text-align:right;color:${b.sinP?'#dc2626':'inherit'}">${n(b.sinP)}</td></tr>`).join('')
+      || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">Sin datos</td></tr>';
+    rt.querySelectorAll('.clq-com-row').forEach(tr => tr.addEventListener('click', () => {
+      const s=document.getElementById('clq-com'); if(s){ s.value=tr.dataset.com; draw(); }
+    }));
+    // detalle por contrato
+    rows.sort((a,b)=> a.comercial.localeCompare(b.comercial) || b.pend-a.pend);
+    const dt=document.getElementById('clq-detalle');
+    dt.querySelector('thead').innerHTML='<tr><th>Comercial</th><th>Proveedor</th><th>Grano</th><th>Campaña</th><th>Contrato</th><th style="text-align:right">Entregado</th><th style="text-align:right">Liquidado</th><th style="text-align:right">Pend. liq.</th><th>¿A precio?</th></tr>';
+    dt.querySelector('tbody').innerHTML = rows.map(r=>
+      `<tr><td style="font-size:11px">${esc(r.comercial)}</td>`+
+      `<td style="font-size:11px">${esc(r.proveedor)}</td>`+
+      `<td style="font-size:11px">${esc(r.grano)}</td>`+
+      `<td style="font-size:11px">${esc(r.campS)}</td>`+
+      `<td style="font-weight:600">${esc(r.contrato)}</td>`+
+      `<td style="text-align:right">${n(r.entregada)}</td>`+
+      `<td style="text-align:right">${n(r.liquidada)}</td>`+
+      `<td style="text-align:right;font-weight:600">${n(r.pend)}</td>`+
+      `<td>${r.chip}</td></tr>`).join('')
+      || '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
+    const meta=document.getElementById('clq-det-meta'); if(meta) meta.textContent=`${rows.length} contratos · ${n(rows.reduce((s,r)=>s+r.pend,0))} tn pend.`;
+  }
+  window.clqDraw = draw;
+  document.querySelectorAll('[data-go-sub="cp-canje-liq"], .subtab[data-sub="cp-canje-liq"]')
+    .forEach(a => a.addEventListener('click', () => setTimeout(render, 60)));
 })();
 
 /* ============================================================
