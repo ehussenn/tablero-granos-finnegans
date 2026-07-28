@@ -9,6 +9,8 @@ import sys, re, json, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 sys.stdout.reconfigure(encoding="utf-8")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import finnegans_api as api   # para el mapeo de consignación (compra CV)
 
 SN = Path("scripts/scraper/out/finn_sniff")
 TARGETS = Path(sys.argv[1]) if len(sys.argv) > 1 else SN / "_all_targets.json"
@@ -118,6 +120,60 @@ with sync_playwright() as p:
             print(f"  [{idx}/{len(targets)}] {rec['cer'][:14]:14} ctto {num}: ent={rec['entregas_ctg']} liq={rec['liq_count']} -> SIN LIQ={len(rec['sin_liquidar_ctg'])} ({rec['tn_sin_liquidar']}tn)" + (f" ⚠{len(rec['sin_liquidar_raras'])} raras" if rec['sin_liquidar_raras'] else ""))
         if idx % 5 == 0 or idx == len(targets):
             OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    # ---- Segunda pasada: CONSIGNACIÓN (CV) ----
+    # Un CTG de consignación entra por compra CV y sale por venta CV; se liquida con
+    # LiquidacionGranosCompraVO en el contrato de COMPRA, no en la grilla de liquidaciones
+    # del contrato de venta. Sin esto, todos los CTG de consignación dan falso "sin liquidar".
+    try:
+        flag = set()
+        for r in results:
+            flag |= set(r.get("sin_liquidar_ctg", []))
+        print(f"\n[CV] consignación: chequeando {len(flag)} CTG flagueados contra liquidaciones de compra…")
+        # ctg -> nº contrato de compra CV (desde trasladoGranos)
+        tr = api.call("/reports/trasladoGranos", {"PARAMFechaDesde": "2025-01-01", "PARAMFechaHasta": "2027-12-31"}, timeout=280)
+        tr = tr if isinstance(tr, list) else []
+        cv = {}
+        for r in tr:
+            ctg = norm(r.get("NUMERODOCUMENTOADICIONAL"))
+            if ctg in flag and r.get("OPERACIONTIPO") == "Compra" and "COMPRA CV" in (r.get("TRANSACCIONSUBTIPONOMBRE") or ""):
+                m = re.search(r"-\s*(\d+)", str(r.get("NOMBRECONTRATO") or r.get("NUMERODOCUMENTOCONTRATO") or ""))
+                if m: cv[ctg] = m.group(1)
+        # nº contrato compra -> CONTRATOID (desde ResumenContratoCompraGranos)
+        cp = api.call("/reports/ResumenContratoCompraGranos", {"PARAMWEBREPORT_FechaDesde": "2022-01-01", "PARAMWEBREPORT_FechaHasta": "2030-12-31"}, timeout=200)
+        cp = cp if isinstance(cp, list) else []
+        num2cid = {}
+        for c in cp:
+            ni = str(c.get("numerointerno") or c.get("NUMEROINTERNO") or "")
+            cid = c.get("contratoid") or c.get("CONTRATOID")
+            if ni and cid: num2cid.setdefault(ni, str(cid))
+        contratos_cv = sorted(set(v for v in cv.values() if v))
+        print(f"[CV] {len(cv)} CTG consignación · {len(contratos_cv)} contratos de compra a revisar")
+        liq_compra = set()
+        for k, ncp in enumerate(contratos_cv, 1):
+            cid = num2cid.get(ncp)
+            if not cid: continue
+            try:
+                lx = post("getAjaxResponseForGrillaRefreshLiquidaciones", cid, LIQ_CAP, LIQ_NAM)
+                for pk in [row.split(',')[0].strip() for row in cdata_rows(lx) if row.split(',')[0].strip().isdigit()]:
+                    d = req(lambda: page.request.get(f"{BSA}/standardDF_def_and_data?standardXml=claseVO=LiquidacionGranosCompraVO&pk={pk}&fromDFVIEWER=1", timeout=60000).text())
+                    liq_compra |= set(norm(x) for x in re.findall(r'<Descripcion[^>]*>(\d{11})/', d))
+            except Exception as e:
+                print(f"   [CV {k}/{len(contratos_cv)}] compra {ncp}: {str(e)[:40]}")
+            if k % 10 == 0: print(f"   [CV] {k}/{len(contratos_cv)} · liquidados compra acum {len(liq_compra)}")
+        quit = 0
+        for r in results:
+            if "sin_liquidar_ctg" not in r: continue
+            keep = [c for c in r["sin_liquidar_ctg"] if c not in liq_compra]
+            quit += len(r["sin_liquidar_ctg"]) - len(keep)
+            r["sin_liquidar_ctg"] = keep
+            if "detalle" in r:
+                r["detalle"] = [x for x in r["detalle"] if x["ctg"] in keep or not x.get("ok_11d", True)]
+            r["tn_sin_liquidar"] = round(sum(x["tn"] for x in r.get("detalle", []) if x["ctg"] in keep), 2)
+        print(f"[CV] liquidados en compra: {len(liq_compra)} · falsos positivos quitados: {quit}")
+    except Exception as e:
+        print(f"[CV] error en pasada de consignación (se deja sin corregir): {str(e)[:100]}")
+
     b.close()
 OUT.write_text(json.dumps(results, ensure_ascii=False, indent=1), encoding="utf-8")
 tot = sum(len(r.get("sin_liquidar_ctg", [])) for r in results)
