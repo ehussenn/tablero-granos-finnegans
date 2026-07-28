@@ -1,10 +1,10 @@
 {
- "generated_at": "2026-07-23T17:21:08.793023+00:00",
+ "generated_at": "2026-07-28T13:26:30.443039+00:00",
  "fuente": "Finnegans GO (BSA): entregas del contrato vs CTG en liquidaciones",
  "criterio": "CTG entregado que aun no figura en ninguna liquidacion del contrato",
- "total_contratos": 147,
- "total_ctg": 989,
- "total_tn": 29841.5,
+ "total_contratos": 142,
+ "total_ctg": 927,
+ "total_tn": 27960.9,
  "contratos": [
   {
    "contrato": "727",
@@ -833,19 +833,12 @@
    "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
    "producto": "Grano Maíz",
    "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 88,
-   "tn_entregado": 2889.59,
+   "entregas_ctg": 87,
+   "tn_entregado": 2858.41,
    "liquidados_ctg": 43,
-   "pend_sistema_tn": 1499.51,
-   "tn_sin_liquidar": 1456.03,
+   "pend_sistema_tn": 1468.33,
+   "tn_sin_liquidar": 1424.85,
    "sin_liquidar": [
-    {
-     "ctg": "10133255486",
-     "tn": 31.18,
-     "cp": "00000-00010622",
-     "fecha": "2026-06-30",
-     "ok_11d": true
-    },
     {
      "ctg": "10133387040",
      "tn": 30.07,
@@ -1152,252 +1145,6 @@
      "tn": 35.38,
      "cp": "00000-00010739",
      "fecha": "2026-07-10",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1333",
-   "cerealera": "Cargill",
-   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 33,
-   "tn_entregado": 1058.48,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 1058.48,
-   "tn_sin_liquidar": 1058.48,
-   "sin_liquidar": [
-    {
-     "ctg": "10133188406",
-     "tn": 31.48,
-     "cp": "00000-00010612",
-     "fecha": "2026-06-27",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133188629",
-     "tn": 36.32,
-     "cp": "00000-00010614",
-     "fecha": "2026-06-27",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133202271",
-     "tn": 29.89,
-     "cp": "00000-00010616",
-     "fecha": "2026-06-28",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133229572",
-     "tn": 36.48,
-     "cp": "00000-00010620",
-     "fecha": "2026-06-29",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133269363",
-     "tn": 36.34,
-     "cp": "00000-00010623",
-     "fecha": "2026-06-30",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133270293",
-     "tn": 9.27,
-     "cp": "00000-00010624",
-     "fecha": "2026-06-30",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133335693",
-     "tn": 30.59,
-     "cp": "00000-00010637",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133335951",
-     "tn": 29.18,
-     "cp": "00000-00010638",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133345254",
-     "tn": 35.76,
-     "cp": "00000-00010640",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133345442",
-     "tn": 28.93,
-     "cp": "00000-00010641",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133345735",
-     "tn": 30.11,
-     "cp": "00000-00010642",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133346024",
-     "tn": 29.89,
-     "cp": "00000-00010643",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133350719",
-     "tn": 30.64,
-     "cp": "00000-00010644",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133360379",
-     "tn": 36.15,
-     "cp": "00000-00010650",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133371334",
-     "tn": 30.73,
-     "cp": "00000-00010652",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133371430",
-     "tn": 29.15,
-     "cp": "00000-00010653",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133371501",
-     "tn": 35.71,
-     "cp": "00000-00010654",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133371620",
-     "tn": 35.21,
-     "cp": "00000-00010655",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133371695",
-     "tn": 35.72,
-     "cp": "00000-00010656",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133379704",
-     "tn": 36.12,
-     "cp": "00000-00010664",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133380326",
-     "tn": 30.07,
-     "cp": "00000-00010665",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133380792",
-     "tn": 29.36,
-     "cp": "00000-00010668",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133381698",
-     "tn": 35.25,
-     "cp": "00000-00010670",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133381712",
-     "tn": 30.47,
-     "cp": "00000-00010671",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133382162",
-     "tn": 29.98,
-     "cp": "00000-00010672",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133382167",
-     "tn": 35.94,
-     "cp": "00000-00010673",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133382171",
-     "tn": 30.04,
-     "cp": "00000-00010674",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133382198",
-     "tn": 36.28,
-     "cp": "00000-00010675",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133386522",
-     "tn": 28.93,
-     "cp": "00000-00010676",
-     "fecha": "2026-07-05",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133386939",
-     "tn": 35.96,
-     "cp": "00000-00010677",
-     "fecha": "2026-07-05",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133386972",
-     "tn": 35.77,
-     "cp": "00000-00010678",
-     "fecha": "2026-07-05",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133387014",
-     "tn": 30.33,
-     "cp": "00000-00010679",
-     "fecha": "2026-07-05",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133387095",
-     "tn": 36.42,
-     "cp": "00000-00010682",
-     "fecha": "2026-07-05",
      "ok_11d": true
     }
    ],
@@ -2122,6 +1869,210 @@
      "tn": 23.07,
      "cp": "00000-00008197",
      "fecha": "2025-09-13",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
+   "contrato": "1333",
+   "cerealera": "Cargill",
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "producto": "Grano Maíz",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 34,
+   "tn_entregado": 1089.66,
+   "liquidados_ctg": 7,
+   "pend_sistema_tn": 878.7,
+   "tn_sin_liquidar": 878.7,
+   "sin_liquidar": [
+    {
+     "ctg": "10133335693",
+     "tn": 30.59,
+     "cp": "00000-00010637",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133335951",
+     "tn": 29.18,
+     "cp": "00000-00010638",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133345254",
+     "tn": 35.76,
+     "cp": "00000-00010640",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133345442",
+     "tn": 28.93,
+     "cp": "00000-00010641",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133345735",
+     "tn": 30.11,
+     "cp": "00000-00010642",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133346024",
+     "tn": 29.89,
+     "cp": "00000-00010643",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133350719",
+     "tn": 30.64,
+     "cp": "00000-00010644",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133360379",
+     "tn": 36.15,
+     "cp": "00000-00010650",
+     "fecha": "2026-07-03",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133371334",
+     "tn": 30.73,
+     "cp": "00000-00010652",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133371430",
+     "tn": 29.15,
+     "cp": "00000-00010653",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133371501",
+     "tn": 35.71,
+     "cp": "00000-00010654",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133371620",
+     "tn": 35.21,
+     "cp": "00000-00010655",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133371695",
+     "tn": 35.72,
+     "cp": "00000-00010656",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133379704",
+     "tn": 36.12,
+     "cp": "00000-00010664",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133380326",
+     "tn": 30.07,
+     "cp": "00000-00010665",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133380792",
+     "tn": 29.36,
+     "cp": "00000-00010668",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133381698",
+     "tn": 35.25,
+     "cp": "00000-00010670",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133381712",
+     "tn": 30.47,
+     "cp": "00000-00010671",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133382162",
+     "tn": 29.98,
+     "cp": "00000-00010672",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133382167",
+     "tn": 35.94,
+     "cp": "00000-00010673",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133382171",
+     "tn": 30.04,
+     "cp": "00000-00010674",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133382198",
+     "tn": 36.28,
+     "cp": "00000-00010675",
+     "fecha": "2026-07-04",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133386522",
+     "tn": 28.93,
+     "cp": "00000-00010676",
+     "fecha": "2026-07-05",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133386939",
+     "tn": 35.96,
+     "cp": "00000-00010677",
+     "fecha": "2026-07-05",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133386972",
+     "tn": 35.77,
+     "cp": "00000-00010678",
+     "fecha": "2026-07-05",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133387014",
+     "tn": 30.33,
+     "cp": "00000-00010679",
+     "fecha": "2026-07-05",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133387095",
+     "tn": 36.42,
+     "cp": "00000-00010682",
+     "fecha": "2026-07-05",
      "ok_11d": true
     }
    ],
@@ -2868,147 +2819,6 @@
      "tn": 30.52,
      "cp": "00000-00004924",
      "fecha": "2024-11-15",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "922",
-   "cerealera": "Otros",
-   "org": "YARA ARGENTINA SA",
-   "producto": "Grano Soja",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 18,
-   "tn_entregado": 591.27,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 591.27,
-   "tn_sin_liquidar": 591.27,
-   "sin_liquidar": [
-    {
-     "ctg": "10131677227",
-     "tn": 33.36,
-     "cp": "00000-00009911",
-     "fecha": "2026-05-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10131682253",
-     "tn": 28.99,
-     "cp": "00000-00009916",
-     "fecha": "2026-05-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132127354",
-     "tn": 30.26,
-     "cp": "00000-00000661",
-     "fecha": "2026-05-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132274676",
-     "tn": 37.16,
-     "cp": "00000-00000672",
-     "fecha": "2026-05-19",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132275084",
-     "tn": 37.04,
-     "cp": "00000-00000673",
-     "fecha": "2026-05-19",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132319091",
-     "tn": 37.13,
-     "cp": "00000-00000675",
-     "fecha": "2026-05-20",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132604729",
-     "tn": 29.76,
-     "cp": "00000-00000479",
-     "fecha": "2026-05-29",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132605008",
-     "tn": 29.08,
-     "cp": "00000-00000480",
-     "fecha": "2026-05-29",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132666802",
-     "tn": 30.34,
-     "cp": "00000-00000699",
-     "fecha": "2026-06-01",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132681737",
-     "tn": 36.26,
-     "cp": "00000-00000700",
-     "fecha": "2026-06-01",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132681809",
-     "tn": 36.58,
-     "cp": "00000-00000701",
-     "fecha": "2026-06-01",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133162431",
-     "tn": 35.94,
-     "cp": "00000-00000151",
-     "fecha": "2026-06-26",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133162749",
-     "tn": 35.9,
-     "cp": "00000-00000152",
-     "fecha": "2026-06-26",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133191268",
-     "tn": 28.76,
-     "cp": "00000-00000439",
-     "fecha": "2026-06-27",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133230178",
-     "tn": 36.8,
-     "cp": "00000-00010621",
-     "fecha": "2026-06-29",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133574355",
-     "tn": 36.96,
-     "cp": "00000-00010740",
-     "fecha": "2026-07-12",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10232731201",
-     "tn": 25.36,
-     "cp": "00001-00038066",
-     "fecha": "2026-06-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10232733544",
-     "tn": 25.59,
-     "cp": "00001-00038069",
-     "fecha": "2026-06-03",
      "ok_11d": true
     }
    ],
@@ -4094,112 +3904,6 @@
    "sin_liquidar_raras": []
   },
   {
-   "contrato": "897",
-   "cerealera": "Allaria",
-   "org": "ALLARIA AGRONEGOCIOS S.A.",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 13,
-   "tn_entregado": 397.38,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 397.38,
-   "tn_sin_liquidar": 397.38,
-   "sin_liquidar": [
-    {
-     "ctg": "10133533136",
-     "tn": 29.36,
-     "cp": "00000-00010731",
-     "fecha": "2026-07-10",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133542960",
-     "tn": 30.56,
-     "cp": "00000-00010733",
-     "fecha": "2026-07-10",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133546750",
-     "tn": 29.99,
-     "cp": "00000-00010736",
-     "fecha": "2026-07-10",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133638034",
-     "tn": 29.83,
-     "cp": "00000-00010759",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133638789",
-     "tn": 34.62,
-     "cp": "00000-00010760",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133646431",
-     "tn": 29.49,
-     "cp": "00000-00010767",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133657927",
-     "tn": 31.29,
-     "cp": "00000-00010768",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133658229",
-     "tn": 35.18,
-     "cp": "00000-00010769",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133658405",
-     "tn": 29.31,
-     "cp": "00000-00010770",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133658532",
-     "tn": 29.75,
-     "cp": "00000-00010771",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133663206",
-     "tn": 28.72,
-     "cp": "00000-00010772",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133663350",
-     "tn": 29.35,
-     "cp": "00000-00010774",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133664840",
-     "tn": 29.95,
-     "cp": "00000-00010776",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
    "contrato": "1196",
    "cerealera": "LDC",
    "org": "LDC ARGENTINA S.A.",
@@ -4483,91 +4187,6 @@
    "sin_liquidar_raras": []
   },
   {
-   "contrato": "1361",
-   "cerealera": "Otros",
-   "org": "RUCAMALEN SA",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 10,
-   "tn_entregado": 319.97,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 319.97,
-   "tn_sin_liquidar": 319.97,
-   "sin_liquidar": [
-    {
-     "ctg": "10133628728",
-     "tn": 30.93,
-     "cp": "00000-00010754",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133628894",
-     "tn": 30.52,
-     "cp": "00000-00010755",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133644895",
-     "tn": 35.13,
-     "cp": "00000-00010764",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133645710",
-     "tn": 30.67,
-     "cp": "00000-00010765",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133645768",
-     "tn": 30.6,
-     "cp": "00000-00010766",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133663886",
-     "tn": 35.58,
-     "cp": "00000-00010775",
-     "fecha": "2026-07-15",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133689476",
-     "tn": 30.33,
-     "cp": "00000-00010784",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133691122",
-     "tn": 31.08,
-     "cp": "00000-00010786",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133692626",
-     "tn": 29.48,
-     "cp": "00000-00010787",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133698421",
-     "tn": 35.66,
-     "cp": "00000-00010795",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
    "contrato": "782",
    "cerealera": "Otros",
    "org": "CENTRO AGROPECUARIO MODELO SA",
@@ -4654,91 +4273,6 @@
      "tn": 19.51,
      "cp": "00001-00009365",
      "fecha": "2025-06-27",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1302",
-   "cerealera": "Cargill",
-   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 30,
-   "tn_entregado": 984.36,
-   "liquidados_ctg": 20,
-   "pend_sistema_tn": 340.39,
-   "tn_sin_liquidar": 316.02,
-   "sin_liquidar": [
-    {
-     "ctg": "10133695297",
-     "tn": 35.98,
-     "cp": "00000-00010790",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133695423",
-     "tn": 30.0,
-     "cp": "00000-00010791",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133742753",
-     "tn": 35.23,
-     "cp": "00000-00010803",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133742836",
-     "tn": 35.37,
-     "cp": "00000-00010804",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133742996",
-     "tn": 29.15,
-     "cp": "00000-00010805",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133743061",
-     "tn": 30.23,
-     "cp": "00000-00010806",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133744259",
-     "tn": 29.41,
-     "cp": "00000-00010807",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133744321",
-     "tn": 29.25,
-     "cp": "00000-00010808",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133744351",
-     "tn": 31.14,
-     "cp": "00000-00010809",
-     "fecha": "2026-07-17",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133751831",
-     "tn": 30.25,
-     "cp": "00000-00010811",
-     "fecha": "2026-07-18",
      "ok_11d": true
     }
    ],
@@ -4836,6 +4370,84 @@
      "ok_11d": false
     }
    ]
+  },
+  {
+   "contrato": "1302",
+   "cerealera": "Cargill",
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "producto": "Grano Maíz",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 30,
+   "tn_entregado": 984.36,
+   "liquidados_ctg": 21,
+   "pend_sistema_tn": 340.38,
+   "tn_sin_liquidar": 284.88,
+   "sin_liquidar": [
+    {
+     "ctg": "10133695297",
+     "tn": 35.98,
+     "cp": "00000-00010790",
+     "fecha": "2026-07-16",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133695423",
+     "tn": 30.0,
+     "cp": "00000-00010791",
+     "fecha": "2026-07-16",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133742753",
+     "tn": 35.23,
+     "cp": "00000-00010803",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133742836",
+     "tn": 35.37,
+     "cp": "00000-00010804",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133742996",
+     "tn": 29.15,
+     "cp": "00000-00010805",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133743061",
+     "tn": 30.23,
+     "cp": "00000-00010806",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133744259",
+     "tn": 29.41,
+     "cp": "00000-00010807",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133744321",
+     "tn": 29.25,
+     "cp": "00000-00010808",
+     "fecha": "2026-07-17",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133751831",
+     "tn": 30.25,
+     "cp": "00000-00010811",
+     "fecha": "2026-07-18",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
   },
   {
    "contrato": "510",
@@ -5732,64 +5344,64 @@
    "sin_liquidar_raras": []
   },
   {
-   "contrato": "1054",
-   "cerealera": "Cargill",
-   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "producto": "Grano Soja",
+   "contrato": "1353",
+   "cerealera": "Otros",
+   "org": "AGROTRANSPORTES S A",
+   "producto": "Grano Maní en caja",
    "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 82,
-   "tn_entregado": 2362.2,
-   "liquidados_ctg": 75,
-   "pend_sistema_tn": 205.21,
-   "tn_sin_liquidar": 208.21,
+   "entregas_ctg": 7,
+   "tn_entregado": 209.22,
+   "liquidados_ctg": 0,
+   "pend_sistema_tn": 268.96,
+   "tn_sin_liquidar": 209.22,
    "sin_liquidar": [
     {
-     "ctg": "10131554954",
-     "tn": 30.56,
-     "cp": "00000-00009797",
-     "fecha": "2026-05-01",
+     "ctg": "10132647924",
+     "tn": 30.96,
+     "cp": "00000-00010509",
+     "fecha": "2026-05-31",
      "ok_11d": true
     },
     {
-     "ctg": "10131556783",
-     "tn": 37.21,
-     "cp": "00000-00009801",
-     "fecha": "2026-05-01",
+     "ctg": "10132681664",
+     "tn": 28.78,
+     "cp": "00000-00010518",
+     "fecha": "2026-06-01",
      "ok_11d": true
     },
     {
-     "ctg": "10131559537",
-     "tn": 30.1,
-     "cp": "00000-00000051",
-     "fecha": "2026-05-01",
+     "ctg": "10132740453",
+     "tn": 31.34,
+     "cp": "00000-00010527",
+     "fecha": "2026-06-03",
      "ok_11d": true
     },
     {
-     "ctg": "10131957301",
-     "tn": 28.74,
-     "cp": "00000-00010118",
-     "fecha": "2026-05-11",
+     "ctg": "10133130551",
+     "tn": 29.44,
+     "cp": "00000-00010589",
+     "fecha": "2026-06-25",
      "ok_11d": true
     },
     {
-     "ctg": "10132026720",
-     "tn": 27.1,
-     "cp": "00000-00010189",
-     "fecha": "2026-05-12",
+     "ctg": "10133358171",
+     "tn": 31.92,
+     "cp": "00000-00010648",
+     "fecha": "2026-07-03",
      "ok_11d": true
     },
     {
-     "ctg": "10132236972",
-     "tn": 30.54,
-     "cp": "00000-00010327",
-     "fecha": "2026-05-18",
+     "ctg": "10133419473",
+     "tn": 28.62,
+     "cp": "00000-00010684",
+     "fecha": "2026-07-06",
      "ok_11d": true
     },
     {
-     "ctg": "10133493128",
-     "tn": 23.96,
-     "cp": "00000-00010716",
-     "fecha": "2026-07-08",
+     "ctg": "10133671866",
+     "tn": 28.16,
+     "cp": "00000-00010779",
+     "fecha": "2026-07-15",
      "ok_11d": true
     }
    ],
@@ -5847,70 +5459,6 @@
      "tn": 32.96,
      "cp": "00000-00010694",
      "fecha": "2026-07-07",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1352",
-   "cerealera": "Otros",
-   "org": "PROTEISOL SRL",
-   "producto": "Grano Sorgo",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 8,
-   "tn_entregado": 234.52,
-   "liquidados_ctg": 1,
-   "pend_sistema_tn": 255.52,
-   "tn_sin_liquidar": 203.31,
-   "sin_liquidar": [
-    {
-     "ctg": "10133357453",
-     "tn": 33.3,
-     "cp": "00000-00010646",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133360371",
-     "tn": 27.96,
-     "cp": "00000-00010649",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133377409",
-     "tn": 27.38,
-     "cp": "00000-00010660",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133379225",
-     "tn": 27.1,
-     "cp": "00000-00010662",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133379426",
-     "tn": 29.54,
-     "cp": "00000-00010663",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133380455",
-     "tn": 29.44,
-     "cp": "00000-00010667",
-     "fecha": "2026-07-04",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133381110",
-     "tn": 28.58,
-     "cp": "00000-00010669",
-     "fecha": "2026-07-04",
      "ok_11d": true
     }
    ],
@@ -6082,63 +5630,6 @@
      "tn": 31.42,
      "cp": "00000-00007180",
      "fecha": "2025-05-16",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1353",
-   "cerealera": "Otros",
-   "org": "AGROTRANSPORTES S A",
-   "producto": "Grano Maní en caja",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 6,
-   "tn_entregado": 181.06,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 240.8,
-   "tn_sin_liquidar": 181.06,
-   "sin_liquidar": [
-    {
-     "ctg": "10132647924",
-     "tn": 30.96,
-     "cp": "00000-00010509",
-     "fecha": "2026-05-31",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132681664",
-     "tn": 28.78,
-     "cp": "00000-00010518",
-     "fecha": "2026-06-01",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10132740453",
-     "tn": 31.34,
-     "cp": "00000-00010527",
-     "fecha": "2026-06-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133130551",
-     "tn": 29.44,
-     "cp": "00000-00010589",
-     "fecha": "2026-06-25",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133358171",
-     "tn": 31.92,
-     "cp": "00000-00010648",
-     "fecha": "2026-07-03",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133419473",
-     "tn": 28.62,
-     "cp": "00000-00010684",
-     "fecha": "2026-07-06",
      "ok_11d": true
     }
    ],
@@ -6359,56 +5850,6 @@
    "sin_liquidar_raras": []
   },
   {
-   "contrato": "1342",
-   "cerealera": "Otros",
-   "org": "GROBOCOPATEL HERMANOS S.A",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 5,
-   "tn_entregado": 148.79,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 148.79,
-   "tn_sin_liquidar": 148.79,
-   "sin_liquidar": [
-    {
-     "ctg": "10133688625",
-     "tn": 29.63,
-     "cp": "00000-00000027",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133688992",
-     "tn": 30.69,
-     "cp": "00000-00000028",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133690015",
-     "tn": 29.65,
-     "cp": "00000-00000029",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133690545",
-     "tn": 29.25,
-     "cp": "00000-00000030",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133703358",
-     "tn": 29.57,
-     "cp": "00000-00000031",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
    "contrato": "858",
    "cerealera": "ACA",
    "org": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
@@ -6453,6 +5894,56 @@
      "tn": 29.8,
      "cp": "00000-00009729",
      "fecha": "2026-04-29",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
+   "contrato": "1054",
+   "cerealera": "Cargill",
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "producto": "Grano Soja",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 80,
+   "tn_entregado": 2294.43,
+   "liquidados_ctg": 75,
+   "pend_sistema_tn": 137.44,
+   "tn_sin_liquidar": 140.44,
+   "sin_liquidar": [
+    {
+     "ctg": "10131559537",
+     "tn": 30.1,
+     "cp": "00000-00000051",
+     "fecha": "2026-05-01",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10131957301",
+     "tn": 28.74,
+     "cp": "00000-00010118",
+     "fecha": "2026-05-11",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10132026720",
+     "tn": 27.1,
+     "cp": "00000-00010189",
+     "fecha": "2026-05-12",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10132236972",
+     "tn": 30.54,
+     "cp": "00000-00010327",
+     "fecha": "2026-05-18",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133493128",
+     "tn": 23.96,
+     "cp": "00000-00010716",
+     "fecha": "2026-07-08",
      "ok_11d": true
     }
    ],
@@ -6797,6 +6288,49 @@
      "tn": 29.62,
      "cp": "00000-00007639",
      "fecha": "2025-06-30",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
+   "contrato": "1369",
+   "cerealera": "AGD",
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "producto": "Grano Maní en caja",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 4,
+   "tn_entregado": 118.72,
+   "liquidados_ctg": 0,
+   "pend_sistema_tn": 118.72,
+   "tn_sin_liquidar": 118.72,
+   "sin_liquidar": [
+    {
+     "ctg": "10133199279",
+     "tn": 28.32,
+     "cp": "00000-00010615",
+     "fecha": "2026-06-28",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133511917",
+     "tn": 30.98,
+     "cp": "00000-00010719",
+     "fecha": "2026-07-09",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133584538",
+     "tn": 28.62,
+     "cp": "00000-00010743",
+     "fecha": "2026-07-13",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133644818",
+     "tn": 30.8,
+     "cp": "00000-00010763",
+     "fecha": "2026-07-14",
      "ok_11d": true
     }
    ],
@@ -7515,6 +7049,35 @@
    "sin_liquidar_raras": []
   },
   {
+   "contrato": "1367",
+   "cerealera": "Intagro",
+   "org": "ARGENTRADING S.A.",
+   "producto": "Grano Soja",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 2,
+   "tn_entregado": 67.77,
+   "liquidados_ctg": 0,
+   "pend_sistema_tn": 67.77,
+   "tn_sin_liquidar": 67.77,
+   "sin_liquidar": [
+    {
+     "ctg": "10131554954",
+     "tn": 30.56,
+     "cp": "00000-00009797",
+     "fecha": "2026-05-01",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10131556783",
+     "tn": 37.21,
+     "cp": "00000-00009801",
+     "fecha": "2026-05-01",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
    "contrato": "1030",
    "cerealera": "Otros",
    "org": "BASF ARGENTINA S.A.",
@@ -7538,49 +7101,6 @@
      "tn": 31.32,
      "cp": "00000-00001637",
      "fecha": "2026-04-28",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1227",
-   "cerealera": "Otros",
-   "org": "RUCAMALEN SA",
-   "producto": "Grano Soja",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 4,
-   "tn_entregado": 67.4,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 67.4,
-   "tn_sin_liquidar": 67.4,
-   "sin_liquidar": [
-    {
-     "ctg": "10131241220",
-     "tn": 31.52,
-     "cp": "00000-00009624",
-     "fecha": "2026-04-24",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10131248495",
-     "tn": 22.1,
-     "cp": "00000-00009627",
-     "fecha": "2026-04-24",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10131874736",
-     "tn": 6.43,
-     "cp": "00000-00010024",
-     "fecha": "2026-05-08",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10131966338",
-     "tn": 7.35,
-     "cp": "00000-00010131",
-     "fecha": "2026-05-11",
      "ok_11d": true
     }
    ],
@@ -7703,6 +7223,35 @@
    "sin_liquidar_raras": []
   },
   {
+   "contrato": "1370",
+   "cerealera": "Otros",
+   "org": "HEALTHYVEG",
+   "producto": "Grano Arveja",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 2,
+   "tn_entregado": 61.86,
+   "liquidados_ctg": 0,
+   "pend_sistema_tn": 61.86,
+   "tn_sin_liquidar": 61.86,
+   "sin_liquidar": [
+    {
+     "ctg": "10233881756",
+     "tn": 30.94,
+     "cp": "00000-00010838",
+     "fecha": "2026-07-27",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10233904725",
+     "tn": 30.92,
+     "cp": "00000-00010857",
+     "fecha": "2026-07-27",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
    "contrato": "1013",
    "cerealera": "Otros",
    "org": "LARTIRIGOYEN Y CIA SA",
@@ -7761,64 +7310,6 @@
    "sin_liquidar_raras": []
   },
   {
-   "contrato": "1341",
-   "cerealera": "Otros",
-   "org": "RUCAMALEN SA",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 2,
-   "tn_entregado": 60.43,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 60.43,
-   "tn_sin_liquidar": 60.43,
-   "sin_liquidar": [
-    {
-     "ctg": "10133606445",
-     "tn": 30.57,
-     "cp": "00000-00010744",
-     "fecha": "2026-07-13",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133606627",
-     "tn": 29.86,
-     "cp": "00000-00010745",
-     "fecha": "2026-07-13",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1322",
-   "cerealera": "LDC",
-   "org": "LDC ARGENTINA S.A.",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 2,
-   "tn_entregado": 60.35,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 60.35,
-   "tn_sin_liquidar": 60.35,
-   "sin_liquidar": [
-    {
-     "ctg": "10133632804",
-     "tn": 31.06,
-     "cp": "00000-00000152",
-     "fecha": "2026-07-14",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133702892",
-     "tn": 29.29,
-     "cp": "00000-00000363",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
    "contrato": "61",
    "cerealera": "Cargill",
    "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
@@ -7871,6 +7362,35 @@
      "tn": 29.33,
      "cp": "00000-00002553",
      "fecha": "2024-03-26",
+     "ok_11d": true
+    }
+   ],
+   "sin_liquidar_raras": []
+  },
+  {
+   "contrato": "897",
+   "cerealera": "Allaria",
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "producto": "Grano Maíz",
+   "cosecha": "CAMPAÑA 25-26",
+   "entregas_ctg": 14,
+   "tn_entregado": 432.98,
+   "liquidados_ctg": 12,
+   "pend_sistema_tn": 59.3,
+   "tn_sin_liquidar": 59.3,
+   "sin_liquidar": [
+    {
+     "ctg": "10133663350",
+     "tn": 29.35,
+     "cp": "00000-00010774",
+     "fecha": "2026-07-15",
+     "ok_11d": true
+    },
+    {
+     "ctg": "10133664840",
+     "tn": 29.95,
+     "cp": "00000-00010776",
+     "fecha": "2026-07-15",
      "ok_11d": true
     }
    ],
@@ -8016,35 +7536,6 @@
      "tn": 28.25,
      "cp": "00000-00008212",
      "fecha": "2025-10-02",
-     "ok_11d": true
-    }
-   ],
-   "sin_liquidar_raras": []
-  },
-  {
-   "contrato": "1122",
-   "cerealera": "Intagro",
-   "org": "ARGENTRADING S.A.",
-   "producto": "Grano Maíz",
-   "cosecha": "CAMPAÑA 25-26",
-   "entregas_ctg": 2,
-   "tn_entregado": 57.69,
-   "liquidados_ctg": 0,
-   "pend_sistema_tn": 57.69,
-   "tn_sin_liquidar": 57.69,
-   "sin_liquidar": [
-    {
-     "ctg": "10133694989",
-     "tn": 28.87,
-     "cp": "00000-00010789",
-     "fecha": "2026-07-16",
-     "ok_11d": true
-    },
-    {
-     "ctg": "10133695522",
-     "tn": 28.82,
-     "cp": "00000-00010792",
-     "fecha": "2026-07-16",
      "ok_11d": true
     }
    ],
@@ -8276,7 +7767,7 @@
    "producto": "Grano Soja",
    "cosecha": "CAMPAÑA 23-24",
    "entregas_ctg": 8,
-   "tn_entregado": 241.28,
+   "tn_entregado": 235.21,
    "liquidados_ctg": 7,
    "pend_sistema_tn": 3.2,
    "tn_sin_liquidar": 31.85,
