@@ -987,7 +987,6 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div><label>ESTADO</label><select id="fp-estado"><option value="">Todos</option><option value="pendiente">🔴 Pendiente</option><option value="enviada">🟡 Enviada a admin</option><option value="hecha">🟢 Hecha</option></select></div>
         <div><label>GRANO</label><select id="fp-grano"><option value="">Todos</option></select></div>
         <div><label>CAMPAÑA</label><select id="fp-camp"><option value="">Todas</option></select></div>
-        <div><label>¿A PRECIO?</label><select id="fp-precio"><option value="">Todos</option><option value="si">Con precio</option><option value="parcial">Parcial</option><option value="no">Sin precio</option></select></div>
         <div><label>BUSCAR PROVEEDOR / CONTRATO</label><input type="text" id="fp-q" placeholder="razón social o nº…" style="min-width:200px"></div>
         <button class="clear" id="fp-reset">Limpiar</button>
       </div>
@@ -998,7 +997,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
-        💡 <b>Plan para ir metiendo finales</b>: la lista arranca ordenada por <b>tn pendiente</b> (las más grandes primero) y contrato más viejo. A medida que mandás una a las administrativas, apretá <b>“Enviar a admin”</b> y pasa a 🟡 (queda guardado en este navegador). Cuando Finnegans la marca liquidada, pasa sola a 🟢 y sale de la cola. Así siempre ves arriba lo que falta hacer 🔴, abajo lo que está en curso 🟡, y lo cerrado 🟢 desaparece. Fuente: contratos de compra de Finnegans (se refresca en cada deploy).
+        💡 <b>Plan para ir metiendo finales</b>: la lista arranca ordenada por <b>tn pendiente</b> (las más grandes primero) y contrato más viejo. A medida que mandás una a las administrativas, apretá <b>“Enviar a admin”</b>: pasa a 🟡 y <b>abre un correo pre-armado</b> a administración con los datos del contrato (la primera vez te pide el email de administración y lo guarda). Cuando Finnegans la marca liquidada, pasa sola a 🟢 y sale de la cola. Así siempre ves arriba lo que falta hacer 🔴, abajo lo que está en curso 🟡, y lo cerrado 🟢 desaparece. Fuente: contratos de compra de Finnegans (se refresca en cada deploy).
       </div>
     </div>
 
@@ -9567,14 +9566,27 @@ function ctRender(){
   const n = v => (v==null?0:Number(v)).toLocaleString('es-AR',{maximumFractionDigits:1});
   const campShort = c => { const m=String(c||'').match(/(\d{2}\s*[-\/]\s*\d{2})/); return m?m[1].replace(/\s/g,''):String(c||''); };
   const LS='fp_enviadas';
+  // Contratos que ya se mandaron a administración (semilla inicial, por nº de contrato).
+  const SEED_ENVIADAS=['1020','1071','834','1007','1051','1040','1102','979','994','1091','1080','989','1106','1022','1090','975','1052','903','1008','1065','1002','983','984','1094','998','962','1016','972','996','976','991','974','997'];
+  function initSeed(){
+    if(!localStorage.getItem('fp_enviadas_init')){
+      localStorage.setItem(LS, JSON.stringify(SEED_ENVIADAS));
+      localStorage.setItem('fp_enviadas_init','1');
+    }
+  }
   function getEnviadas(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
   function setEnviada(cid,on){ const s=getEnviadas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LS,JSON.stringify([...s])); }
-  function precioClass(r){
-    const t=(r.tipocontrato||'').toLowerCase(); const aj=r.cantidadmax||0, fj=r.cantidadfijada||0;
-    if(t.includes('a precio')||t.includes('contra entrega')) return 'si';
-    if(aj>0 && fj>=aj*0.999) return 'si';
-    if(fj>0) return 'parcial';
-    return 'no';
+  function adminEmail(){
+    let e=localStorage.getItem('fp_admin_email');
+    if(!e){ e=(prompt('Email de administración (se guarda para las próximas):','')||'').trim(); if(e) localStorage.setItem('fp_admin_email',e); }
+    return e;
+  }
+  function fpMail(cid){
+    const r=(_rows||[]).find(x=>x.cid===cid); if(!r) return;
+    const to=adminEmail(); if(!to) return;
+    const subj=`Final para cargar · contrato ${r.contrato} · ${r.proveedor}`;
+    const body=`Hola,\n\nPor favor cargar la final de compra del siguiente contrato:\n\nContrato: ${r.contrato}\nProveedor: ${r.proveedor}\nGrano: ${r.grano}\nCampaña: ${r.campana}\nEntregado: ${r.ent} tn\nLiquidado: ${r.liq} tn\nPendiente de liquidar: ${r.pend} tn\n\nGracias.`;
+    window.location.href=`mailto:${to}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
   }
   let _rows=null;
   function build(){
@@ -9587,27 +9599,26 @@ function ctRender(){
       const ent=Number(c.cantidadentregada)||0, liq=Number(c.cantidadliquidada)||0;
       if(ent<=0.05) return;                       // sin entrega no hay final para hacer
       const pend=Math.max(0,ent-liq);
-      _rows.push({cid:String(c.contratoid||c.numerointerno||c.contrato||''),
-        contrato:c.numerointerno||c.contrato||'', proveedor:c.organizacion||'',
+      const num=String(c.numerointerno||c.contrato||'');
+      _rows.push({cid:num, contrato:num, proveedor:c.organizacion||'',
         grano:(c.producto||'').replace(/^Grano\s+/i,''), campana:c.campana||'', campS:campShort(c.campana),
-        fecha:(c.fecha||'').slice(0,10), ent, liq, pend,
-        precio:Number(c.preciopromediofijado)||0, pc:precioClass(c),
-        chip:(typeof cpFijadoChip==='function')?cpFijadoChip(c):'' });
+        fecha:(c.fecha||'').slice(0,10), ent, liq, pend });
     });
     return _rows;
   }
   function estado(r,env){ if(r.pend<=0.05) return 'hecha'; return env.has(r.cid)?'enviada':'pendiente'; }
   function render(){
     if(!document.getElementById('fp-tabla')) return;
+    initSeed();
     const rows=build();
     const selG=document.getElementById('fp-grano'), selK=document.getElementById('fp-camp');
     if(selG && !selG.dataset.init){
       selG.dataset.init='1';
       [...new Set(rows.map(r=>r.grano))].sort().forEach(v=>selG.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`));
       [...new Set(rows.map(r=>r.campana).filter(Boolean))].sort().reverse().forEach(v=>selK.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(campShort(v))}</option>`));
-      ['fp-estado','fp-grano','fp-camp','fp-precio'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',draw);});
+      ['fp-estado','fp-grano','fp-camp'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',draw);});
       const q=document.getElementById('fp-q'); if(q) q.addEventListener('input',draw);
-      const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-camp','fp-precio','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); draw();});
+      const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-camp','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); draw();});
     }
     draw();
   }
@@ -9616,11 +9627,10 @@ function ctRender(){
     const ev=(document.getElementById('fp-estado')||{}).value||'';
     const gv=(document.getElementById('fp-grano')||{}).value||'';
     const kv=(document.getElementById('fp-camp')||{}).value||'';
-    const pv=(document.getElementById('fp-precio')||{}).value||'';
     const qv=String((document.getElementById('fp-q')||{}).value||'').toLowerCase();
     const withEst=rows.map(r=>({...r,est:estado(r,env)}));
     const filt=withEst.filter(r=>
-      (!ev||r.est===ev) && (!gv||r.grano===gv) && (!kv||r.campana===kv) && (!pv||r.pc===pv) &&
+      (!ev||r.est===ev) && (!gv||r.grano===gv) && (!kv||r.campana===kv) &&
       (!qv || String(r.proveedor).toLowerCase().includes(qv) || String(r.contrato).toLowerCase().includes(qv)));
     // KPIs (sobre todo el universo, no el filtro, para ver el total de la cola)
     const pend=withEst.filter(r=>r.est==='pendiente'), envd=withEst.filter(r=>r.est==='enviada'), hech=withEst.filter(r=>r.est==='hecha');
@@ -9636,7 +9646,7 @@ function ctRender(){
     filt.sort((a,b)=> rank[a.est]-rank[b.est] || b.pend-a.pend || String(a.fecha).localeCompare(String(b.fecha)));
     const chipEst={pendiente:'<span class="chip err">🔴 Pendiente</span>',enviada:'<span class="chip warn">🟡 Enviada</span>',hecha:'<span class="chip ok">🟢 Hecha</span>'};
     const t=document.getElementById('fp-tabla');
-    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Entregado</th><th style="text-align:right">Liquidado</th><th style="text-align:right">Pend.</th><th>¿A precio?</th><th>Acción</th></tr>';
+    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Entregado</th><th style="text-align:right">Liquidado</th><th style="text-align:right">Pend.</th><th>Acción</th></tr>';
     t.querySelector('tbody').innerHTML = filt.map(r=>{
       let btn='';
       if(r.est==='pendiente') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-on="1" style="padding:3px 9px;font-size:11px">→ Enviar a admin</button>`;
@@ -9647,9 +9657,14 @@ function ctRender(){
         `<td style="font-size:11px">${esc(r.campS)}</td>`+
         `<td style="text-align:right">${n(r.ent)}</td><td style="text-align:right">${n(r.liq)}</td>`+
         `<td style="text-align:right;font-weight:600;color:${r.pend>0.05?'#dc2626':'inherit'}">${n(r.pend)}</td>`+
-        `<td>${r.chip}</td><td>${btn}</td></tr>`;
-    }).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
-    t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{ setEnviada(b.dataset.cid, b.dataset.on==='1'); draw(); }));
+        `<td>${btn}</td></tr>`;
+    }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
+    t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{
+      const on=b.dataset.on==='1';
+      setEnviada(b.dataset.cid, on);
+      if(on) fpMail(b.dataset.cid);   // abre el mail a administración pre-armado
+      draw();
+    }));
     const meta=document.getElementById('fp-meta'); if(meta) meta.textContent=`${filt.length} contratos`;
   }
   document.querySelectorAll('[data-go-sub="cp-finales-pend"], .subtab[data-sub="cp-finales-pend"]')
