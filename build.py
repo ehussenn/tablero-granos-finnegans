@@ -977,7 +977,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
         <h3 style="color:#fff;margin:0">🧾 Finales Pendientes · cola de trabajo</h3>
         <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff">
-          Contratos de <b>compra de granos</b> con mercadería <b>entregada que falta liquidar</b> = finales que faltan hacer. 🟢 <b>Hecha</b> (liquidada en Finnegans) · 🟡 <b>Enviada a admin</b> (la marcás vos) · 🔴 <b>Pendiente</b> (a hacer). Ordenado por prioridad (mayor volumen y más viejo primero).
+          Contratos de <b>compra de granos ya liquidados</b> (entregado pendiente de liquidar = 0) → a esos hay que <b>hacerles la final</b>. 🔴 <b>Por hacer</b> · 🟡 <b>Enviada a admin</b> · 🟢 <b>Hecha</b>. Los que no están liquidados o tienen liquidación parcial no aparecen (todavía no se puede hacer la final). Default: campaña actual.
         </div>
       </div>
 
@@ -997,7 +997,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
-        💡 <b>Plan para ir metiendo finales</b>: la lista arranca ordenada por <b>tn pendiente</b> (las más grandes primero) y contrato más viejo. A medida que mandás una a las administrativas, apretá <b>“Enviar a admin”</b>: pasa a 🟡 y <b>abre un correo pre-armado</b> a administración con los datos del contrato (la primera vez te pide el email de administración y lo guarda). Cuando Finnegans la marca liquidada, pasa sola a 🟢 y sale de la cola. Así siempre ves arriba lo que falta hacer 🔴, abajo lo que está en curso 🟡, y lo cerrado 🟢 desaparece. Fuente: contratos de compra de Finnegans (se refresca en cada deploy).
+        💡 <b>Plan para ir metiendo finales</b>: la cola son los contratos <b>ya liquidados</b> a los que falta hacerles la final (🔴), ordenados por fecha (más viejo primero). Cuando la mandás a las administrativas, apretá <b>“Enviar a admin”</b>: pasa a 🟡 y <b>abre un correo pre-armado</b> con los datos del contrato (la primera vez te pide el email de administración y lo guarda). Cuando ya quedó cargada, apretá <b>“Hecha”</b> y pasa a 🟢. Filtrás por campaña (arranca en la actual). Fuente: contratos de compra de Finnegans (se refresca en cada deploy); el estado 🟡/🟢 se guarda en tu navegador.
       </div>
     </div>
 
@@ -9574,8 +9574,11 @@ function ctRender(){
       localStorage.setItem('fp_enviadas_init','1');
     }
   }
+  const LSH='fp_hechas';
   function getEnviadas(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
   function setEnviada(cid,on){ const s=getEnviadas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LS,JSON.stringify([...s])); }
+  function getHechas(){ try{ return new Set(JSON.parse(localStorage.getItem(LSH)||'[]')); }catch(e){ return new Set(); } }
+  function setHecha(cid,on){ const s=getHechas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LSH,JSON.stringify([...s])); }
   function adminEmail(){
     let e=localStorage.getItem('fp_admin_email');
     if(!e){ e=(prompt('Email de administración (se guarda para las próximas):','')||'').trim(); if(e) localStorage.setItem('fp_admin_email',e); }
@@ -9597,16 +9600,19 @@ function ctRender(){
       const est=String(c.estadoanulacion||'').toLowerCase();
       if(est.includes('anul') && !est.includes('no anul')) return;
       const ent=Number(c.cantidadentregada)||0, liq=Number(c.cantidadliquidada)||0;
-      if(ent<=0.05) return;                       // sin entrega no hay final para hacer
       const pend=Math.max(0,ent-liq);
+      // FINAL a hacer = grano LIQUIDADO: entregado > 0 y entregado pendiente de liquidar = 0.
+      // Los que tienen pendiente > 0 (sin liquidar o parcial) NO van: todavía no se puede hacer la final.
+      if(ent<=0.05 || liq<=0.05 || pend>0.05) return;
       const num=String(c.numerointerno||c.contrato||'');
       _rows.push({cid:num, contrato:num, proveedor:c.organizacion||'',
         grano:(c.producto||'').replace(/^Grano\s+/i,''), campana:c.campana||'', campS:campShort(c.campana),
-        fecha:(c.fecha||'').slice(0,10), ent, liq, pend });
+        fecha:(c.fecha||'').slice(0,10), tn:liq });
     });
     return _rows;
   }
-  function estado(r,env){ if(r.pend<=0.05) return 'hecha'; return env.has(r.cid)?'enviada':'pendiente'; }
+  // estado: hecha (marcada por vos) > enviada (a admin) > pendiente (liquidada, falta hacer la final)
+  function estado(r,env,hec){ if(hec.has(r.cid)) return 'hecha'; if(env.has(r.cid)) return 'enviada'; return 'pendiente'; }
   function render(){
     if(!document.getElementById('fp-tabla')) return;
     initSeed();
@@ -9615,54 +9621,60 @@ function ctRender(){
     if(selG && !selG.dataset.init){
       selG.dataset.init='1';
       [...new Set(rows.map(r=>r.grano))].sort().forEach(v=>selG.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`));
-      [...new Set(rows.map(r=>r.campana).filter(Boolean))].sort().reverse().forEach(v=>selK.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(campShort(v))}</option>`));
+      const camps=[...new Set(rows.map(r=>r.campana).filter(Boolean))].sort().reverse();
+      camps.forEach(v=>selK.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(campShort(v))}</option>`));
+      if(camps.length) selK.value=camps[0];   // default: campaña más reciente (evita ruido de viejas ya hechas)
       ['fp-estado','fp-grano','fp-camp'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',draw);});
       const q=document.getElementById('fp-q'); if(q) q.addEventListener('input',draw);
-      const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-camp','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); draw();});
+      const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); if(camps.length) selK.value=camps[0]; draw();});
     }
     draw();
   }
   function draw(){
-    const rows=build(), env=getEnviadas();
+    const rows=build(), env=getEnviadas(), hec=getHechas();
     const ev=(document.getElementById('fp-estado')||{}).value||'';
     const gv=(document.getElementById('fp-grano')||{}).value||'';
     const kv=(document.getElementById('fp-camp')||{}).value||'';
     const qv=String((document.getElementById('fp-q')||{}).value||'').toLowerCase();
-    const withEst=rows.map(r=>({...r,est:estado(r,env)}));
-    const filt=withEst.filter(r=>
-      (!ev||r.est===ev) && (!gv||r.grano===gv) && (!kv||r.campana===kv) &&
+    const withEst=rows.map(r=>({...r,est:estado(r,env,hec)}));
+    // el universo para KPIs respeta el filtro de campaña (para ver la cola de la campaña elegida)
+    const uni=withEst.filter(r=>(!kv||r.campana===kv));
+    const filt=uni.filter(r=>
+      (!ev||r.est===ev) && (!gv||r.grano===gv) &&
       (!qv || String(r.proveedor).toLowerCase().includes(qv) || String(r.contrato).toLowerCase().includes(qv)));
-    // KPIs (sobre todo el universo, no el filtro, para ver el total de la cola)
-    const pend=withEst.filter(r=>r.est==='pendiente'), envd=withEst.filter(r=>r.est==='enviada'), hech=withEst.filter(r=>r.est==='hecha');
+    const pend=uni.filter(r=>r.est==='pendiente'), envd=uni.filter(r=>r.est==='enviada'), hech=uni.filter(r=>r.est==='hecha');
     const kp=document.getElementById('fp-kpis');
     if(kp) kp.innerHTML=[
-      {lbl:'🔴 Pendientes',val:n(pend.length),cls:'red',hint:n(pend.reduce((s,r)=>s+r.pend,0))+' tn a liquidar'},
-      {lbl:'🟡 Enviadas a admin',val:n(envd.length),cls:'orange',hint:n(envd.reduce((s,r)=>s+r.pend,0))+' tn en curso'},
-      {lbl:'🟢 Hechas',val:n(hech.length),cls:'green',hint:'liquidadas'},
-      {lbl:'Total grano c/entrega',val:n(withEst.length),cls:'',hint:'contratos'},
+      {lbl:'🔴 Final por hacer',val:n(pend.length),cls:'red',hint:n(pend.reduce((s,r)=>s+r.tn,0))+' tn'},
+      {lbl:'🟡 Enviadas a admin',val:n(envd.length),cls:'orange',hint:n(envd.reduce((s,r)=>s+r.tn,0))+' tn en curso'},
+      {lbl:'🟢 Hechas',val:n(hech.length),cls:'green',hint:'cargadas'},
+      {lbl:'Liquidados (candidatos)',val:n(uni.length),cls:'',hint:'campaña elegida'},
     ].map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join('');
-    // orden: pendiente(0) < enviada(1) < hecha(2); dentro por pend tn desc, luego fecha asc (más viejo primero)
+    // orden: pendiente(0) < enviada(1) < hecha(2); dentro por fecha asc (más viejo primero)
     const rank={pendiente:0,enviada:1,hecha:2};
-    filt.sort((a,b)=> rank[a.est]-rank[b.est] || b.pend-a.pend || String(a.fecha).localeCompare(String(b.fecha)));
-    const chipEst={pendiente:'<span class="chip err">🔴 Pendiente</span>',enviada:'<span class="chip warn">🟡 Enviada</span>',hecha:'<span class="chip ok">🟢 Hecha</span>'};
+    filt.sort((a,b)=> rank[a.est]-rank[b.est] || String(a.fecha).localeCompare(String(b.fecha)) || b.tn-a.tn);
+    const chipEst={pendiente:'<span class="chip err">🔴 Por hacer</span>',enviada:'<span class="chip warn">🟡 Enviada</span>',hecha:'<span class="chip ok">🟢 Hecha</span>'};
     const t=document.getElementById('fp-tabla');
-    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Entregado</th><th style="text-align:right">Liquidado</th><th style="text-align:right">Pend.</th><th>Acción</th></tr>';
+    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Tn liquidada</th><th>Fecha</th><th>Acciones</th></tr>';
     t.querySelector('tbody').innerHTML = filt.map(r=>{
       let btn='';
-      if(r.est==='pendiente') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-on="1" style="padding:3px 9px;font-size:11px">→ Enviar a admin</button>`;
-      else if(r.est==='enviada') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-on="0" style="padding:3px 9px;font-size:11px">↩ Deshacer</button>`;
+      if(r.est==='pendiente') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="env" style="padding:3px 9px;font-size:11px">→ Enviar a admin</button> <button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="hecha" style="padding:3px 9px;font-size:11px">✓ Hecha</button>`;
+      else if(r.est==='enviada') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="hecha" style="padding:3px 9px;font-size:11px">✓ Hecha</button> <button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="unenv" style="padding:3px 9px;font-size:11px">↩</button>`;
+      else btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="unhecha" style="padding:3px 9px;font-size:11px">↩ Reabrir</button>`;
       const bg = r.est==='pendiente'?'':(r.est==='enviada'?' style="background:#fffbeb"':' style="background:#f0fdf4"');
       return `<tr${bg}><td>${chipEst[r.est]}</td><td style="font-weight:600">${esc(r.contrato)}</td>`+
         `<td style="font-size:11px">${esc(r.proveedor)}</td><td style="font-size:11px">${esc(r.grano)}</td>`+
         `<td style="font-size:11px">${esc(r.campS)}</td>`+
-        `<td style="text-align:right">${n(r.ent)}</td><td style="text-align:right">${n(r.liq)}</td>`+
-        `<td style="text-align:right;font-weight:600;color:${r.pend>0.05?'#dc2626':'inherit'}">${n(r.pend)}</td>`+
-        `<td>${btn}</td></tr>`;
-    }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
+        `<td style="text-align:right;font-weight:600">${n(r.tn)}</td>`+
+        `<td style="font-size:11px">${esc(r.fecha)}</td>`+
+        `<td style="white-space:nowrap">${btn}</td></tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
     t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{
-      const on=b.dataset.on==='1';
-      setEnviada(b.dataset.cid, on);
-      if(on) fpMail(b.dataset.cid);   // abre el mail a administración pre-armado
+      const cid=b.dataset.cid, act=b.dataset.act;
+      if(act==='env'){ setEnviada(cid,true); fpMail(cid); }
+      else if(act==='unenv'){ setEnviada(cid,false); }
+      else if(act==='hecha'){ setHecha(cid,true); setEnviada(cid,false); }
+      else if(act==='unhecha'){ setHecha(cid,false); }
       draw();
     }));
     const meta=document.getElementById('fp-meta'); if(meta) meta.textContent=`${filt.length} contratos`;
