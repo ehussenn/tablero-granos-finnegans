@@ -997,7 +997,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       </div>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
-        💡 <b>Plan para ir metiendo finales</b>: la cola son los contratos <b>ya liquidados</b> a los que falta hacerles la final (🔴), ordenados por fecha (más viejo primero). Cuando la mandás a las administrativas, apretá <b>“Enviar a admin”</b>: pasa a 🟡 y <b>abre un correo pre-armado</b> con los datos del contrato (la primera vez te pide el email de administración y lo guarda). Cuando ya quedó cargada, apretá <b>“Hecha”</b> y pasa a 🟢. Filtrás por campaña (arranca en la actual). Fuente: contratos de compra de Finnegans (se refresca en cada deploy); el estado 🟡/🟢 se guarda en tu navegador.
+        💡 <b>Plan para ir metiendo finales</b>: la cola son los contratos <b>ya liquidados</b> a los que falta hacerles la final (🔴), ordenados por fecha (más viejo primero). Cuando la mandás a las administrativas, apretá <b>“Enviar a admin”</b>: pasa a 🟡 y <b>abre un correo pre-armado</b> con los datos del contrato (la primera vez te pide el email de administración y lo guarda). Cuando ya quedó cargada, apretá <b>“Hecha”</b> y pasa a 🟢. Filtrás por campaña (arranca en la actual). Fuente: contratos de compra de Finnegans (se refresca en cada deploy); el estado 🟡/🟢 se guarda <b>en la nube, compartido entre todos</b> (se sincroniza solo cada 15s).
       </div>
     </div>
 
@@ -9574,11 +9574,51 @@ function ctRender(){
       localStorage.setItem('fp_enviadas_init','1');
     }
   }
-  const LSH='fp_hechas';
-  function getEnviadas(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
-  function setEnviada(cid,on){ const s=getEnviadas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LS,JSON.stringify([...s])); }
-  function getHechas(){ try{ return new Set(JSON.parse(localStorage.getItem(LSH)||'[]')); }catch(e){ return new Set(); } }
-  function setHecha(cid,on){ const s=getHechas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LSH,JSON.stringify([...s])); }
+  const LSH='fp_hechas', KVKEY='finales_estado';
+  // Estado compartido: enviadas (🟡) + hechas (🟢). En la nube (Worker KV) si estamos
+  // detrás del Worker; si no (github.io directo), cae a localStorage. En memoria: _fpEnv/_fpHec.
+  let _fpEnv=null, _fpHec=null;
+  function getEnviadas(){ return _fpEnv || new Set(); }
+  function getHechas(){ return _fpHec || new Set(); }
+  function getEnviadasLS(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
+  function getHechasLS(){ try{ return new Set(JSON.parse(localStorage.getItem(LSH)||'[]')); }catch(e){ return new Set(); } }
+  async function fpLoadState(){
+    if(typeof API_AVAILABLE!=='undefined' && API_AVAILABLE){
+      const r = await apiLoad(KVKEY);
+      if(r && (Array.isArray(r.enviadas)||Array.isArray(r.hechas))){
+        _fpEnv=new Set(r.enviadas||[]); _fpHec=new Set(r.hechas||[]); return;
+      }
+      // KV vacía (primera vez): migrar lo que ya haya en localStorage; si no hay nada, sembrar los 33
+      const lsEnv=getEnviadasLS(), lsHec=getHechasLS();
+      if(lsEnv.size || lsHec.size){ _fpEnv=lsEnv; _fpHec=lsHec; }
+      else { _fpEnv=new Set(SEED_ENVIADAS); _fpHec=new Set(); }
+      await apiSave(KVKEY,{enviadas:[..._fpEnv],hechas:[..._fpHec]});
+      return;
+    }
+    // fallback local (sin Worker)
+    initSeed(); _fpEnv=getEnviadasLS(); _fpHec=getHechasLS();
+  }
+  function applyLocal(cid,act,env,hec){
+    if(act==='env'){ env.add(cid); hec.delete(cid); }
+    else if(act==='unenv'){ env.delete(cid); }
+    else if(act==='hecha'){ hec.add(cid); env.delete(cid); }
+    else if(act==='unhecha'){ hec.delete(cid); }
+  }
+  async function fpPersist(cid,act){
+    applyLocal(cid,act,_fpEnv,_fpHec);   // optimista (para que la UI responda ya)
+    if(typeof API_AVAILABLE!=='undefined' && API_AVAILABLE){
+      // read-modify-write: traigo lo último de KV, aplico mi cambio y subo (no piso a otros)
+      const r = await apiLoad(KVKEY) || {enviadas:[],hechas:[]};
+      const env=new Set(r.enviadas||[]), hec=new Set(r.hechas||[]);
+      applyLocal(cid,act,env,hec);
+      _fpEnv=env; _fpHec=hec;
+      await apiSave(KVKEY,{enviadas:[...env],hechas:[...hec]});
+      draw();
+    } else {
+      localStorage.setItem(LS,JSON.stringify([..._fpEnv]));
+      localStorage.setItem(LSH,JSON.stringify([..._fpHec]));
+    }
+  }
   function adminEmail(){
     let e=localStorage.getItem('fp_admin_email');
     if(!e){ e=(prompt('Email de administración (se guarda para las próximas):','')||'').trim(); if(e) localStorage.setItem('fp_admin_email',e); }
@@ -9613,9 +9653,22 @@ function ctRender(){
   }
   // estado: hecha (marcada por vos) > enviada (a admin) > pendiente (liquidada, falta hacer la final)
   function estado(r,env,hec){ if(hec.has(r.cid)) return 'hecha'; if(env.has(r.cid)) return 'enviada'; return 'pendiente'; }
-  function render(){
+  let _fpPoll=null;
+  function fpStartPolling(){
+    if(_fpPoll || !(typeof API_AVAILABLE!=='undefined' && API_AVAILABLE)) return;
+    _fpPoll=setInterval(async ()=>{
+      const r=await apiLoad(KVKEY);
+      if(r && (Array.isArray(r.enviadas)||Array.isArray(r.hechas))){
+        const a=[...(r.enviadas||[])].sort().join(','), b=[...(r.hechas||[])].sort().join(',');
+        const pa=[...getEnviadas()].sort().join(','), pb=[...getHechas()].sort().join(',');
+        if(a!==pa || b!==pb){ _fpEnv=new Set(r.enviadas||[]); _fpHec=new Set(r.hechas||[]); draw(); }
+      }
+    }, 15000);
+  }
+  async function render(){
     if(!document.getElementById('fp-tabla')) return;
-    initSeed();
+    await fpLoadState();
+    fpStartPolling();
     const rows=build();
     const selG=document.getElementById('fp-grano'), selK=document.getElementById('fp-camp');
     if(selG && !selG.dataset.init){
@@ -9673,11 +9726,9 @@ function ctRender(){
     }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
     t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{
       const cid=b.dataset.cid, act=b.dataset.act;
-      if(act==='env'){ setEnviada(cid,true); fpMail(cid); }
-      else if(act==='unenv'){ setEnviada(cid,false); }
-      else if(act==='hecha'){ setHecha(cid,true); setEnviada(cid,false); }
-      else if(act==='unhecha'){ setHecha(cid,false); }
-      draw();
+      if(act==='env') fpMail(cid);      // abre el mail pre-armado
+      fpPersist(cid,act);               // guarda en la nube (o local) + redibuja
+      draw();                           // respuesta inmediata (optimista)
     }));
     const meta=document.getElementById('fp-meta'); if(meta) meta.textContent=`${filt.length} contratos`;
   }
