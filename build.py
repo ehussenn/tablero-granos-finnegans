@@ -600,6 +600,7 @@ HTML_TEMPLATE = r"""<!doctype html>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-financiera" data-title="Compra · Financiera">Financiera</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-pend" data-title="Compra · Finales Pendientes">🧾 Finales Pendientes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales" data-title="Compra · Finales de Compra">🧮 Finales de Compra</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
@@ -723,6 +724,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button class="subtab" data-sub="cp-financiera">Financiera</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
+      <button class="subtab" data-sub="cp-finales-pend">🧾 Finales Pendientes</button>
       <button class="subtab" data-sub="cp-finales">🧮 Finales de Compra</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
@@ -967,6 +969,36 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
         💡 <b>Pendiente liquidar</b> = tn entregadas por el proveedor que todavía no liquidaste (entregado − liquidado, campo de Finnegans). <b>¿A precio?</b> sale de la fijación del contrato de compra: <span class="chip ok">A precio</span>/<span class="chip ok">Fijado</span> = tiene precio cerrado · <span class="chip warn">Fijado X%</span> = parcial · <span class="chip info">A fijar (sin precio)</span> = falta ponerle precio. El <b>comercial</b> se toma de la cuenta del proveedor (composición de saldos).
+      </div>
+    </div>
+
+    <!-- ========== SUB: FINALES PENDIENTES (cola de trabajo con semáforo) ========== -->
+    <div class="subpanel" data-sub-panel="cp-finales-pend">
+      <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🧾 Finales Pendientes · cola de trabajo</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px;color:#fff">
+          Contratos de <b>compra de granos</b> con mercadería <b>entregada que falta liquidar</b> = finales que faltan hacer. 🟢 <b>Hecha</b> (liquidada en Finnegans) · 🟡 <b>Enviada a admin</b> (la marcás vos) · 🔴 <b>Pendiente</b> (a hacer). Ordenado por prioridad (mayor volumen y más viejo primero).
+        </div>
+      </div>
+
+      <div class="kpis" id="fp-kpis" style="margin-top:14px"></div>
+
+      <div class="filterbar" style="margin-top:12px">
+        <div><label>ESTADO</label><select id="fp-estado"><option value="">Todos</option><option value="pendiente">🔴 Pendiente</option><option value="enviada">🟡 Enviada a admin</option><option value="hecha">🟢 Hecha</option></select></div>
+        <div><label>GRANO</label><select id="fp-grano"><option value="">Todos</option></select></div>
+        <div><label>CAMPAÑA</label><select id="fp-camp"><option value="">Todas</option></select></div>
+        <div><label>¿A PRECIO?</label><select id="fp-precio"><option value="">Todos</option><option value="si">Con precio</option><option value="parcial">Parcial</option><option value="no">Sin precio</option></select></div>
+        <div><label>BUSCAR PROVEEDOR / CONTRATO</label><input type="text" id="fp-q" placeholder="razón social o nº…" style="min-width:200px"></div>
+        <button class="clear" id="fp-reset">Limpiar</button>
+      </div>
+
+      <div class="section">
+        <h3>Cola de finales <span class="badge" id="fp-meta">—</span></h3>
+        <div style="overflow-x:auto"><table class="tbl" id="fp-tabla"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <b>Plan para ir metiendo finales</b>: la lista arranca ordenada por <b>tn pendiente</b> (las más grandes primero) y contrato más viejo. A medida que mandás una a las administrativas, apretá <b>“Enviar a admin”</b> y pasa a 🟡 (queda guardado en este navegador). Cuando Finnegans la marca liquidada, pasa sola a 🟢 y sale de la cola. Así siempre ves arriba lo que falta hacer 🔴, abajo lo que está en curso 🟡, y lo cerrado 🟢 desaparece. Fuente: contratos de compra de Finnegans (se refresca en cada deploy).
       </div>
     </div>
 
@@ -9526,6 +9558,105 @@ function ctRender(){
 })();
 
 /* ============================================================
+   ====  FINALES PENDIENTES · cola de trabajo con semáforo  ===
+   Compra de granos: entregado - liquidado = final a hacer.
+   Estado: hecha(liquidada) / enviada(manual, localStorage) / pendiente.
+   ============================================================ */
+(function fpInit(){
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n = v => (v==null?0:Number(v)).toLocaleString('es-AR',{maximumFractionDigits:1});
+  const campShort = c => { const m=String(c||'').match(/(\d{2}\s*[-\/]\s*\d{2})/); return m?m[1].replace(/\s/g,''):String(c||''); };
+  const LS='fp_enviadas';
+  function getEnviadas(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
+  function setEnviada(cid,on){ const s=getEnviadas(); on?s.add(cid):s.delete(cid); localStorage.setItem(LS,JSON.stringify([...s])); }
+  function precioClass(r){
+    const t=(r.tipocontrato||'').toLowerCase(); const aj=r.cantidadmax||0, fj=r.cantidadfijada||0;
+    if(t.includes('a precio')||t.includes('contra entrega')) return 'si';
+    if(aj>0 && fj>=aj*0.999) return 'si';
+    if(fj>0) return 'parcial';
+    return 'no';
+  }
+  let _rows=null;
+  function build(){
+    if(_rows) return _rows;
+    _rows=[];
+    (PAYLOAD.compra||[]).forEach(c=>{
+      if(!String(c.producto||'').trim().toLowerCase().startsWith('grano')) return;
+      const est=String(c.estadoanulacion||'').toLowerCase();
+      if(est.includes('anul') && !est.includes('no anul')) return;
+      const ent=Number(c.cantidadentregada)||0, liq=Number(c.cantidadliquidada)||0;
+      if(ent<=0.05) return;                       // sin entrega no hay final para hacer
+      const pend=Math.max(0,ent-liq);
+      _rows.push({cid:String(c.contratoid||c.numerointerno||c.contrato||''),
+        contrato:c.numerointerno||c.contrato||'', proveedor:c.organizacion||'',
+        grano:(c.producto||'').replace(/^Grano\s+/i,''), campana:c.campana||'', campS:campShort(c.campana),
+        fecha:(c.fecha||'').slice(0,10), ent, liq, pend,
+        precio:Number(c.preciopromediofijado)||0, pc:precioClass(c),
+        chip:(typeof cpFijadoChip==='function')?cpFijadoChip(c):'' });
+    });
+    return _rows;
+  }
+  function estado(r,env){ if(r.pend<=0.05) return 'hecha'; return env.has(r.cid)?'enviada':'pendiente'; }
+  function render(){
+    if(!document.getElementById('fp-tabla')) return;
+    const rows=build();
+    const selG=document.getElementById('fp-grano'), selK=document.getElementById('fp-camp');
+    if(selG && !selG.dataset.init){
+      selG.dataset.init='1';
+      [...new Set(rows.map(r=>r.grano))].sort().forEach(v=>selG.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`));
+      [...new Set(rows.map(r=>r.campana).filter(Boolean))].sort().reverse().forEach(v=>selK.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(campShort(v))}</option>`));
+      ['fp-estado','fp-grano','fp-camp','fp-precio'].forEach(id=>{const e=document.getElementById(id); if(e) e.addEventListener('change',draw);});
+      const q=document.getElementById('fp-q'); if(q) q.addEventListener('input',draw);
+      const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-camp','fp-precio','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); draw();});
+    }
+    draw();
+  }
+  function draw(){
+    const rows=build(), env=getEnviadas();
+    const ev=(document.getElementById('fp-estado')||{}).value||'';
+    const gv=(document.getElementById('fp-grano')||{}).value||'';
+    const kv=(document.getElementById('fp-camp')||{}).value||'';
+    const pv=(document.getElementById('fp-precio')||{}).value||'';
+    const qv=String((document.getElementById('fp-q')||{}).value||'').toLowerCase();
+    const withEst=rows.map(r=>({...r,est:estado(r,env)}));
+    const filt=withEst.filter(r=>
+      (!ev||r.est===ev) && (!gv||r.grano===gv) && (!kv||r.campana===kv) && (!pv||r.pc===pv) &&
+      (!qv || String(r.proveedor).toLowerCase().includes(qv) || String(r.contrato).toLowerCase().includes(qv)));
+    // KPIs (sobre todo el universo, no el filtro, para ver el total de la cola)
+    const pend=withEst.filter(r=>r.est==='pendiente'), envd=withEst.filter(r=>r.est==='enviada'), hech=withEst.filter(r=>r.est==='hecha');
+    const kp=document.getElementById('fp-kpis');
+    if(kp) kp.innerHTML=[
+      {lbl:'🔴 Pendientes',val:n(pend.length),cls:'red',hint:n(pend.reduce((s,r)=>s+r.pend,0))+' tn a liquidar'},
+      {lbl:'🟡 Enviadas a admin',val:n(envd.length),cls:'orange',hint:n(envd.reduce((s,r)=>s+r.pend,0))+' tn en curso'},
+      {lbl:'🟢 Hechas',val:n(hech.length),cls:'green',hint:'liquidadas'},
+      {lbl:'Total grano c/entrega',val:n(withEst.length),cls:'',hint:'contratos'},
+    ].map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join('');
+    // orden: pendiente(0) < enviada(1) < hecha(2); dentro por pend tn desc, luego fecha asc (más viejo primero)
+    const rank={pendiente:0,enviada:1,hecha:2};
+    filt.sort((a,b)=> rank[a.est]-rank[b.est] || b.pend-a.pend || String(a.fecha).localeCompare(String(b.fecha)));
+    const chipEst={pendiente:'<span class="chip err">🔴 Pendiente</span>',enviada:'<span class="chip warn">🟡 Enviada</span>',hecha:'<span class="chip ok">🟢 Hecha</span>'};
+    const t=document.getElementById('fp-tabla');
+    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Entregado</th><th style="text-align:right">Liquidado</th><th style="text-align:right">Pend.</th><th>¿A precio?</th><th>Acción</th></tr>';
+    t.querySelector('tbody').innerHTML = filt.map(r=>{
+      let btn='';
+      if(r.est==='pendiente') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-on="1" style="padding:3px 9px;font-size:11px">→ Enviar a admin</button>`;
+      else if(r.est==='enviada') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-on="0" style="padding:3px 9px;font-size:11px">↩ Deshacer</button>`;
+      const bg = r.est==='pendiente'?'':(r.est==='enviada'?' style="background:#fffbeb"':' style="background:#f0fdf4"');
+      return `<tr${bg}><td>${chipEst[r.est]}</td><td style="font-weight:600">${esc(r.contrato)}</td>`+
+        `<td style="font-size:11px">${esc(r.proveedor)}</td><td style="font-size:11px">${esc(r.grano)}</td>`+
+        `<td style="font-size:11px">${esc(r.campS)}</td>`+
+        `<td style="text-align:right">${n(r.ent)}</td><td style="text-align:right">${n(r.liq)}</td>`+
+        `<td style="text-align:right;font-weight:600;color:${r.pend>0.05?'#dc2626':'inherit'}">${n(r.pend)}</td>`+
+        `<td>${r.chip}</td><td>${btn}</td></tr>`;
+    }).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
+    t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{ setEnviada(b.dataset.cid, b.dataset.on==='1'); draw(); }));
+    const meta=document.getElementById('fp-meta'); if(meta) meta.textContent=`${filt.length} contratos`;
+  }
+  document.querySelectorAll('[data-go-sub="cp-finales-pend"], .subtab[data-sub="cp-finales-pend"]')
+    .forEach(a => a.addEventListener('click', () => setTimeout(render, 60)));
+})();
+
+/* ============================================================
    ============  MI BANDEJA · Notas de Mail (Personal)  ========
    ============================================================
    Cada usuario interno (@agronasaja.com.ar) tiene su propia bandeja
@@ -10155,18 +10286,22 @@ def main() -> int:
     if USE_DW:
         print(f"[+] Bajando Contratos COMPRA desde DW...", flush=True)
         dw_compra = dw_query("agronasajasrl_resumen_de_contrato_de_compra_de_granos", DATE_COLS_CONTRATOS)
-        if dw_compra is not None:
+        if dw_compra:   # solo si trae filas; si el DW devuelve vacío (falla transitoria) -> fallback REST
             compra_norm = [r for r in dw_compra if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
             counts["compra"] = len(compra_norm)
             used_dw_compra = True
             print(f"    -> {len(compra_norm)} filas (sin anulados)")
+        else:
+            print(f"    [!] DW compra vacío/None -> uso fallback REST")
         print(f"[+] Bajando Contratos VENTA desde DW...", flush=True)
         dw_venta = dw_query("agronasajasrl_resumen_de_contratos_de_venta_de_granos", DATE_COLS_CONTRATOS)
-        if dw_venta is not None:
+        if dw_venta:   # idem venta
             pilot_norm = [r for r in dw_venta if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
             counts["venta"] = len(pilot_norm)
             used_dw_pilot = True
             print(f"    -> {len(pilot_norm)} filas (sin anulados)")
+        else:
+            print(f"    [!] DW venta vacío/None -> uso fallback REST")
 
     # Fallback API REST para los que no se pudieron bajar del DW
     if not (used_dw_pilot and used_dw_compra):
