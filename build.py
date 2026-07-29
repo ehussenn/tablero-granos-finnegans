@@ -9643,12 +9643,14 @@ function ctRender(){
       (!ev||r.est===ev) && (!gv||r.grano===gv) &&
       (!qv || String(r.proveedor).toLowerCase().includes(qv) || String(r.contrato).toLowerCase().includes(qv)));
     const pend=uni.filter(r=>r.est==='pendiente'), envd=uni.filter(r=>r.est==='enviada'), hech=uni.filter(r=>r.est==='hecha');
+    const totTn=uni.reduce((s,r)=>s+r.tn,0), hechTn=hech.reduce((s,r)=>s+r.tn,0);
+    const pct = totTn>0 ? (hechTn/totTn*100) : 0;
     const kp=document.getElementById('fp-kpis');
     if(kp) kp.innerHTML=[
       {lbl:'🔴 Final por hacer',val:n(pend.length),cls:'red',hint:n(pend.reduce((s,r)=>s+r.tn,0))+' tn'},
       {lbl:'🟡 Enviadas a admin',val:n(envd.length),cls:'orange',hint:n(envd.reduce((s,r)=>s+r.tn,0))+' tn en curso'},
-      {lbl:'🟢 Hechas',val:n(hech.length),cls:'green',hint:'cargadas'},
-      {lbl:'Liquidados (candidatos)',val:n(uni.length),cls:'',hint:'campaña elegida'},
+      {lbl:'🟢 Hechas',val:n(hech.length),cls:'green',hint:n(hechTn)+' tn cargadas'},
+      {lbl:'% finales hechas (por tn)',val:pct.toFixed(1)+'%',cls: pct>=99?'green':'',hint:n(hechTn)+' / '+n(totTn)+' tn'},
     ].map(k=>`<div class="kpi ${k.cls}"><div class="lbl">${k.lbl}</div><div class="val">${k.val}</div><div class="hint">${k.hint}</div></div>`).join('');
     // orden: pendiente(0) < enviada(1) < hecha(2); dentro por fecha asc (más viejo primero)
     const rank={pendiente:0,enviada:1,hecha:2};
