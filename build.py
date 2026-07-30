@@ -9665,10 +9665,10 @@ function ctRender(){
       }
     }, 15000);
   }
-  async function render(){
+  function render(){
     if(!document.getElementById('fp-tabla')) return;
-    await fpLoadState();
-    fpStartPolling();
+    // Estado inicial inmediato (localStorage) para NO quedar en blanco si la nube tarda/falla
+    if(!_fpEnv){ _fpEnv=getEnviadasLS(); _fpHec=getHechasLS(); }
     const rows=build();
     const selG=document.getElementById('fp-grano'), selK=document.getElementById('fp-camp');
     if(selG && !selG.dataset.init){
@@ -9681,7 +9681,9 @@ function ctRender(){
       const q=document.getElementById('fp-q'); if(q) q.addEventListener('input',draw);
       const rst=document.getElementById('fp-reset'); if(rst) rst.addEventListener('click',()=>{['fp-estado','fp-grano','fp-q'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); if(camps.length) selK.value=camps[0]; draw();});
     }
-    draw();
+    draw();   // dibuja YA, con lo que haya
+    // Luego traigo el estado compartido de la nube y redibujo (sin bloquear la vista)
+    (async()=>{ try{ await fpLoadState(); fpStartPolling(); draw(); }catch(e){ console.warn('[finales] estado nube:',e); } })();
   }
   function draw(){
     const rows=build(), env=getEnviadas(), hec=getHechas();
