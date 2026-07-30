@@ -9711,8 +9711,20 @@ function ctRender(){
     const rank={pendiente:0,enviada:1,hecha:2};
     filt.sort((a,b)=> rank[a.est]-rank[b.est] || String(a.fecha).localeCompare(String(b.fecha)) || b.tn-a.tn);
     const chipEst={pendiente:'<span class="chip err">🔴 Por hacer</span>',enviada:'<span class="chip warn">🟡 Enviada</span>',hecha:'<span class="chip ok">🟢 Hecha</span>'};
+    const cur=m=>(m==='Pesos'||m==='ARS'||m==='PESOS')?'$':'US$';
+    function gastoCell(num){
+      const fg=(PAYLOAD.finales_gastos||{})[num];
+      if(!fg) return '<span style="color:var(--muted)">—</span>';
+      if(!fg.por_tipo||!fg.por_tipo.length){
+        return `<span style="color:#b45309" title="entregador: ${esc((fg.cerealeras||[]).join(', '))} · falta scrapear sus gastos">— falta extranet</span>`;
+      }
+      const byC={}; fg.por_tipo.forEach(t=>{byC[t.moneda]=(byC[t.moneda]||0)+t.importe;});
+      const tot=Object.entries(byC).map(([mo,v])=>`${cur(mo)}${n(v)}`).join(' · ');
+      const falta=fg.ctgs_sin_datos?` <span style="color:#b45309" title="${fg.ctgs_sin_datos} CTG de otros entregadores sin gastos scrapeados">+${fg.ctgs_sin_datos}?</span>`:'';
+      return `<span class="fp-gasto-lnk" data-num="${esc(num)}" style="cursor:pointer;color:#15803d;font-weight:600" title="ver detalle de gastos">🔎 ${tot}${falta}</span>`;
+    }
     const t=document.getElementById('fp-tabla');
-    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Tn liquidada</th><th>Fecha</th><th>Acciones</th></tr>';
+    t.querySelector('thead').innerHTML='<tr><th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th><th style="text-align:right">Tn liq.</th><th>Fecha</th><th>Gastos a descontar</th><th>Acciones</th></tr>';
     t.querySelector('tbody').innerHTML = filt.map(r=>{
       let btn='';
       if(r.est==='pendiente') btn=`<button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="env" style="padding:3px 9px;font-size:11px">→ Enviar a admin</button> <button class="clear fp-btn" data-cid="${esc(r.cid)}" data-act="hecha" style="padding:3px 9px;font-size:11px">✓ Hecha</button>`;
@@ -9724,13 +9736,25 @@ function ctRender(){
         `<td style="font-size:11px">${esc(r.campS)}</td>`+
         `<td style="text-align:right;font-weight:600">${n(r.tn)}</td>`+
         `<td style="font-size:11px">${esc(r.fecha)}</td>`+
+        `<td style="font-size:11px">${gastoCell(r.contrato)}</td>`+
         `<td style="white-space:nowrap">${btn}</td></tr>`;
-    }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
+    }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px">Sin contratos para ese filtro</td></tr>';
     t.querySelectorAll('.fp-btn').forEach(b=>b.addEventListener('click',()=>{
       const cid=b.dataset.cid, act=b.dataset.act;
-      if(act==='env') fpMail(cid);      // abre el mail pre-armado
-      fpPersist(cid,act);               // guarda en la nube (o local) + redibuja
-      draw();                           // respuesta inmediata (optimista)
+      if(act==='env') fpMail(cid);
+      fpPersist(cid,act);
+      draw();
+    }));
+    // desplegar detalle de gastos por contrato
+    t.querySelectorAll('.fp-gasto-lnk').forEach(el=>el.addEventListener('click',()=>{
+      const tr=el.closest('tr'); const nx=tr.nextElementSibling;
+      if(nx && nx.classList.contains('fp-gasto-det')){ nx.remove(); return; }
+      const fg=(PAYLOAD.finales_gastos||{})[el.dataset.num]; if(!fg) return;
+      const rows=(fg.por_tipo||[]).map(x=>`<tr><td style="padding:2px 8px">${esc(x.tipo)}</td><td style="padding:2px 8px;text-align:right;font-weight:600">${cur(x.moneda)}${n(x.importe)}</td><td style="padding:2px 8px;font-size:10px;color:var(--muted)">${esc(x.moneda)}</td></tr>`).join('');
+      const nota=fg.ctgs_sin_datos?`<div style="font-size:11px;color:#b45309;margin-top:6px">⚠ ${fg.ctgs_sin_datos} CTG de otros entregadores (${esc((fg.cerealeras||[]).join(', '))}) sin gastos scrapeados aún.</div>`:'';
+      const det=document.createElement('tr'); det.className='fp-gasto-det';
+      det.innerHTML=`<td colspan="9" style="background:#f0fdf4;padding:10px 18px"><div style="font-weight:600;margin-bottom:4px">💰 Gastos a descontar · contrato ${esc(el.dataset.num)} <span style="font-weight:400;color:var(--muted)">(${fg.ctgs_con_gastos} CTG con datos de Cargill)</span></div><table class="tbl" style="margin:0;max-width:420px"><thead><tr><th>Concepto</th><th style="text-align:right">Importe</th><th>Mon.</th></tr></thead><tbody>${rows}</tbody></table>${nota}</td>`;
+      tr.after(det);
     }));
     const meta=document.getElementById('fp-meta'); if(meta) meta.textContent=`${filt.length} contratos`;
   }
@@ -10783,6 +10807,59 @@ def main() -> int:
         else:
             print(f"    [.] {fp} no existe (correr scripts/cargill_api_final.py + cargill_download_details.py)")
 
+    # ---- Gastos a descontar por contrato de compra (para Finales Pendientes) ----
+    # Montos reales por CTG desde Cargill (movements_detail.services: secada/flete/comisión/etc).
+    # Otros entregadores: falta scrapear sus gastos -> se marca cuántos CTG quedan sin datos.
+    print(f"\n[+] Calculando gastos a descontar por contrato (Cargill services)...", flush=True)
+    def _ctgn(x): return re.sub(r"\D", "", str(x or "")).lstrip("0")
+    def _cnum(s):
+        m = re.search(r"-\s*(\d+)", str(s or "")); return m.group(1) if m else None
+    _ctg_serv = {}   # ctg -> [{name, importe, moneda}]
+    _cd = cargill_details.values() if isinstance(cargill_details, dict) else (cargill_details or [])
+    for mov in _cd:
+        m = re.search(r"(\d{11})$", str(mov.get("legalDocument") or ""))
+        if not m: continue
+        ctg = m.group(1).lstrip("0")
+        for s in (mov.get("services") or []):
+            name = str(s.get("serviceName") or "").strip()
+            if not name or re.match(r"^\d{4}-\d\d-\d\d", name): continue
+            cur = s.get("currencyCode") or s.get("billingCurrency") or ""
+            # importe: el calculationType ya trae "precio x cantidad TN" (o "x UN").
+            # Uso esos números (netWeight viene en KG, no sirve para el cálculo).
+            calc = str(s.get("calculationType") or "")
+            nums = re.findall(r"\d+(?:[.,]\d+)?", calc)
+            if "TN" in calc.upper() and len(nums) >= 2:
+                importe = round(float(nums[0].replace(",", ".")) * float(nums[1].replace(",", ".")), 2)
+            else:
+                try: importe = round(float(str(s.get("unitPrice") or "0").replace(",", ".")), 2)
+                except Exception: importe = 0.0
+            _ctg_serv.setdefault(ctg, []).append({"name": name, "importe": importe, "moneda": cur})
+    _fg = {}   # contrato_num -> agregado
+    for r in traza_list:
+        num = _cnum(r.get("contrato_compra"))
+        ctg = _ctgn(r.get("ctg"))
+        if not num or not ctg: continue
+        e = _fg.setdefault(num, {"ctgs": [], "cerealeras": set(), "por_tipo": {}, "sin_datos": 0})
+        cer = (r.get("cerealera") or r.get("destinatario") or "")[:26]
+        if cer: e["cerealeras"].add(cer)
+        serv = _ctg_serv.get(ctg)
+        if serv:
+            e["ctgs"].append({"ctg": ctg, "cerealera": cer, "gastos": serv})
+            for g in serv:
+                k = (g["name"], g["moneda"])
+                e["por_tipo"][k] = round(e["por_tipo"].get(k, 0.0) + g["importe"], 2)
+        else:
+            e["sin_datos"] += 1
+    finales_gastos = {}
+    for num, e in _fg.items():
+        finales_gastos[num] = {
+            "ctgs": e["ctgs"], "cerealeras": sorted(e["cerealeras"]),
+            "por_tipo": [{"tipo": k[0], "moneda": k[1], "importe": v} for k, v in sorted(e["por_tipo"].items())],
+            "ctgs_con_gastos": len(e["ctgs"]), "ctgs_sin_datos": e["sin_datos"],
+        }
+    _con = sum(1 for v in finales_gastos.values() if v["ctgs_con_gastos"])
+    print(f"    -> {len(finales_gastos)} contratos con CTG en traza · {_con} con gastos de Cargill")
+
     # Data LDC (Louis Dreyfus) - mildc.com/webportal
     # Se actualiza con: py scripts/ldc_fetch_all.py
     print(f"\n[+] Cargando data LDC (si existe)...", flush=True)
@@ -11065,6 +11142,7 @@ def main() -> int:
         "finales": finales,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
+        "finales_gastos": finales_gastos,
         "pilot":  pilot_norm,
         "compra": compra_norm,
         "saldos": saldos_norm,
