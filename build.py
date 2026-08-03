@@ -2335,7 +2335,7 @@ function maizSplit(c){
   return Object.assign({}, c, { producto: `Grano Maíz ${variante}` });
 }
 
-const DATA = (PAYLOAD.pilot || []).map(maizSplit);   // array de rows ya normalizadas + split Maíz
+const DATA = (PAYLOAD.pilot || []);   // sin split de maíz: "Grano Maíz" queda combinado (1ra+2da)
 let filtered = DATA.slice();
 let sortKey = null, sortDir = 1;
 
@@ -3681,7 +3681,7 @@ calRender();
    ===============  MODULO COMPRA  ===========================
    ============================================================ */
 
-const DATA_CP = (PAYLOAD.compra || []).map(maizSplit);
+const DATA_CP = (PAYLOAD.compra || []);   // sin split de maíz
 
 /* ---------- COMPRA: POSICIÓN GENERAL ---------- */
 
@@ -6874,7 +6874,7 @@ const PN_COLS = [
 // a la campaña de COSECHA VIGENTE (25/26). La PRODUCCIÓN va aparte, por campaña (PN_PROD_BY_CAMP).
 const PN_DEFAULTS = {
   "Grano Soja":             { silobolsa: 519.2 },
-  "Grano Maíz 2da":         { silobolsa: 770 },
+  "Grano Maíz":             { silobolsa: 770 },
   "Grano Arveja":           { silobolsa: 262 },
   // Stock en silobolsa (bajada Finnegans "Stock en silobolsas · todo Agronasaja") — semillas, tn
   "SEM. GRANEL SOJA DM 46E25 ORIGINAL":  { silobolsa: 972.5 },
@@ -6895,8 +6895,7 @@ const PN_PROD_BY_CAMP = {
   // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" sin separar 1ra/2da.
   "CAMPAÑA 25-26": {
     "Grano Soja":            { cosechado: 24728.2, pendcos: 62 },
-    "Grano Maíz 1ra":        { cosechado: 13577.6 },
-    "Grano Maíz 2da":        { cosechado: 4403.3, pendcos: 25859 },
+    "Grano Maíz":            { cosechado: 17980.9, pendcos: 25859 },
     "Grano Maíz Pisingallo": { cosechado: 227.8 },
     "Grano Girasol":         { cosechado: 895.8, pendcos: 6 },
     "Grano Sorgo":           { pendcos: 113 },
