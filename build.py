@@ -6872,22 +6872,11 @@ const PN_COLS = [
 // editando la celda (PN_MANUAL en localStorage tiene prioridad sobre estos defaults).
 // PLANTA / stock físico embebido (silobolsa de la bajada de Finnegans). Es físico = pertenece
 // a la campaña de COSECHA VIGENTE (25/26). La PRODUCCIÓN va aparte, por campaña (PN_PROD_BY_CAMP).
-const PN_DEFAULTS = {
-  "Grano Soja":             { silobolsa: 519.2 },
-  "Grano Maíz":             { silobolsa: 770 },
-  "Grano Arveja":           { silobolsa: 262 },
-  // Stock en silobolsa (bajada Finnegans "Stock en silobolsas · todo Agronasaja") — semillas, tn
-  "SEM. GRANEL SOJA DM 46E25 ORIGINAL":  { silobolsa: 972.5 },
-  "SEM. GRANEL SOJA DM 50E25 ORIGINAL":  { silobolsa: 627.9 },
-  "SEM. GRANEL SOJA DM 40E25 ORIGINAL":  { silobolsa: 261.4 },
-  "SEM. GRANEL SOJA DM 52E21 STS PRIMU": { silobolsa: 241.8 },
-  "SEM. GRANEL SOJA DM 50E22 SE PRIMU":  { silobolsa: 205 },
-  "SEM. GRANEL SOJA DM 46I20 PRIMU":     { silobolsa: 104.5 },
-  "SEM. GRANEL TRIGO DM CASUARINA PRIMU":{ silobolsa: 498.5 },
-  "SEM. GRANEL TRIGO DM AROMO PRIMU":    { silobolsa: 127 },
-  "SEM. GRANEL TRIGO DM PEHUEN PRIMU":   { silobolsa: 6.7 },
-  "SEM. GRANEL ARVEJA ROSITA":           { silobolsa: 59.8 },
-};
+// Vacío: el stock (silo/bolsas/silobolsa) sale 100% AUTOMÁTICO del reporte
+// "Resumen de Stock por Depósito" (USR_RESSTOCKDEP), categorizado por depósito.
+// Antes había valores hardcodeados de un print viejo que pisaban el auto y quedaban
+// desactualizados (ej. arveja 262 cuando el reporte da 0). Ya no.
+const PN_DEFAULTS = {};
 // Producción propia POR CAMPAÑA (cosechado + pendiente a cosechar, en tn). Cada campaña con
 // sus cultivos. La producción se muestra según la campaña SELECCIONADA en el filtro.
 const PN_PROD_BY_CAMP = {
