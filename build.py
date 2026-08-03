@@ -7167,6 +7167,27 @@ function pnRender(){
     body += rowFam;
     totalsFam[fam] = totFam;
 
+    // DESCARTE + POTENCIAL (solo SOJA y TRIGO): el procesado de semilla deja ~10% de descarte (grano).
+    //  - Descarte  = 10% de la semilla en stock (a granel en silo + silobolsa)
+    //  - Potencial = descarte + 10% de la semilla en contratos pendientes de ingreso
+    if(fam === "SOJA" || fam === "TRIGO"){
+      const semStock = (totSem.silo || 0) + (totSem.silobolsa || 0);
+      const semPendIng = totSem.compraPend || 0;
+      const descarte  = semStock * 0.10;
+      const potencial = descarte + semPendIng * 0.10;
+      const ncols = PN_COLS.reduce((n,g) => n + g.cols.length, 0);
+      if(descarte > 0.05 || potencial > 0.05){
+        body += `<tr class="pn-descarte" style="background:#f0fdf4">`+
+          `<td class="pn-prod-cell" style="padding-left:36px;font-weight:600;color:#15803d">↳ Descarte semilla (10%)</td>`+
+          `<td class="pos-pos" style="font-weight:700;color:#15803d">${fmt.num(descarte)}</td>`+
+          `<td colspan="${ncols-1}" style="font-size:11px;color:var(--muted)">10% de ${fmt.num(semStock)} tn de semilla (granel + silo bolsa)</td></tr>`;
+        body += `<tr class="pn-potencial" style="background:#ecfeff">`+
+          `<td class="pn-prod-cell" style="padding-left:36px;font-weight:700;color:#0e7490">↳ Potencial descarte</td>`+
+          `<td style="font-weight:800;color:#0e7490">${fmt.num(potencial)}</td>`+
+          `<td colspan="${ncols-1}" style="font-size:11px;color:var(--muted)">descarte + 10% de ${fmt.num(semPendIng)} tn pendiente de ingreso</td></tr>`;
+      }
+    }
+
     // 2) Detalle (productos + semillas) — SOLO si la familia está expandida
     if(famExpanded){
       otros.forEach(prod => { body += pnRenderProdRow(prod, {indent:true}); });
