@@ -6971,13 +6971,16 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // Si hay campoEst, ese ES el total (no sumar pendCos para no duplicar).
   const prodTot    = campoEst > 0 ? campoEst : (pendCos + cosechado);
 
-  // COMPRA (auto desde contratos de compra)
-  let compraTot = 0, compraEntr = 0;
+  // COMPRA (auto desde contratos de compra, reporte REST)
+  // Cantidad ajustada = entregado + pendiente de entrega (como el "Resumen de Contratos" de Finnegans).
+  let compraTot = 0, compraEntr = 0, compraPend = 0;
   opsCompra.forEach(c => {
-    compraTot  += Number(c.cantidadmax) || 0;
-    compraEntr += Number(c.cantidadentregada) || 0;
+    const ent = Number(c.cantidadentregada) || 0;
+    const pen = Number(c.cantidadpendienteentrega) || 0;
+    compraEntr += ent;
+    compraPend += pen;
+    compraTot  += ent + pen;   // ajustada
   });
-  const compraPend = compraTot - compraEntr;
 
   // P+C
   const pcTot = prodTot + compraTot;
@@ -6993,13 +6996,16 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // Ctos Entr: ya entregado NO-semilla
   const vtaSem       = pnGetMan(producto, "vtaSem");
   const pendVincular = pnGetMan(producto, "pendVincular");
-  let ventaCtosAjust = 0, ventaEntr = 0;
+  // Cantidad ajustada = entregado + pendiente de entrega (reporte de Finnegans).
+  let ventaCtosAjust = 0, ventaEntr = 0, ventaCtos = 0;
   opsVenta.forEach(c => {
     if((c.producto || "").toLowerCase().includes("sem")) return;  // semilla va aparte (manual)
-    ventaCtosAjust += Number(c.cantidadmax) || 0;
-    ventaEntr      += Number(c.cantidadentregada) || 0;
+    const ent = Number(c.cantidadentregada) || 0;
+    const pen = Number(c.cantidadpendienteentrega) || 0;
+    ventaEntr      += ent;
+    ventaCtos      += pen;         // pendiente de entrega (directo del contrato)
+    ventaCtosAjust += ent + pen;   // ajustada = total venta
   });
-  const ventaCtos = ventaCtosAjust - ventaEntr;   // pendiente entrega contratos
 
   // DEMANDA = total comprometido = semilla + pend vincular + contratos no-semilla
   const demandaTot = vtaSem + pendVincular + ventaCtosAjust;
@@ -10387,26 +10393,11 @@ def main() -> int:
 
     DATE_COLS_CONTRATOS = {"fecha","fechaminentrega","fechamaxentrega","fechaestliq"}
 
-    # Intentar DW primero para contratos compra y venta
-    if USE_DW:
-        print(f"[+] Bajando Contratos COMPRA desde DW...", flush=True)
-        dw_compra = dw_query("agronasajasrl_resumen_de_contrato_de_compra_de_granos", DATE_COLS_CONTRATOS)
-        if dw_compra:   # solo si trae filas; si el DW devuelve vacío (falla transitoria) -> fallback REST
-            compra_norm = [r for r in dw_compra if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
-            counts["compra"] = len(compra_norm)
-            used_dw_compra = True
-            print(f"    -> {len(compra_norm)} filas (sin anulados)")
-        else:
-            print(f"    [!] DW compra vacío/None -> uso fallback REST")
-        print(f"[+] Bajando Contratos VENTA desde DW...", flush=True)
-        dw_venta = dw_query("agronasajasrl_resumen_de_contratos_de_venta_de_granos", DATE_COLS_CONTRATOS)
-        if dw_venta:   # idem venta
-            pilot_norm = [r for r in dw_venta if (str(r.get("estadoanulacion") or "").lower() != "anulado")]
-            counts["venta"] = len(pilot_norm)
-            used_dw_pilot = True
-            print(f"    -> {len(pilot_norm)} filas (sin anulados)")
-        else:
-            print(f"    [!] DW venta vacío/None -> uso fallback REST")
+    # Contratos COMPRA y VENTA: SIEMPRE del reporte REST de Finnegans (NO del DW).
+    # El DW traía el 'entregado' desactualizado (no coincidía con el reporte de Finnegans;
+    # ej. soja 25/26 DW=33.482 vs reporte=32.893). El REST da entregado/pendiente exactos.
+    # Dejando used_dw_* en False, el fallback REST de abajo baja compra y venta (sin anulados).
+    print(f"[+] Contratos COMPRA/VENTA: usando reporte REST de Finnegans (no DW)", flush=True)
 
     # Fallback API REST para los que no se pudieron bajar del DW
     if not (used_dw_pilot and used_dw_compra):
