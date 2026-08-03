@@ -94,6 +94,95 @@ def normalize_pilot(rows: list[dict]) -> list[dict]:
     return out
 
 
+def fetch_produccion() -> dict:
+    """Baja el Portal de Producción de Agronasaja (app pública en GitHub Pages, sin login)
+    y arma la producción por campaña/cultivo para la Posición Granaria:
+      - CAMPAÑA 25-26 (cosecha): cosechado (tnAgnsj) + pendiente ((haAgnsj-haCosechada)*rinde)
+      - CAMPAÑA 26-27 (siembra): gruesa (ha*rinde gruesa) + fina (ha*rinde estándar por la rotación cu26)
+    Fuente: https://sanguine86.github.io/agronasaja-produccion/index.html (data embebida).
+    """
+    import urllib.request
+    from collections import defaultdict
+    url = "https://sanguine86.github.io/agronasaja-produccion/index.html"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        h = urllib.request.urlopen(req, timeout=60).read().decode("utf-8", "replace")
+    except Exception as e:
+        print(f"    [!] no pude bajar el portal de producción: {e}")
+        return {}
+    dec = json.JSONDecoder()
+
+    def find_array(pat, size):
+        for m in re.finditer(pat, h):
+            try:
+                arr, _ = dec.raw_decode(h, m.start())
+                if isinstance(arr, list) and len(arr) == size:
+                    return arr
+            except Exception:
+                pass
+        return None
+
+    def prod(cu):
+        c = (cu or "").upper()
+        if "SOJA" in c: return "Grano Soja"
+        if "PISINGALLO" in c: return "Grano Maíz Pisingallo"
+        if "MAIZ" in c or "MAÍZ" in c: return "Grano Maíz"
+        if "TRIGO" in c: return "Grano Trigo Pan"
+        if "CEBADA" in c: return "Grano Cebada"
+        if "CAMELINA" in c: return "Grano Camelina"
+        if "COLZA" in c: return "Grano Colza"
+        if "PASTURA" in c: return None
+        if "GIRASOL" in c: return "Grano Girasol"
+        if "SORGO" in c: return "Grano Sorgo"
+        if "MANI" in c or "MANÍ" in c: return "Grano Maní"
+        return "Grano " + (cu or "").title()
+
+    out = {}
+    # --- COSECHA 25/26 (array de lotes: encargado...haCosechada, ~384) ---
+    cos = None
+    for m in re.finditer(r'\[\{"encargado"', h):
+        try:
+            arr, _ = dec.raw_decode(h, m.start())
+            if isinstance(arr, list) and arr and "haCosechada" in arr[0]:
+                cos = arr; break
+        except Exception:
+            pass
+    if cos:
+        c25 = defaultdict(lambda: {"cosechado": 0.0, "pendcos": 0.0})
+        for l in cos:
+            p = prod(l.get("cultivo"))
+            if not p: continue
+            ha = l.get("haAgnsj") or 0; hc = l.get("haCosechada") or 0; r = l.get("rinde") or 0
+            c25[p]["cosechado"] += l.get("tnAgnsj") or 0
+            c25[p]["pendcos"] += max(0, (ha - hc)) * (r / 1000.0)
+        out["CAMPAÑA 25-26"] = {p: {"cosechado": round(v["cosechado"], 1), "pendcos": round(v["pendcos"], 1)}
+                                for p, v in c25.items()}
+        print(f"    -> cosecha 25/26: {len(cos)} lotes · {len(out['CAMPAÑA 25-26'])} cultivos")
+
+    # --- SIEMBRA 26/27 (array ~306 con keys cortas: e,co,pa,ca,...cu,cu26,rg,tng) ---
+    sie = None
+    for m in re.finditer(r'\[\{"e"', h):
+        try:
+            arr, _ = dec.raw_decode(h, m.start())
+            if isinstance(arr, list) and len(arr) > 50 and arr and "cu26" in arr[0]:
+                sie = arr; break
+        except Exception:
+            pass
+    if sie:
+        RINDE_FINA = {"Grano Trigo Pan": 4.5, "Grano Cebada": 4.5, "Grano Camelina": 1.3, "Grano Colza": 2.2}
+        c26 = defaultdict(lambda: {"pendcos": 0.0})
+        for l in sie:
+            ha = l.get("ha") or 0; rg = l.get("rg") or 0
+            pg = prod(l.get("cu"))                       # gruesa: ha * rinde gruesa
+            if pg and rg: c26[pg]["pendcos"] += ha * rg
+            cu26 = str(l.get("cu26") or "")              # fina: primer cultivo de la rotación
+            fina = prod(cu26.split("/")[0]) if "/" in cu26 else None
+            if fina and fina in RINDE_FINA: c26[fina]["pendcos"] += ha * RINDE_FINA[fina]
+        out["CAMPAÑA 26-27"] = {p: {"pendcos": round(v["pendcos"], 1)} for p, v in c26.items() if v["pendcos"] > 0.5}
+        print(f"    -> siembra 26/27: {len(sie)} lotes · {len(out['CAMPAÑA 26-27'])} cultivos")
+    return out
+
+
 # ---------- HTML ----------
 HTML_TEMPLATE = r"""<!doctype html>
 <html lang="es">
@@ -6879,25 +6968,27 @@ const PN_COLS = [
 const PN_DEFAULTS = {};
 // Producción propia POR CAMPAÑA (cosechado + pendiente a cosechar, en tn). Cada campaña con
 // sus cultivos. La producción se muestra según la campaña SELECCIONADA en el filtro.
-const PN_PROD_BY_CAMP = {
-  // 25/26 = gruesa. Fuente: planilla "Kg por Beneficiario" (cosechado) + "Estimado por Cosechar".
-  // El cosechado de maíz se carga acá porque la API trae "Grano Maíz" sin separar 1ra/2da.
+// Producción propia POR CAMPAÑA — AUTOMÁTICO del Portal de Producción de Agronasaja
+// (cosechado + pendiente de cosecha 25/26, y siembra estimada 26/27). Si la app no
+// respondió en el build, cae al fallback hardcodeado de abajo.
+const PN_PROD_FALLBACK = {
   "CAMPAÑA 25-26": {
-    "Grano Soja":            { cosechado: 24728.2, pendcos: 62 },
-    "Grano Maíz":            { cosechado: 17980.9, pendcos: 25859 },
-    "Grano Maíz Pisingallo": { cosechado: 227.8 },
-    "Grano Girasol":         { cosechado: 895.8, pendcos: 6 },
-    "Grano Sorgo":           { pendcos: 113 },
+    "Grano Soja":            { cosechado: 22199.2, pendcos: 15.7 },
+    "Grano Maíz":            { cosechado: 18071.3, pendcos: 269.2 },
+    "Grano Maíz Pisingallo": { cosechado: 353.4 },
+    "Grano Girasol":         { cosechado: 642.7 },
+    "Grano Maní":            { cosechado: 616.3 },
+    "Grano Sorgo":           { cosechado: 230.5, pendcos: 18.6 },
   },
-  // 26/27 = fina (recién sembrada). ha confirmadas de Agronasaja × rinde aprox -> todo pendiente.
   "CAMPAÑA 26-27": {
-    "Grano Trigo Pan":        { pendcos: 9104 },   // 2.023 ha × 4,5
-    "Grano CEBADA":           { pendcos: 1787 },   // 397 ha × 4,5
-    "Grano Camelina":         { pendcos: 263 },    // 202 ha × 1,3
-    "Grano Colza":            { pendcos: 187 },    // 85 ha × 2,2
-    "Grano Cebada Cervecera": { pendcos: 171 },    // 38 ha × 4,5
+    "Grano Trigo Pan":  { pendcos: 9104 },
+    "Grano Cebada":     { pendcos: 1787 },
+    "Grano Camelina":   { pendcos: 263 },
+    "Grano Colza":      { pendcos: 187 },
   },
 };
+const PN_PROD_BY_CAMP = (PAYLOAD.produccion_camp && Object.keys(PAYLOAD.produccion_camp).length)
+  ? PAYLOAD.produccion_camp : PN_PROD_FALLBACK;
 const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
 let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
 function pnGetMan(prod, k){
@@ -11136,9 +11227,14 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] taqueo_liquidar.json: {e}")
 
+    # Producción por campaña/cultivo desde el Portal de Producción de Agronasaja (app pública)
+    print(f"\n[+] Bajando Producción (Portal de Producción Agronasaja)...", flush=True)
+    produccion_camp = fetch_produccion()
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
+        "produccion_camp": produccion_camp,
         "finales": finales,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
