@@ -1,0 +1,8 @@
+[2026-06-26 08:08:53] ============================================================
+[2026-06-26 08:08:53] ALLARIA DAILY REFRESH START
+[2026-06-26 08:08:53] ============================================================
+[2026-06-26 08:08:54] [+] Login...
+[2026-06-26 08:09:27] [!] login err: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type='text'], input[name='username']") to be visible
+

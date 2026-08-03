@@ -1,0 +1,664 @@
+function loadFancyBox() {
+    $(".popupLogin").fancybox({
+        'autoSize': false,
+	//'fitToView': false,
+        'autoDimensions'    : false,
+        'width': '310',
+        'maxWidth' : '950',
+        'height': '462',
+        'maxHeight' : '700',
+        'padding':'0',
+        'type': 'iframe',
+        openEffect : 'elastic',
+        closeEffect : 'elastic',
+	onUpdate:function() {	
+		var pag;// = undefined;
+			try{	
+				pag = ($(".fancybox-iframe").contents().find("#fbox-estado"));
+			} catch(e){
+				//Si es distinto protoclo /http y https/  --> dejalo como undefined.
+			}
+		if(typeof pag!=typeof undefined){		
+		//0 = login  		//1 = encuestajsp abierto;  		//2 encuesta cargada
+			if(pag.val()==2){		
+				parent.$('.fancybox-wrap').width(900);	
+				parent.$('.fancybox-inner').width(900);				
+				parent.$('.fancybox-inner').height(600);				
+				parent.$.fancybox.reposition();//centra			
+			}	
+
+			if(pag.val()==1){	//selector Responder/No responder	
+				parent.$('.fancybox-wrap').width(350);	
+				parent.$('.fancybox-inner').width(350);					
+				parent.$.fancybox.reposition();//centra			
+			}	
+		}
+	},
+	beforeClose: function(){
+		var pag;
+		try{	
+				pag = ($(".fancybox-iframe").contents().find("#fbox-estado"));
+		} catch(e){
+				//Si es distinto protoclo /http y https/  --> dejalo como undefined.
+		}
+		
+		if(typeof pag!=typeof undefined){
+			if(pag.val()==2){
+			//var quitURL = ($(".fancybox-iframe").contents().find("#quitURL").val());	
+			//location.href = quitURL;
+
+			//No redireccionamos asi posteamos el form de encuesta.jsp que guarda la respuesta del user
+			//y el mismo redirecciona. cancelado el close del fancybox asi tiene tiempo de redireccionar tranquilo.
+			//escondemos para q para el usuario si se cierra
+			$(".fancybox-iframe").contents().find("#btn").click();
+			parent.$('.fancybox-wrap').delay(100).fadeOut();
+			parent.$('.fancybox-inner').delay(100).fadeOut();
+			parent.$.fancybox.close(false);
+			}		
+		}
+	}
+
+		
+
+    });
+}
+
+/*  default pre encuesta:
+function loadFancyBox() {
+    $(".popupLogin").fancybox({
+        'autoSize': false,
+        'autoDimensions'    : false,
+        'width': '310',
+        'maxWidth' : '419',
+        'height': '482',
+        'maxHeight' : '482',
+        'padding':'0',
+        'type': 'iframe',
+        openEffect : 'elastic',
+        closeEffect : 'elastic' 
+    });
+} */
+
+function getStyle(el,styleProp)
+{
+	if (el.currentStyle)
+		var y = el.currentStyle[styleProp];
+	else if (window.getComputedStyle)
+		var y = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+	return y;
+}
+
+function toogleIframeLogin(){
+	var iframe = document.getElementById('loginIframe');
+	var display = getStyle(iframe,'display');
+	if(display != 'none')
+		iframe.style.display = 'none';
+	else
+		iframe.style.display = 'block';
+}
+
+function setFingerPrint(){
+	
+	document.getElementById('clientFingerPrint').value = pstfgrpnt();
+	
+}
+
+const COOKIE_Language = 'lastLoginIdiomaID';
+const COOKIE_LastLoginCompany = 'lastLoginEmpresaID';
+
+function setValuesFromCookies(){
+	
+    var lang = getCookie(COOKIE_Language);
+    var lastLoginCompany = getCookie(COOKIE_LastLoginCompany);
+    
+    document.getElementById('loginlanguage').value = (lang=="")?"SP":lang;
+	let loginCompanyField= document.getElementById('logincompany')
+	if (!loginCompanyField.value) {
+		loginCompanyField.value = lastLoginCompany;
+	}
+    
+}
+
+function setCookies(){
+    var lang = document.getElementById('loginlanguage').value;
+    var domain = document.getElementById('logincompany').value;
+    
+    if(lang != null && lang != "")
+    	setCookie(COOKIE_Language, lang, 365*10)//10 años
+    
+    if(domain !=null && domain != "")
+    	setCookie(COOKIE_LastLoginCompany, domain, 365*10)//10 años
+    
+}
+
+let username = "";
+let password = "";
+let domain = "";
+const PASS_ERROR_LOGIN = "wrong password"
+
+
+function containsQuippos(palabra) {
+	let expression = /QUIPPOS/i;
+	return expression.test(palabra);
+}
+
+async function loginF4(tipo) {
+    
+	domain = document.getElementById('logincompany').value;
+	password = document.getElementById('loginpassword').value;
+	username = document.getElementById('loginname').value;
+	if (!containsQuippos(domain)){
+		try{
+			if((password && username)|| tipo == "google"){
+				if(domain && domain.trim() != ''){
+					let modeF4 = false;
+					try {
+						let response = await fetch(URL_BASE_GO + '/api/1/domains/' + domain.toUpperCase() + '/info');
+						let jsonResponse = await response.json();
+						modeF4 = jsonResponse.modeF4;
+					} catch(err) {}
+					setCookies();
+					if(modeF4) {
+						console.log("Sos F4");
+						//domain
+						let language = document.getElementById('loginlanguage').value;
+
+						language = language === "" ? "SP" : language;
+
+						let goLoginData = {
+							email : username,
+							password : password,
+							domain : domain.toUpperCase(),
+							language: language
+						}
+
+						//if(e.originalEvent.submitter.classList.contains('google')){
+						if((tipo == "google") || (tipo == "finnegansGo")){
+							window.location.href = URL_BASE_GO + "/auth/google/login?teamplaceOrigin=access&domain="+domain.toUpperCase()+"&language="+language;
+						}else{
+							let goLoginResponse = await fetch(URL_BASE_GO + "/auth/login", { method : 'POST', body: JSON.stringify(goLoginData)});
+							if (goLoginResponse.status === 203 || goLoginResponse.status === 204) {
+								// Migration login
+								let myModal = new bootstrap.Modal(document.getElementById('modal1'), { backdrop: true,
+									keyboard: true, focus: true });
+
+								if (goLoginResponse.status === 203) {
+									let jsonGoLoginResponse = await goLoginResponse.json();
+									console.log("the email configured in Teamplace: " + jsonGoLoginResponse.email);
+									$("#configured_email").val(jsonGoLoginResponse.email);
+								}
+
+								myModal.show();
+							} else if (goLoginResponse.status === 200) {
+								// Success login
+								let jsonGoLoginResponse = await goLoginResponse.json();
+								window.location.href = URL_BASE_GO + "/login/external?eco_token=" + jsonGoLoginResponse.token;
+							} else if (goLoginResponse.status === 202) {
+								let jsonGoLoginResponse = await goLoginResponse.json();
+								const action = jsonGoLoginResponse.action;
+								if (action=="setup" || action=="verify") {
+									window.location.href = URL_BASE_GO + "/two-fa/"+ jsonGoLoginResponse.temp_token+"?action="+action;
+								}
+
+							}else {
+								// Error login
+								let errorLoginResponse = await goLoginResponse.json();
+								let errMessage;
+								if (goLoginResponse.status === 401 && errorLoginResponse.error === PASS_ERROR_LOGIN) {
+									errMessage = "La contraseña es incorrecta. Por favor intente nuevamente."
+								} else {
+									errMessage = errorLoginResponse.error;
+								}
+								showError(errMessage)
+							}
+						}
+					} else {
+
+						if (tipo == "finnegans"){
+							goFinnegansLogin();
+						}else if (tipo == "google"){
+							goGoogleLogin();
+						}else if (tipo == "finnegansGo"){
+							goFinnegansGoLogin();
+						}
+					}
+				}else{
+					errMessage = "Por favor ingrese un espacio de trabajo"
+					showError(errMessage)
+				}
+			}else{
+				errMessage = "Por favor ingrese usuario y/o contraseña"
+				showError(errMessage)
+			}
+		}catch(err){
+			console.log(err);
+		}
+	} else {
+		let domainMayus = domain.toUpperCase();
+		errMessage = `La empresa ${domainMayus} no existe. Por favor intente nuevamente.`
+		showError(errMessage)
+	}
+}
+
+function goLogin(callBack) {
+	setCookies();
+	showLoading();
+	var form = document.forms['loginForm'];
+	var domain = form["empresa"].value
+
+	$.ajax({
+		url : window.location.origin+'/login/selectDomain?domain=' + domain,
+		type : 'GET',
+		data : {},
+		dataType:'json',
+		success : function(data) {
+			callBack(data);
+		},
+		error : function(request,error)
+		{
+			showError(JSON.parse(request.responseText).error);
+		}
+	});
+}
+
+function goFinnegansLogin() {
+	var form = document.forms['loginForm'];
+	var callback = function (data){
+		showLoading();
+		let url = data.url;
+		form.action = url+ "/inicio/loginCommons.jsp";
+		form["finnegansLogin"].value = window.location.href.split("?")[0];
+		form.submit();
+	}
+	goLogin(callback);
+}
+
+function goGoogleLogin() {
+	var form = document.forms['loginForm'];
+	empresa = form["empresa"].value;
+	language = form["idioma"].value;
+	var callback = function (data){
+		showLoading();
+		url = data.url;
+		window.location.href = url + "/general/openid/googleOauthAuthentication.jsp?empresa="+empresa+"&idioma="+language+"&finnegansLogin="+window.location.href.split("?")[0];
+	}
+	goLogin(callback);
+}
+
+function goFinnegansGoLogin() {
+	var form = document.forms['loginForm'];
+	var empresa = form["empresa"].value;
+	var language = form["idioma"].value;
+	var callback = function (data){
+		showLoading();
+		var redirectURL = data.url.substring(0, data.url.indexOf("/BSA"));
+		var host = "https://auth.finneg.com";
+		var clientID = "TEAMPLACE_app_ID";
+		var finnegLoginURL = host + "/api/finneg/auth/v1/chooseAccount?client_id=" + clientID + "&state=" + empresa + "&idioma=" + language + "&redirectUrl=" + redirectURL;
+
+		window.location.href = finnegLoginURL;
+	}
+	goLogin(callback);
+}
+
+function getUrlParameter(sParam) {
+	var sPageURL = window.location.search.substring(1),
+		sURLVariables = sPageURL.split('&'),
+		sParameterName,
+		i;
+	for (i = 0; i < sURLVariables.length; i++) {
+		sParameterName = sURLVariables[i].split('=');
+
+		if (sParameterName[0] === sParam) {
+			return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+		}
+	}
+};
+
+function initPage() {
+	if (isSyngentaLogin()) {
+		applySyngentaLoginStyles();
+	}
+
+	if (isGoyaikeLogin()) {
+		applyGoyaikeLoginStyles();
+	}
+
+	var redirectResponse = getUrlParameter("redirectResponse");
+	var loginError = getUrlParameter("loginError");
+	var sessionExpired = getUrlParameter("sessionExpired");
+	var changePassword = getUrlParameter("changePassword");
+	var enterEmail = getUrlParameter("enterEmail");
+
+	if (redirectResponse != null && redirectResponse != "") {
+		showLoading();
+		window.location.href = redirectResponse;
+	}else{
+		$('#loginForm').css('visibility', 'visible');
+		$('#loading').css('visibility', 'hidden');
+		if (sessionExpired != null && sessionExpired != "" ) {
+			setValuesFromCookies();
+			setFingerPrint();
+			showError("La sesión ha expirado.<br/> Por favor inicie sesión nuevamente.");
+		}else if (loginError != null && loginError != "") {
+			setValuesFromCookies();
+			setFingerPrint();
+			const search = '\\+';
+			const searchRegExp = new RegExp(search, 'g')
+			const replace = ' ';
+			showError(loginError.replace (searchRegExp,replace));
+		}
+		showChangePassword(changePassword);
+		showEmail(enterEmail);
+		setTogglePassword();
+		$('.news-iframe').attr('src', GO_NOVEDADES_URL);
+	}
+}
+
+function isSyngentaLogin() {
+	return window.location.href.includes('syngenta');
+}
+
+function applySyngentaLoginStyles() {
+	const login = document.getElementById('login');
+	login.classList.add('syngenta-login');
+}
+
+function goOktaLogin() {
+	window.location.href = "/auth/syngenta/okta/login";
+}
+
+function isGoyaikeLogin() {
+	return window.location.href.includes('goyaike');
+}
+
+function applyGoyaikeLoginStyles() {
+	const login = document.getElementById('login');
+	login.classList.add('goyaike-login');
+
+	const lastGoyaikeBusinessKey = 'lastGoyaikeBusiness';
+	const businessSelector = document.getElementById('goyaikeBusinessSelector');
+	const lastBusiness = localStorage.getItem(lastGoyaikeBusinessKey);
+	if (lastBusiness && businessSelector) {
+		businessSelector.value = lastBusiness
+	}
+	businessSelector.addEventListener('change', ($evt) => localStorage.setItem(lastGoyaikeBusinessKey, $evt.target?.value))
+}
+
+function goGoyaikeLogin() {
+	const tenantName = document.getElementById('goyaikeBusinessSelector')?.value;
+	window.location.href = `/auth/goyaike/azure/login?tenant=${tenantName}`;
+}
+
+function showError(mensage){
+
+	if(mensage=="invalid token"){
+		mensage = "La sesión ha expirado. Por favor inicie sesión nuevamente.";
+	}else{
+		fetch(URL_BASE_GO+'/api/1/log/public/mixpanel', {
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify({event: 'login_error', data: {error: mensage}})
+		}).catch(err => console.error('Error mixpanel:', err));
+	}
+
+	var section = document.getElementById("alerts-tags");
+	section.textContent=mensage;
+	section.style.display = '';
+	$('#loginForm').css('visibility', 'visible');
+	$('#loading').css('visibility', 'hidden');
+}
+
+function showChangePassword(changePassword){
+	var section = document.getElementById("passwordDiv");
+	var form = document.forms['loginForm'];
+	if (changePassword != null && changePassword == "true") {
+		section.style.display = '';
+		form["changePassword"].value = "true";
+	}else{
+		section.style.display = 'none';
+		form["changePassword"].value = "false";
+	}
+}
+
+function showEmail(show){
+	var section = document.getElementById("emailDiv");
+	var form = document.forms['loginForm'];
+	if (show != null && show == "true") {
+		section.style.display = '';
+		form["enterEmail"].value = "true";
+	}else{
+		section.style.display = 'none';
+		form["enterEmail"].value = "false";
+	}
+}
+
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start != -1) {
+            c_start = c_start + c_name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) {
+                c_end = document.cookie.length;
+            }
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "";
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + "; " + expires + "; " + "Domain=finneg.com";
+}
+
+function subtmiFormLogin(obj) {
+	var ifr = document.getElementsByTagName('iframe')[3];
+	var ifrDoc = ifr.contentDocument || ifr.contentWindow.document;
+	var theForm = ifrDoc.getElementById('loginForm');
+	theForm.submit();
+}
+
+async function startMigrationF4() {
+	console.log('starting migrate process');
+	let confirmedEmail = $("#confirmed_email").val();
+	console.log("Your confirmed email is: " + confirmedEmail);
+	let myModal = new bootstrap.Modal(document.getElementById('modal3'), { backdrop: true,
+		keyboard: true, focus: true });
+	if (!confirmedEmail || confirmedEmail.length === 0) {
+		document.getElementById("resultMessage").textContent =
+			"Por favor, indique un correo electrónico.";
+		myModal.show();
+		return;
+	}
+	const migration_data = {
+		domain: domain.toUpperCase(),
+		user: username,
+		password: password,
+		email: confirmedEmail,
+	};
+	
+	let migrationResponse = await fetch(URL_BASE_SERVICES + "/api/1/migration/migrateUser", { method : 'POST', body: JSON.stringify(migration_data) });
+	if (migrationResponse.status === 200) {
+		console.log("migrate was successfully");
+		document.getElementById("resultMessage1").textContent ="Por favor, revise su casilla de correo electrónico.";
+		document.getElementById("resultMessage2").textContent = "Recuerde que una vez activado el usuario de F4, el ingreso a Finnegans se hará únicamente mediante el correo indicado en los pasos anteriores.";
+	} else if(migrationResponse.status === 201){
+		document.getElementById("resultMessage1").textContent = "Debido a que usted ya poseía un usuario en"+
+			" Finnegans GO no recibirá una invitación."
+		let resultMessage2 = document.getElementById("resultMessage2");
+		resultMessage2.textContent = "En cambio, usted ya puede ingresar directamente"+
+			" con su correo electrónico y la contraseña que puso en el pasado al activar su usuario de Finnegans GO. "+
+			"Si no la recuerda, puede recuperarla ";
+		let enlace = document.createElement("a");
+		enlace.setAttribute("href", "https://go.finneg.com/pwdRecovery");
+		enlace.setAttribute("target", "_blank");
+		enlace.innerHTML = "aquí";
+		resultMessage2.appendChild(enlace);
+	} else {
+		document.getElementById("resultMessage1").textContent = "Ha ocurrido un error durante la migración."
+		document.getElementById("resultMessage2").textContent = "Por favor, póngase en contacto con nuestros operadores."
+		console.log("error has occurred");
+		console.log(migrationResponse);
+	}
+
+	myModal.show();
+}
+
+function showConfirmation() {
+	let confirmedEmail = $("#confirmed_email").val();
+	document.getElementById("confirmationMessage").textContent =
+		"¿Desea continuar el proceso con el correo " + confirmedEmail + "?";
+}
+
+async function loginSSO() {
+	domain = document.getElementById('logincompany').value;
+	if (!domain || domain.trim() === "") {
+		showError('Por favor ingrese un espacio de trabajo')
+		return
+	}
+	try {
+		const response = await fetch(URL_BASE_GO_EKS + '/api/1/edt-config/authentications/' + domain.toUpperCase());
+		if (!response.ok) throw response;
+		const jsonResponse = await response.json();
+		if (jsonResponse && Array.isArray(jsonResponse) && jsonResponse.length > 0) {
+			let idProveedor = jsonResponse[0].id;
+			window.location.href = (`${URL_BASE_GO_EKS}/auth/generic/login/${idProveedor}?domain=${domain}`);
+		} else {
+			showModalErrorSSO();
+		}
+
+	} catch (e) {
+		if (e.status === 403) {
+			showModalErrorSSO();
+		}
+		if (e.status === 404) {
+			const domainError = `La empresa ${domain} no existe. Por favor intente nuevamente.`
+			showError(domainError);
+		}
+
+	}
+
+}
+
+function showModalErrorSSO() {
+	document.getElementById("warning-message").textContent =
+		"Su espacio de trabajo no posee la configuración para ingresar con la opción seleccionada. Para mas información contacte con el";
+	document.getElementById("warning-message-2").textContent = " administrador del espacio de trabajo."
+	let myModal = new bootstrap.Modal(document.getElementById('modal4'), { backdrop: true,
+		keyboard: true, focus: true });
+	myModal.show();
+}
+
+function setTogglePassword() {
+	const passwordInput = document.getElementById('loginpassword');
+	const togglePassword = document.getElementById('togglePassword');
+	togglePassword.addEventListener('click', () => {
+		const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+		passwordInput.setAttribute('type', type);
+		if(type === 'password'){
+			togglePassword.setAttribute('src', './login/resources/img/eye.svg');
+		}else{
+			togglePassword.setAttribute('src', './login/resources/img/eye-slash.svg');
+		}
+	});
+}
+
+function onRecoverPwd(){
+	window.location.href = URL_BASE_GO + "/pwdRecovery"
+}
+
+function showHelpModal() {
+	const loginEmail = document.getElementById('loginname').value.trim();
+	const loginWorkspace = document.getElementById('logincompany').value.trim();
+	
+	if (loginEmail) {
+		document.getElementById('helpEmail').value = loginEmail;
+	}
+	if (loginWorkspace) {
+		document.getElementById('helpWorkspace').value = loginWorkspace;
+	}
+	
+	var helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
+	helpModal.show();
+	
+	document.getElementById('helpEmail').addEventListener('input', validateHelpForm);
+	document.getElementById('helpWorkspace').addEventListener('input', validateHelpForm);
+	document.getElementById('helpMessage').addEventListener('input', validateHelpForm);
+	
+	validateHelpForm();
+}
+
+function validateHelpForm() {
+	const email = document.getElementById('helpEmail').value.trim();
+	const workspace = document.getElementById('helpWorkspace').value.trim();
+	const message = document.getElementById('helpMessage').value.trim();
+	const sendBtn = document.getElementById('sendHelpBtn');
+	
+	if (email && workspace) {
+		sendBtn.disabled = false;
+		sendBtn.classList.remove('btn-secondary');
+		sendBtn.classList.add('btn-success');
+	} else {
+		sendBtn.disabled = true;
+		sendBtn.classList.remove('btn-success');
+		sendBtn.classList.add('btn-secondary');
+	}
+}
+
+async function sendHelpRequest() {
+	const sendBtn = document.getElementById('sendHelpBtn');
+
+	if (sendBtn.disabled) {
+		return;
+	}
+	$('#loading').css({
+		'visibility': 'visible',
+		'z-index': '9999',
+		'pointer-events': 'none',
+	});
+    $('#loading').show();
+
+	sendBtn.disabled = true;
+	sendBtn.classList.remove('btn-success');
+	sendBtn.classList.add('btn-secondary');
+	
+	const email = document.getElementById('helpEmail').value.trim();
+	const workspace = document.getElementById('helpWorkspace').value.trim();
+	const message = document.getElementById('helpMessage').value.trim();
+	
+	const requestBody = {
+		email: email,
+		edt: workspace,
+		description: message
+	};
+	
+	try {
+		var helpModal = bootstrap.Modal.getInstance(document.getElementById('helpModal'));
+		helpModal.hide();
+		const response = await fetch(`${URL_BASE_GO}/api/1/portal-casos/access-problem`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(requestBody)
+		});
+	} catch (error) {
+		console.error('Error al enviar la solicitud:', error);
+	}
+	
+	$('#loading').css({
+		'visibility': 'hidden',
+		'z-index': '',
+		'pointer-events': '',
+	});
+
+	
+	document.getElementById('helpForm').reset();
+	
+	var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+	successModal.show();
+}

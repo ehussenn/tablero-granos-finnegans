@@ -1,0 +1,74 @@
+{
+ "ventana": [
+  "2026-01-01",
+  "2026-07-01"
+ ],
+ "granos": {
+  "Soja": {
+   "propio": {
+    "ctgs": 693,
+    "tn": 20911.2,
+    "duplicados": []
+   },
+   "compra": {
+    "ctgs": 431,
+    "tn": 14399.2,
+    "duplicados": [
+     "10132380349"
+    ]
+   },
+   "venta": {
+    "ctgs": 431,
+    "tn": 14403.4,
+    "duplicados": [
+     "10132380349"
+    ]
+   },
+   "consignacion_cierran": 431,
+   "compra_sin_venta": [],
+   "venta_sin_compra": []
+  },
+  "Maíz": {
+   "propio": {
+    "ctgs": 573,
+    "tn": 17874.9,
+    "duplicados": [
+     "10130631912"
+    ]
+   },
+   "compra": {
+    "ctgs": 186,
+    "tn": 5948.0,
+    "duplicados": []
+   },
+   "venta": {
+    "ctgs": 186,
+    "tn": 5987.3,
+    "duplicados": []
+   },
+   "consignacion_cierran": 186,
+   "compra_sin_venta": [],
+   "venta_sin_compra": []
+  },
+  "Trigo Pan": {
+   "propio": {
+    "ctgs": 137,
+    "tn": 4181.8,
+    "duplicados": []
+   },
+   "compra": {
+    "ctgs": 98,
+    "tn": 3062.3,
+    "duplicados": []
+   },
+   "venta": {
+    "ctgs": 98,
+    "tn": 3039.3,
+    "duplicados": []
+   },
+   "consignacion_cierran": 98,
+   "compra_sin_venta": [],
+   "venta_sin_compra": []
+  }
+ }
+}

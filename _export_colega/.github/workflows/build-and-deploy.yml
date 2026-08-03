@@ -1,0 +1,82 @@
+name: Build & Deploy
+
+on:
+  # Refresh diario a las 09:00 UTC (06:00 hora Argentina)
+  schedule:
+    - cron: '0 9 * * *'
+
+  # Botón "Run workflow" en la UI de GitHub
+  workflow_dispatch:
+
+  # También se dispara cuando se pushea código al main
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evitar deploys concurrentes
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install psycopg2-binary
+
+      - name: Build index.html (DW Postgres + API Finnegans + pizarra BCR)
+        env:
+          FINNEGANS_CLIENT_ID: ${{ secrets.FINNEGANS_CLIENT_ID }}
+          FINNEGANS_CLIENT_SECRET: ${{ secrets.FINNEGANS_CLIENT_SECRET }}
+          FNN_DW_HOST: ${{ secrets.FNN_DW_HOST }}
+          FNN_DW_USER: ${{ secrets.FNN_DW_USER }}
+          FNN_DW_PASS: ${{ secrets.FNN_DW_PASS }}
+          FNN_DW_DB: finnegansbi
+          BALANZA_USER: ${{ secrets.BALANZA_USER }}
+          BALANZA_PASS: ${{ secrets.BALANZA_PASS }}
+        run: |
+          echo "::group::Build"
+          python build.py
+          echo "::endgroup::"
+          echo "Tamaño del HTML generado:"
+          ls -lh index.html
+
+      - name: Preparar carpeta de publicación
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          # Cierres patrimoniales (HTMLs estáticos para compartir como link)
+          if [ -d cierres ]; then
+            cp -r cierres _site/cierres
+          fi
+          # opcional: archivo CNAME si en el futuro tienen dominio propio
+          # echo "tablero.agronasaja.com.ar" > _site/CNAME
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

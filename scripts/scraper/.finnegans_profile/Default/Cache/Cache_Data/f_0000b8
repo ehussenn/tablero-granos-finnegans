@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <!-- ESTA VERSION DEL XSL NO MUESTRA MENU, NI SIDEBAR, NI FOOTER -->
+
+    <!-- LOS TAGS-COMENTARIOS HEAD/BODY/END NO PUEDEN SER ELIMINADOS. SON PROCESADOS POR EL MainPageServlet
+         PARA DARLE CIERTO DINAMISMO AL XSL. EN COSAS QUE NO SE PUEDE CON EL XML/XSL (COMO ESCRIBIR HTML NO-ESTRICTO) -->
+    <xsl:template name="escape-quotes">
+        <xsl:param name="text"/>
+        <xsl:param name="searchString">'</xsl:param>
+        <xsl:param name="replaceString">&amp;apos;</xsl:param>
+        <xsl:variable name="apos">'</xsl:variable>
+        <xsl:choose>
+            <xsl:when test="contains($text,$searchString)">
+                <xsl:call-template name="escape-quotes">
+                    <xsl:with-param name="text" select="concat(substring-before($text,$searchString), $replaceString, substring-after($text,$searchString))"/>
+                    <xsl:with-param name="searchString" select="$searchString"/>
+                    <xsl:with-param name="replaceString" select="$replaceString"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$searchString=$apos">
+                <xsl:call-template name="escape-quotes">
+                    <xsl:with-param name="text" select="$text"/>
+                    <xsl:with-param name="searchString">"</xsl:with-param>
+                    <xsl:with-param name="replaceString">&amp;quot;</xsl:with-param>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text" disable-output-escaping="yes"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+	<xsl:template match="/root">
+
+        <html>
+            <head>
+
+				<title><xsl:value-of select="title"/></title>
+
+				<link rel="shortcut icon" type="image/png">
+					<xsl:attribute name="href"><xsl:value-of select="favicon"/></xsl:attribute>
+				</link>
+
+				 <xsl:for-each select="cssRelPath">
+				 	<link rel="stylesheet" rev="stylesheet" type="text/css">
+				 		<xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
+				 	</link>
+				 </xsl:for-each>
+
+				<xsl:if test="documentDomain">
+                    <xsl:element name="script">
+                    	document.domain = "<xsl:value-of select="documentDomain"/>";
+                    </xsl:element>
+                </xsl:if>
+                
+                <link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/comentario.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/advancedSearch.css?version=6.1.48.1585" type="text/css"/>
+<!--HEAD-->
+            </head>
+            <body onload="FAFMainPage.onPageLoad()" class="mainPage">
+                <xsl:variable name="unsupported_content_url" select="unsupported_content_url"/>
+                <xsl:variable name="sideBarWidth" select="sideBarWidth"/>
+                <xsl:variable name="sideBarStatus" select="sideBarStatus"/>
+                <xsl:variable name="panelMenuStatus" select="panelMenuStatus"/>
+
+                <xsl:element name="script">
+                    var G_LOOK = 2;
+                    var CONTEXT_PATH = '<xsl:value-of select="contextPath"/>';
+                    var USUARIO_ID = '<xsl:value-of select="usuarioID"/>';
+                    var FAF_USUARIO_ID = '<xsl:value-of select="usuarioID"/>';
+                    var PERFIL_ID = '<xsl:value-of select="perfilID"/>';
+					var G_SIDEBAR_CURRENT_WIDTH = '<xsl:value-of select="sideBarWidth"/>';
+					var G_SIDEBAR_STATUS = '<xsl:value-of select="sideBarStatus"/>';
+                    var G_MENU_VERSION = '<xsl:value-of select="menuVersion"/>';
+                    var G_PANEL_MENU_STATUS = '<xsl:value-of select="panelMenuStatus"/>';
+                    var G_UNSUPPORTED_CONTENT_URL = '<xsl:value-of select="unsupported_content_url"/>';
+                    var G_CurrentTransportRecording = '<xsl:value-of select="currentTransportRecording"/>';
+
+                    var SUSCRIPTIONS_XML = '<xsl:value-of select="SuscriptionXML"/>';
+					var EMPRESA_ID = '<xsl:value-of select="empresaID"/>';
+
+                    var G_UserName = '<xsl:value-of select="userName"/>';
+                    var G_UserCode = '<xsl:value-of select="userCode"/>';
+                    var G_Profile_Text1 = '<xsl:value-of select="profileText1"/>';
+                    <xsl:text>var G_Profile_Text2 = "</xsl:text>
+                    <xsl:call-template name="escape-quotes">
+                        <xsl:with-param name="text" select="profileText2"/>
+                        <xsl:with-param name="searchString">'</xsl:with-param>
+                        <xsl:with-param name="replaceString">&amp;apos;</xsl:with-param>
+                    </xsl:call-template>
+                    <xsl:text>";</xsl:text>
+
+                    var G_EmpresaMultitenancy_ID = '<xsl:value-of select="empresaMultitenancy/@id"/>';
+                    <xsl:text>var G_EmpresaMultitenancy_NOMBRE = '</xsl:text>
+                    <xsl:call-template name="escape-quotes">
+                        <xsl:with-param name="text" select="empresaMultitenancy/@nombre"/>
+                        <xsl:with-param name="searchString">'</xsl:with-param>
+                        <xsl:with-param name="replaceString">&amp;apos;</xsl:with-param>
+                    </xsl:call-template>
+                    <xsl:text>';</xsl:text>
+					var G_ClassNameChangeEmpresa = '<xsl:value-of select="changeEmpresa/@ClassName"/>';
+					var G_MethodNameChangeEmpresa = '<xsl:value-of select="changeEmpresa/@MethodName"/>';
+
+                    var G_refreshClientMenu = '<xsl:value-of select="refreshClientMenu"/>'
+
+                    var G_NOTIFICACIONES_REFRESH_INTERVAL = <xsl:value-of select="notificaciones/config/RefreshMillisec"/>;
+					var G_NOTIFICATIONS_COUNTER = <xsl:value-of select="notificaciones/resumen/NotifDirectasSinNotificar"/>;
+					var G_NEWS_COUNTER = 0;
+
+					var NEWS_URL = '<xsl:value-of select="NewsURLFeedClient"/>';
+                    var PAGE_APPITEM_ID = '<xsl:value-of select="appItemID"/>';
+                    var FAF_APPITEM_ID = '<xsl:value-of select="appItemID"/>';
+                    var FAF_SESSION_ID = '<xsl:value-of select="sessionID"/>';
+                    
+                    var FAFSELECTORARBOL_ID = 'ARBOL_ID';
+                    var G_SessionPingInterval = <xsl:value-of select="sessionPingInterval"/>;
+                    var VIEW_NAME = '<xsl:value-of select="viewName"/>';
+                    var VIEW_CODE = '<xsl:value-of select="viewCode"/>';
+                    var NF_NAME = '<xsl:value-of select="nucleoFuncionalName"/>';
+                    var NF_CODE = '<xsl:value-of select="nucleoFuncionalName"/>';
+                    var LOG_OUT_REDIRECT = '<xsl:value-of select="LogOutRedirect"/>'
+                    var DOWNLOAD_EXTERNAL_SCRIPTS = '<xsl:value-of select="DownLoadExternalScript"/>'
+                    var API_POLL_URL = '<xsl:value-of select="apiPollUrl"/>'
+                    var CURRENT_POLL_KEY = '<xsl:value-of select="currentPollKey"/>'
+                    var PRINT_REPORT_URL= '<xsl:value-of select="printReportUrl"/>'
+                    var EMAIL_VALIDATOR_URL = '<xsl:value-of select="emailValidatorUrl"/>'
+                    var EMAIL_VALIDATED = '<xsl:value-of select="emailValidated"/>'
+                    var USER_EMAIL = '<xsl:value-of select="userEmail"/>'
+                    var FORMATO_FECHA_EMPRESA = '<xsl:value-of select="formatoFechaEmpresa"/>';
+                    var CODIGO_PAIS_EMPRESA = '<xsl:value-of select="PaisSucursal"/>';
+                    var FAF_MCP_PROXY = '<xsl:value-of select="MCPProxyURL"/>';
+                </xsl:element>
+
+                <xsl:for-each select="jsRelPath">
+					<xsl:element name="script">
+				 		<xsl:attribute name="src"><xsl:value-of select="."/></xsl:attribute>
+                    </xsl:element>
+				</xsl:for-each>
+				
+				<!-- Agrego css para F4 -->
+				<link rel="stylesheet" rev="stylesheet" href="https://static.finneg.com/assets/css/teamplace/f4.css" type="text/css"/>
+
+                <div id="mainSection" class="mainSection">
+
+					<div class="mainContent">
+
+
+		                <div id="content" class="mainSectionCell content">
+                            <xsl:attribute name="style">margin-left: 0px;</xsl:attribute>
+							<div id="contentBody">
+		                    <script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/BSMensajesSP.js?version=6.1.52.2465" type="text/javascript" charset="UTF-8"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/BSMensajesSP.js?version=6.1.52.2465" type="text/javascript" charset="UTF-8"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dimensiones.js?version=6.1.52.2465" type="text/javascript"></script><link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/webixPivot/webix.css?version=6.1.48.1585" type="text/css"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- UTF-8 áéíóúñ -->
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+
+
+
+
+
+
+<script>
+var CONTEXT_PATH="/BSA";
+var APLICACION_ID="BSA";
+var IDIOMA_ID="SP";
+var NATIVE_LANGUAGE_ID="null";
+var EMPRESA_ID="AGRONASAJASRL";
+var FAF_USUARIO_ID="342";
+var TOPDFORM="108";
+var LEFTDFORM="9";
+var TOPDFORM_FOR_TRANSACTION="68";
+var HEIGHT_TOOLBARDF_TRANSACTION="90";
+var NEWS_URL="";
+var SESSION_IDIOMA="SP";
+var FAF_APPITEM_ID ="50249";
+var FAF_APPITEM_CODE ="";
+var SUSCRIPTIONS_XML="<![CDATA[<Canales><Suscripcion canal='Novedades Finnegans' suscribe='y'/></Canales>]]>"; 
+
+	var FAF_URL_HELP="";
+	var FAF_EMPRESA_HELP="";
+var PRINT_REPORT_URL="/Sr2";
+
+
+
+if (typeof FAF_SESSION_ID =='undefined') var FAF_SESSION_ID = "ehussenagronasaja.com.ar1785411339607471900260#AGRONASAJASRL";
+
+var mensajeError="";
+
+</script>
+
+
+
+
+
+
+
+<!--Comienzo de librerias que se incluyen siempre.-->
+
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/d3/d3.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/d3/c3.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/dw_scrollObj.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/dw_hoverscroll.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/dw_event.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/dw_slidebar.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/dw_scroll_aux.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/widgetUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/contenidoUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/ExceptionUtil.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/libreria.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/includes/ajaxUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/textosSP.js?version=6.1.48.1585" type="text/javascript" charset="UTF-8"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFImageGallery/FAFImageGallery.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/fafpopups.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/fafmenu.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/fafdockedpopup.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/faftoast.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWorkflow/artisan.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWorkflow/fafWorkflow.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/bannerUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/onBodyLoad.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/PrivateUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/localstorage.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/Ajax.js?version=6.1.48.1585" type="text/javascript"></script>	
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/noticias/noticias.js?version=6.1.48.1585" type="text/javascript"></script>	
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/faf.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/d3.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/c3.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/blog.css?version=6.1.52.2465" type="text/css"/>
+
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/comentario.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/estilos.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFImageGallery/gallery.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/fafpopups.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/fafdockedpopup.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFPopups/faftoast.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/line-awesome/css/line-awesome.min.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/font-awesome-line-awesome/css/all.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/progressBar.css?version=6.1.52.2465" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/selector.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/widgets.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/notificacion.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/toolbar.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/dynamicForm.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/fafTreeGrid.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/noteexpanded.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWorkflow/fafWorkflow.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGoAudit/FAFGoAudit.css?version=6.1.48.1585" type="text/css"/>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dtree.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/selectorArbolizado.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WebTreeGrid.js?version=6.1.48.1585" type="text/javascript"></script>
+
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/readcount.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/contenidosharer.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/notificacion.js?version=6.1.48.1585" type="text/javascript"></script>	
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/TransactionPublisher.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGoAudit/FAFGoAudit.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFToolbar/faftoolbar.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFToolbar/fafdropdown.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/fafdata.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafDynamicForm.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafDynamicFormVO.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafDynamicFormDesktop.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafCommonWidgets.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/casoBPMAccion.js?version=6.1.41.299" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/wgxpath.install.js?version=6.1.48.1585" type="text/javascript"></script>
+
+
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafDynamicForm.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/fonts.css?version=6.1.48.1585" type="text/css"/>
+<!--Fin de librerias que se incluyen siempre.-->
+
+
+<!--Comienzo de librerias que se incluyen dependiendo del parámetro incluirJS recibido.-->
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFConstantes.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/TreeUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/viewabm.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/rico/prototype.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/rico/rico.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/rico/ricoDragAndDropCustomDropzone.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/rico/ricoDragAndDropCustomDraggable.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WidgetForm.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WidgetMask.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WidgetNumerico.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WidgetGridUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WebPartUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/WebReportUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/TXMailing.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/mailEditor/mailEditor.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FileUpload/fileUpload.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/faflist.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FinnTalk/finntalk.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/LogScreen/logScreen.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dataExchange.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/templates/templates.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/deprecated.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dinamicformToolbar.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/wizardFAF.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFVentana.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFMap/xml.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafGeocodeUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/TagsUtils.js?version=6.1.48.1585" type="text/javascript"></script>
+
+<!-- DeployedVersionHLP.generateIncludeJSLink(request,"/general/FAFScriptingEditor/ace-builds-master/src-min/ace.js", aplicacionfwkCommons) --> 
+
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/fafgrid.js?version=6.1.48.1585" type="text/javascript"></script>
+
+
+	<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFToolbar/faftoolbar.css?version=6.1.48.1585" type="text/css"/>
+
+
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/dhtmlxgrid.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/skins/fafGridSkin.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/faflist.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/LogScreen/logScreen.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/fafwebreport.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/pivot.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCalendar/FAFCalendar.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCalendar/css/fullcalendar.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/scroll-rel.css?version=6.1.52.2465" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/webpart.css?version=6.1.48.1585" type="text/css"/>
+<!--Fin de librerias que se incluyen dependiendo del parámetro incluirJS recibido.-->
+
+
+
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/progressBar/progressBar.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/contextBar.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/calendar/calendar.js?version=6.1.48.1585" type="text/javascript" charset="UTF-8"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/calendar/calendar-setup.js?version=6.1.48.1585" type="text/javascript" charset="UTF-8"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/calendar/calendar-es.js?version=6.1.48.1585" type="text/javascript" charset="UTF-8"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/DinamicForm.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/Empresa.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/fafselector.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/widgetMemo.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/widgetEditorHTML.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/widgetFileUpload.js?version=6.1.48.1585" type="text/javascript"></script>
+	<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/capturaEventos.js?version=6.1.48.1585" type="text/javascript"></script>
+	<!-- %=DeployedVersionHLP.generateIncludeJSLink(request,"/tinymce/jscripts/tiny_mce/tiny_mce.js", aplicacionfwkCommons)% -->
+    <script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/mailEditor/tinymce/js/tinymce/tinymce.min.js?version=6.1.48.1585" type="text/javascript"></script>
+    <script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/ckeditor/V4_custom/ckeditor.js?version=6.1.48.1585" type="text/javascript"></script>
+
+	<script type="text/javascript">
+	tinymce.init({
+		// General options
+	// 		plugins : "safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager"
+			plugins : "advlist, autolink, link, image, lists, charmap, print, preview, hr, anchor, pagebreak, searchreplace, wordcount, visualblocks, visualchars, code, fullscreen, insertdatetime, media, nonbreaking, save, table, contextmenu, directionality, emoticons, template, paste, textcolor"	
+	});
+	</script>
+
+    <link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/calendar/calendar.css?version=6.1.48.1585" type="text/css"/>
+	<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/calendar.css?version=6.1.52.2465" type="text/css" title="win2k-cold-1"/>
+	<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/styles/fafselector.css?version=6.1.48.1585" type="text/css"/>
+
+
+<div style="position:absolute; left:-100px; display: none;">
+	<a id="dw_link" href="http://www.dyn-web.com">dyn-web.com</a>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/dw_scroll/scroll_inf.js?version=6.1.48.1585" type="text/javascript"></script>
+</div>
+
+
+
+<script>
+var FORMATO_FECHA_EMPRESA ="0";
+</script>
+
+<div id="progressBar">Espere por favor...
+<div id="sliderWrapper">0%
+  <div id="slider">0%</div>
+</div>
+</div>
+
+
+<!--Comienzo elementos varios que necesita la aplicación en código javascript-->
+<div id="FAFTREEGRIDEDITRAMA" style="position:absolute; visibility:hidden; z-index:1000"></div>
+
+<div id="DIVListaDocs" style="position:absolute; visibility:hidden; z-index:1000"></div>
+<iFrame id="IFRListaDocs" style="position:absolute; display:none; z-index:1000"></iFrame>
+<div id="div_cerrar" class="divCerrar">
+	<table><tr><td>
+		<img src="../../images/fafCerrar.gif"/>
+		</td>
+		<td>
+		<font class="fontDivCerrar" onclick="removerTrLinea()">cerrar
+		</font>
+	</td></tr></table>
+</div>
+<!--Fin elementos varios que necesita la aplicación en código javascript-->
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/fafwebreport.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/advancedSearch.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/gridLayout.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/gridAlerts.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/webix/webix_3.2.2.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/fafgridWebix.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/dhtmlxcommon.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/dhtmlxgrid.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/dhtmlxgridcell.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/ext/dhtmlxgrid_math.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/ext/dhtmlxgrid_splt.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/ext/dhtmlxgrid_pgn.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/ext/dhtmlxgrid_srnd.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFGrid/codebase/ext/dhtmlxgrid_mcol.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/cuboLayout.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/webixPivot/webix_debug.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/webixPivot//pivot/pivot_debug.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/webixPivotLayout.js?version=6.1.48.1585" type="text/javascript"></script><SCRIPT src="https://www.google.com/jsapi"></SCRIPT>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFChart/fafChart.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/chartLayout.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/jquery-1.7.1.min.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/jquery.ddslick.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/tableroLayout.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/dynamicFormLayout.js?version=6.1.48.1585" type="text/javascript"></script><script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFWebReport/transactionLayout.js?version=6.1.48.1585" type="text/javascript"></script><link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/webixPivot/pivot/pivot.css?version=6.1.48.1585" type="text/css"/>
+<link rel="stylesheet" rev="stylesheet" href="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFCubo/webixPivot/skins/web.css?version=6.1.48.1585" type="text/css"/>
+<div id="webreport_container"></div>
+<script language="JavaScript" src="https://d3fj7y1xz0rg03.cloudfront.net/BSA/general/FAFDynamicForm/fafWidgetSelector.js?version=6.1.48.1585" type="text/javascript"></script><script>FAFWebReport.InitDatasetView();</script><!--BODY-->
+							</div>
+
+		                </div>
+	               	</div>
+			    </div>
+                <xsl:if test="error">
+                    <pre id="errorDiv" style="display:none"><xsl:value-of select="error"/></pre>
+                </xsl:if>
+            </body>
+        </html>
+
+    </xsl:template>
+    <!--END-->
+</xsl:stylesheet>

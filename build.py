@@ -137,6 +137,20 @@ def fetch_produccion() -> dict:
         if "MANI" in c or "MANÍ" in c: return "Grano Maní"
         return "Grano " + (cu or "").title()
 
+    # extrae un objeto {...} literal asignado a NAME en el HTML de la app
+    def obj_after(name):
+        m = re.search(re.escape(name) + r'\s*=\s*\{', h)
+        if not m: return {}
+        i = h.index('{', m.start()); d = 0
+        for j in range(i, len(h)):
+            if h[j] == '{': d += 1
+            elif h[j] == '}':
+                d -= 1
+                if d == 0:
+                    try: return json.loads(h[i:j+1].replace("'", '"'))
+                    except Exception: return {}
+        return {}
+
     out = {}
     # --- COSECHA 25/26 (array de lotes: encargado...haCosechada, ~384) ---
     cos = None
@@ -148,16 +162,40 @@ def fetch_produccion() -> dict:
         except Exception:
             pass
     if cos:
+        # replica EXACTA del cálculo de "Solo Pendientes" del portal:
+        #   pend(lote) = max(0, haLote - haCosechada - haPerdidas)
+        #   rinde: 1º RINDE_EST[campo|lote|cultivo]*1000, 2º rinde real prom del cultivo, 3º RINDE_REGIONAL
+        #   tnAgnsjPend += pend * participacion * rindeKgHa/1000
+        RINDE_EST = obj_after("RINDE_EST")           # {campo|lote|cultivo: tn/ha}
+        RINDE_REGIONAL = obj_after("RINDE_REGIONAL")  # {cultivo: kg/ha}
+        rrc = {}                                      # rinde real prom por cultivo (kg/ha)
+        for l in cos:
+            c = (l.get("cultivo") or "").upper().strip()
+            if not c: continue
+            d = rrc.setdefault(c, {"haC": 0.0, "kgT": 0.0})
+            d["haC"] += l.get("haCosechada") or 0; d["kgT"] += l.get("kgTotales") or 0
+        for c, d in rrc.items():
+            d["rinde"] = d["kgT"] / d["haC"] if d["haC"] > 0 else 0.0
         c25 = defaultdict(lambda: {"cosechado": 0.0, "pendcos": 0.0})
         for l in cos:
             p = prod(l.get("cultivo"))
             if not p: continue
-            ha = l.get("haAgnsj") or 0; hc = l.get("haCosechada") or 0; r = l.get("rinde") or 0
+            c = (l.get("cultivo") or "").upper().strip()
+            haL = l.get("haLote") or 0; hc = l.get("haCosechada") or 0
+            haP = l.get("haPerdidas") or 0; pct = l.get("participacion") or 0
             c25[p]["cosechado"] += l.get("tnAgnsj") or 0
-            c25[p]["pendcos"] += max(0, (ha - hc)) * (r / 1000.0)
+            pend = max(0.0, haL - hc - haP)
+            if pend <= 0: continue
+            campo = (l.get("campo") or "").upper().strip(); lote = (l.get("lote") or "").upper().strip()
+            key1 = f"{campo}|{lote}|{c}"
+            if key1 in RINDE_EST:      rk = RINDE_EST[key1] * 1000.0
+            elif rrc[c]["rinde"] > 0:  rk = rrc[c]["rinde"]
+            else:                      rk = RINDE_REGIONAL.get(c, 5000)
+            c25[p]["pendcos"] += pend * pct * rk / 1000.0
         out["CAMPAÑA 25-26"] = {p: {"cosechado": round(v["cosechado"], 1), "pendcos": round(v["pendcos"], 1)}
                                 for p, v in c25.items()}
-        print(f"    -> cosecha 25/26: {len(cos)} lotes · {len(out['CAMPAÑA 25-26'])} cultivos")
+        tot_pend = sum(v["pendcos"] for v in out["CAMPAÑA 25-26"].values())
+        print(f"    -> cosecha 25/26: {len(cos)} lotes · {len(out['CAMPAÑA 25-26'])} cultivos · pend total {tot_pend:.0f} tn")
 
     # --- SIEMBRA 26/27 (array ~306 con keys cortas: e,co,pa,ca,...cu,cu26,rg,tng) ---
     sie = None

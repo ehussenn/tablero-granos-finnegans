@@ -1,0 +1,2 @@
+[0803/152210.602:INFO:CONSOLE:0] "Fetch event handler is recognized as no-op. No-op fetch handler may bring overhead during navigation. Consider removing the handler if possible.", source:  (0)
+[0803/152219.116:INFO:CONSOLE:3547] "Uncaught (in promise) TypeError: Cannot read properties of null (reading 'toLocaleString')", source: https://sanguine86.github.io/agronasaja-produccion/index.html?seccion=seguimiento&user=ehussen%40agronasaja.com.ar (3547)

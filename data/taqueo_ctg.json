@@ -1,0 +1,92 @@
+{
+ "ventana": [
+  "2026-01-01",
+  "2026-07-01"
+ ],
+ "duplicados": [
+  {
+   "ctg": "10132380349",
+   "filas": 2,
+   "compradores": [
+    "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL"
+   ],
+   "docs": [
+    "00000-00000463",
+    "00000-00000463"
+   ],
+   "grano": "Grano Soja",
+   "fecha": "21-05-2026"
+  },
+  {
+   "ctg": "10130631912",
+   "filas": 2,
+   "compradores": [
+    "AGRONASAJA S.R.L."
+   ],
+   "docs": [
+    "00000-00009367",
+    "00000-00009367"
+   ],
+   "grano": "Grano Maíz",
+   "fecha": "30-03-2026"
+  }
+ ],
+ "por_cerealera": {
+  "Cargill": {
+   "extranet_en_ventana": 401,
+   "tiene_fecha_extranet": false,
+   "vinculados": 401,
+   "falta_vincular": []
+  },
+  "LDC": {
+   "extranet_en_ventana": 211,
+   "tiene_fecha_extranet": false,
+   "vinculados": 210,
+   "falta_vincular": [
+    {
+     "ctg": "10232762156",
+     "producto": "MAIZ",
+     "contrato": "003CB002001263",
+     "fecha": null
+    }
+   ]
+  },
+  "Bunge": {
+   "extranet_en_ventana": 82,
+   "tiene_fecha_extranet": true,
+   "vinculados": 82,
+   "falta_vincular": []
+  },
+  "Intagro": {
+   "extranet_en_ventana": 179,
+   "tiene_fecha_extranet": true,
+   "vinculados": 175,
+   "falta_vincular": [
+    {
+     "ctg": "10232343858",
+     "producto": "MAIZ",
+     "contrato": "71124601",
+     "fecha": "21/05/2026"
+    },
+    {
+     "ctg": "10232357957",
+     "producto": "MAIZ",
+     "contrato": "71124601",
+     "fecha": "21/05/2026"
+    },
+    {
+     "ctg": "10232731201",
+     "producto": "SOJA",
+     "contrato": "69753611",
+     "fecha": "04/06/2026"
+    },
+    {
+     "ctg": "10232733544",
+     "producto": "SOJA",
+     "contrato": "69753611",
+     "fecha": "04/06/2026"
+    }
+   ]
+  }
+ }
+}
