@@ -560,6 +560,28 @@ HTML_TEMPLATE = r"""<!doctype html>
   #pn-tabla tfoot td{background:#15803d;color:#fff;font-weight:700;padding:6px 8px;font-size:12px;border-top:2px solid #0f172a;position:sticky;bottom:0}
   #pn-tabla tfoot td.pn-prod-cell{background:#0f172a;position:sticky;left:0;z-index:1}
 
+  /* ===== Drill-down de la Posicion Granaria ===== */
+  #pn-tabla tbody td.pn-drill-cell-link{cursor:pointer;position:relative;text-decoration:underline dotted rgba(21,128,61,.4);text-underline-offset:2px}
+  #pn-tabla tbody td.pn-drill-cell-link:hover{background:#bbf7d0 !important;box-shadow:inset 0 0 0 1px #16a34a}
+  #pn-tabla tbody td.pn-drill-active{background:#15803d !important;color:#fff !important;box-shadow:inset 0 0 0 2px #052e16}
+  #pn-tabla tbody tr.pn-drill-row td{padding:0;background:#f8fafc;border-bottom:2px solid #cbd5e1}
+  #pn-tabla tbody tr.pn-drill-row td.pn-prod-cell{position:static}
+  .pn-drill-inner{padding:10px 14px 12px 40px}
+  .pn-drill-head{font-size:11.5px;font-weight:700;color:#0f172a;margin-bottom:6px;text-transform:none;letter-spacing:0;text-align:left}
+  .pn-drill-head span{font-weight:500;color:var(--muted)}
+  .pn-drill-empty{font-size:11.5px;color:var(--muted);padding:4px 0}
+  table.pn-drill-tbl{border-collapse:collapse;width:auto;min-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden}
+  table.pn-drill-tbl th{background:#0f172a;color:#fff;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;padding:5px 9px;text-align:left;font-weight:600}
+  table.pn-drill-tbl th.num,table.pn-drill-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+  table.pn-drill-tbl td{padding:4px 9px;font-size:11px;border-bottom:1px solid #eef2f7;text-align:left;color:#1e293b}
+  table.pn-drill-tbl tbody tr:nth-child(even) td{background:#f8fafc}
+  table.pn-drill-tbl td.pn-drill-nro{font-weight:700;color:#0f172a;white-space:nowrap}
+  table.pn-drill-tbl td.pn-drill-fe{white-space:nowrap;color:var(--muted);font-size:10.5px}
+  table.pn-drill-tbl tr.pn-drill-tot td{background:#ecfdf5 !important;font-weight:800;color:#15803d;border-top:2px solid #86efac}
+  .pn-fij-si{color:#15803d;font-weight:700}
+  .pn-fij-par{color:#b45309;font-weight:700}
+  .pn-fij-no{color:#b91c1c;font-weight:700}
+
   /* Cards de cultivo posicion */
   .pn-card{padding:14px;border-radius:10px;border-top:4px solid #94a3b8;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   .pn-card.soja{border-top-color:#16a34a}
@@ -7163,8 +7185,83 @@ function pnFiltrarOps(){
 const PN_SEM_EXPANDED = new Set();
 // Familias (TOTAL SOJA, etc.) expandidas: por defecto TODO colapsado -> solo se ven los totales.
 const PN_FAM_EXPANDED = new Set();
+
+// ===== DRILL-DOWN de la Posicion Granaria =====
+// Al clickear una celda numerica (pendiente ingreso, entregado, silo bolsa, etc.) se despliega
+// el DETALLE: que contratos / que depositos componen ese numero.
+const PN_STOCK_DET = (PAYLOAD.stock_detalle || {});   // {producto:[{dep,cat,tn}]}
+let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
+const PN_DRILL = {
+  silo:           {kind:'stock', cat:'SILO',      title:'Silos'},
+  bolsas:         {kind:'stock', cat:'BOLSAS',    title:'Bolsas / procesado'},
+  silobolsa:      {kind:'stock', cat:'SILOBOLSA', title:'Silo bolsas'},
+  compraTot:      {kind:'compra', field:'tot',  title:'Compra · cantidad ajustada (entregado + pendiente)'},
+  compraPend:     {kind:'compra', field:'pend', title:'Compra · pendiente de ingreso — contratos que faltan entregar'},
+  compraEntr:     {kind:'compra', field:'entr', title:'Compra · ya entregado'},
+  ventaCtosAjust: {kind:'venta',  field:'tot',  title:'Venta · cantidad ajustada (entregado + pendiente)'},
+  ventaCtos:      {kind:'venta',  field:'pend', title:'Venta · pendiente de entrega — contratos que faltan entregar'},
+  ventaEntr:      {kind:'venta',  field:'entr', title:'Venta · ya entregado'},
+};
+function pnFij(c){
+  const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+  const aj = ent + pen, fij = Number(c.cantidadfijada)||0;
+  if(aj <= 0) return {t:'—', cls:''};
+  if(fij >= aj - 0.05) return {t:'✓ A precio', cls:'pn-fij-si'};
+  if(fij > 0.05)       return {t:'◑ '+Math.round(fij/aj*100)+'% fijado', cls:'pn-fij-par'};
+  return {t:'○ A fijar', cls:'pn-fij-no'};
+}
+function pnDrillHTML(type, prods){
+  const cfg = PN_DRILL[type]; if(!cfg) return '';
+  const set = new Set(prods);
+  const esC = (prods.length>1);   // mostrar columna Producto si es un TOTAL de familia
+  if(cfg.kind === 'stock'){
+    let rows = [];
+    prods.forEach(p => (PN_STOCK_DET[p]||[]).forEach(d => { if(d.cat===cfg.cat) rows.push({p, dep:d.dep, tn:d.tn}); }));
+    rows.sort((a,b)=>b.tn-a.tn);
+    if(!rows.length) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin stock en depósitos de este tipo.</div></div>`;
+    const tot = rows.reduce((s,r)=>s+r.tn,0);
+    let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} depósito(s) · ${fmt.num(tot)} tn</span></div>`;
+    t += `<table class="pn-drill-tbl"><thead><tr><th>Depósito</th>${esC?'<th>Producto</th>':''}<th class="num">Toneladas</th></tr></thead><tbody>`;
+    rows.forEach(r => { t += `<tr><td>${escapeHtml(r.dep)}</td>${esC?`<td>${escapeHtml(r.p)}</td>`:''}<td class="num">${fmt.num(r.tn)}</td></tr>`; });
+    t += `<tr class="pn-drill-tot"><td${esC?' colspan="2"':''}>Total</td><td class="num">${fmt.num(tot)}</td></tr>`;
+    t += `</tbody></table></div>`;
+    return t;
+  }
+  // contratos compra / venta
+  const src = (cfg.kind==='compra') ? PN_LAST_COMPRAS : PN_LAST_VENTAS;
+  const cp = (cfg.kind==='compra');
+  const val = c => {
+    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    return cfg.field==='pend' ? pen : cfg.field==='entr' ? ent : ent+pen;
+  };
+  // venta: la semilla va aparte (manual), igual que en pnCalcRow → excluir de los contratos
+  let rows = src.filter(c => set.has(c.producto) && !(cfg.kind==='venta' && (c.producto||'').toLowerCase().includes('sem')));
+  rows = rows.filter(c => val(c) > 0.001);
+  rows.sort((a,b)=>val(b)-val(a));
+  if(!rows.length) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin contratos.</div></div>`;
+  const tot = rows.reduce((s,c)=>s+val(c),0);
+  const lblTn = cfg.field==='pend' ? (cp?'Pend. ingreso':'Pend. entrega') : cfg.field==='entr' ? 'Entregado' : 'Ajustada';
+  let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} contrato(s) · ${fmt.num(tot)} tn</span></div>`;
+  t += `<table class="pn-drill-tbl"><thead><tr><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
+  rows.forEach(c => {
+    const f = pnFij(c);
+    const nro = (c.numerointerno!=null?('#'+c.numerointerno):'') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
+    const ent = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
+    const camp = (c.campana||'').replace('CAMPAÑA ','').replace('CAMPANA ','') || '—';
+    t += `<tr><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
+  });
+  const ncolTot = 5 + (esC?1:0);
+  t += `<tr class="pn-drill-tot"><td colspan="${ncolTot}">Total (${rows.length})</td><td class="num">${fmt.num(tot)}</td><td></td></tr>`;
+  t += `</tbody></table></div>`;
+  return t;
+}
+function pnFecha(s){ if(!s) return ''; const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?`${m[3]}/${m[2]}/${m[1].slice(2)}`:String(s); }
+// Total de columnas de la tabla (1 producto + todas las de PN_COLS) para el colspan del detalle
+const PN_TOTAL_COLS = 1 + PN_COLS.reduce((n,g)=>n+g.cols.length,0);
+
 function pnRender(){
   const {compras, ventas} = pnFiltrarOps();
+  PN_LAST_COMPRAS = compras; PN_LAST_VENTAS = ventas;   // para el drill-down
   // PLANTA y PRODUCCIÓN (stock físico + cosecha) pertenecen a la CAMPAÑA DE COSECHA VIGENTE,
   // no a campañas forward (ej. 26/27, que solo tiene contratos compra/venta sin grano físico).
   // Cosecha vigente = la campaña MÁS RECIENTE con grano realmente entregado (>=20% del máximo
@@ -7254,6 +7351,8 @@ function pnRender(){
       } else if(c.hl){
         const cls2 = v >= 0 ? "pos-pos" : "pos-neg";
         row += `<td class="${cls2}">${fmt.num(v)}</td>`;
+      } else if(PN_DRILL[c.k] && v){
+        row += `<td class="calc pn-drill-cell-link" data-drill="${c.k}" data-prod="${escapeHtml(prod)}">${fmt.num(v)}</td>`;
       } else {
         row += `<td class="calc">${v ? fmt.num(v) : '—'}</td>`;
       }
@@ -7290,7 +7389,11 @@ function pnRender(){
     PN_COLS.forEach(g => g.cols.forEach(c => {
       const v = totFam[c.k];
       const cls = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
-      rowFam += `<td class="${cls}">${v ? fmt.num(v) : '—'}</td>`;
+      if(PN_DRILL[c.k] && v){
+        rowFam += `<td class="${cls} pn-drill-cell-link" data-drill="${c.k}" data-fam="${escapeHtml(fam)}">${fmt.num(v)}</td>`;
+      } else {
+        rowFam += `<td class="${cls}">${v ? fmt.num(v) : '—'}</td>`;
+      }
     }));
     rowFam += "</tr>";
     body += rowFam;
@@ -7381,6 +7484,34 @@ function pnRender(){
       if(PN_SEM_EXPANDED.has(fam)) PN_SEM_EXPANDED.delete(fam);
       else PN_SEM_EXPANDED.add(fam);
       pnRender();
+    });
+  });
+
+  // Listener: DRILL-DOWN — click en celda numérica (pend ingreso, entregado, silo bolsa, etc.)
+  // despliega el detalle (contratos que faltan entregar / depósitos donde está el grano).
+  document.querySelectorAll("#pn-tbody .pn-drill-cell-link").forEach(td => {
+    td.addEventListener("click", (e) => {
+      e.stopPropagation();   // no togglear la familia
+      const tr = td.closest("tr");
+      const type = td.dataset.drill;
+      const prods = td.dataset.fam ? (byFamilia[td.dataset.fam] || []) : [td.dataset.prod];
+      const key = (td.dataset.fam || td.dataset.prod) + "|" + type;
+      const nx = tr.nextElementSibling;
+      // toggle: si ya está abierto ese mismo detalle, cerrarlo
+      if(nx && nx.classList.contains("pn-drill-row") && nx.dataset.key === key){
+        nx.remove(); td.classList.remove("pn-drill-active"); return;
+      }
+      // cerrar cualquier detalle abierto inmediatamente debajo (de otra celda de la misma fila)
+      if(nx && nx.classList.contains("pn-drill-row")){
+        tr.querySelectorAll(".pn-drill-active").forEach(x=>x.classList.remove("pn-drill-active"));
+        nx.remove();
+      }
+      const nr = document.createElement("tr");
+      nr.className = "pn-drill-row"; nr.dataset.key = key;
+      nr.innerHTML = `<td colspan="${PN_TOTAL_COLS}" class="pn-drill-cell">${pnDrillHTML(type, prods)}</td>`;
+      tr.after(nr);
+      td.classList.add("pn-drill-active");
+      nr.querySelector(".pn-drill-inner").scrollIntoView({behavior:"smooth", block:"nearest"});
     });
   });
 
@@ -11184,6 +11315,7 @@ def main() -> int:
     # DW Postgres primero, fallback a API REST
     print(f"\n[+] Bajando Stock por Deposito (DW primero)...", flush=True)
     stock_silo, stock_silobolsa, stock_bolsas, stock_descarte = {}, {}, {}, {}
+    stock_detalle = {}   # {producto: [{dep, cat, tn}]} para el drill-down
     try:
         stock_raw = None
         if USE_DW:
@@ -11209,6 +11341,9 @@ def main() -> int:
             return None
 
         acums = {"SILO": {}, "SILOBOLSA": {}, "BOLSAS": {}, "DESCARTE": {}}
+        # detalle por deposito (para el drill-down de la Posicion Granaria):
+        #   {producto: [{"dep": nombre, "cat": SILO|SILOBOLSA|BOLSAS, "tn": x}, ...]}
+        stock_det_acum = {}   # (producto, cat, deposito) -> kg
         for row in stock_raw:
             cat = categorizar(row.get("DEPOSITO"))
             if not cat: continue
@@ -11217,12 +11352,21 @@ def main() -> int:
             try: kg = float(row.get("CANTIDAD1") or 0)
             except: kg = 0.0
             acums[cat][prod] = acums[cat].get(prod, 0.0) + kg
+            if cat in ("SILO", "SILOBOLSA", "BOLSAS"):
+                key = (prod, cat, (row.get("DEPOSITO") or "").strip())
+                stock_det_acum[key] = stock_det_acum.get(key, 0.0) + kg
 
         # convertir a tn y filtrar ceros
         stock_silo      = {p: round(kg/1000.0, 4) for p, kg in acums["SILO"].items() if kg}
         stock_silobolsa = {p: round(kg/1000.0, 4) for p, kg in acums["SILOBOLSA"].items() if kg}
         stock_bolsas    = {p: round(kg/1000.0, 4) for p, kg in acums["BOLSAS"].items() if kg}
         stock_descarte  = {p: round(kg/1000.0, 4) for p, kg in acums["DESCARTE"].items() if kg}
+        # armar stock_detalle por producto (lista de depositos con tn, ordenada desc)
+        for (prod, cat, dep), kg in stock_det_acum.items():
+            if abs(kg) < 1: continue
+            stock_detalle.setdefault(prod, []).append({"dep": dep, "cat": cat, "tn": round(kg/1000.0, 4)})
+        for prod in stock_detalle:
+            stock_detalle[prod].sort(key=lambda d: -d["tn"])
         print(f"    -> SILO:      {len(stock_silo)} productos")
         print(f"    -> SILOBOLSA: {len(stock_silobolsa)} productos")
         print(f"    -> BOLSAS:    {len(stock_bolsas)} productos")
@@ -11305,6 +11449,7 @@ def main() -> int:
         "stock_silobolsa": stock_silobolsa,
         "stock_bolsas":    stock_bolsas,
         "stock_descarte":  stock_descarte,
+        "stock_detalle":   stock_detalle,
         "cosechado":       cosechado,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
