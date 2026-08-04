@@ -94,11 +94,13 @@ def normalize_pilot(rows: list[dict]) -> list[dict]:
     return out
 
 
-def fetch_produccion() -> dict:
+def fetch_produccion() -> tuple[dict, dict]:
     """Baja el Portal de Producción de Agronasaja (app pública en GitHub Pages, sin login)
     y arma la producción por campaña/cultivo para la Posición Granaria:
       - CAMPAÑA 25-26 (cosecha): cosechado (tnAgnsj) + pendiente ((haAgnsj-haCosechada)*rinde)
       - CAMPAÑA 26-27 (siembra): gruesa (ha*rinde gruesa) + fina (ha*rinde estándar por la rotación cu26)
+    Devuelve (produccion_camp, pend_detalle) donde pend_detalle es el desglose del
+    pendiente de cosecha por CAMPO (tn Agronasaja) para el drill-down.
     Fuente: https://sanguine86.github.io/agronasaja-produccion/index.html (data embebida).
     """
     import urllib.request
@@ -109,7 +111,7 @@ def fetch_produccion() -> dict:
         h = urllib.request.urlopen(req, timeout=60).read().decode("utf-8", "replace")
     except Exception as e:
         print(f"    [!] no pude bajar el portal de producción: {e}")
-        return {}
+        return {}, {}
     dec = json.JSONDecoder()
 
     def find_array(pat, size):
@@ -152,6 +154,7 @@ def fetch_produccion() -> dict:
         return {}
 
     out = {}
+    det = {}   # detalle por campo del pendiente de cosecha: {campaña: {producto: [{campo, tn}]}}
     # --- COSECHA 25/26 (array de lotes: encargado...haCosechada, ~384) ---
     cos = None
     for m in re.finditer(r'\[\{"encargado"', h):
@@ -177,6 +180,7 @@ def fetch_produccion() -> dict:
         for c, d in rrc.items():
             d["rinde"] = d["kgT"] / d["haC"] if d["haC"] > 0 else 0.0
         c25 = defaultdict(lambda: {"cosechado": 0.0, "pendcos": 0.0})
+        c25det = defaultdict(lambda: defaultdict(float))   # producto -> campo -> tn AGNSJ pendiente
         for l in cos:
             p = prod(l.get("cultivo"))
             if not p: continue
@@ -191,9 +195,14 @@ def fetch_produccion() -> dict:
             if key1 in RINDE_EST:      rk = RINDE_EST[key1] * 1000.0
             elif rrc[c]["rinde"] > 0:  rk = rrc[c]["rinde"]
             else:                      rk = RINDE_REGIONAL.get(c, 5000)
-            c25[p]["pendcos"] += pend * pct * rk / 1000.0
+            tn = pend * pct * rk / 1000.0
+            c25[p]["pendcos"] += tn
+            c25det[p][campo or "—"] += tn
         out["CAMPAÑA 25-26"] = {p: {"cosechado": round(v["cosechado"], 1), "pendcos": round(v["pendcos"], 1)}
                                 for p, v in c25.items()}
+        det["CAMPAÑA 25-26"] = {p: sorted(([{"campo": k, "tn": round(t, 1)} for k, t in cs.items() if t > 0.05]),
+                                          key=lambda d: -d["tn"])
+                                for p, cs in c25det.items()}
         tot_pend = sum(v["pendcos"] for v in out["CAMPAÑA 25-26"].values())
         print(f"    -> cosecha 25/26: {len(cos)} lotes · {len(out['CAMPAÑA 25-26'])} cultivos · pend total {tot_pend:.0f} tn")
 
@@ -209,16 +218,25 @@ def fetch_produccion() -> dict:
     if sie:
         RINDE_FINA = {"Grano Trigo Pan": 4.5, "Grano Cebada": 4.5, "Grano Camelina": 1.3, "Grano Colza": 2.2}
         c26 = defaultdict(lambda: {"pendcos": 0.0})
+        c26det = defaultdict(lambda: defaultdict(float))   # producto -> campo -> tn
         for l in sie:
             ha = l.get("ha") or 0; rg = l.get("rg") or 0
+            campo = (l.get("ca") or "").upper().strip() or "—"
             pg = prod(l.get("cu"))                       # gruesa: ha * rinde gruesa
-            if pg and rg: c26[pg]["pendcos"] += ha * rg
+            if pg and rg:
+                c26[pg]["pendcos"] += ha * rg
+                c26det[pg][campo] += ha * rg
             cu26 = str(l.get("cu26") or "")              # fina: primer cultivo de la rotación
             fina = prod(cu26.split("/")[0]) if "/" in cu26 else None
-            if fina and fina in RINDE_FINA: c26[fina]["pendcos"] += ha * RINDE_FINA[fina]
+            if fina and fina in RINDE_FINA:
+                c26[fina]["pendcos"] += ha * RINDE_FINA[fina]
+                c26det[fina][campo] += ha * RINDE_FINA[fina]
         out["CAMPAÑA 26-27"] = {p: {"pendcos": round(v["pendcos"], 1)} for p, v in c26.items() if v["pendcos"] > 0.5}
+        det["CAMPAÑA 26-27"] = {p: sorted(([{"campo": k, "tn": round(t, 1)} for k, t in cs.items() if t > 0.05]),
+                                          key=lambda d: -d["tn"])
+                                for p, cs in c26det.items() if p in out["CAMPAÑA 26-27"]}
         print(f"    -> siembra 26/27: {len(sie)} lotes · {len(out['CAMPAÑA 26-27'])} cultivos")
-    return out
+    return out, det
 
 
 # ---------- HTML ----------
@@ -1776,7 +1794,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </table>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Cómo funciona</strong>: las columnas de <strong>Compra</strong> y <strong>Venta</strong> vienen automáticas de los contratos en Finnegans. Las columnas de <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) y <strong>Producción</strong> (Pend Cos, Cosechado, Campo Est) las cargás vos haciendo click en cada celda y se guardan en localStorage. El resto se calcula solo.
+        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: qué contratos faltan entregar, en qué silobolsa está el grano, o de qué campos sale el pendiente de cosecha.
       </div>
     </div>
 
@@ -6986,9 +7004,8 @@ const PN_COLS = [
   ]},
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
     {k:"prodTot",      lbl:"Total",      calc:true},
-    {k:"pendCos",      lbl:"Pend Cos",   edit:true, manK:"pendcos"},
+    {k:"pendCos",      lbl:"Pend Cos",   calc:true},
     {k:"cosechado",    lbl:"Cosechado"},
-    {k:"campoEst",     lbl:"Campo Est",  edit:true, manK:"campoest"},
   ]},
   {grp:"P+C",        cls:"grp-compra", cols:[
     {k:"pcTot",        lbl:"Total P+C",  calc:true},
@@ -7190,8 +7207,10 @@ const PN_FAM_EXPANDED = new Set();
 // Al clickear una celda numerica (pendiente ingreso, entregado, silo bolsa, etc.) se despliega
 // el DETALLE: que contratos / que depositos componen ese numero.
 const PN_STOCK_DET = (PAYLOAD.stock_detalle || {});   // {producto:[{dep,cat,tn}]}
+const PN_PROD_PEND_DET = (PAYLOAD.produccion_pend_det || {});  // {campaña:{producto:[{campo,tn}]}}
 let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
 const PN_DRILL = {
+  pendCos:        {kind:'prodpend', title:'Pendiente de cosecha por campo (tn Agronasaja)'},
   silo:           {kind:'stock', cat:'SILO',      title:'Silos'},
   bolsas:         {kind:'stock', cat:'BOLSAS',    title:'Bolsas / procesado'},
   silobolsa:      {kind:'stock', cat:'SILOBOLSA', title:'Silo bolsas'},
@@ -7223,6 +7242,21 @@ function pnDrillHTML(type, prods){
     let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} depósito(s) · ${fmt.num(tot)} tn</span></div>`;
     t += `<table class="pn-drill-tbl"><thead><tr><th>Depósito</th>${esC?'<th>Producto</th>':''}<th class="num">Toneladas</th></tr></thead><tbody>`;
     rows.forEach(r => { t += `<tr><td>${escapeHtml(r.dep)}</td>${esC?`<td>${escapeHtml(r.p)}</td>`:''}<td class="num">${fmt.num(r.tn)}</td></tr>`; });
+    t += `<tr class="pn-drill-tot"><td${esC?' colspan="2"':''}>Total</td><td class="num">${fmt.num(tot)}</td></tr>`;
+    t += `</tbody></table></div>`;
+    return t;
+  }
+  if(cfg.kind === 'prodpend'){
+    // pendiente de cosecha por CAMPO (tn AGNSJ), de la campaña seleccionada
+    const camp = (PN_PROD_PEND_DET[PN_SEL_CAMP] || {});
+    let rows = [];
+    prods.forEach(p => (camp[p] || []).forEach(d => rows.push({p, campo:d.campo, tn:d.tn})));
+    rows.sort((a,b)=>b.tn-a.tn);
+    if(!rows.length) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin desglose por campo para esta campaña.</div></div>`;
+    const tot = rows.reduce((s,r)=>s+r.tn,0);
+    let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} campo(s) · ${fmt.num(tot)} tn</span></div>`;
+    t += `<table class="pn-drill-tbl"><thead><tr><th>Campo</th>${esC?'<th>Cultivo</th>':''}<th class="num">Tn Agronasaja</th></tr></thead><tbody>`;
+    rows.forEach(r => { t += `<tr><td>${escapeHtml(r.campo)}</td>${esC?`<td>${escapeHtml(r.p)}</td>`:''}<td class="num">${fmt.num(r.tn)}</td></tr>`; });
     t += `<tr class="pn-drill-tot"><td${esC?' colspan="2"':''}>Total</td><td class="num">${fmt.num(tot)}</td></tr>`;
     t += `</tbody></table></div>`;
     return t;
@@ -11411,12 +11445,13 @@ def main() -> int:
 
     # Producción por campaña/cultivo desde el Portal de Producción de Agronasaja (app pública)
     print(f"\n[+] Bajando Producción (Portal de Producción Agronasaja)...", flush=True)
-    produccion_camp = fetch_produccion()
+    produccion_camp, produccion_pend_det = fetch_produccion()
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
         "produccion_camp": produccion_camp,
+        "produccion_pend_det": produccion_pend_det,
         "finales": finales,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
