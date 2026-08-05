@@ -9884,14 +9884,19 @@ function ctRender(){
   const LS='fp_enviadas';
   // Contratos que ya se mandaron a administración (semilla inicial, por nº de contrato).
   const SEED_ENVIADAS=['1020','1071','834','1007','1051','1040','1102','979','994','1091','1080','989','1106','1022','1090','975','1052','903','1008','1065','1002','983','984','1094','998','962','1016','972','996','976','991','974','997'];
-  // Fusión de una sola vez (por versión): enviadas que estaban SOLO en el localStorage de
-  // otra compu (ej. Carla entrando por github.io directo, fuera del KV). Se unen al estado
-  // compartido UNA vez; la marca en `merged` evita re-agregarlas si después se destildan.
-  const FP_MERGE = { v:'carla-20260805', enviadas:[
+  // Enviadas que estaban SOLO en el localStorage de otra compu (ej. Carla entrando por
+  // github.io directo, fuera del KV) → hay que garantizarlas en el estado compartido.
+  // Se GARANTIZAN en cada lectura/escritura (no "una sola vez"): así una lectura vieja del
+  // KV (Cloudflare es eventually-consistent) no las puede revertir. Como contrapartida, estos
+  // contratos no se pueden "des-enviar" (reaparecen); sí se pueden pasar a Hecha (Hecha gana).
+  const FP_MERGE_ENVIADAS = [
     '1042','1068','1020','1074','1055','1066','829','828','834','903','1065','1071','1102','1022','1086','972','975','979','984','983',
     '989','990','991','996','997','998','994','1008','1007','1016','1094','1040','1052','1051','1090','1106','1080','1091','1107','1104'
-  ]};
-  let _fpMerged = [];   // versiones de FP_MERGE ya aplicadas (persistido en el KV compartido)
+  ];
+  function fpEnsureMerge(){   // garantiza las enviadas de FP_MERGE en _fpEnv (salvo si ya están hechas)
+    if(!_fpEnv) return;
+    FP_MERGE_ENVIADAS.forEach(c => { const id=String(c); if(!(_fpHec && _fpHec.has(id))) _fpEnv.add(id); });
+  }
   function initSeed(){
     if(!localStorage.getItem('fp_enviadas_init')){
       localStorage.setItem(LS, JSON.stringify(SEED_ENVIADAS));
@@ -9906,37 +9911,24 @@ function ctRender(){
   function getHechas(){ return _fpHec || new Set(); }
   function getEnviadasLS(){ try{ return new Set(JSON.parse(localStorage.getItem(LS)||'[]')); }catch(e){ return new Set(); } }
   function getHechasLS(){ try{ return new Set(JSON.parse(localStorage.getItem(LSH)||'[]')); }catch(e){ return new Set(); } }
-  // Aplica FP_MERGE una sola vez (si su versión no está en _fpMerged): une sus enviadas
-  // al estado compartido y persiste la marca. No re-agrega en cargas futuras.
-  async function fpApplyMergeOnce(){
-    if(_fpMerged.includes(FP_MERGE.v)) return false;
-    FP_MERGE.enviadas.forEach(c => { const id=String(c); if(!_fpHec.has(id)) _fpEnv.add(id); });
-    _fpMerged.push(FP_MERGE.v);
-    if(typeof API_AVAILABLE!=='undefined' && API_AVAILABLE){
-      await apiSave(KVKEY,{enviadas:[..._fpEnv],hechas:[..._fpHec],merged:_fpMerged});
-    }
-    return true;
-  }
   async function fpLoadState(){
     if(typeof API_AVAILABLE!=='undefined' && API_AVAILABLE){
       const r = await apiLoad(KVKEY);
       if(r && (Array.isArray(r.enviadas)||Array.isArray(r.hechas))){
         _fpEnv=new Set(r.enviadas||[]); _fpHec=new Set(r.hechas||[]);
-        _fpMerged = Array.isArray(r.merged) ? r.merged : [];
-        await fpApplyMergeOnce();
+        fpEnsureMerge();
         return;
       }
       // KV vacía (primera vez): migrar lo que ya haya en localStorage; si no hay nada, sembrar los 33
       const lsEnv=getEnviadasLS(), lsHec=getHechasLS();
       if(lsEnv.size || lsHec.size){ _fpEnv=lsEnv; _fpHec=lsHec; }
       else { _fpEnv=new Set(SEED_ENVIADAS); _fpHec=new Set(); }
-      _fpMerged = [];
-      await fpApplyMergeOnce();   // ya deja _fpMerged con la versión y persiste
-      if(!_fpMerged.length) await apiSave(KVKEY,{enviadas:[..._fpEnv],hechas:[..._fpHec],merged:_fpMerged});
+      fpEnsureMerge();
+      await apiSave(KVKEY,{enviadas:[..._fpEnv],hechas:[..._fpHec]});
       return;
     }
     // fallback local (sin Worker)
-    initSeed(); _fpEnv=getEnviadasLS(); _fpHec=getHechasLS();
+    initSeed(); _fpEnv=getEnviadasLS(); _fpHec=getHechasLS(); fpEnsureMerge();
   }
   function applyLocal(cid,act,env,hec){
     if(act==='env'){ env.add(cid); hec.delete(cid); }
@@ -9952,8 +9944,8 @@ function ctRender(){
       const env=new Set(r.enviadas||[]), hec=new Set(r.hechas||[]);
       applyLocal(cid,act,env,hec);
       _fpEnv=env; _fpHec=hec;
-      if(Array.isArray(r.merged)) _fpMerged = r.merged;   // preservar marca de fusión
-      await apiSave(KVKEY,{enviadas:[...env],hechas:[...hec],merged:_fpMerged});
+      fpEnsureMerge();   // garantizar las de Carla aunque el KV haya devuelto una versión vieja
+      await apiSave(KVKEY,{enviadas:[..._fpEnv],hechas:[..._fpHec]});
       draw();
     } else {
       localStorage.setItem(LS,JSON.stringify([..._fpEnv]));
@@ -10000,10 +9992,12 @@ function ctRender(){
     _fpPoll=setInterval(async ()=>{
       const r=await apiLoad(KVKEY);
       if(r && (Array.isArray(r.enviadas)||Array.isArray(r.hechas))){
-        if(Array.isArray(r.merged)) _fpMerged = r.merged;   // mantener marca de fusión
-        const a=[...(r.enviadas||[])].sort().join(','), b=[...(r.hechas||[])].sort().join(',');
+        const nEnv=new Set(r.enviadas||[]), nHec=new Set(r.hechas||[]);
+        // garantizar las de Carla sobre lo que devolvió el KV (evita que una lectura vieja las borre)
+        FP_MERGE_ENVIADAS.forEach(c=>{ const id=String(c); if(!nHec.has(id)) nEnv.add(id); });
+        const a=[...nEnv].sort().join(','), b=[...nHec].sort().join(',');
         const pa=[...getEnviadas()].sort().join(','), pb=[...getHechas()].sort().join(',');
-        if(a!==pa || b!==pb){ _fpEnv=new Set(r.enviadas||[]); _fpHec=new Set(r.hechas||[]); draw(); }
+        if(a!==pa || b!==pb){ _fpEnv=nEnv; _fpHec=nHec; draw(); }
       }
     }, 15000);
   }
