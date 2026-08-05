@@ -1410,6 +1410,7 @@ HTML_TEMPLATE = r"""<!doctype html>
             <div class="calc-grid">
               <div><label>Deuda cliente (USD con IVA)</label><input type="number" id="cnj-deuda" step="0.01" value="5976.09"/></div>
               <div><label>Precio commodity (USD/Tn)</label><input type="number" id="cnj-precio" step="0.01" value="308.58"/></div>
+              <div><label>% Liquidación (típ. 100%)</label><input type="number" id="cnj-liq" step="0.01" value="100"/></div>
               <div><label>Tipo de cambio (ARS/USD)</label><input type="number" id="cnj-tc" step="0.01" value="1356.5"/></div>
               <div><label>% IVA</label><input type="number" id="cnj-iva" step="0.001" value="10.5"/></div>
               <div><label>% Comisión</label><input type="number" id="cnj-com" step="0.01" value="2"/></div>
@@ -1424,6 +1425,7 @@ HTML_TEMPLATE = r"""<!doctype html>
             <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📊 Resultados</div>
             <div class="calc-result-grid">
               <div class="calc-card"><div class="lbl">Precio Neto (USD/Tn)</div><div class="val" id="cnj-out-precio-neto">—</div><div class="hint">= Precio − Comisión − Sellado − Perc.IVA − Ret.IIBB</div></div>
+              <div class="calc-card"><div class="lbl">Precio Liquidable (USD/Tn)</div><div class="val" id="cnj-out-precio-liq">—</div><div class="hint">= Precio Neto × % Liquidación</div></div>
               <div class="calc-card highlight"><div class="lbl">TONELADAS a entregar</div><div class="val" id="cnj-out-tn">—</div><div class="hint" id="cnj-out-kg">— kg</div></div>
               <div class="calc-card"><div class="lbl">Total USD (deuda)</div><div class="val" id="cnj-out-total-usd">—</div></div>
               <div class="calc-card"><div class="lbl">Total ARS</div><div class="val" id="cnj-out-total-ars">—</div></div>
@@ -1436,7 +1438,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div style="margin-top:18px;padding:12px;background:#fffbeb;border-radius:10px;border-left:4px solid #f59e0b;font-size:12.5px;color:#92400e;line-height:1.6">
           <b>📌 Procedimiento (memo):</b><br/>
           1. Poner deuda cliente final <b>con IVA</b><br/>
-          2. Poner precio commodity actual<br/>
+          2. Poner precio commodity actual y el <b>% de liquidación</b> (típ. 100%; si el grano liquida a menos, el cliente entrega más toneladas)<br/>
           3. Chequear % comisiones y gastos (sellado 1,02 / cámara 1,25 según corresponda)<br/>
           4. Avisar al cliente que se hace una ND del 1% IVA por la percepción<br/>
           5. Si hay gastos de calidad o acondicionamiento, sumarlos aparte
@@ -7840,11 +7842,11 @@ function cnjFmt0(n){
 const CNJ_KEY = "tablero-granos-cnj-v1";
 const CNJ_DEFAULTS = {
   deuda:5976.09, precio:308.58, tc:1356.5, iva:10.5,
-  com:2, sel:1.25, perc:0, ib:0,
+  com:2, sel:1.25, perc:0, ib:0, liq:100,
 };
 function cnjGet(){
   const r = {};
-  ["deuda","precio","tc","iva","com","sel","perc","ib"].forEach(k => {
+  ["deuda","precio","tc","iva","com","sel","perc","ib","liq"].forEach(k => {
     r[k] = parseFloat(document.getElementById("cnj-"+k).value) || 0;
   });
   return r;
@@ -7861,15 +7863,20 @@ function cnjRender(){
   const precioNeto = v.precio * (1 - desc);
   const com$  = v.precio * v.com / 100;
   const sel$  = v.precio * v.sel / 100;
-  // Toneladas a entregar: Deuda con IVA / Precio Neto / (1 + IVA)
+  // % Liquidación: el grano liquida al X% de su valor (típ. 100%). Si es menor,
+  // el cliente tiene que entregar MÁS toneladas para cubrir la misma deuda.
+  const liqF = (v.liq > 0 ? v.liq/100 : 1);
+  const precioLiq = precioNeto * liqF;
+  // Toneladas a entregar: Deuda con IVA / Precio Liquidable / (1 + IVA)
   // (Si la deuda viene con IVA y el precio commodity es neto)
   const factorIva = 1 + (v.iva/100);
   const deudaSinIva = v.deuda / factorIva;
-  const tn = precioNeto > 0 ? deudaSinIva / precioNeto : 0;
+  const tn = precioLiq > 0 ? deudaSinIva / precioLiq : 0;
   const kg = tn * 1000;
   const totalARS = v.deuda * v.tc;
 
   document.getElementById("cnj-out-precio-neto").textContent = cnjFmt(precioNeto, 2) + " USD";
+  document.getElementById("cnj-out-precio-liq").textContent = cnjFmt(precioLiq, 2) + " USD";
   document.getElementById("cnj-out-tn").textContent = cnjFmt(tn, 3);
   document.getElementById("cnj-out-kg").textContent = cnjFmt0(kg) + " kg";
   document.getElementById("cnj-out-total-usd").textContent = "USD " + cnjFmt(v.deuda, 2);
@@ -7880,7 +7887,7 @@ function cnjRender(){
   try{ localStorage.setItem(CNJ_KEY, JSON.stringify(v)); }catch(e){}
 }
 (function cnjInit(){
-  ["deuda","precio","tc","iva","com","sel","perc","ib"].forEach(k => {
+  ["deuda","precio","tc","iva","com","sel","perc","ib","liq"].forEach(k => {
     const el = document.getElementById("cnj-"+k);
     if(el) el.addEventListener("input", cnjRender);
   });

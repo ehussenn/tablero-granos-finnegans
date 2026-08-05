@@ -225,11 +225,35 @@ export default {
         });
       }
       // SHARED: todos los usuarios internos ven la misma data (no namespaced por email)
-      const SHARED_KEYS = new Set(["pagos", "contratos"]);
+      //  - pagos / contratos: Proyectado Pagos y Contratos
+      //  - finales_estado: estado de Finales Pendientes (enviadas 🟡 / hechas 🟢) — TODOS ven lo mismo
+      const SHARED_KEYS = new Set(["pagos", "contratos", "finales_estado"]);
       const fullKey = SHARED_KEYS.has(rawKey) ? rawKey : `${rawKey}:${email}`;
 
       if (request.method === "GET") {
-        const data = await env.TABLERO_KV.get(fullKey);
+        let data = await env.TABLERO_KV.get(fullKey);
+        // Migración one-shot: finales_estado antes se guardaba POR USUARIO
+        // (finales_estado:<email>), por eso cada compu veía algo distinto. Ahora es
+        // compartida. Si la compartida está vacía, fusionar las copias viejas por-usuario.
+        if (rawKey === "finales_estado" && (!data || data === "[]")) {
+          try {
+            const list = await env.TABLERO_KV.list({ prefix: "finales_estado:" });
+            const env2 = new Set(), hec2 = new Set();
+            for (const k of list.keys) {
+              const v = await env.TABLERO_KV.get(k.name);
+              if (!v) continue;
+              try {
+                const o = JSON.parse(v);
+                (o.enviadas || []).forEach(x => env2.add(x));
+                (o.hechas   || []).forEach(x => hec2.add(x));
+              } catch {}
+            }
+            if (env2.size || hec2.size) {
+              data = JSON.stringify({ enviadas: [...env2], hechas: [...hec2] });
+              await env.TABLERO_KV.put(fullKey, data, { metadata: { migrated: true, ts: Date.now() } });
+            }
+          } catch {}
+        }
         return new Response(data || "[]", {
           status: 200,
           headers: {
