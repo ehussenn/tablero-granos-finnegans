@@ -246,6 +246,19 @@ HTML_TEMPLATE = r"""<!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Granos — Agronasaja</title>
+<script>
+/* Estado compartido SOLO funciona detrás del Worker (portal). Si alguien entra por el
+   link directo de GitHub Pages, lo mandamos al portal para que todos trabajen sobre la
+   MISMA data (KV). Cuando el Worker sirve esta página, el hostname es workers.dev, así
+   que este redirect NO se dispara ahí (no hay loop). */
+(function(){
+  try{
+    if(location.hostname.endsWith(".github.io")){
+      location.replace("https://tablero-agronasaja.ehussen.workers.dev/");
+    }
+  }catch(e){}
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{
