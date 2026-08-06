@@ -155,12 +155,16 @@ def fetch_produccion() -> tuple[dict, dict]:
 
     out = {}
     det = {}   # detalle por campo del pendiente de cosecha: {campaña: {producto: [{campo, tn}]}}
-    # Filtro CONVENIO: solo el convenio propio "AGRONASAJA", igual que elegir ese convenio
-    # en el filtro de la vista Seguimiento de Cosecha del extranet. Los convenios asociados
-    # ("AGRONASAJA - <SOCIO> 25-26", etc.) quedan afuera.
-    CONVENIO = "AGRONASAJA"
-    # --- COSECHA 25/26 (array de lotes: encargado...haCosechada, ~384) ---
-    cos = None
+    # --- COSECHA 25/26 ---
+    # Fuente: página "Información General" del Portal de Producción (la misma que embebe
+    # el extranet en /vistas/produccion-info):
+    #   COSECHADO = tabla "Agronasaja vs Socios por Cultivo" → columna KG AGNSJ
+    #               (retiros con beneficiario AGRONASAJA, todos los convenios)
+    #   PEND COS  = "Estimado por Cosechar (Agronasaja)" → tnAgnsjPend
+    #               (pendiente físico por lote × rinde, ajustado por convenio:
+    #                a AGNSJ le toca (retirado_total + pendiente)×participación − ya_retirado)
+    # Cultivos unificados por producto (toda la soja junta, todo el maíz junto).
+    cos = None    # lotes del Seguimiento de Cosecha (para pendiente y rindes)
     for m in re.finditer(r'\[\{"encargado"', h):
         try:
             arr, _ = dec.raw_decode(h, m.start())
@@ -168,57 +172,108 @@ def fetch_produccion() -> tuple[dict, dict]:
                 cos = arr; break
         except Exception:
             pass
+    retiros = None   # retiros por lote con beneficiario (dataset R de Información General)
+    for m in re.finditer(r'\bR\s*=\s*\[\{', h):
+        try:
+            arr, _ = dec.raw_decode(h, h.index("[", m.start()))
+            if isinstance(arr, list) and arr and "kgCampo" in arr[0] and "beneficiario" in arr[0]:
+                retiros = arr; break
+        except Exception:
+            pass
     if cos:
-        cos = [l for l in cos if (l.get("convenio") or "").upper().strip() == CONVENIO]
-        # replica EXACTA del cálculo de "Solo Pendientes" del portal:
-        #   pend(lote) = max(0, haLote - haCosechada - haPerdidas)
-        #   rinde: 1º RINDE_EST[campo|lote|cultivo]*1000, 2º rinde real prom del cultivo, 3º RINDE_REGIONAL
-        #   tnAgnsjPend += pend * participacion * rindeKgHa/1000
         RINDE_EST = obj_after("RINDE_EST")           # {campo|lote|cultivo: tn/ha}
         RINDE_REGIONAL = obj_after("RINDE_REGIONAL")  # {cultivo: kg/ha}
         rrc = {}                                      # rinde real prom por cultivo (kg/ha)
+        rinde_lote = {}                               # campo|lote|cultivo -> kg/ha real
         for l in cos:
             c = (l.get("cultivo") or "").upper().strip()
             if not c: continue
             d = rrc.setdefault(c, {"haC": 0.0, "kgT": 0.0})
             d["haC"] += l.get("haCosechada") or 0; d["kgT"] += l.get("kgTotales") or 0
+            hc = l.get("haCosechada") or 0
+            if hc > 0 and (l.get("kgTotales") or 0) > 0:
+                k1 = f'{(l.get("campo") or "").upper().strip()}|{(l.get("lote") or "").upper().strip()}|{c}'
+                rinde_lote[k1] = (l.get("kgTotales") or 0) / hc
         for c, d in rrc.items():
             d["rinde"] = d["kgT"] / d["haC"] if d["haC"] > 0 else 0.0
+
         c25 = defaultdict(lambda: {"cosechado": 0.0, "pendcos": 0.0})
         # detalle por LOTE para los drill-downs de Cosechado y Pend Cos:
         #   producto -> {"cosechado": [{campo, lote, cultivo, tn, rinde}], "pendcos": [...]}
         # rinde en kg/ha (real del lote en cosechado; estimado usado en el pendiente)
         c25det = defaultdict(lambda: {"cosechado": [], "pendcos": []})
+
+        # ── COSECHADO: KG AGNSJ de los retiros, agrupado por producto y campo/lote ──
+        cos_lote = defaultdict(float)
+        for r in (retiros or []):
+            if (r.get("beneficiario") or "").upper().strip() != "AGRONASAJA": continue
+            p = prod(r.get("cultivo"))
+            if not p: continue
+            tn = (r.get("kgCampo") or 0) / 1000.0
+            c25[p]["cosechado"] += tn
+            cos_lote[(p, (r.get("campo") or "").upper().strip() or "—",
+                      (r.get("lote") or "").upper().strip(),
+                      (r.get("cultivo") or "").upper().strip())] += tn
+        for (p, campo, lote, c), tn in cos_lote.items():
+            if tn <= 0.05: continue
+            c25det[p]["cosechado"].append({"campo": campo, "lote": lote, "cultivo": c,
+                                           "tn": round(tn, 1),
+                                           "rinde": round(rinde_lote.get(f"{campo}|{lote}|{c}", 0))})
+
+        # ── PEND COS: port 1:1 de _calcPendiente() de Información General ──
+        ret_all, ret_agn = defaultdict(float), defaultdict(float)   # kg por convenio||cultivo
+        for r in (retiros or []):
+            c2 = (r.get("cultivo") or "").upper().strip()
+            if not c2: continue
+            ck = f'{(r.get("convenio") or "").upper().strip()}||{c2}'
+            kg = (r.get("kgFinal") or 0) or (r.get("kgDescarga") or 0) or (r.get("kgCampo") or 0)
+            ret_all[ck] += kg
+            if (r.get("beneficiario") or "").upper().strip() == "AGRONASAJA":
+                ret_agn[ck] += kg
+        conv_agg = {}
         for l in cos:
             p = prod(l.get("cultivo"))
             if not p: continue
             c = (l.get("cultivo") or "").upper().strip()
             haL = l.get("haLote") or 0; hc = l.get("haCosechada") or 0
             haP = l.get("haPerdidas") or 0; pct = l.get("participacion") or 0
-            campo = (l.get("campo") or "").upper().strip(); lote = (l.get("lote") or "").upper().strip()
-            tnC = l.get("tnAgnsj") or 0
-            c25[p]["cosechado"] += tnC
-            if tnC > 0.05:
-                c25det[p]["cosechado"].append({"campo": campo or "—", "lote": lote, "cultivo": c,
-                                               "tn": round(tnC, 1), "rinde": round(l.get("rinde") or 0)})
+            ck = f'{(l.get("convenio") or "").upper().strip()}||{c}'
+            d = conv_agg.setdefault(ck, {"producto": p, "pendFis": 0.0, "pctw": 0.0, "haL": 0.0, "lotes": []})
+            d["haL"] += haL; d["pctw"] += pct * haL
             pend = max(0.0, haL - hc - haP)
             if pend <= 0: continue
+            campo = (l.get("campo") or "").upper().strip(); lote = (l.get("lote") or "").upper().strip()
             key1 = f"{campo}|{lote}|{c}"
             if key1 in RINDE_EST:      rk = RINDE_EST[key1] * 1000.0
             elif rrc[c]["rinde"] > 0:  rk = rrc[c]["rinde"]
             else:                      rk = RINDE_REGIONAL.get(c, 5000)
-            tn = pend * pct * rk / 1000.0
-            c25[p]["pendcos"] += tn
-            if tn > 0.05:
-                c25det[p]["pendcos"].append({"campo": campo or "—", "lote": lote, "cultivo": c,
-                                             "tn": round(tn, 1), "rinde": round(rk)})
+            tn_fis = pend * rk / 1000.0
+            d["pendFis"] += tn_fis
+            d["lotes"].append({"campo": campo or "—", "lote": lote, "cultivo": c, "tn_fis": tn_fis, "rinde": rk})
+        for ck, d in conv_agg.items():
+            if d["pendFis"] <= 0.01: continue
+            pct = d["pctw"] / d["haL"] if d["haL"] > 0 else 0
+            cos_tn = ret_all.get(ck, 0) / 1000.0
+            ret_a = ret_agn.get(ck, 0) / 1000.0
+            target = (cos_tn + d["pendFis"]) * pct        # lo que le corresponde a AGNSJ del convenio
+            pend_agn = max(0.0, min(target - ret_a, d["pendFis"]))
+            if pend_agn <= 0.01: continue
+            p = d["producto"]
+            c25[p]["pendcos"] += pend_agn
+            # repartir el pendiente AGNSJ del convenio entre sus lotes, proporcional al físico
+            for lt in d["lotes"]:
+                tn = pend_agn * lt["tn_fis"] / d["pendFis"]
+                if tn > 0.05:
+                    c25det[p]["pendcos"].append({"campo": lt["campo"], "lote": lt["lote"], "cultivo": lt["cultivo"],
+                                                 "tn": round(tn, 1), "rinde": round(lt["rinde"])})
+
         out["CAMPAÑA 25-26"] = {p: {"cosechado": round(v["cosechado"], 1), "pendcos": round(v["pendcos"], 1)}
-                                for p, v in c25.items()}
+                                for p, v in c25.items() if v["cosechado"] > 0.5 or v["pendcos"] > 0.5}
         det["CAMPAÑA 25-26"] = {p: {k: sorted(v[k], key=lambda d: -d["tn"]) for k in ("cosechado", "pendcos")}
                                 for p, v in c25det.items()}
         tot_pend = sum(v["pendcos"] for v in out["CAMPAÑA 25-26"].values())
         tot_cos = sum(v["cosechado"] for v in out["CAMPAÑA 25-26"].values())
-        print(f"    -> cosecha 25/26 (convenio {CONVENIO}): {len(cos)} lotes · {len(out['CAMPAÑA 25-26'])} cultivos · cosechado {tot_cos:.0f} tn · pend {tot_pend:.0f} tn")
+        print(f"    -> cosecha 25/26 (KG AGNSJ, {len(retiros or [])} retiros): {len(out['CAMPAÑA 25-26'])} cultivos · cosechado {tot_cos:.0f} tn · pend AGNSJ {tot_pend:.0f} tn")
 
     # --- SIEMBRA 26/27 (array ~306 con keys cortas: e,co,pa,ca,...cu,cu26,rg,tng) ---
     sie = None
@@ -230,29 +285,31 @@ def fetch_produccion() -> tuple[dict, dict]:
         except Exception:
             pass
     if sie:
-        sie = [l for l in sie if (l.get("co") or "").upper().strip() == CONVENIO]
+        # Estimado AGNSJ = ha × rinde × participación (todos los convenios), coherente con
+        # el criterio "parte de Agronasaja como beneficiario" de Información General.
         RINDE_FINA = {"Grano Trigo Pan": 4.5, "Grano Cebada": 4.5, "Grano Camelina": 1.3, "Grano Colza": 2.2}
         c26 = defaultdict(lambda: {"pendcos": 0.0})
         c26det = defaultdict(lambda: {"cosechado": [], "pendcos": []})   # mismo shape que 25-26
         for l in sie:
             ha = l.get("ha") or 0; rg = l.get("rg") or 0
+            pa = l.get("pa") if l.get("pa") is not None else 1
             campo = (l.get("ca") or "").upper().strip() or "—"
             lote = (l.get("lt") or "").upper().strip()
-            pg = prod(l.get("cu"))                       # gruesa: ha * rinde gruesa
-            if pg and rg:
-                c26[pg]["pendcos"] += ha * rg
+            pg = prod(l.get("cu"))                       # gruesa: ha * rinde gruesa * participación
+            if pg and rg and pa:
+                c26[pg]["pendcos"] += ha * rg * pa
                 c26det[pg]["pendcos"].append({"campo": campo, "lote": lote, "cultivo": (l.get("cu") or "").upper().strip(),
-                                              "tn": round(ha * rg, 1), "rinde": round(rg * 1000)})
+                                              "tn": round(ha * rg * pa, 1), "rinde": round(rg * 1000)})
             cu26 = str(l.get("cu26") or "")              # fina: primer cultivo de la rotación
             fina = prod(cu26.split("/")[0]) if "/" in cu26 else None
-            if fina and fina in RINDE_FINA:
-                c26[fina]["pendcos"] += ha * RINDE_FINA[fina]
+            if fina and fina in RINDE_FINA and pa:
+                c26[fina]["pendcos"] += ha * RINDE_FINA[fina] * pa
                 c26det[fina]["pendcos"].append({"campo": campo, "lote": lote, "cultivo": cu26.split("/")[0].upper().strip(),
-                                                "tn": round(ha * RINDE_FINA[fina], 1), "rinde": round(RINDE_FINA[fina] * 1000)})
+                                                "tn": round(ha * RINDE_FINA[fina] * pa, 1), "rinde": round(RINDE_FINA[fina] * 1000)})
         out["CAMPAÑA 26-27"] = {p: {"pendcos": round(v["pendcos"], 1)} for p, v in c26.items() if v["pendcos"] > 0.5}
         det["CAMPAÑA 26-27"] = {p: {k: sorted(v[k], key=lambda d: -d["tn"]) for k in ("cosechado", "pendcos")}
                                 for p, v in c26det.items() if p in out["CAMPAÑA 26-27"]}
-        print(f"    -> siembra 26/27 (convenio {CONVENIO}): {len(sie)} lotes · {len(out['CAMPAÑA 26-27'])} cultivos")
+        print(f"    -> siembra 26/27 (AGNSJ x participación): {len(sie)} lotes · {len(out['CAMPAÑA 26-27'])} cultivos")
     return out, det
 
 
@@ -7033,8 +7090,9 @@ function pnInitFiltros(){
 // Las keys internas (silo/bolsas/silobolsa) se conservan para no romper
 // los valores manuales guardados ni los drill-downs.
 const PN_COLS = [
-  // PRODUCCIÓN va primero (pedido del gerente): cosechado / pendiente / total de la
-  // vista Seguimiento de Cosecha (Portal de Producción), filtrado por convenio AGRONASAJA.
+  // PRODUCCIÓN va primero (pedido del gerente): Cosechado = "Kg por Beneficiario" (KG AGNSJ)
+  // y Pend Cos = "Estimado por Cosechar (Agronasaja)" de la vista Información General del
+  // Portal de Producción (extranet /vistas/produccion-info), cultivos unificados.
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
     {k:"cosechado",    lbl:"Cosechado"},
     {k:"pendCos",      lbl:"Pend Cos",   calc:true},
@@ -7297,8 +7355,8 @@ const pnEsDemsupSem  = p => !!(PN_DEMSUP && p && PN_DEMSUP.prod_prefix_sem && p.
 const PN_PROD_PEND_DET = (PAYLOAD.produccion_pend_det || {});  // {campaña:{producto:[{campo,tn}]}}
 let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
 const PN_DRILL = {
-  cosechado:      {kind:'prodpend', field:'cosechado', title:'Cosechado por campo / lote — convenio AGRONASAJA'},
-  pendCos:        {kind:'prodpend', field:'pendcos',   title:'Pendiente de cosecha por campo / lote — convenio AGRONASAJA'},
+  cosechado:      {kind:'prodpend', field:'cosechado', title:'Cosechado por campo / lote — Kg AGNSJ (retiros beneficiario Agronasaja)'},
+  pendCos:        {kind:'prodpend', field:'pendcos',   title:'Estimado por cosechar (parte Agronasaja) por campo / lote'},
   silo:           {kind:'stock', cat:'SILO',      title:'Granel en semillero (silos planta)'},
   bolsas:         {kind:'stock', cat:'BOLSAS',    title:'Stock clasificado (depósitos de venta)'},
   silobolsa:      {kind:'stock', cat:'SILOBOLSA', title:'Granel en campo (silo bolsas)'},
@@ -7406,7 +7464,7 @@ function pnDrillHTML(type, prods){
     });
     t += `<tr class="pn-drill-tot"><td colspan="3">Total (${rows.length} lotes)</td><td class="num">${rProm?fmt.num(rProm):'—'}</td><td class="num">${fmt.num(tot)}</td></tr>`;
     t += `</tbody></table>`;
-    t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>Seguimiento de Cosecha · Portal de Producción Agronasaja</strong> (convenio AGRONASAJA). En el pendiente, el rinde es el estimado usado para proyectar las tn.</div>`;
+    t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>Portal de Producción — Información General</strong> (vista del Extranet Agronasaja): cosechado = "Kg por Beneficiario" (retiros AGNSJ, todos los convenios); pendiente = "Estimado por Cosechar (Agronasaja)". En el pendiente, el rinde es el estimado usado para proyectar las tn.</div>`;
     t += `</div>`;
     return t;
   }
