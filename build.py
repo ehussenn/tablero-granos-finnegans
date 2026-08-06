@@ -1809,7 +1809,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </table>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: qué contratos faltan entregar, en qué silobolsa está el grano, o de qué campos sale el pendiente de cosecha.
+        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> (Silo, Bolsas, Silo Bolsa) del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. El <strong>Silo Bolsa de la semilla granel soja</strong> sale del <strong>DEM-SUP Soja del Extranet Agronasaja</strong> (kg netos de la campaña × merma del depósito — mismos números que la columna "Granel en Campo" de esa vista). <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: qué contratos faltan entregar, en qué silobolsa está el grano, o de qué campos sale el pendiente de cosecha.
       </div>
     </div>
 
@@ -7115,7 +7115,11 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // Si no hay valor en la API, cae a lo cargado manualmente (PN_MANUAL) para no perder data vieja.
   const siloAuto      = origen ? ((PAYLOAD.stock_silo      && PAYLOAD.stock_silo[producto])      || 0) : 0;
   const bolsasAuto    = origen ? ((PAYLOAD.stock_bolsas    && PAYLOAD.stock_bolsas[producto])    || 0) : 0;
-  const silobolsaAuto = origen ? ((PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0) : 0;
+  // Silo Bolsa de la SEMILLA GRANEL SOJA: sale del DEM-SUP Soja del Extranet Agronasaja
+  // (kg netos de la partida de la campaña × merma del depósito), igual que la columna
+  // "GRANEL EN CAMPO" de esa vista. El resto de productos sigue con el stock crudo.
+  let silobolsaAuto = origen ? ((PAYLOAD.stock_silobolsa && PAYLOAD.stock_silobolsa[producto]) || 0) : 0;
+  if(origen && pnEsDemsupProd(producto)) silobolsaAuto = (PN_DEMSUP.campo_tn_prod || {})[producto] || 0;
   // El valor cargado (manual en localStorage o default embebido de la bajada) tiene prioridad
   // sobre el auto de USR_RESSTOCKDEP; si no hay cargado, usa el auto.
   const siloMan      = origen ? pnGetMan(producto, "silo")      : 0;
@@ -7222,6 +7226,12 @@ const PN_FAM_EXPANDED = new Set();
 // Al clickear una celda numerica (pendiente ingreso, entregado, silo bolsa, etc.) se despliega
 // el DETALLE: que contratos / que depositos componen ese numero.
 const PN_STOCK_DET = (PAYLOAD.stock_detalle || {});   // {producto:[{dep,cat,tn}]}
+// DEM-SUP Soja — fuente de datos del Extranet Agronasaja (/vistas/ops-demsup-soja, DW en vivo).
+// El GRANEL EN CAMPO (col C: silobolsa con merma por depósito) alimenta la columna Silo Bolsa
+// de la semilla granel soja; el payload trae además el resto de columnas de esa vista
+// (semillero, compras, clasificado, ventas) listas para usarse cuando haga falta.
+const PN_DEMSUP = PAYLOAD.demsup_soja || null;
+const pnEsDemsupProd = p => !!(PN_DEMSUP && p && p.toUpperCase().startsWith(PN_DEMSUP.prod_prefix));
 const PN_PROD_PEND_DET = (PAYLOAD.produccion_pend_det || {});  // {campaña:{producto:[{campo,tn}]}}
 let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
 const PN_DRILL = {
@@ -7244,21 +7254,53 @@ function pnFij(c){
   if(fij > 0.05)       return {t:'◑ '+Math.round(fij/aj*100)+'% fijado', cls:'pn-fij-par'};
   return {t:'○ A fijar', cls:'pn-fij-no'};
 }
+// Bloque DEM-SUP Soja para el drill-down de Silo Bolsa: granel en campo por variedad
+// (mismos números que la columna "GRANEL EN CAMPO" de la vista del Extranet Agronasaja).
+function pnDemsupDrillHTML(conMargen){
+  if(!PN_DEMSUP) return '';
+  let rows = [];
+  (PN_DEMSUP.variedades||[]).forEach(v => ((PN_DEMSUP.detalle_campo||{})[v]||[]).forEach(d => rows.push(d)));
+  if(!rows.length) return '';
+  rows.sort((a,b)=>b.tn-a.tn);
+  const totBls = (PN_DEMSUP.tot_bls||{}).C || 0, totTn = (PN_DEMSUP.tot_tn||{}).C || 0;
+  let t = `<div class="pn-drill-head"${conMargen?' style="margin-top:12px"':''}>🌱 Semilla soja a granel en silo bolsa — DEM-SUP Soja <span>· ${rows.length} silobolsa(s) · ${fmt.num(totBls)} bolsas 40kg · ${fmt.num(totTn)} tn</span></div>`;
+  t += `<table class="pn-drill-tbl"><thead><tr><th>Variedad</th><th>Silo bolsa (depósito)</th><th class="num">Kg netos</th><th class="num">Merma</th><th class="num">Bolsas 40kg</th><th class="num">Toneladas</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    t += `<tr><td style="font-weight:600">${escapeHtml(r.variedad)}</td><td>${escapeHtml(r.deposito)}</td><td class="num">${fmt.num(r.kilos)}</td><td class="num">× ${r.merma}</td><td class="num">${fmt.num(r.bls)}</td><td class="num">${fmt.num(r.tn)}</td></tr>`;
+  });
+  t += `<tr class="pn-drill-tot"><td colspan="4">Total granel en campo (col C del DEM-SUP)</td><td class="num">${fmt.num(totBls)}</td><td class="num">${fmt.num(totTn)}</td></tr>`;
+  t += `</tbody></table>`;
+  t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>DEM-SUP Soja · Extranet Agronasaja</strong> (DW Finnegans en vivo, ${escapeHtml(PN_DEMSUP.campana||'')}) — kg netos × merma del depósito ÷ 40 = bolsas. Misma lógica que la vista <em>/vistas/ops-demsup-soja</em>.</div>`;
+  return t;
+}
+
 function pnDrillHTML(type, prods){
   const cfg = PN_DRILL[type]; if(!cfg) return '';
   const set = new Set(prods);
   const esC = (prods.length>1);   // mostrar columna Producto si es un TOTAL de familia
   if(cfg.kind === 'stock'){
+    // La SEMILLA GRANEL SOJA en silobolsa sale del DEM-SUP Soja del extranet: se muestra en su
+    // propio bloque (por variedad, con merma) y se excluye del listado crudo para no duplicar.
+    const demsupAca = (cfg.cat === 'SILOBOLSA') && prods.some(pnEsDemsupProd);
     let rows = [];
-    prods.forEach(p => (PN_STOCK_DET[p]||[]).forEach(d => { if(d.cat===cfg.cat) rows.push({p, dep:d.dep, tn:d.tn}); }));
+    prods.forEach(p => {
+      if(demsupAca && pnEsDemsupProd(p)) return;
+      (PN_STOCK_DET[p]||[]).forEach(d => { if(d.cat===cfg.cat) rows.push({p, dep:d.dep, tn:d.tn}); });
+    });
     rows.sort((a,b)=>b.tn-a.tn);
-    if(!rows.length) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin stock en depósitos de este tipo.</div></div>`;
-    const tot = rows.reduce((s,r)=>s+r.tn,0);
-    let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} depósito(s) · ${fmt.num(tot)} tn</span></div>`;
-    t += `<table class="pn-drill-tbl"><thead><tr><th>Depósito</th>${esC?'<th>Producto</th>':''}<th class="num">Toneladas</th></tr></thead><tbody>`;
-    rows.forEach(r => { t += `<tr><td>${escapeHtml(r.dep)}</td>${esC?`<td>${escapeHtml(r.p)}</td>`:''}<td class="num">${fmt.num(r.tn)}</td></tr>`; });
-    t += `<tr class="pn-drill-tot"><td${esC?' colspan="2"':''}>Total</td><td class="num">${fmt.num(tot)}</td></tr>`;
-    t += `</tbody></table></div>`;
+    const demsupHTML = demsupAca ? pnDemsupDrillHTML(rows.length > 0) : '';
+    if(!rows.length && !demsupHTML) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin stock en depósitos de este tipo.</div></div>`;
+    let t = `<div class="pn-drill-inner">`;
+    if(rows.length){
+      const tot = rows.reduce((s,r)=>s+r.tn,0);
+      t += `<div class="pn-drill-head">${cfg.title} <span>· ${rows.length} depósito(s) · ${fmt.num(tot)} tn</span></div>`;
+      t += `<table class="pn-drill-tbl"><thead><tr><th>Depósito</th>${esC?'<th>Producto</th>':''}<th class="num">Toneladas</th></tr></thead><tbody>`;
+      rows.forEach(r => { t += `<tr><td>${escapeHtml(r.dep)}</td>${esC?`<td>${escapeHtml(r.p)}</td>`:''}<td class="num">${fmt.num(r.tn)}</td></tr>`; });
+      t += `<tr class="pn-drill-tot"><td${esC?' colspan="2"':''}>Total</td><td class="num">${fmt.num(tot)}</td></tr>`;
+      t += `</tbody></table>`;
+    }
+    t += demsupHTML;
+    t += `</div>`;
     return t;
   }
   if(cfg.kind === 'prodpend'){
@@ -7348,6 +7390,9 @@ function pnRender(){
   if(incluyePlanta){
     Object.keys(PN_MANUAL).forEach(p => prods.add(p));
     Object.keys(PN_DEFAULTS).forEach(p => prods.add(p));
+    // Semilla granel soja con silobolsa en el DEM-SUP del extranet: entra aunque no tenga
+    // contratos en la campaña (si no, variedades como DM 46I20 quedaban afuera del total).
+    if(PN_DEMSUP) Object.keys(PN_DEMSUP.campo_tn_prod || {}).forEach(p => prods.add(p));
   }
   const prodList = [...prods].sort();
 
@@ -11448,6 +11493,23 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] Error stock por deposito: {e}")
 
+    # DEM-SUP Soja — fuente de datos del Extranet Agronasaja (vista /vistas/ops-demsup-soja).
+    # Mismas queries al DW que la vista del extranet (ver scripts/demsup_soja.py). El granel
+    # en campo (col C, silobolsa con merma) alimenta la columna Silo Bolsa de la semilla soja
+    # en la Posición Granaria; el resto del payload queda preparado para cuando el tablero
+    # pase a formar parte del extranet (mismo shape que serviría una API route de ahí).
+    print(f"\n[+] Bajando DEM-SUP Soja (fuente Extranet Agronasaja / DW)...", flush=True)
+    demsup_soja_data = None
+    try:
+        import demsup_soja
+        demsup_soja_data = demsup_soja.fetch()
+        if demsup_soja_data:
+            _tt = demsup_soja_data["tot_tn"]
+            print(f"    -> granel en campo (silo bolsa): {_tt['C']:,.1f} tn · en semillero: {_tt['D']:,.1f} tn"
+                  f" · clasificado: {_tt['K']:,.1f} tn · venta pendiente: {_tt['O']:,.1f} tn")
+    except Exception as e:
+        print(f"    [!] Error DEM-SUP Soja: {e}")
+
     # Finales de Compra: análisis + factor desde la Balanza (api.agronasaja.com)
     print(f"\n[+] Bajando Finales de Compra (balanza) + calculando factor...", flush=True)
     try:
@@ -11526,6 +11588,7 @@ def main() -> int:
         "stock_descarte":  stock_descarte,
         "stock_detalle":   stock_detalle,
         "cosechado":       cosechado,
+        "demsup_soja":     demsup_soja_data,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
