@@ -55,6 +55,8 @@ VARIEDADES = [
 # Prefijo de producto del granel en el Stock por Depósito (para cruzar con el
 # stock del tablero: estas filas de silobolsa salen del DEM-SUP, no del crudo)
 PROD_PREFIX = "SEM. GRANEL SOJA DM"
+# Prefijo de la semilla TERMINADA (embolsada/clasificada) — cols K, L, O, S, T
+PROD_PREFIX_SEM = "SEM. SOJA DM"
 
 
 # ─── .env local (mismo esquema que finnegans_api.py) ─────────────────────────
@@ -307,6 +309,8 @@ def fetch(verbose: bool = True):
 
         # ── K (stock clasificado: semilla terminada en DEPOSITO VENTAS) ──
         k_bls = zeros()
+        clasif_tn_prod = {}                      # {producto exacto: tn}
+        det_clasif = {v: [] for v in VARIEDADES}
         for r in q("k"):
             v = extract_var(r["producto"])
             if not v:
@@ -314,49 +318,74 @@ def fetch(verbose: bool = True):
             p = (r["producto"] or "").upper()
             qty = sf(r["qty"])
             if "800" in p:
-                k_bls[v] += qty * 20           # bolsón 800 kg = 20 bolsas
+                bls = qty * 20                 # bolsón 800 kg = 20 bolsas
             elif "40KG" in p or "40 KG" in p:
-                k_bls[v] += qty                # ya en bolsas 40 kg
+                bls = qty                      # ya en bolsas 40 kg
             elif "GRANEL" in p:
-                k_bls[v] += qty / 40           # kilos
+                bls = qty / 40                 # kilos
             else:
-                k_bls[v] += qty * 20           # default: bolsón
+                bls = qty * 20                 # default: bolsón
+            k_bls[v] += bls
+            prod = r["producto"] or ""
+            tn = round(bls * 40 / 1000.0, 4)
+            clasif_tn_prod[prod] = round(clasif_tn_prod.get(prod, 0.0) + tn, 4)
+            det_clasif[v].append({"variedad": v, "producto": prod,
+                                  "cantidad": qty, "bls": round(bls), "tn": tn})
+
+        def _acum_prod(dic, prod, bls):
+            tn = round(bls * 40 / 1000.0, 4)
+            dic[prod] = round(dic.get(prod, 0.0) + tn, 4)
 
         # ── L (corte de bolsa) ──
         l_bls = zeros()
+        corte_tn_prod = {}
         for r in q("l"):
             v = extract_var(r["producto"])
             if v:
-                l_bls[v] += to_bls(r["cantidad"], r["embalaje"])
+                bls = to_bls(r["cantidad"], r["embalaje"])
+                l_bls[v] += bls
+                _acum_prod(corte_tn_prod, r["producto"] or "", bls)
 
         # ── O (venta pendiente) ──
         o_bls = zeros()
+        venta_pend_tn_prod = {}
         for r in q("o"):
             v = extract_var(r["producto"])
             if v:
-                o_bls[v] += to_bls(r["pendiente"], r["embalaje"])
+                bls = to_bls(r["pendiente"], r["embalaje"])
+                o_bls[v] += bls
+                _acum_prod(venta_pend_tn_prod, r["producto"] or "", bls)
 
         # ── P (despachado + devoluciones) ──
         p_bls = zeros()
+        venta_desp_tn_prod = {}
         for key in ("p_rem", "p_dev"):
             for r in q(key):
                 v = extract_var(r["producto"])
                 if v:
-                    p_bls[v] += to_bls(r["cantidad"], r["embalaje"])
+                    bls = to_bls(r["cantidad"], r["embalaje"])
+                    p_bls[v] += bls
+                    _acum_prod(venta_desp_tn_prod, r["producto"] or "", bls)
 
         # ── S (pedidos de campo pendientes) ──
         s_bls = zeros()
+        prod_pend_tn_prod = {}
         for r in q("u"):
             v = extract_var(r["producto"])
             if v:
-                s_bls[v] += to_bls(r["pendiente"], r["embalaje"])
+                bls = to_bls(r["pendiente"], r["embalaje"])
+                s_bls[v] += bls
+                _acum_prod(prod_pend_tn_prod, r["producto"] or "", bls)
 
         # ── T (despachos a producción) ──
         t_bls = zeros()
+        prod_desp_tn_prod = {}
         for r in q("t"):
             v = extract_var(r["producto"])
             if v:
-                t_bls[v] += to_bls(r["cantidad"], r["embalaje"])
+                bls = to_bls(r["cantidad"], r["embalaje"])
+                t_bls[v] += bls
+                _acum_prod(prod_desp_tn_prod, r["producto"] or "", bls)
     finally:
         cn.close()
 
@@ -382,14 +411,22 @@ def fetch(verbose: bool = True):
         "campana": CAMPANA,
         "generated_at": now.isoformat(),
         "variedades": list(VARIEDADES),
-        "prod_prefix": PROD_PREFIX,
+        "prod_prefix": PROD_PREFIX,          # granel (cols C/D)
+        "prod_prefix_sem": PROD_PREFIX_SEM,  # semilla terminada (cols K/L/O/S/T)
         "rows": rows,               # bolsas 40 kg por variedad (letras de la vista)
         "tot_bls": tot,             # fila TOTAL en bolsas
         "tot_tn": tot_tn,           # fila TONELADAS TOTALES de la vista
         "campo_tn_prod": campo_tn_prod,          # {producto: tn con merma} — silobolsa (col C)
         "semillero_tn_prod": semillero_tn_prod,  # {producto: tn con merma} — silos planta (col D)
+        "clasif_tn_prod": clasif_tn_prod,        # {producto: tn} — stock clasificado (col K)
+        "corte_tn_prod": corte_tn_prod,          # {producto: tn} — corte de bolsa (col L)
+        "venta_pend_tn_prod": venta_pend_tn_prod,  # {producto: tn} — venta pendiente (col O)
+        "venta_desp_tn_prod": venta_desp_tn_prod,  # {producto: tn} — venta despachada (col P)
+        "prod_pend_tn_prod": prod_pend_tn_prod,    # {producto: tn} — prod pendiente (col S)
+        "prod_desp_tn_prod": prod_desp_tn_prod,    # {producto: tn} — prod despachado (col T)
         "detalle_campo": det_campo,              # drill-down col C (por variedad)
         "detalle_semillero": det_semillero,      # drill-down col D (por variedad)
+        "detalle_clasificado": det_clasif,       # drill-down col K (por variedad)
     }
 
 
