@@ -1841,6 +1841,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     <!-- SUB-TABS Posicion General -->
     <div class="subtabs">
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
+      <button class="subtab" data-sub="pn-ctos">📑 Detalle Contratos</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
@@ -1883,12 +1884,43 @@ HTML_TEMPLATE = r"""<!doctype html>
         </table>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle.
-        <br/>🧮 <strong>Pos Pend es editable tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend</code>. La fórmula queda guardada (violeta) y se recalcula sola con cada dato nuevo; borrá la celda para volver al cálculo automático. La Posición no cambia (sigue siendo Oferta − Demanda).
+        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
+        <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
+        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
     </div>
 
     </div><!-- /subpanel pn-granaria -->
+
+    <!-- ========== SUB: DETALLE CONTRATOS ========== -->
+    <div class="subpanel" data-sub-panel="pn-ctos">
+      <div class="section" style="background:linear-gradient(135deg,#15803d 0%,#22c55e 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">📑 Detalle de Contratos</h3>
+        <div style="font-size:12px;opacity:.85;margin-top:4px">Click en un número de Compra o Venta de la Posición Granaria abre el detalle acá — cantidad, fijación, precio, contraparte, liquidación y cta. cte.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="pnct-chips"></div>
+      </div>
+      <div class="filterbar">
+        <div><label>TIPO</label><select id="pnct-tipo"><option value="venta">Venta</option><option value="compra">Compra</option></select></div>
+        <div><label>CULTIVO</label><select id="pnct-fam"><option value="">Todos</option><option>SOJA</option><option>MAÍZ</option><option>TRIGO</option><option>OTROS</option></select></div>
+        <div><label>MOSTRAR</label><select id="pnct-field"><option value="tot">Todos los contratos</option><option value="pend">Con pendiente de entrega</option><option value="entr">Con entregado</option></select></div>
+        <button class="clear" id="pnct-volver">← Volver a Posición Granaria</button>
+        <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pnct-info"></span>
+      </div>
+      <div class="kpis" id="pnct-kpis"></div>
+      <div class="section">
+        <h3 id="pnct-title">Contratos</h3>
+        <div class="tbl-wrap" style="max-height:720px">
+          <table id="pnct-tabla" style="font-size:11.5px">
+            <thead id="pnct-thead"></thead>
+            <tbody id="pnct-tbody"></tbody>
+            <tfoot id="pnct-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
+        💡 <strong>¿A precio?</strong> sale de la fijación del contrato (tn fijadas / ajustadas). <strong>Liquidado</strong> son las tn e importes ya liquidados en Finnegans; lo que falta está en <strong>Pend. Liquidar</strong>. <strong>Cta. Cte.</strong> es el saldo de la contraparte en la Composición de Saldos (todas sus operaciones): en venta, saldo &gt; 0 = todavía te debe (no se cobró todo); ≈ 0 = al día. Los filtros de campaña y empresa se heredan de la Posición Granaria.
+      </div>
+    </div><!-- /subpanel pn-ctos -->
 
     <!-- ========== SUB: FINANCIERA ========== -->
     <div class="subpanel" data-sub-panel="pn-financiera">
@@ -7024,16 +7056,20 @@ let PN_MANUAL = {};
 try { PN_MANUAL = JSON.parse(localStorage.getItem(PN_KEY) || "{}") || {}; } catch(e){ PN_MANUAL = {}; }
 function pnSave(){ localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL)); }
 
-// ===== POS PEND editable tipo Excel =====
-// El usuario puede escribir en la celda Pos Pend un número fijo o una FÓRMULA que
-// empiece con "=" usando los nombres de las columnas de esa fila, p. ej.:
+// ===== POS PEND y POSICIÓN editables tipo Excel =====
+// El usuario puede escribir en las celdas Pos Pend y Posición un número fijo o una
+// FÓRMULA que empiece con "=" usando los nombres de las columnas de esa fila, p. ej.:
 //   =pendcos + pendingreso - ctospe
 // Se guarda por producto (o por familia, en la fila TOTAL) en localStorage.
-// Celda vacía => vuelve al cálculo automático (pend ingreso − ctos p.e.).
+// Celda vacía => vuelve al cálculo automático:
+//   Pos Pend = Pend Ingreso − Ctos P.E. (los pendientes)  ·  Posición = Oferta − Demanda (los totales).
+// Claves: posPend usa el nombre tal cual; posición usa el prefijo "POSICION|".
 const PN_PPF_KEY = "tablero-granos-pospend-formulas-v1";
 let PN_PPF = {};
 try { PN_PPF = JSON.parse(localStorage.getItem(PN_PPF_KEY) || "{}") || {}; } catch(e){ PN_PPF = {}; }
 function ppfSave(){ localStorage.setItem(PN_PPF_KEY, JSON.stringify(PN_PPF)); }
+const PN_PPF_EDIT_COLS = { posPend: '', posicion: 'POSICION|' };   // columnas editables y su prefijo de clave
+function ppfKey(colK, base){ return (PN_PPF_EDIT_COLS[colK] || '') + base; }
 // Alias (sin acentos, minúsculas) -> key interna de la fila
 const PN_PPF_ALIAS = {
   cosechado:'cosechado', pendcos:'pendCos', totalprod:'prodTot',
@@ -7138,10 +7174,10 @@ const PN_COLS = [
   {grp:"PRODUCCIÓN", cls:"grp-prod",   cols:[
     {k:"cosechado",    lbl:"Cosechado"},
     {k:"pendCos",      lbl:"Pend Cos",   calc:true},
-    {k:"prodTot",      lbl:"Total",      calc:true},
+    {k:"prodTot",      lbl:"Total",      calc:true, main:true},
   ]},
   {grp:"PLANTA",     cls:"grp",        cols:[
-    {k:"plantaTot",    lbl:"Total",      calc:true},
+    {k:"plantaTot",    lbl:"Total",      calc:true, main:true},
     {k:"silobolsa",    lbl:"Granel en Campo"},
     {k:"silo",         lbl:"Granel en Semillero"},
     {k:"bolsas",       lbl:"Stock Clasificado"},
@@ -7151,7 +7187,7 @@ const PN_COLS = [
     {k:"pcTot",        lbl:"Total P+C",  calc:true},
   ]},
   {grp:"COMPRA",     cls:"grp-compra", cols:[
-    {k:"compraTot",    lbl:"Tot Compra", calc:true},
+    {k:"compraTot",    lbl:"Tot Compra", calc:true, main:true},
     {k:"compraPend",   lbl:"Pend Ing",   calc:true},
     {k:"compraEntr",   lbl:"Entregado",  calc:true},
   ]},
@@ -7161,7 +7197,7 @@ const PN_COLS = [
   {grp:"VENTA",      cls:"grp-venta",  cols:[
     {k:"vtaSem",          lbl:"Vta Sem",     edit:true, manK:"vtaSem"},
     {k:"pendVincular",    lbl:"Pend Vincular", edit:true, manK:"pendVincular"},
-    {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true},
+    {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true, main:true},
     {k:"ventaCtos",       lbl:"Ctos P.E",    calc:true},
     {k:"ventaEntr",       lbl:"Ctos Entr",   calc:true},
   ]},
@@ -7171,7 +7207,7 @@ const PN_COLS = [
   {grp:"PROD. SEMILLA", cls:"grp-prod", cols:[
     {k:"prodPendSem",  lbl:"Prod Pendiente",  calc:true},
     {k:"prodDespSem",  lbl:"Prod Despachado", calc:true},
-    {k:"prodTotSem",   lbl:"Total Prod",      calc:true},
+    {k:"prodTotSem",   lbl:"Total Prod",      calc:true, main:true},
   ]},
   {grp:"DEMANDA",    cls:"grp-venta",  cols:[
     {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
@@ -7540,7 +7576,21 @@ function pnDrillHTML(type, prods){
 }
 function pnFecha(s){ if(!s) return ''; const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?`${m[3]}/${m[2]}/${m[1].slice(2)}`:String(s); }
 // Total de columnas de la tabla (1 producto + todas las de PN_COLS) para el colspan del detalle
-const PN_TOTAL_COLS = 1 + PN_COLS.reduce((n,g)=>n+g.cols.length,0);
+// ===== GRUPOS COLAPSABLES =====
+// PRODUCCIÓN / PLANTA / COMPRA arrancan ACHICADOS (muestran solo su columna principal,
+// la marcada con main:true) para ver toda la foto al arrancar la reunión. Click en el
+// encabezado del grupo lo expande/achica. El estado queda guardado en el navegador.
+const PN_GRP_KEY = "tablero-granos-pn-grupos-v1";
+let PN_GRP_COLLAPSED = null;
+try { PN_GRP_COLLAPSED = JSON.parse(localStorage.getItem(PN_GRP_KEY) || "null"); } catch(e){ PN_GRP_COLLAPSED = null; }
+if(!PN_GRP_COLLAPSED || typeof PN_GRP_COLLAPSED !== 'object') PN_GRP_COLLAPSED = {"PRODUCCIÓN":1, "PLANTA":1, "COMPRA":1};
+function pnGrpSave(){ localStorage.setItem(PN_GRP_KEY, JSON.stringify(PN_GRP_COLLAPSED)); }
+// columnas VISIBLES de un grupo (todas, o solo la principal si está achicado)
+function pnVisCols(g){
+  if(g.cols.length <= 1 || !PN_GRP_COLLAPSED[g.grp]) return g.cols;
+  return [g.cols.find(c => c.main) || g.cols[0]];
+}
+function pnTotalCols(){ return 1 + PN_COLS.reduce((n,g)=>n+pnVisCols(g).length,0); }
 
 function pnRender(){
   const {compras, ventas} = pnFiltrarOps();
@@ -7612,22 +7662,36 @@ function pnRender(){
     dataPorProd[p] = pnCalcRow(p, cp, vp, incluyePlanta);
   });
 
-  // POS PEND estilo Excel: si el usuario guardó un número/fórmula para el producto,
-  // pisa el cálculo automático ANTES de armar los totales (familia y general lo heredan).
+  // POS PEND / POSICIÓN estilo Excel: si el usuario guardó un número/fórmula para el
+  // producto, pisa el cálculo automático ANTES de armar los totales (familia y general
+  // lo heredan). Pos Pend se aplica primero para que una fórmula de Posición pueda usarlo.
   prodList.forEach(p => {
-    if(PN_PPF[p] === undefined) return;
-    try { dataPorProd[p].posPend = ppfEval(PN_PPF[p], dataPorProd[p]); dataPorProd[p]._ppfErr = null; }
-    catch(e){ dataPorProd[p]._ppfErr = String(e.message || e); }
+    Object.keys(PN_PPF_EDIT_COLS).forEach(colK => {
+      const f = PN_PPF[ppfKey(colK, p)];
+      if(f === undefined) return;
+      try { dataPorProd[p][colK] = ppfEval(f, dataPorProd[p]); dataPorProd[p]['_ppfErr_' + colK] = null; }
+      catch(e){ dataPorProd[p]['_ppfErr_' + colK] = String(e.message || e); }
+    });
   });
 
   // Render Header tabla con grupos
   const thead = document.getElementById("pn-thead");
   let h1 = "<tr><th class='pn-prod' rowspan='2'>Producto</th>";
-  PN_COLS.forEach(g => h1 += `<th colspan="${g.cols.length}" class="${g.cls}">${g.grp}</th>`);
+  PN_COLS.forEach(g => {
+    const vis = pnVisCols(g);
+    const toggle = g.cols.length > 1;
+    h1 += `<th colspan="${vis.length}" class="${g.cls}${toggle ? ' pn-grp-toggle' : ''}"${toggle ? ` data-grp="${escapeHtml(g.grp)}" style="cursor:pointer" title="Click: ${PN_GRP_COLLAPSED[g.grp] ? 'desplegar las columnas del grupo' : 'achicar el grupo (solo total)'}"` : ''}>${g.grp}${toggle ? (PN_GRP_COLLAPSED[g.grp] ? ' ▸' : ' ▾') : ''}</th>`;
+  });
   h1 += "</tr><tr>";
-  PN_COLS.forEach(g => g.cols.forEach(c => h1 += `<th class="${g.cls}">${c.lbl}</th>`));
+  PN_COLS.forEach(g => pnVisCols(g).forEach(c => h1 += `<th class="${g.cls}">${c.lbl}</th>`));
   h1 += "</tr>";
   thead.innerHTML = h1;
+  // toggle de grupos (expandir/achicar columnas)
+  thead.querySelectorAll('.pn-grp-toggle').forEach(th => th.addEventListener('click', () => {
+    PN_GRP_COLLAPSED[th.dataset.grp] = PN_GRP_COLLAPSED[th.dataset.grp] ? 0 : 1;
+    pnGrpSave();
+    pnRender();
+  }));
 
   // Render Body - agrupado por familia
   let body = "";
@@ -7642,13 +7706,16 @@ function pnRender(){
     const indented = !!(opts && opts.indent);
     const tdStyle = indented ? ' style="padding-left:36px;color:var(--muted);font-size:12.5px"' : '';
     let row = `<tr class="${cls}"><td class="pn-prod-cell"${tdStyle} title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
-    PN_COLS.forEach(g => g.cols.forEach(c => {
+    PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = r[c.k] || 0;
-      if(c.k === 'posPend'){
-        // Editable tipo Excel: número o fórmula "=" con nombres de columnas
-        const f = PN_PPF[prod];
-        const tit = r._ppfErr ? ('Error: ' + r._ppfErr) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : 'Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)');
-        row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${r._ppfErr ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : '')}"/></td>`;
+      if(PN_PPF_EDIT_COLS[c.k] !== undefined){
+        // Editable tipo Excel (Pos Pend y Posición): número o fórmula "=" con nombres de columnas
+        const f = PN_PPF[ppfKey(c.k, prod)];
+        const err = r['_ppfErr_' + c.k];
+        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Ing − Ctos P.E';
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
+        const colr = err ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : (c.k === 'posicion' ? ('font-weight:700;color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
+        row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${colr}"/></td>`;
       } else if(c.edit){
         row += `<td class="editable"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
       } else if(c.hl){
@@ -7686,27 +7753,32 @@ function pnRender(){
       PN_COLS.forEach(g => g.cols.forEach(c => { totSem[c.k] += (r[c.k] || 0); }));
     });
 
-    // Pos Pend de la familia: fórmula propia (clave "FAM:<familia>") o suma de productos.
-    // Si hay fórmula, se ajusta también el TOTAL GENERAL por la diferencia.
-    let famPpfErr = null;
-    const famPpf = PN_PPF['FAM:' + fam];
-    if(famPpf !== undefined){
-      const orig = totFam.posPend || 0;
+    // Pos Pend / Posición de la familia: fórmula propia (clave "FAM:<familia>") o suma
+    // de productos. Si hay fórmula, se ajusta también el TOTAL GENERAL por la diferencia.
+    const famPpf = {}, famPpfErr = {};
+    Object.keys(PN_PPF_EDIT_COLS).forEach(colK => {
+      const f = PN_PPF[ppfKey(colK, 'FAM:' + fam)];
+      if(f === undefined) return;
+      famPpf[colK] = f;
+      const orig = totFam[colK] || 0;
       try {
-        totFam.posPend = ppfEval(famPpf, totFam);
-        grandTotal.posPend += (totFam.posPend - orig);
-      } catch(e){ famPpfErr = String(e.message || e); }
-    }
+        totFam[colK] = ppfEval(f, totFam);
+        grandTotal[colK] += (totFam[colK] - orig);
+      } catch(e){ famPpfErr[colK] = String(e.message || e); }
+    });
 
     // 1) TOTAL familia = ENCABEZADO clickeable (amarillo). Por defecto COLAPSADO -> solo totales.
     const famExpanded = PN_FAM_EXPANDED.has(fam);
     let rowFam = `<tr class="pn-grupo pn-fam-header" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${famExpanded ? '▾' : '▸'} TOTAL ${fam}</td>`;
-    PN_COLS.forEach(g => g.cols.forEach(c => {
+    PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = totFam[c.k];
       const cls = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
-      if(c.k === 'posPend'){
-        const tit = famPpfErr ? ('Error: ' + famPpfErr) : (famPpf !== undefined ? ('ƒ ' + famPpf + ' = ' + fmt.num(v)) : 'Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)');
-        rowFam += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf-fam="${escapeHtml(fam)}" value="${famPpf !== undefined ? escapeHtml(famPpf) : (v ? fmt.num(v) : '')}" placeholder="—" style="font-weight:700;${famPpfErr ? 'color:#dc2626' : (famPpf !== undefined ? 'color:#7c3aed' : '')}"/></td>`;
+      if(PN_PPF_EDIT_COLS[c.k] !== undefined){
+        const f = famPpf[c.k], err = famPpfErr[c.k];
+        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Ing − Ctos P.E';
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
+        const colr = err ? 'color:#dc2626' : (f !== undefined ? 'color:#7c3aed' : (c.k === 'posicion' ? ('color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
+        rowFam += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf-fam="${escapeHtml(fam)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="font-weight:700;${colr}"/></td>`;
       } else if(PN_DRILL[c.k] && v){
         rowFam += `<td class="${cls} pn-drill-cell-link" data-drill="${c.k}" data-fam="${escapeHtml(fam)}">${fmt.num(v)}</td>`;
       } else {
@@ -7725,7 +7797,7 @@ function pnRender(){
       const semPendIng = totSem.compraPend || 0;
       const descarte  = semStock * 0.10;
       const potencial = descarte + semPendIng * 0.10;
-      const ncols = PN_COLS.reduce((n,g) => n + g.cols.length, 0);
+      const ncols = PN_COLS.reduce((n,g) => n + pnVisCols(g).length, 0);
       if(descarte > 0.05 || potencial > 0.05){
         body += `<tr class="pn-descarte" style="background:#f0fdf4">`+
           `<td class="pn-prod-cell" style="padding-left:36px;font-weight:600;color:#15803d">↳ Descarte semilla (10%)</td>`+
@@ -7745,7 +7817,7 @@ function pnRender(){
         const semExpanded = PN_SEM_EXPANDED.has(fam);
         let rowSem = `<tr class="pn-semilla-header" data-sem-fam="${escapeHtml(fam)}" style="cursor:pointer;background:#fff7ed">
           <td class="pn-prod-cell" style="font-weight:600;padding-left:36px">${semExpanded ? '▾' : '▸'} SEMILLA ${fam} <span style="font-size:10.5px;color:var(--muted);font-weight:500">(${semillas.length} variedades)</span></td>`;
-        PN_COLS.forEach(g => g.cols.forEach(c => {
+        PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
           const v = totSem[c.k];
           const cls2 = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
           rowSem += `<td class="${cls2}" style="font-weight:600">${v ? fmt.num(v) : '—'}</td>`;
@@ -7763,7 +7835,7 @@ function pnRender(){
 
   // Footer total general
   let foot = `<tr class="pn-total"><td class="pn-prod-cell">TOTAL GENERAL</td>`;
-  PN_COLS.forEach(g => g.cols.forEach(c => {
+  PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
     foot += `<td>${grandTotal[c.k] ? fmt.num(grandTotal[c.k]) : '—'}</td>`;
   }));
   foot += "</tr>";
@@ -7782,13 +7854,14 @@ function pnRender(){
     inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
   });
 
-  // Listeners POS PEND tipo Excel (por producto y por familia): guarda el texto tal cual
-  // (número o fórmula "="); vacío = volver al cálculo automático.
+  // Listeners POS PEND / POSICIÓN tipo Excel (por producto y por familia): guarda el
+  // texto tal cual (número o fórmula "="); vacío = volver al cálculo automático.
   document.querySelectorAll("#pn-tbody input[data-ppf], #pn-tbody input[data-ppf-fam]").forEach(inp => {
     inp.addEventListener("click", e => e.stopPropagation());   // no togglear la familia
     inp.addEventListener("blur", () => {
       if(inp.value === inp.defaultValue) return;   // sin cambios -> no pisar nada
-      const key = (inp.dataset.ppf !== undefined) ? inp.dataset.ppf : ('FAM:' + inp.dataset.ppfFam);
+      const base = (inp.dataset.ppf !== undefined) ? inp.dataset.ppf : ('FAM:' + inp.dataset.ppfFam);
+      const key = ppfKey(inp.dataset.ppfCol || 'posPend', base);
       const val = (inp.value || '').trim();
       if(!val) delete PN_PPF[key];
       else PN_PPF[key] = val;
@@ -7829,6 +7902,16 @@ function pnRender(){
       const tr = td.closest("tr");
       const type = td.dataset.drill;
       const prods = td.dataset.fam ? (byFamilia[td.dataset.fam] || []) : [td.dataset.prod];
+      // Celdas de COMPRA / VENTA → abren la pestaña Detalle de Contratos (cantidad,
+      // fijación, precio, contraparte, liquidación y cta. cte. por contrato).
+      const cfgD = PN_DRILL[type];
+      if(cfgD && (cfgD.kind === 'compra' || cfgD.kind === 'venta')){
+        pnctGo({tipo: cfgD.kind, field: cfgD.field, prods,
+                exclSem: cfgD.kind === 'venta',
+                fam: td.dataset.fam || '',
+                origen: td.dataset.fam ? ('Desde: TOTAL ' + td.dataset.fam) : ('Desde: ' + td.dataset.prod)});
+        return;
+      }
       const key = (td.dataset.fam || td.dataset.prod) + "|" + type;
       const nx = tr.nextElementSibling;
       // toggle: si ya está abierto ese mismo detalle, cerrarlo
@@ -7842,7 +7925,7 @@ function pnRender(){
       }
       const nr = document.createElement("tr");
       nr.className = "pn-drill-row"; nr.dataset.key = key;
-      nr.innerHTML = `<td colspan="${PN_TOTAL_COLS}" class="pn-drill-cell">${pnDrillHTML(type, prods)}</td>`;
+      nr.innerHTML = `<td colspan="${pnTotalCols()}" class="pn-drill-cell">${pnDrillHTML(type, prods)}</td>`;
       tr.after(nr);
       td.classList.add("pn-drill-active");
       nr.querySelector(".pn-drill-inner").scrollIntoView({behavior:"smooth", block:"nearest"});
@@ -7852,6 +7935,146 @@ function pnRender(){
   // Cards arriba (por familia)
   pnRenderCards(totalsFam, familias);
 }
+
+/* ============ DETALLE DE CONTRATOS (pestaña) ============ */
+// Estado de la pestaña: tipo compra/venta, qué mostrar, y filtro de productos si se
+// llegó clickeando una celda de la Posición Granaria.
+let PNCT = { tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:'' };
+
+// Saldo de cta. cte. por organización (Composición de Saldos, todas las operaciones)
+const PNCT_SALDO_ORG = (() => {
+  const m = {};
+  (PAYLOAD.saldos || []).forEach(s => {
+    const o = (s.organizacion || '').trim().toUpperCase();
+    if(!o) return;
+    if(!m[o]) m[o] = {ars:0, usd:0};
+    m[o].ars += (s.importemonppal || 0);
+    m[o].usd += (s.importemonsecundaria || 0);
+  });
+  return m;
+})();
+
+function pnctGo(opts){
+  PNCT = Object.assign({tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:''}, opts || {});
+  document.getElementById('pnct-tipo').value = PNCT.tipo;
+  document.getElementById('pnct-field').value = PNCT.field;
+  document.getElementById('pnct-fam').value = PNCT.fam || '';
+  const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-ctos"]');
+  if(st) st.click();
+  pnctRender();
+}
+
+function pnctRender(){
+  const tipo = PNCT.tipo, cp = (tipo === 'compra');
+  const src = cp ? PN_LAST_COMPRAS : PN_LAST_VENTAS;   // ya filtrados por campaña/empresa
+  const val = c => {
+    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    return PNCT.field === 'pend' ? pen : PNCT.field === 'entr' ? ent : ent + pen;
+  };
+  const set = PNCT.prods ? new Set(PNCT.prods) : null;
+  let rows = src.filter(c => {
+    if(set && !set.has(c.producto)) return false;
+    if(!set && PNCT.fam && pnFamilia(c.producto) !== PNCT.fam) return false;
+    if(PNCT.exclSem && (c.producto||'').toLowerCase().includes('sem')) return false;
+    return val(c) > 0.001;
+  });
+  rows.sort((a,b) => val(b) - val(a));
+
+  // chips de contexto
+  const chips = [];
+  if(PNCT.origen) chips.push(PNCT.origen);
+  chips.push(cp ? 'COMPRA' : 'VENTA');
+  chips.push(PNCT.field === 'pend' ? (cp ? 'Pendiente de ingreso' : 'Pendiente de entrega') : PNCT.field === 'entr' ? 'Entregado' : 'Cantidad ajustada');
+  const campSel = document.getElementById('pn-campana').value;
+  chips.push(campSel || 'Todas las campañas');
+  if(PNCT.exclSem) chips.push('sin semilla (va aparte)');
+  document.getElementById('pnct-chips').innerHTML = chips.map(c =>
+    `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(String(c))}</span>`).join('');
+
+  // KPIs
+  let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tImpLiqU=0, tImpLiqA=0;
+  rows.forEach(c => {
+    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    tAj += ent + pen; tEnt += ent; tPen += pen;
+    tFij += Number(c.cantidadfijada)||0;
+    tLiq += Number(c.cantidadliquidada)||0;
+    if((c.moneda||'').toUpperCase() === 'DOLARES') tImpLiqU += Number(c.importeliquidado)||0;
+    else tImpLiqA += Number(c.importeliquidado)||0;
+  });
+  document.getElementById('pnct-kpis').innerHTML = `
+    <div class="kpi"><div class="lbl">Contratos</div><div class="val">${rows.length}</div></div>
+    <div class="kpi green"><div class="lbl">Tn ajustadas</div><div class="val">${fmt.num(tAj)}</div></div>
+    <div class="kpi"><div class="lbl">Entregado</div><div class="val">${fmt.num(tEnt)}</div></div>
+    <div class="kpi orange"><div class="lbl">${cp?'Pend. ingreso':'Pend. entrega'}</div><div class="val">${fmt.num(tPen)}</div></div>
+    <div class="kpi"><div class="lbl">Fijado (a precio)</div><div class="val">${fmt.num(tFij)}</div></div>
+    <div class="kpi green"><div class="lbl">Liquidado</div><div class="val">${fmt.num(tLiq)} tn</div></div>`;
+
+  document.getElementById('pnct-title').textContent =
+    (cp ? 'Contratos de Compra' : 'Contratos de Venta') + (PNCT.prods && PNCT.prods.length === 1 ? ` · ${PNCT.prods[0]}` : PNCT.fam ? ` · ${PNCT.fam}` : '');
+  document.getElementById('pnct-info').textContent = `${rows.length} contratos · ${fmt.num(tAj)} tn ajustadas`;
+
+  // tabla
+  document.getElementById('pnct-thead').innerHTML = `<tr>
+    <th>Nº</th><th>Fecha</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Campaña</th><th>Producto</th><th>Entrega</th>
+    <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th>
+    <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
+    <th class="num">Liquidada (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
+    <th>${cp?'Cta. Cte. (¿se pagó?)':'Cta. Cte. (¿se cobró?)'}</th></tr>`;
+  let html = '';
+  rows.forEach(c => {
+    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    const f = pnFij(c);
+    const nro = (c.numerointerno!=null?('#'+c.numerointerno):'—') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
+    const entg = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
+    const camp = (c.campana||'').replace('CAMPAÑA ','') || '—';
+    const mon = (c.moneda||'').toUpperCase() === 'DOLARES' ? 'USD' : ((c.moneda||'').toUpperCase() ? 'ARS' : '—');
+    const pFij = Number(c.preciopromediofijado)||0, pLiq = Number(c.precioliquidado)||0;
+    const liqTn = Number(c.cantidadliquidada)||0, liqImp = Number(c.importeliquidado)||0;
+    const penLiq = Number(c.cantidadpendienteliquidar)||0;
+    const org = (c.organizacion||'').trim();
+    const saldo = PNCT_SALDO_ORG[org.toUpperCase()];
+    let cta = '<span style="color:var(--muted)">sin mov.</span>';
+    if(saldo){
+      const s = Math.abs(saldo.usd) > 1 ? saldo.usd : saldo.ars;
+      const monS = Math.abs(saldo.usd) > 1 ? 'USD' : 'ARS';
+      const debe = cp ? s < -1000 : s > 1000;   // venta: saldo + = te debe · compra: saldo − = le debés
+      cta = debe
+        ? `<span class="pn-fij-par" title="saldo total de ${escapeHtml(org)} en cta cte">◑ saldo ${monS} ${fmt.num(Math.abs(s))}</span>`
+        : `<span class="pn-fij-si" title="cta cte de ${escapeHtml(org)} sin saldo relevante">✓ al día</span>`;
+    }
+    html += `<tr>
+      <td class="pn-drill-nro">${nro}</td><td class="pn-drill-fe">${pnFecha(c.fecha)||'—'}</td>
+      <td title="${escapeHtml(org)}">${escapeHtml(org.length>34?org.slice(0,34)+'…':org)||'—'}</td>
+      <td>${escapeHtml(camp)}</td><td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
+      <td class="pn-drill-fe">${entg}</td>
+      <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
+      <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(Number(c.cantidadfijada)||0)}</td>
+      <td class="num">${pFij?fmt.num(pFij):'—'}</td><td class="num">${pLiq?fmt.num(pLiq):'—'}</td><td>${mon}</td>
+      <td class="num">${liqTn?fmt.num(liqTn):'—'}</td><td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
+      <td>${cta}</td></tr>`;
+  });
+  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="18" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
+  document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
+    <td colspan="6">TOTAL (${rows.length} contratos)</td>
+    <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
+    <td></td><td class="num">${fmt.num(tFij)}</td><td></td><td></td><td></td>
+    <td class="num">${fmt.num(tLiq)}</td><td class="num">USD ${fmt.num(tImpLiqU)} · ARS ${fmt.num(tImpLiqA)}</td><td></td><td></td></tr>` : '';
+}
+
+// filtros de la pestaña
+["pnct-tipo","pnct-fam","pnct-field"].forEach(id => document.getElementById(id).addEventListener('change', () => {
+  PNCT.tipo = document.getElementById('pnct-tipo').value;
+  PNCT.fam = document.getElementById('pnct-fam').value;
+  PNCT.field = document.getElementById('pnct-field').value;
+  PNCT.prods = null; PNCT.exclSem = false; PNCT.origen = '';   // filtro manual pisa la navegación
+  pnctRender();
+}));
+document.getElementById('pnct-volver').addEventListener('click', () => {
+  const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-granaria"]');
+  if(st) st.click();
+});
+// si entran a la pestaña directo desde el subtab, render con el estado actual
+document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-ctos"]').addEventListener('click', () => setTimeout(pnctRender, 30));
 
 function pnRenderCards(totalsFam, familias){
   const cls = {SOJA:"soja", "MAÍZ":"maiz", TRIGO:"trigo", GIRASOL:"girasol", SORGO:"sorgo"};
