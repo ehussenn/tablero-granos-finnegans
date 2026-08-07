@@ -1920,7 +1920,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>¿A precio?</strong> sale de la fijación del contrato (tn fijadas / ajustadas). <strong>Liquidado</strong> son las tn e importes ya liquidados en Finnegans; lo que falta está en <strong>Pend. Liquidar</strong>. <strong>Cta. Cte.</strong> es el saldo de la contraparte en la Composición de Saldos (todas sus operaciones): en venta, saldo &gt; 0 = todavía te debe (no se cobró todo); ≈ 0 = al día. Los filtros de campaña y empresa se heredan de la Posición Granaria.
+        💡 <strong>Click en un encabezado ordena la tabla</strong> (▲ menor a mayor, ▼ mayor a menor). <strong>¿A precio?</strong> sale de la fijación del contrato (tn fijadas / ajustadas). <strong>Liquidado</strong> son las tn e importes ya liquidados en Finnegans; lo que falta está en <strong>Pend. Liquidar</strong>. <strong>Cta. Cte.</strong> es el saldo de la contraparte en la Composición de Saldos (todas sus operaciones): en venta, saldo &gt; 0 = todavía te debe (no se cobró todo); ≈ 0 = al día. Los filtros de campaña y empresa se heredan de la Posición Granaria.
       </div>
     </div><!-- /subpanel pn-ctos -->
 
@@ -8157,6 +8157,53 @@ function pnctRender(){
     <td></td><td class="num">${fmt.num(tFij)}</td><td></td><td></td><td></td>
     <td class="num">${fmt.num(tLiq)}</td><td class="num">USD ${fmt.num(tImpLiqU)} · ARS ${fmt.num(tImpLiqA)}</td><td></td><td></td></tr>` : '';
 }
+
+/* ===== ORDEN POR ENCABEZADO en tablas de detalle =====
+   Click en un encabezado de la pestaña Detalle Contratos o de cualquier tabla de
+   drill-down ordena por esa columna (asc ▲ ⇄ desc ▼). Entiende números formato
+   es-AR (1.234,5), fechas dd/mm/aa y texto. La fila Total queda siempre abajo. */
+document.addEventListener('click', (e) => {
+  const th = e.target.closest('th');
+  if(!th) return;
+  const tabla = th.closest('table');
+  if(!tabla) return;
+  if(!(tabla.id === 'pnct-tabla' || tabla.classList.contains('pn-drill-tbl'))) return;
+  const trh = th.parentElement;
+  const idx = [...trh.children].indexOf(th);
+  const tbody = tabla.querySelector('tbody');
+  if(!tbody) return;
+  const rows = [...tbody.querySelectorAll('tr')];
+  const tot = rows.filter(r => r.classList.contains('pn-drill-tot') || r.classList.contains('pn-total'));
+  const data = rows.filter(r => !tot.includes(r) && r.children.length > idx);
+  if(data.length < 2) return;
+  const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+  trh.querySelectorAll('th').forEach(x => { delete x.dataset.dir; x.textContent = x.textContent.replace(/ [▲▼]$/, ''); });
+  th.dataset.dir = dir;
+  th.textContent = th.textContent.replace(/ [▲▼]$/, '') + (dir === 'asc' ? ' ▲' : ' ▼');
+  const val = r => {
+    const s = (r.children[idx].textContent || '').trim();
+    if(!s || s === '—') return {num: null, str: ''};
+    const mF = s.match(/^(\d{2})\/(\d{2})\/(\d{2,4})$/);       // fecha dd/mm/aa
+    if(mF){ const y = mF[3].length === 2 ? '20' + mF[3] : mF[3]; return {num: Number(y + mF[2] + mF[1]), str: s}; }
+    const limpio = s.replace(/[^0-9,.\-]/g, '');
+    if(/\d/.test(limpio)){
+      const v = parseFloat(limpio.replace(/\./g, '').replace(',', '.'));
+      if(!isNaN(v)) return {num: v, str: s};
+    }
+    return {num: null, str: s.toLowerCase()};
+  };
+  data.sort((a, b) => {
+    const va = val(a), vb = val(b);
+    let c;
+    if(va.num !== null && vb.num !== null) c = va.num - vb.num;
+    else if(va.num !== null) c = -1;
+    else if(vb.num !== null) c = 1;
+    else c = va.str.localeCompare(vb.str);
+    return dir === 'asc' ? c : -c;
+  });
+  data.forEach(r => tbody.appendChild(r));
+  tot.forEach(r => tbody.appendChild(r));   // la fila Total siempre al final
+});
 
 // filtros de la pestaña
 ["pnct-tipo","pnct-fam","pnct-field"].forEach(id => document.getElementById(id).addEventListener('change', () => {
