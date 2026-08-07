@@ -1884,7 +1884,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </table>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
+        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
         <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
         <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
@@ -7413,11 +7413,27 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   };
 }
 
+// Compensaciones de convenio: NO cuentan para la posición — son ajustes internos entre
+// Agronasaja y los convenios (kg que se pasan/valorizan en el convenio), no compra/venta
+// real de mercado. Se detectan por "COMPENSAC…" en la descripción o el Nº adicional.
+function pnEsCompensacion(r){
+  const t = (String(r.descripcion || '') + ' ' + String(r.numerodocumentoadicional || '')).toLowerCase();
+  return t.includes('compensac');
+}
+// Contratos ANULADOS: tampoco cuentan para la posición. (Hoy el reporte viene sin
+// anulados — "No Anulado" en todos — pero si aparece uno, queda afuera solo.)
+function pnEsAnulado(r){
+  const chk = v => { const s = String(v || '').trim().toUpperCase(); return s.includes('ANULADO') && !s.startsWith('NO '); };
+  return chk(r.estadoanulacion) || chk(r.estado);
+}
+
 function pnFiltrarOps(){
   // DATA_CP y DATA ya vienen con maizSplit aplicado al inicio (Grano Maíz 1ra/2da)
   const c = document.getElementById("pn-campana").value;
   const e = document.getElementById("pn-empresa").value;
   const filtra = r => {
+    if(pnEsCompensacion(r)) return false;   // compensación de convenio → afuera de la posición
+    if(pnEsAnulado(r)) return false;        // contratos anulados → afuera
     if(c && r.campana !== c) return false;
     if(e && r.empresa !== e) return false;
     return true;
