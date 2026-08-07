@@ -1875,7 +1875,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 
     <!-- Detalle tabla -->
     <div class="section">
-      <h3>Análisis de Posición Granaria · Detalle por Producto <span class="badge">click en celdas de Planta/Producción para editar</span></h3>
+      <h3>Análisis de Posición Granaria · Detalle por Producto <span class="badge" id="pn-edit-badge">click en celdas para editar</span></h3>
       <div class="tbl-wrap" style="max-height:700px">
         <table id="pn-tabla" style="font-size:11.5px">
           <thead id="pn-thead"></thead>
@@ -7070,6 +7070,21 @@ try { PN_PPF = JSON.parse(localStorage.getItem(PN_PPF_KEY) || "{}") || {}; } cat
 function ppfSave(){ localStorage.setItem(PN_PPF_KEY, JSON.stringify(PN_PPF)); }
 const PN_PPF_EDIT_COLS = { posPend: '', posicion: 'POSICION|' };   // columnas editables y su prefijo de clave
 function ppfKey(colK, base){ return (PN_PPF_EDIT_COLS[colK] || '') + base; }
+
+// ===== PERMISOS DE EDICIÓN de la Posición Granaria =====
+// Solo los usuarios de esta lista pueden editar (Vta Sem, Pend Vincular, Pos Pend,
+// Posición). El resto ve la posición de SOLO LECTURA. Para dar permiso a alguien
+// más adelante: agregar su email acá y regenerar el tablero.
+const PN_EDIT_USERS = new Set(["ehussen@agronasaja.com.ar"]);
+function pnPuedeEditar(){
+  try{
+    const m = (document.cookie || "").match(/(?:^|; )agronasaja_user=([^;]*)/);
+    let user = m ? decodeURIComponent(m[1]).toLowerCase() : "";
+    if(window.__PN_USER_OVERRIDE !== undefined) user = window.__PN_USER_OVERRIDE;  // para pruebas
+    if(user) return PN_EDIT_USERS.has(user);
+    return location.protocol === 'file:';   // abriendo el archivo local (sin login) se permite
+  }catch(e){ return false; }
+}
 // Alias (sin acentos, minúsculas) -> key interna de la fila
 const PN_PPF_ALIAS = {
   cosechado:'cosechado', pendcos:'pendCos', totalprod:'prodTot',
@@ -7595,6 +7610,12 @@ function pnTotalCols(){ return 1 + PN_COLS.reduce((n,g)=>n+pnVisCols(g).length,0
 function pnRender(){
   const {compras, ventas} = pnFiltrarOps();
   PN_LAST_COMPRAS = compras; PN_LAST_VENTAS = ventas;   // para el drill-down
+  // permisos: solo PN_EDIT_USERS puede editar; el resto ve todo de solo lectura
+  const PN_RO = !pnPuedeEditar();
+  const editBadge = document.getElementById('pn-edit-badge');
+  if(editBadge) editBadge.textContent = PN_RO
+    ? '🔒 solo lectura — la edición está habilitada solo para Ezequiel'
+    : 'click en celdas para editar · Pos Pend y Posición aceptan fórmulas con =';
   // PLANTA y PRODUCCIÓN (stock físico + cosecha) pertenecen a la CAMPAÑA DE COSECHA VIGENTE,
   // no a campañas forward (ej. 26/27, que solo tiene contratos compra/venta sin grano físico).
   // Cosecha vigente = la campaña MÁS RECIENTE con grano realmente entregado (>=20% del máximo
@@ -7708,7 +7729,11 @@ function pnRender(){
     let row = `<tr class="${cls}"><td class="pn-prod-cell"${tdStyle} title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
     PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = r[c.k] || 0;
-      if(PN_PPF_EDIT_COLS[c.k] !== undefined){
+      if((PN_PPF_EDIT_COLS[c.k] !== undefined || c.edit) && PN_RO){
+        // usuario SIN permiso de edición: celda de solo lectura
+        const cls2 = c.k === 'posicion' ? (v >= 0 ? "pos-pos" : "pos-neg") : "calc";
+        row += `<td class="${cls2}">${v ? fmt.num(v) : '—'}</td>`;
+      } else if(PN_PPF_EDIT_COLS[c.k] !== undefined){
         // Editable tipo Excel (Pos Pend y Posición): número o fórmula "=" con nombres de columnas
         const f = PN_PPF[ppfKey(c.k, prod)];
         const err = r['_ppfErr_' + c.k];
@@ -7773,7 +7798,10 @@ function pnRender(){
     PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = totFam[c.k];
       const cls = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
-      if(PN_PPF_EDIT_COLS[c.k] !== undefined){
+      if(PN_PPF_EDIT_COLS[c.k] !== undefined && PN_RO){
+        const cls2 = c.k === 'posicion' ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
+        rowFam += `<td class="${cls2}" style="font-weight:700">${v ? fmt.num(v) : '—'}</td>`;
+      } else if(PN_PPF_EDIT_COLS[c.k] !== undefined){
         const f = famPpf[c.k], err = famPpfErr[c.k];
         const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Ing − Ctos P.E';
         const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
