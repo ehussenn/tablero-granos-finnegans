@@ -1864,6 +1864,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div><label>CAMPAÑA</label><select id="pn-campana"><option value="">Todas</option></select></div>
       <div><label>EMPRESA</label><select id="pn-empresa"><option value="">Todas</option></select></div>
       <button class="clear" id="pn-clear">Limpiar</button>
+      <button class="clear" id="pn-exp-cols" title="Maximizar / minimizar todos los grupos de columnas">⇔ Columnas</button>
+      <button class="clear" id="pn-exp-rows" title="Maximizar / minimizar todas las filas (cultivos y semillas)">⇕ Filas</button>
       <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pn-info"></span>
     </div>
 
@@ -1886,7 +1888,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
         💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
         <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
-        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
+        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
     </div>
 
@@ -7174,6 +7176,24 @@ function pnInitFiltros(){
     document.getElementById("pn-campana-chip").textContent = "Todas las campañas";
     pnRender();
   });
+
+  // ⇔ COLUMNAS: maximizar/minimizar TODOS los grupos de una (si hay alguno achicado,
+  // expande todo; si está todo expandido, achica todo).
+  document.getElementById("pn-exp-cols").addEventListener("click", () => {
+    const grupos = PN_COLS.filter(g => g.cols.length > 1).map(g => g.grp);
+    const hayAchicado = grupos.some(g => PN_GRP_COLLAPSED[g]);
+    grupos.forEach(g => PN_GRP_COLLAPSED[g] = hayAchicado ? 0 : 1);
+    pnGrpSave();
+    pnRender();
+  });
+  // ⇕ FILAS: expandir/colapsar TODAS las familias (y sus semillas) de una.
+  document.getElementById("pn-exp-rows").addEventListener("click", () => {
+    const fams = [...document.querySelectorAll('#pn-tbody tr.pn-fam-header')].map(tr => tr.dataset.fam).filter(Boolean);
+    const hayCerrada = fams.some(f => !PN_FAM_EXPANDED.has(f));
+    if(hayCerrada){ fams.forEach(f => { PN_FAM_EXPANDED.add(f); PN_SEM_EXPANDED.add(f); }); }
+    else { PN_FAM_EXPANDED.clear(); PN_SEM_EXPANDED.clear(); }
+    pnRender();
+  });
 }
 
 // Estructura columnas: grupos y subcolumnas
@@ -7404,7 +7424,10 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const demandaTotPend = ventaPendSem + prodPendSem;
 
   // RESULTADO
-  const posPend = compraPend - ventaCtos;   // pendiente neto compra vs venta
+  // Pos Pend = LOS PENDIENTES: pendiente de cosecha (producción) + pendiente de
+  // ingreso (contratos compra) − pendiente de entrega (contratos venta).
+  // Posición = LOS TOTALES: Oferta Tot − Demanda Tot. Ahí se ve el desvío.
+  const posPend = pendCos + compraPend - ventaCtos;
   const posicion = ofertaTot - demandaTot;
 
   return {
@@ -7760,7 +7783,7 @@ function pnRender(){
         // Editable tipo Excel (Pos Pend y Posición): número o fórmula "=" con nombres de columnas
         const f = PN_PPF[ppfKey(c.k, prod)];
         const err = r['_ppfErr_' + c.k];
-        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Ing − Ctos P.E';
+        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
         const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
         const colr = err ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : (c.k === 'posicion' ? ('font-weight:700;color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${colr}"/></td>`;
@@ -7826,7 +7849,7 @@ function pnRender(){
         rowFam += `<td class="${cls2}" style="font-weight:700">${v ? fmt.num(v) : '—'}</td>`;
       } else if(PN_PPF_EDIT_COLS[c.k] !== undefined){
         const f = famPpf[c.k], err = famPpfErr[c.k];
-        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Ing − Ctos P.E';
+        const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
         const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
         const colr = err ? 'color:#dc2626' : (f !== undefined ? 'color:#7c3aed' : (c.k === 'posicion' ? ('color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         rowFam += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf-fam="${escapeHtml(fam)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="font-weight:700;${colr}"/></td>`;
