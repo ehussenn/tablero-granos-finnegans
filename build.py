@@ -1950,7 +1950,10 @@ HTML_TEMPLATE = r"""<!doctype html>
 
       <!-- 0. DETALLE POR PRODUCTO · PENDIENTE DE LIQUIDAR -->
       <div class="section">
-        <h3>Análisis Financiero · Detalle por Producto <span class="badge">entregado y pendiente de entrega PENDIENTES DE LIQUIDAR · click en TOTAL de un cultivo para abrir sus productos</span></h3>
+        <h3>Análisis Financiero · Detalle por Producto
+          <button class="clear" id="fndet-cols" style="font-size:11px;padding:3px 9px;margin-left:8px" title="Maximizar / minimizar los grupos COMPRA y VENTA">⇔ Columnas</button>
+          <button class="clear" id="fndet-rows" style="font-size:11px;padding:3px 9px" title="Expandir / colapsar todos los cultivos">⇕ Filas</button>
+          <span class="badge">entregado y pendiente PENDIENTES DE LIQUIDAR · click en un número abre el detalle de contratos</span></h3>
         <div class="tbl-wrap" style="max-height:620px">
           <table id="fndet-tabla" style="font-size:11.5px">
             <thead id="fndet-thead"></thead>
@@ -8044,7 +8047,10 @@ const PNCT_SALDO_ORG = (() => {
 })();
 
 function pnctGo(opts){
-  PNCT = Object.assign({tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:''}, opts || {});
+  // recordar desde qué subpestaña se vino (Granaria o Financiera) para el botón Volver
+  const act = document.querySelector('.panel[data-panel="posicion"] .subpanel.active');
+  const volverA = (opts && opts.volverA) || (act && act.dataset.subPanel !== 'pn-ctos' ? act.dataset.subPanel : 'pn-granaria');
+  PNCT = Object.assign({tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:'', volverA}, opts || {});
   document.getElementById('pnct-tipo').value = PNCT.tipo;
   document.getElementById('pnct-field').value = PNCT.field;
   document.getElementById('pnct-fam').value = PNCT.fam || '';
@@ -8100,6 +8106,8 @@ function pnctRender(){
 
   document.getElementById('pnct-title').textContent =
     (cp ? 'Contratos de Compra' : 'Contratos de Venta') + (PNCT.prods && PNCT.prods.length === 1 ? ` · ${PNCT.prods[0]}` : PNCT.fam ? ` · ${PNCT.fam}` : '');
+  document.getElementById('pnct-volver').textContent =
+    '← Volver a ' + (PNCT.volverA === 'pn-financiera' ? 'Posición Financiera' : 'Posición Granaria');
   document.getElementById('pnct-info').textContent = `${rows.length} contratos · ${fmt.num(tAj)} tn ajustadas`;
 
   // tabla
@@ -8159,7 +8167,8 @@ function pnctRender(){
   pnctRender();
 }));
 document.getElementById('pnct-volver').addEventListener('click', () => {
-  const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-granaria"]');
+  const dest = (PNCT && PNCT.volverA) || 'pn-granaria';
+  const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="' + dest + '"]');
   if(st) st.click();
 });
 // si entran a la pestaña directo desde el subtab, render con el estado actual
@@ -8428,6 +8437,8 @@ function fnDetAgg(rows, cp){
   o.impUsd = (typeof FN_TC !== 'undefined' && FN_TC > 0) ? o.impArs / FN_TC : 0;
   return o;
 }
+// Grupos achicables del cuadro financiero: 1 = achicado (solo Total P/Liq + ≈USD)
+const FNDET_GRP = {c:0, v:0};
 function fnDetRender(camp, emp){
   const filtra = r => {
     if(pnEsCompensacion(r) || pnEsAnulado(r)) return false;
@@ -8443,20 +8454,32 @@ function fnDetRender(camp, emp){
   [...prods].sort().forEach(p => { const f = pnFamilia(p); (byFam[f] = byFam[f] || []).push(p); });
   const fams = Object.keys(byFam).sort((a,b) => ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(a) - ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(b));
 
+  // columnas visibles por lado según achicado/expandido
+  const TODAS = ['entPliq','pendEnt','pliqTn','impArs','impUsd'];
+  const MINI  = ['pliqTn','impUsd'];
+  const visC = FNDET_GRP.c ? MINI : TODAS;
+  const visV = FNDET_GRP.v ? MINI : TODAS;
+  const lbl = (k, cp) => ({entPliq:'Entreg. P/Liq', pendEnt: cp?'Pend Ingreso':'Pend Entrega', pliqTn:'Total P/Liq', impArs:'Imp $ (ARS)', impUsd:'≈ USD'}[k]);
   document.getElementById('fndet-thead').innerHTML = `
     <tr><th class='pn-prod' rowspan='2'>Producto</th>
-      <th colspan="5" class="grp-compra">COMPRA · PEND. DE LIQUIDAR</th>
-      <th colspan="5" class="grp-venta">VENTA · PEND. DE LIQUIDAR</th>
+      <th colspan="${visC.length}" class="grp-compra fndet-grp" data-grp="c" style="cursor:pointer" title="Click: achicar / desplegar">COMPRA · PEND. DE LIQUIDAR ${FNDET_GRP.c?'▸':'▾'}</th>
+      <th colspan="${visV.length}" class="grp-venta fndet-grp" data-grp="v" style="cursor:pointer" title="Click: achicar / desplegar">VENTA · PEND. DE LIQUIDAR ${FNDET_GRP.v?'▸':'▾'}</th>
       <th rowspan="2" class="grp-resultado">Neto P/Liq (tn)</th></tr>
-    <tr>
-      <th class="grp-compra">Entreg. P/Liq</th><th class="grp-compra">Pend Ingreso</th><th class="grp-compra">Total P/Liq</th><th class="grp-compra">Imp $ (ARS)</th><th class="grp-compra">≈ USD</th>
-      <th class="grp-venta">Entreg. P/Liq</th><th class="grp-venta">Pend Entrega</th><th class="grp-venta">Total P/Liq</th><th class="grp-venta">Imp $ (ARS)</th><th class="grp-venta">≈ USD</th>
-    </tr>`;
+    <tr>${visC.map(k=>`<th class="grp-compra">${lbl(k,true)}</th>`).join('')}${visV.map(k=>`<th class="grp-venta">${lbl(k,false)}</th>`).join('')}</tr>`;
 
-  const celda = (o, neto) => {
+  // celda con drill: los campos de tn abren el Detalle de Contratos (zoom del contrato)
+  const FIELDMAP = {entPliq:'entr', pendEnt:'pend', pliqTn:'tot'};
+  const celda = (o, neto, ref) => {
     const n = v => v ? fmt.num(v) : '—';
-    return `<td class="num">${n(o.c.entPliq)}</td><td class="num">${n(o.c.pendEnt)}</td><td class="num" style="font-weight:700">${n(o.c.pliqTn)}</td><td class="num">${n(o.c.impArs)}</td><td class="num">${n(o.c.impUsd)}</td>`+
-           `<td class="num">${n(o.v.entPliq)}</td><td class="num">${n(o.v.pendEnt)}</td><td class="num" style="font-weight:700">${n(o.v.pliqTn)}</td><td class="num">${n(o.v.impArs)}</td><td class="num">${n(o.v.impUsd)}</td>`+
+    const lado = (obj, vis, tipo) => vis.map(k => {
+      const v = obj[k];
+      const bold = k === 'pliqTn' ? 'font-weight:700' : '';
+      if(FIELDMAP[k] && v && ref){
+        return `<td class="num pn-drill-cell-link fndet-link" style="${bold}" data-tipo="${tipo}" data-field="${FIELDMAP[k]}" ${ref.fam?`data-fam="${escapeHtml(ref.fam)}"`:`data-prod="${escapeHtml(ref.prod)}"`}>${n(v)}</td>`;
+      }
+      return `<td class="num" style="${bold}">${n(v)}</td>`;
+    }).join('');
+    return lado(o.c, visC, 'compra') + lado(o.v, visV, 'venta') +
            `<td class="num ${neto >= 0 ? 'pos-pos' : 'pos-neg'}">${fmt.num(neto)}</td>`;
   };
   const tot = {c:{entPliq:0,pendEnt:0,pliqTn:0,impUsd:0,impArs:0}, v:{entPliq:0,pendEnt:0,pliqTn:0,impUsd:0,impArs:0}};
@@ -8467,22 +8490,37 @@ function fnDetRender(camp, emp){
     const ov = fnDetAgg(ventas.filter(c => ps.includes(c.producto)), false);
     Object.keys(tot.c).forEach(k => { tot.c[k] += oc[k]; tot.v[k] += ov[k]; });
     const abierto = FNDET_FAM_EXPANDED.has(fam);
-    body += `<tr class="pn-grupo fndet-fam" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${abierto?'▾':'▸'} TOTAL ${fam}</td>${celda({c:oc,v:ov}, ov.pliqTn - oc.pliqTn)}</tr>`;
+    body += `<tr class="pn-grupo fndet-fam" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${abierto?'▾':'▸'} TOTAL ${fam}</td>${celda({c:oc,v:ov}, ov.pliqTn - oc.pliqTn, {fam})}</tr>`;
     if(abierto){
       ps.forEach(p => {
         const pc = fnDetAgg(compras.filter(c => c.producto === p), true);
         const pv = fnDetAgg(ventas.filter(c => c.producto === p), false);
         if(!(pc.pliqTn || pv.pliqTn || pc.pendEnt || pv.pendEnt)) return;
-        body += `<tr><td class="pn-prod-cell" style="padding-left:36px;color:var(--muted);font-size:12.5px" title="${escapeHtml(p)}">${escapeHtml(p.length>32?p.slice(0,32)+'…':p)}</td>${celda({c:pc,v:pv}, pv.pliqTn - pc.pliqTn)}</tr>`;
+        body += `<tr><td class="pn-prod-cell" style="padding-left:36px;color:var(--muted);font-size:12.5px" title="${escapeHtml(p)}">${escapeHtml(p.length>32?p.slice(0,32)+'…':p)}</td>${celda({c:pc,v:pv}, pv.pliqTn - pc.pliqTn, {prod:p})}</tr>`;
       });
     }
   });
-  document.getElementById('fndet-tbody').innerHTML = body || '<tr><td colspan="12" style="padding:24px;text-align:center;color:var(--muted)">Sin contratos para los filtros.</td></tr>';
-  document.getElementById('fndet-tfoot').innerHTML = `<tr class="pn-total"><td class="pn-prod-cell">TOTAL GENERAL</td>${celda(tot, tot.v.pliqTn - tot.c.pliqTn)}</tr>`;
+  const ncol = 2 + visC.length + visV.length;
+  document.getElementById('fndet-tbody').innerHTML = body || `<tr><td colspan="${ncol}" style="padding:24px;text-align:center;color:var(--muted)">Sin contratos para los filtros.</td></tr>`;
+  document.getElementById('fndet-tfoot').innerHTML = `<tr class="pn-total"><td class="pn-prod-cell">TOTAL GENERAL</td>${celda(tot, tot.v.pliqTn - tot.c.pliqTn, null)}</tr>`;
   document.querySelectorAll('#fndet-tbody .fndet-fam').forEach(tr => tr.addEventListener('click', () => {
     const f = tr.dataset.fam;
     if(FNDET_FAM_EXPANDED.has(f)) FNDET_FAM_EXPANDED.delete(f); else FNDET_FAM_EXPANDED.add(f);
     fnDetRender(camp, emp);
+  }));
+  // achicar/desplegar cada grupo desde su encabezado
+  document.querySelectorAll('#fndet-thead .fndet-grp').forEach(th => th.addEventListener('click', () => {
+    FNDET_GRP[th.dataset.grp] = FNDET_GRP[th.dataset.grp] ? 0 : 1;
+    fnDetRender(camp, emp);
+  }));
+  // zoom del contrato: click en un número → pestaña Detalle Contratos, con Volver a Financiera
+  document.querySelectorAll('#fndet-tbody .fndet-link').forEach(td => td.addEventListener('click', (e) => {
+    e.stopPropagation();   // no expandir/colapsar la familia
+    const tipo = td.dataset.tipo, field = td.dataset.field;
+    const ps = td.dataset.fam ? (byFam[td.dataset.fam] || []) : [td.dataset.prod];
+    pnctGo({tipo, field, prods: ps, exclSem: false,
+            origen: 'Desde: Financiera · ' + (td.dataset.fam ? ('TOTAL ' + td.dataset.fam) : td.dataset.prod),
+            volverA: 'pn-financiera'});
   }));
 }
 
@@ -8507,6 +8545,20 @@ function fnRender(){
   `;
   document.getElementById('fn-info').textContent = `Calculado al ${new Date().toLocaleString('es-AR')}`;
 }
+
+// Botones ⇔/⇕ del cuadro financiero: achicar/agrandar todo de un click
+document.getElementById('fndet-cols').addEventListener('click', () => {
+  const achicar = (FNDET_GRP.c || FNDET_GRP.v) ? 0 : 1;
+  FNDET_GRP.c = achicar; FNDET_GRP.v = achicar;
+  fnDetRender(document.getElementById('fn-camp').value, document.getElementById('fn-emp').value);
+});
+document.getElementById('fndet-rows').addEventListener('click', () => {
+  const fams = [...document.querySelectorAll('#fndet-tbody .fndet-fam')].map(tr => tr.dataset.fam).filter(Boolean);
+  const hayCerrada = fams.some(f => !FNDET_FAM_EXPANDED.has(f));
+  if(hayCerrada) fams.forEach(f => FNDET_FAM_EXPANDED.add(f));
+  else FNDET_FAM_EXPANDED.clear();
+  fnDetRender(document.getElementById('fn-camp').value, document.getElementById('fn-emp').value);
+});
 
 fnInitFiltros();
 fnRender();
