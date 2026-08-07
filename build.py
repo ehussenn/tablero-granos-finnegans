@@ -1948,6 +1948,21 @@ HTML_TEMPLATE = r"""<!doctype html>
       <!-- KPI totales -->
       <div class="kpis" id="fn-kpis"></div>
 
+      <!-- 0. DETALLE POR PRODUCTO · PENDIENTE DE LIQUIDAR -->
+      <div class="section">
+        <h3>Análisis Financiero · Detalle por Producto <span class="badge">entregado y pendiente de entrega PENDIENTES DE LIQUIDAR · click en TOTAL de un cultivo para abrir sus productos</span></h3>
+        <div class="tbl-wrap" style="max-height:620px">
+          <table id="fndet-tabla" style="font-size:11.5px">
+            <thead id="fndet-thead"></thead>
+            <tbody id="fndet-tbody"></tbody>
+            <tfoot id="fndet-tfoot"></tfoot>
+          </table>
+        </div>
+        <div style="margin-top:8px;font-size:11.5px;color:var(--muted)">
+          💡 <strong>Entreg. P/Liq</strong> = tn ya entregadas/recibidas que faltan liquidar (entregada − liquidada). <strong>Pend Entrega/Ingreso</strong> = tn que todavía no se entregaron (también van a liquidarse). <strong>Total P/Liq</strong> = pendiente de liquidar total del contrato. Los importes son el valor de lo entregado pendiente de liquidar, en pesos (así vienen de Finnegans, incluso en contratos en USD) y convertidos a USD al TC del tablero. Compensaciones de convenio y anulados excluidos. <strong>Neto</strong> = Total P/Liq venta − compra.
+        </div>
+      </div>
+
       <!-- 1. CONTRATO VENTA -->
       <div class="section">
         <h3><span style="background:#84cc16;color:#fff;padding:4px 14px;border-radius:6px;display:inline-block;font-size:14px">Contrato Venta</span> <span class="badge" id="fn-vta-meta"></span></h3>
@@ -8393,11 +8408,90 @@ function fnInitFiltros(){
   document.getElementById('fn-px-chip').textContent = `Precios BCR (USD/tn): ${txt}`;
 }
 
+/* ── Detalle por Producto (pendiente de liquidar) — mismo formato que Posición Granaria ── */
+const FNDET_FAM_EXPANDED = new Set();
+function fnDetAgg(rows, cp){
+  // Acumula por contrato: entregado pend liquidar / pendiente de entrega / total pend
+  // liquidar (tn) + importe de lo entregado pend liquidar separado por moneda.
+  const o = {entPliq:0, pendEnt:0, pliqTn:0, impUsd:0, impArs:0};
+  rows.forEach(r => {
+    const ent = Number(r.cantidadentregada)||0, liq = Number(r.cantidadliquidada)||0;
+    const entP = cp ? Math.max(0, ent - liq)
+                    : ((Number(r.cantidadentregadapendienteliquidar)||0) || Math.max(0, ent - liq));
+    const pendEnt = Number(r.cantidadpendienteentrega)||0;
+    const pliq = (Number(r.cantidadpendienteliquidar)||0) || (entP + pendEnt);
+    // los importes de Finnegans vienen SIEMPRE en pesos (moneda principal),
+    // aunque el contrato sea en dólares — se convierte a USD con el TC del tablero
+    o.impArs += Number(r.importecantidadentregadapendienteliquidar)||0;
+    o.entPliq += entP; o.pendEnt += pendEnt; o.pliqTn += pliq;
+  });
+  o.impUsd = (typeof FN_TC !== 'undefined' && FN_TC > 0) ? o.impArs / FN_TC : 0;
+  return o;
+}
+function fnDetRender(camp, emp){
+  const filtra = r => {
+    if(pnEsCompensacion(r) || pnEsAnulado(r)) return false;
+    if(camp && r.campana !== camp) return false;
+    if(emp && r.empresa !== emp) return false;
+    return true;
+  };
+  const compras = (DATA_CP||[]).filter(filtra), ventas = (DATA||[]).filter(filtra);
+  const prods = new Set();
+  compras.forEach(c => { if(c.producto) prods.add(c.producto); });
+  ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
+  const byFam = {};
+  [...prods].sort().forEach(p => { const f = pnFamilia(p); (byFam[f] = byFam[f] || []).push(p); });
+  const fams = Object.keys(byFam).sort((a,b) => ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(a) - ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(b));
+
+  document.getElementById('fndet-thead').innerHTML = `
+    <tr><th class='pn-prod' rowspan='2'>Producto</th>
+      <th colspan="5" class="grp-compra">COMPRA · PEND. DE LIQUIDAR</th>
+      <th colspan="5" class="grp-venta">VENTA · PEND. DE LIQUIDAR</th>
+      <th rowspan="2" class="grp-resultado">Neto P/Liq (tn)</th></tr>
+    <tr>
+      <th class="grp-compra">Entreg. P/Liq</th><th class="grp-compra">Pend Ingreso</th><th class="grp-compra">Total P/Liq</th><th class="grp-compra">Imp $ (ARS)</th><th class="grp-compra">≈ USD</th>
+      <th class="grp-venta">Entreg. P/Liq</th><th class="grp-venta">Pend Entrega</th><th class="grp-venta">Total P/Liq</th><th class="grp-venta">Imp $ (ARS)</th><th class="grp-venta">≈ USD</th>
+    </tr>`;
+
+  const celda = (o, neto) => {
+    const n = v => v ? fmt.num(v) : '—';
+    return `<td class="num">${n(o.c.entPliq)}</td><td class="num">${n(o.c.pendEnt)}</td><td class="num" style="font-weight:700">${n(o.c.pliqTn)}</td><td class="num">${n(o.c.impArs)}</td><td class="num">${n(o.c.impUsd)}</td>`+
+           `<td class="num">${n(o.v.entPliq)}</td><td class="num">${n(o.v.pendEnt)}</td><td class="num" style="font-weight:700">${n(o.v.pliqTn)}</td><td class="num">${n(o.v.impArs)}</td><td class="num">${n(o.v.impUsd)}</td>`+
+           `<td class="num ${neto >= 0 ? 'pos-pos' : 'pos-neg'}">${fmt.num(neto)}</td>`;
+  };
+  const tot = {c:{entPliq:0,pendEnt:0,pliqTn:0,impUsd:0,impArs:0}, v:{entPliq:0,pendEnt:0,pliqTn:0,impUsd:0,impArs:0}};
+  let body = '';
+  fams.forEach(fam => {
+    const ps = byFam[fam];
+    const oc = fnDetAgg(compras.filter(c => ps.includes(c.producto)), true);
+    const ov = fnDetAgg(ventas.filter(c => ps.includes(c.producto)), false);
+    Object.keys(tot.c).forEach(k => { tot.c[k] += oc[k]; tot.v[k] += ov[k]; });
+    const abierto = FNDET_FAM_EXPANDED.has(fam);
+    body += `<tr class="pn-grupo fndet-fam" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${abierto?'▾':'▸'} TOTAL ${fam}</td>${celda({c:oc,v:ov}, ov.pliqTn - oc.pliqTn)}</tr>`;
+    if(abierto){
+      ps.forEach(p => {
+        const pc = fnDetAgg(compras.filter(c => c.producto === p), true);
+        const pv = fnDetAgg(ventas.filter(c => c.producto === p), false);
+        if(!(pc.pliqTn || pv.pliqTn || pc.pendEnt || pv.pendEnt)) return;
+        body += `<tr><td class="pn-prod-cell" style="padding-left:36px;color:var(--muted);font-size:12.5px" title="${escapeHtml(p)}">${escapeHtml(p.length>32?p.slice(0,32)+'…':p)}</td>${celda({c:pc,v:pv}, pv.pliqTn - pc.pliqTn)}</tr>`;
+      });
+    }
+  });
+  document.getElementById('fndet-tbody').innerHTML = body || '<tr><td colspan="12" style="padding:24px;text-align:center;color:var(--muted)">Sin contratos para los filtros.</td></tr>';
+  document.getElementById('fndet-tfoot').innerHTML = `<tr class="pn-total"><td class="pn-prod-cell">TOTAL GENERAL</td>${celda(tot, tot.v.pliqTn - tot.c.pliqTn)}</tr>`;
+  document.querySelectorAll('#fndet-tbody .fndet-fam').forEach(tr => tr.addEventListener('click', () => {
+    const f = tr.dataset.fam;
+    if(FNDET_FAM_EXPANDED.has(f)) FNDET_FAM_EXPANDED.delete(f); else FNDET_FAM_EXPANDED.add(f);
+    fnDetRender(camp, emp);
+  }));
+}
+
 function fnRender(){
   const camp = document.getElementById('fn-camp').value;
   const emp = document.getElementById('fn-emp').value;
   const vtaRows = fnFiltrarYAgrupar(PAYLOAD.pilot, camp, emp);
   const cprRows = fnFiltrarYAgrupar(PAYLOAD.compra, camp, emp);
+  fnDetRender(camp, emp);
   const tVta = fnRenderContratoTbl('fn-tbl-vta','fn-vta-meta',vtaRows);
   const tCpr = fnRenderContratoTbl('fn-tbl-cpr','fn-cpr-meta',cprRows);
   const tStk = fnRenderStock(camp);
