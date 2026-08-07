@@ -7270,17 +7270,24 @@ const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
 let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
-  if(o[k] !== undefined && o[k] !== null && o[k] !== "") return Number(o[k]) || 0;
-  // producción (cosechado/pendcos/campoest) sale de la campaña seleccionada
+  // PRODUCCIÓN (cosechado/pendcos/campoest): el override manual vale POR CAMPAÑA
+  // (clave "k@CAMPAÑA X"). Un valor cargado para la 25-26 NO debe pisar la 26-27
+  // (antes pasaba: valores manuales viejos aparecían en cualquier campaña).
+  // Las claves viejas sin campaña se ignoran para producción.
   if(PN_PROD_KEYS.has(k)){
+    const kc = k + '@' + (PN_SEL_CAMP || '');
+    if(o[kc] !== undefined && o[kc] !== null && o[kc] !== "") return Number(o[kc]) || 0;
     const camp = PN_PROD_BY_CAMP[PN_SEL_CAMP] || {};
     return Number((camp[prod] || {})[k]) || 0;
   }
+  if(o[k] !== undefined && o[k] !== null && o[k] !== "") return Number(o[k]) || 0;
   const d = PN_DEFAULTS[prod] || {};
   return Number(d[k]) || 0;
 }
 function pnSetMan(prod, k, v){
   if(!PN_MANUAL[prod]) PN_MANUAL[prod] = {};
+  // producción se guarda por campaña (ver pnGetMan)
+  if(PN_PROD_KEYS.has(k)) k = k + '@' + (PN_SEL_CAMP || '');
   if(v === null || v === "" || isNaN(v)){
     delete PN_MANUAL[prod][k];
     if(Object.keys(PN_MANUAL[prod]).length === 0) delete PN_MANUAL[prod];
