@@ -1904,7 +1904,15 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="filterbar">
         <div><label>TIPO</label><select id="pnct-tipo"><option value="venta">Venta</option><option value="compra">Compra</option></select></div>
         <div><label>CULTIVO</label><select id="pnct-fam"><option value="">Todos</option><option>SOJA</option><option>MAÍZ</option><option>TRIGO</option><option>OTROS</option></select></div>
-        <div><label>MOSTRAR</label><select id="pnct-field"><option value="tot">Todos los contratos</option><option value="pend">Con pendiente de entrega</option><option value="entr">Con entregado</option></select></div>
+        <div><label>MOSTRAR</label><select id="pnct-field">
+          <option value="tot">Todos los contratos</option>
+          <option value="pend">Con pendiente de entrega</option>
+          <option value="entr">Con entregado</option>
+          <option value="pliq">Entregado pend. de liquidar</option>
+          <option value="liq">Con liquidado</option>
+          <option value="antic">Liquidado anticipado</option>
+          <option value="nofij">Con tn sin fijar</option>
+        </select></div>
         <button class="clear" id="pnct-volver">← Volver a Posición Granaria</button>
         <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pnct-info"></span>
       </div>
@@ -1920,7 +1928,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </div>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Click en un encabezado ordena la tabla</strong> (▲ menor a mayor, ▼ mayor a menor). <strong>¿A precio?</strong> sale de la fijación del contrato (tn fijadas / ajustadas). <strong>Liquidado</strong> son las tn e importes ya liquidados en Finnegans; lo que falta está en <strong>Pend. Liquidar</strong>. <strong>Cta. Cte.</strong> es el saldo de la contraparte en la Composición de Saldos (todas sus operaciones): en venta, saldo &gt; 0 = todavía te debe (no se cobró todo); ≈ 0 = al día. Los filtros de campaña y empresa se heredan de la Posición Granaria.
+        💡 <strong>Click en una tarjeta de arriba</strong> (Entregado, Pend. Entrega, Entreg. Pend/Liq, Liquidado, Liq. Anticipado, Sin Fijar) filtra la tabla; <strong>click en un encabezado ordena</strong> (▲/▼). <strong>Entreg. P/Liq</strong> = entregado − liquidado. <strong>Liq. Anticip.</strong> = liquidado antes de entregar. <strong>Sin Fijar</strong> = tn ajustadas sin precio. La fecha, campaña y ventana de entrega del contrato se ven dejando el mouse sobre la fila. <strong>¿A precio?</strong> sale de la fijación del contrato (tn fijadas / ajustadas). <strong>Liquidado</strong> son las tn e importes ya liquidados en Finnegans; lo que falta está en <strong>Pend. Liquidar</strong>. <strong>Cta. Cte.</strong> es el saldo de la contraparte en la Composición de Saldos (todas sus operaciones): en venta, saldo &gt; 0 = todavía te debe (no se cobró todo); ≈ 0 = al día. Los filtros de campaña y empresa se heredan de la Posición Granaria.
       </div>
     </div><!-- /subpanel pn-ctos -->
 
@@ -8062,9 +8070,19 @@ function pnctGo(opts){
 function pnctRender(){
   const tipo = PNCT.tipo, cp = (tipo === 'compra');
   const src = cp ? PN_LAST_COMPRAS : PN_LAST_VENTAS;   // ya filtrados por campaña/empresa
+  // valor según el filtro MOSTRAR (también define el orden inicial)
   const val = c => {
     const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
-    return PNCT.field === 'pend' ? pen : PNCT.field === 'entr' ? ent : ent + pen;
+    const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
+    switch(PNCT.field){
+      case 'pend':  return pen;
+      case 'entr':  return ent;
+      case 'pliq':  return Math.max(0, ent - liq);      // entregado pendiente de liquidar
+      case 'liq':   return liq;
+      case 'antic': return Math.max(0, liq - ent);      // liquidado anticipado (antes de entregar)
+      case 'nofij': return Math.max(0, (ent + pen) - fij);  // tn sin fijar
+      default:      return ent + pen;
+    }
   };
   const set = PNCT.prods ? new Set(PNCT.prods) : null;
   let rows = src.filter(c => {
@@ -8079,30 +8097,43 @@ function pnctRender(){
   const chips = [];
   if(PNCT.origen) chips.push(PNCT.origen);
   chips.push(cp ? 'COMPRA' : 'VENTA');
-  chips.push(PNCT.field === 'pend' ? (cp ? 'Pendiente de ingreso' : 'Pendiente de entrega') : PNCT.field === 'entr' ? 'Entregado' : 'Cantidad ajustada');
+  const FIELD_LBL = {tot:'Cantidad ajustada', pend: cp?'Pendiente de ingreso':'Pendiente de entrega',
+    entr:'Entregado', pliq:'Entregado pend. de liquidar', liq:'Liquidado',
+    antic:'Liquidado anticipado', nofij:'Con tn sin fijar'};
+  chips.push(FIELD_LBL[PNCT.field] || 'Cantidad ajustada');
   const campSel = document.getElementById('pn-campana').value;
   chips.push(campSel || 'Todas las campañas');
   if(PNCT.exclSem) chips.push('sin semilla (va aparte)');
   document.getElementById('pnct-chips').innerHTML = chips.map(c =>
     `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(String(c))}</span>`).join('');
 
-  // KPIs
-  let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tImpLiqU=0, tImpLiqA=0;
+  // KPIs — clickeables: dinamizan el filtro MOSTRAR de la tabla de abajo
+  let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tEntPliq=0, tAntic=0, tSinFij=0, tImpLiqU=0, tImpLiqA=0;
   rows.forEach(c => {
     const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
-    tAj += ent + pen; tEnt += ent; tPen += pen;
-    tFij += Number(c.cantidadfijada)||0;
-    tLiq += Number(c.cantidadliquidada)||0;
+    const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
+    tAj += ent + pen; tEnt += ent; tPen += pen; tFij += fij; tLiq += liq;
+    tEntPliq += Math.max(0, ent - liq);
+    tAntic += Math.max(0, liq - ent);
+    tSinFij += Math.max(0, (ent + pen) - fij);
     if((c.moneda||'').toUpperCase() === 'DOLARES') tImpLiqU += Number(c.importeliquidado)||0;
     else tImpLiqA += Number(c.importeliquidado)||0;
   });
+  const kAct = f => PNCT.field === f ? 'outline:2.5px solid #16a34a;border-radius:10px;' : '';
   document.getElementById('pnct-kpis').innerHTML = `
     <div class="kpi"><div class="lbl">Contratos</div><div class="val">${rows.length}</div></div>
-    <div class="kpi green"><div class="lbl">Tn ajustadas</div><div class="val">${fmt.num(tAj)}</div></div>
-    <div class="kpi"><div class="lbl">Entregado</div><div class="val">${fmt.num(tEnt)}</div></div>
-    <div class="kpi orange"><div class="lbl">${cp?'Pend. ingreso':'Pend. entrega'}</div><div class="val">${fmt.num(tPen)}</div></div>
-    <div class="kpi"><div class="lbl">Fijado (a precio)</div><div class="val">${fmt.num(tFij)}</div></div>
-    <div class="kpi green"><div class="lbl">Liquidado</div><div class="val">${fmt.num(tLiq)} tn</div></div>`;
+    <div class="kpi green" data-field="tot" style="cursor:pointer;${kAct('tot')}" title="Click: mostrar todos"><div class="lbl">Tn ajustadas</div><div class="val">${fmt.num(tAj)}</div></div>
+    <div class="kpi" data-field="entr" style="cursor:pointer;${kAct('entr')}" title="Click: mostrar con entregado"><div class="lbl">Entregado</div><div class="val">${fmt.num(tEnt)}</div></div>
+    <div class="kpi orange" data-field="pend" style="cursor:pointer;${kAct('pend')}" title="Click: mostrar con pendiente"><div class="lbl">${cp?'Pend. ingreso':'Pend. entrega'}</div><div class="val">${fmt.num(tPen)}</div></div>
+    <div class="kpi red" data-field="pliq" style="cursor:pointer;${kAct('pliq')}" title="Click: mostrar entregado pendiente de liquidar"><div class="lbl">Entreg. Pend/Liq</div><div class="val">${fmt.num(tEntPliq)}</div></div>
+    <div class="kpi green" data-field="liq" style="cursor:pointer;${kAct('liq')}" title="Click: mostrar con liquidado"><div class="lbl">Liquidado</div><div class="val">${fmt.num(tLiq)} tn</div></div>
+    <div class="kpi" data-field="antic" style="cursor:pointer;${kAct('antic')}" title="Click: mostrar liquidado anticipado"><div class="lbl">Liq. Anticipado</div><div class="val">${fmt.num(tAntic)}</div></div>
+    <div class="kpi orange" data-field="nofij" style="cursor:pointer;${kAct('nofij')}" title="Click: mostrar con tn sin fijar"><div class="lbl">Sin Fijar</div><div class="val">${fmt.num(tSinFij)}</div></div>`;
+  document.querySelectorAll('#pnct-kpis .kpi[data-field]').forEach(k => k.addEventListener('click', () => {
+    PNCT.field = k.dataset.field;
+    document.getElementById('pnct-field').value = PNCT.field;
+    pnctRender();
+  }));
 
   document.getElementById('pnct-title').textContent =
     (cp ? 'Contratos de Compra' : 'Contratos de Venta') + (PNCT.prods && PNCT.prods.length === 1 ? ` · ${PNCT.prods[0]}` : PNCT.fam ? ` · ${PNCT.fam}` : '');
@@ -8110,24 +8141,27 @@ function pnctRender(){
     '← Volver a ' + (PNCT.volverA === 'pn-financiera' ? 'Posición Financiera' : 'Posición Granaria');
   document.getElementById('pnct-info').textContent = `${rows.length} contratos · ${fmt.num(tAj)} tn ajustadas`;
 
-  // tabla
+  // tabla — sin Fecha / Campaña / Entrega (la campaña ya se filtró antes del zoom);
+  // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
   document.getElementById('pnct-thead').innerHTML = `<tr>
-    <th>Nº</th><th>Fecha</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Campaña</th><th>Producto</th><th>Entrega</th>
-    <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th>
-    <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
-    <th class="num">Liquidada (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
+    <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th>
+    <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
+    <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
+    <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
+    <th class="num">Liquidada (tn)</th><th class="num">Liq. Anticip. (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
     <th>${cp?'Cta. Cte. (¿se pagó?)':'Cta. Cte. (¿se cobró?)'}</th></tr>`;
   let html = '';
   rows.forEach(c => {
     const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'—') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
-    const entg = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
-    const camp = (c.campana||'').replace('CAMPAÑA ','') || '—';
     const mon = (c.moneda||'').toUpperCase() === 'DOLARES' ? 'USD' : ((c.moneda||'').toUpperCase() ? 'ARS' : '—');
     const pFij = Number(c.preciopromediofijado)||0, pLiq = Number(c.precioliquidado)||0;
     const liqTn = Number(c.cantidadliquidada)||0, liqImp = Number(c.importeliquidado)||0;
-    const penLiq = Number(c.cantidadpendienteliquidar)||0;
+    const penLiq = Number(c.cantidadpendienteliquidar)||0, fijTn = Number(c.cantidadfijada)||0;
+    const entPliq = Math.max(0, ent - liqTn);
+    const antic = Math.max(0, liqTn - ent);
+    const sinFij = Math.max(0, (ent + pen) - fijTn);
     const org = (c.organizacion||'').trim();
     const saldo = PNCT_SALDO_ORG[org.toUpperCase()];
     let cta = '<span style="color:var(--muted)">sin mov.</span>';
@@ -8139,23 +8173,29 @@ function pnctRender(){
         ? `<span class="pn-fij-par" title="saldo total de ${escapeHtml(org)} en cta cte">◑ saldo ${monS} ${fmt.num(Math.abs(s))}</span>`
         : `<span class="pn-fij-si" title="cta cte de ${escapeHtml(org)} sin saldo relevante">✓ al día</span>`;
     }
-    html += `<tr>
-      <td class="pn-drill-nro">${nro}</td><td class="pn-drill-fe">${pnFecha(c.fecha)||'—'}</td>
+    html += `<tr title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'}">
+      <td class="pn-drill-nro">${nro}</td>
       <td title="${escapeHtml(org)}">${escapeHtml(org.length>34?org.slice(0,34)+'…':org)||'—'}</td>
-      <td>${escapeHtml(camp)}</td><td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
-      <td class="pn-drill-fe">${entg}</td>
+      <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
-      <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(Number(c.cantidadfijada)||0)}</td>
+      <td class="num" style="font-weight:700;color:#b91c1c">${entPliq?fmt.num(entPliq):'—'}</td>
+      <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(fijTn)}</td>
+      <td class="num" style="${sinFij>0.05?'color:#b45309;font-weight:700':''}">${sinFij>0.05?fmt.num(sinFij):'—'}</td>
       <td class="num">${pFij?fmt.num(pFij):'—'}</td><td class="num">${pLiq?fmt.num(pLiq):'—'}</td><td>${mon}</td>
-      <td class="num">${liqTn?fmt.num(liqTn):'—'}</td><td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
+      <td class="num">${liqTn?fmt.num(liqTn):'—'}</td>
+      <td class="num" style="${antic>0.05?'color:#0e7490;font-weight:700':''}">${antic>0.05?fmt.num(antic):'—'}</td>
+      <td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
       <td>${cta}</td></tr>`;
   });
   document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="18" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
-    <td colspan="6">TOTAL (${rows.length} contratos)</td>
+    <td colspan="3">TOTAL (${rows.length} contratos)</td>
     <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
-    <td></td><td class="num">${fmt.num(tFij)}</td><td></td><td></td><td></td>
-    <td class="num">${fmt.num(tLiq)}</td><td class="num">USD ${fmt.num(tImpLiqU)} · ARS ${fmt.num(tImpLiqA)}</td><td></td><td></td></tr>` : '';
+    <td class="num">${fmt.num(tEntPliq)}</td>
+    <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
+    <td></td><td></td><td></td>
+    <td class="num">${fmt.num(tLiq)}</td><td class="num">${fmt.num(tAntic)}</td>
+    <td class="num">USD ${fmt.num(tImpLiqU)} · ARS ${fmt.num(tImpLiqA)}</td><td></td><td></td></tr>` : '';
 }
 
 /* ===== ORDEN POR ENCABEZADO en tablas de detalle =====
