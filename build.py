@@ -7147,12 +7147,24 @@ function ppfEval(formula, ctx){
 // Mapeo de producto Finnegans a "familia" agrupadora
 function pnFamilia(prod){
   if(!prod) return "OTROS";
+  // Productos con denominación "SEMILLA X" (SEMILLA SOJA, SEMILLA TRIGO, SEMILLA MAIZ,
+  // SEMILLA GIRASOL, SEMILLA SORGO, SEMILLA ARVEJA...): van POR CAMINO SEPARADO — fila
+  // propia por cultivo, AFUERA del grano y de la semilla DM del cultivo.
+  const pU = prod.trim().toUpperCase();
+  if(pU.startsWith("SEMILLA ")) return pU;
   const p = prod.toLowerCase();
   if(p.includes("soja")) return "SOJA";
   if(p.includes("maíz") || p.includes("maiz")) return "MAÍZ";
   if(p.includes("trigo")) return "TRIGO";
   // el resto (cebada, camelina, colza, girasol, sorgo, arveja, avena, centeno, etc.) -> OTROS
   return "OTROS";
+}
+// Orden de familias en las tablas: las base primero, las SEMILLA X al final
+function pnFamOrden(a, b){
+  const orden = ["SOJA","MAÍZ","TRIGO","OTROS"];
+  const ix = f => { const i = orden.indexOf(f); return i >= 0 ? i : (f.startsWith("SEMILLA") ? 20 : 10); };
+  const d = ix(a) - ix(b);
+  return d !== 0 ? d : a.localeCompare(b);
 }
 function pnSubtipo(prod){
   if(!prod) return "Otro";
@@ -7427,8 +7439,9 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const pendVincular = pnGetMan(producto, "pendVincular");
   // Cantidad ajustada = entregado + pendiente de entrega (reporte de Finnegans).
   let ventaCtosAjust = 0, ventaEntr = 0, ventaCtos = 0;
+  const esFilaSemillaPropia = pnFamilia(producto).startsWith('SEMILLA');   // fila SEMILLA X: sus ventas SÍ cuentan acá
   opsVenta.forEach(c => {
-    if((c.producto || "").toLowerCase().includes("sem")) return;  // semilla va aparte (manual)
+    if(!esFilaSemillaPropia && (c.producto || "").toLowerCase().includes("sem")) return;  // semilla DM va aparte (manual)
     const ent = Number(c.cantidadentregada) || 0;
     const pen = Number(c.cantidadpendienteentrega) || 0;
     ventaEntr      += ent;
@@ -7742,10 +7755,7 @@ function pnRender(){
     if(!byFamilia[f]) byFamilia[f] = [];
     byFamilia[f].push(p);
   });
-  const familias = Object.keys(byFamilia).sort((a,b) => {
-    const orden = ["SOJA","MAÍZ","TRIGO","OTROS"];
-    return orden.indexOf(a) - orden.indexOf(b);
-  });
+  const familias = Object.keys(byFamilia).sort(pnFamOrden);
 
   // Calcular por producto
   const dataPorProd = {};
@@ -7829,9 +7839,11 @@ function pnRender(){
 
   familias.forEach(fam => {
     const productos = byFamilia[fam];
-    // separar semillas (todas las variedades) del resto
-    const semillas = productos.filter(p => pnSubtipo(p) === 'Semilla');
-    const otros    = productos.filter(p => pnSubtipo(p) !== 'Semilla');
+    // separar semillas (todas las variedades) del resto — salvo en las familias
+    // "SEMILLA X", que ya son su propio camino (sin subgrupo interno)
+    const esFamSemilla = fam.startsWith('SEMILLA');
+    const semillas = esFamSemilla ? [] : productos.filter(p => pnSubtipo(p) === 'Semilla');
+    const otros    = esFamSemilla ? productos : productos.filter(p => pnSubtipo(p) !== 'Semilla');
 
     // totales familia (sobre TODOS los productos, esten o no expandidas las semillas)
     const totFam = {};
@@ -8006,8 +8018,9 @@ function pnRender(){
       // fijación, precio, contraparte, liquidación y cta. cte. por contrato).
       const cfgD = PN_DRILL[type];
       if(cfgD && (cfgD.kind === 'compra' || cfgD.kind === 'venta')){
+        const famClick = td.dataset.fam || pnFamilia(td.dataset.prod || '');
         pnctGo({tipo: cfgD.kind, field: cfgD.field, prods,
-                exclSem: cfgD.kind === 'venta',
+                exclSem: cfgD.kind === 'venta' && !famClick.startsWith('SEMILLA'),
                 fam: td.dataset.fam || '',
                 origen: td.dataset.fam ? ('Desde: TOTAL ' + td.dataset.fam) : ('Desde: ' + td.dataset.prod)});
         return;
@@ -8539,7 +8552,7 @@ function fnDetRender(camp, emp){
   ventas.forEach(c => { if(c.producto) prods.add(c.producto); });
   const byFam = {};
   [...prods].sort().forEach(p => { const f = pnFamilia(p); (byFam[f] = byFam[f] || []).push(p); });
-  const fams = Object.keys(byFam).sort((a,b) => ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(a) - ["SOJA","MAÍZ","TRIGO","OTROS"].indexOf(b));
+  const fams = Object.keys(byFam).sort(pnFamOrden);
 
   // columnas visibles por lado según achicado/expandido
   const TODAS = ['entPliq','pendEnt','pliqTn','impArs','impUsd'];
