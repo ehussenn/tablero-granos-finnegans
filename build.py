@@ -94,6 +94,14 @@ def normalize_pilot(rows: list[dict]) -> list[dict]:
     return out
 
 
+# Sanear las credenciales del DW: si el secreto en GitHub se pegó con un espacio o un
+# salto de línea de más, psycopg2 falla con "could not translate host name". Esto lo
+# hace inmune (pasó el 10/08/2026: el tablero online quedó sin datos del DEM-SUP).
+for _k in ("FNN_DW_HOST", "FNN_DW_USER", "FNN_DW_PASS", "FNN_DW_DB", "FNN_DW_PORT"):
+    if os.environ.get(_k):
+        os.environ[_k] = os.environ[_k].strip()
+
+
 def fetch_produccion() -> tuple[dict, dict]:
     """Baja el Portal de Producción de Agronasaja (app pública en GitHub Pages, sin login)
     y arma la producción por campaña/cultivo para la Posición Granaria:

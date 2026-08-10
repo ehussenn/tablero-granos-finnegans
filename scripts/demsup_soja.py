@@ -73,6 +73,11 @@ def _load_dotenv() -> None:
 
 _load_dotenv()
 
+# Sanear credenciales (espacios/saltos de línea pegados de más en los secretos de GitHub)
+for _k in ("FNN_DW_HOST", "FNN_DW_USER", "FNN_DW_PASS", "FNN_DW_DB", "FNN_DW_PORT"):
+    if os.environ.get(_k):
+        os.environ[_k] = os.environ[_k].strip()
+
 
 # ─── Helpers (idénticos al extranet) ─────────────────────────────────────────
 def sf(v) -> float:
