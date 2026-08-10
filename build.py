@@ -7144,14 +7144,16 @@ function ppfEval(formula, ctx){
   return Function('"use strict";return(' + expr + ')')();
 }
 
+// Productos con denominación "SEMILLA X" (SEMILLA SOJA, SEMILLA MAIZ...): en realidad
+// son GRANO que se carga así porque la compra se cancela con factura. Van DENTRO del
+// cultivo (suman en TOTAL SOJA, etc.) pero como fila propia diferenciada, separados
+// del grano común y de las variedades de semilla DM.
+function pnEsSemillaGrano(prod){
+  return String(prod || '').trim().toUpperCase().startsWith('SEMILLA ');
+}
 // Mapeo de producto Finnegans a "familia" agrupadora
 function pnFamilia(prod){
   if(!prod) return "OTROS";
-  // Productos con denominación "SEMILLA X" (SEMILLA SOJA, SEMILLA TRIGO, SEMILLA MAIZ,
-  // SEMILLA GIRASOL, SEMILLA SORGO, SEMILLA ARVEJA...): van POR CAMINO SEPARADO — fila
-  // propia por cultivo, AFUERA del grano y de la semilla DM del cultivo.
-  const pU = prod.trim().toUpperCase();
-  if(pU.startsWith("SEMILLA ")) return pU;
   const p = prod.toLowerCase();
   if(p.includes("soja")) return "SOJA";
   if(p.includes("maíz") || p.includes("maiz")) return "MAÍZ";
@@ -7439,7 +7441,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const pendVincular = pnGetMan(producto, "pendVincular");
   // Cantidad ajustada = entregado + pendiente de entrega (reporte de Finnegans).
   let ventaCtosAjust = 0, ventaEntr = 0, ventaCtos = 0;
-  const esFilaSemillaPropia = pnFamilia(producto).startsWith('SEMILLA');   // fila SEMILLA X: sus ventas SÍ cuentan acá
+  const esFilaSemillaPropia = pnEsSemillaGrano(producto);   // "SEMILLA X" es grano: sus ventas SÍ cuentan acá
   opsVenta.forEach(c => {
     if(!esFilaSemillaPropia && (c.producto || "").toLowerCase().includes("sem")) return;  // semilla DM va aparte (manual)
     const ent = Number(c.cantidadentregada) || 0;
@@ -7808,7 +7810,8 @@ function pnRender(){
     const cls = (opts && opts.cls) || '';
     const indented = !!(opts && opts.indent);
     const tdStyle = indented ? ' style="padding-left:36px;color:var(--muted);font-size:12.5px"' : '';
-    let row = `<tr class="${cls}"><td class="pn-prod-cell"${tdStyle} title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
+    const trStyle = (opts && opts.trStyle) ? ` style="${opts.trStyle}"` : '';
+    let row = `<tr class="${cls}"${trStyle}><td class="pn-prod-cell"${tdStyle} title="${escapeHtml(prod)}">${escapeHtml(prod.length>30?prod.slice(0,30)+'…':prod)}</td>`;
     PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = r[c.k] || 0;
       if((PN_PPF_EDIT_COLS[c.k] !== undefined || c.edit) && PN_RO){
@@ -7839,11 +7842,11 @@ function pnRender(){
 
   familias.forEach(fam => {
     const productos = byFamilia[fam];
-    // separar semillas (todas las variedades) del resto — salvo en las familias
-    // "SEMILLA X", que ya son su propio camino (sin subgrupo interno)
-    const esFamSemilla = fam.startsWith('SEMILLA');
-    const semillas = esFamSemilla ? [] : productos.filter(p => pnSubtipo(p) === 'Semilla');
-    const otros    = esFamSemilla ? productos : productos.filter(p => pnSubtipo(p) !== 'Semilla');
+    // separar: "SEMILLA X" (grano facturado, fila propia diferenciada) · semillas DM
+    // (subgrupo colapsable) · el resto (grano común)
+    const granoSem = productos.filter(p => pnEsSemillaGrano(p));
+    const semillas = productos.filter(p => !pnEsSemillaGrano(p) && pnSubtipo(p) === 'Semilla');
+    const otros    = productos.filter(p => !pnEsSemillaGrano(p) && pnSubtipo(p) !== 'Semilla');
 
     // totales familia (sobre TODOS los productos, esten o no expandidas las semillas)
     const totFam = {};
@@ -7925,6 +7928,8 @@ function pnRender(){
     // 2) Detalle (productos + semillas) — SOLO si la familia está expandida
     if(famExpanded){
       otros.forEach(prod => { body += pnRenderProdRow(prod, {indent:true}); });
+      // "SEMILLA X" (grano facturado): fila propia diferenciada dentro del cultivo
+      granoSem.forEach(prod => { body += pnRenderProdRow(prod, {indent:true, trStyle:'background:#fffbeb;border-left:3px solid #f59e0b'}); });
       if(semillas.length > 0){
         const semExpanded = PN_SEM_EXPANDED.has(fam);
         let rowSem = `<tr class="pn-semilla-header" data-sem-fam="${escapeHtml(fam)}" style="cursor:pointer;background:#fff7ed">
@@ -8018,9 +8023,8 @@ function pnRender(){
       // fijación, precio, contraparte, liquidación y cta. cte. por contrato).
       const cfgD = PN_DRILL[type];
       if(cfgD && (cfgD.kind === 'compra' || cfgD.kind === 'venta')){
-        const famClick = td.dataset.fam || pnFamilia(td.dataset.prod || '');
         pnctGo({tipo: cfgD.kind, field: cfgD.field, prods,
-                exclSem: cfgD.kind === 'venta' && !famClick.startsWith('SEMILLA'),
+                exclSem: cfgD.kind === 'venta',
                 fam: td.dataset.fam || '',
                 origen: td.dataset.fam ? ('Desde: TOTAL ' + td.dataset.fam) : ('Desde: ' + td.dataset.prod)});
         return;
@@ -8045,8 +8049,22 @@ function pnRender(){
     });
   });
 
-  // Cards arriba (por familia)
-  pnRenderCards(totalsFam, familias);
+  // Tarjetas de arriba (Posición por Cultivo): el cultivo se muestra SIN los "SEMILLA X"
+  // y cada "SEMILLA X" tiene su tarjeta propia — así se chequea cada camino por separado.
+  // (En la tabla sí suman dentro del cultivo.)
+  const cardTotals = {}, cardOrden = [];
+  familias.forEach(fam => {
+    (byFamilia[fam] || []).forEach(p => {
+      const r = dataPorProd[p]; if(!r) return;
+      const dest = pnEsSemillaGrano(p) ? p.trim().toUpperCase() : fam;
+      if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0}; cardOrden.push(dest); }
+      cardTotals[dest].posicion  += r.posicion  || 0;
+      cardTotals[dest].ofertaTot += r.ofertaTot || 0;
+      cardTotals[dest].demandaTot += r.demandaTot || 0;
+    });
+  });
+  cardOrden.sort(pnFamOrden);
+  pnRenderCards(cardTotals, cardOrden);
 }
 
 /* ============ DETALLE DE CONTRATOS (pestaña) ============ */
@@ -8101,7 +8119,8 @@ function pnctRender(){
   let rows = src.filter(c => {
     if(set && !set.has(c.producto)) return false;
     if(!set && PNCT.fam && pnFamilia(c.producto) !== PNCT.fam) return false;
-    if(PNCT.exclSem && (c.producto||'').toLowerCase().includes('sem')) return false;
+    // la semilla DM va aparte (manual), pero los "SEMILLA X" son grano y SÍ se muestran
+    if(PNCT.exclSem && !pnEsSemillaGrano(c.producto) && (c.producto||'').toLowerCase().includes('sem')) return false;
     return val(c) > 0.001;
   });
   rows.sort((a,b) => val(b) - val(a));
