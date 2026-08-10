@@ -7258,9 +7258,6 @@ const PN_COLS = [
     {k:"bolsas",       lbl:"Stock Clasificado"},
     {k:"corteBolsa",   lbl:"Corte de Bolsa", calc:true},
   ]},
-  {grp:"P+C",        cls:"grp-compra", cols:[
-    {k:"pcTot",        lbl:"Total P+C",  calc:true},
-  ]},
   {grp:"COMPRA",     cls:"grp-compra", cols:[
     {k:"compraTot",    lbl:"Tot Compra", calc:true, main:true},
     {k:"compraPend",   lbl:"Pend Ing",   calc:true},
@@ -7269,13 +7266,6 @@ const PN_COLS = [
   {grp:"OFERTA",     cls:"grp-prod",   cols:[
     {k:"ofertaTot",    lbl:"Oferta Tot", calc:true},
   ]},
-  {grp:"VENTA",      cls:"grp-venta",  cols:[
-    {k:"vtaSem",          lbl:"Vta Sem",     edit:true, manK:"vtaSem"},
-    {k:"pendVincular",    lbl:"Pend Vincular", edit:true, manK:"pendVincular"},
-    {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true, main:true},
-    {k:"ventaCtos",       lbl:"Ctos P.E",    calc:true},
-    {k:"ventaEntr",       lbl:"Ctos Entr",   calc:true},
-  ]},
   // PROD. SEMILLA y Demanda Total Pendiente: mismas columnas que el DEM-SUP Soja del
   // extranet (S pedidos de campo pendientes, T despachos a producción, O venta pendiente).
   // Solo semilla soja por ahora; el resto de productos muestra "—".
@@ -7283,6 +7273,13 @@ const PN_COLS = [
     {k:"prodPendSem",  lbl:"Prod Pendiente",  calc:true},
     {k:"prodDespSem",  lbl:"Prod Despachado", calc:true},
     {k:"prodTotSem",   lbl:"Total Prod",      calc:true, main:true},
+  ]},
+  {grp:"VENTA",      cls:"grp-venta",  cols:[
+    {k:"vtaSem",          lbl:"Vta Sem",     edit:true, manK:"vtaSem"},
+    {k:"pendVincular",    lbl:"Pend Vincular", edit:true, manK:"pendVincular"},
+    {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true, main:true},
+    {k:"ventaCtos",       lbl:"Ctos P.E",    calc:true},
+    {k:"ventaEntr",       lbl:"Ctos Entr",   calc:true},
   ]},
   {grp:"DEMANDA",    cls:"grp-venta",  cols:[
     {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
