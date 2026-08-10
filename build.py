@@ -7124,6 +7124,7 @@ const PN_PPF_ALIAS = {
   pendvincular:'pendVincular', totventa:'ventaCtosAjust', venta:'ventaCtosAjust',
   ctospe:'ventaCtos', pendentrega:'ventaCtos', ctosentr:'ventaEntr',
   prodpend:'prodPendSem', proddesp:'prodDespSem', totalprodsem:'prodTotSem',
+  ventapendiente:'ventaPendSem', ventadespachada:'ventaDespSem', ventatotalsem:'ventaTotSem',
   demanda:'demandaTot', demandapend:'demandaTotPend', pospend:'posPend', posicion:'posicion',
 };
 function ppfEval(formula, ctx){
@@ -7280,6 +7281,10 @@ const PN_COLS = [
     {k:"ventaCtosAjust",  lbl:"Tot Venta",   calc:true, main:true},
     {k:"ventaCtos",       lbl:"Ctos P.E",    calc:true},
     {k:"ventaEntr",       lbl:"Ctos Entr",   calc:true},
+    // Venta de SEMILLA alineada al DEM-SUP Soja del extranet (cols O, P y O+P)
+    {k:"ventaPendSem",    lbl:"Venta Pendiente",  calc:true},
+    {k:"ventaDespSem",    lbl:"Venta Despachada", calc:true},
+    {k:"ventaTotSem",     lbl:"Venta Total",      calc:true},
   ]},
   {grp:"DEMANDA",    cls:"grp-venta",  cols:[
     {k:"demandaTot",   lbl:"Demanda Tot",calc:true},
@@ -7458,7 +7463,10 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const prodPendSem  = PN_DEMSUP ? ((PN_DEMSUP.prod_pend_tn_prod  || {})[producto] || 0) : 0;
   const prodDespSem  = PN_DEMSUP ? ((PN_DEMSUP.prod_desp_tn_prod  || {})[producto] || 0) : 0;
   const prodTotSem   = prodPendSem + prodDespSem;
+  // Venta de semilla alineada al DEM-SUP del extranet: O (pendiente), P (despachada), O+P
   const ventaPendSem = PN_DEMSUP ? ((PN_DEMSUP.venta_pend_tn_prod || {})[producto] || 0) : 0;
+  const ventaDespSem = PN_DEMSUP ? ((PN_DEMSUP.venta_desp_tn_prod || {})[producto] || 0) : 0;
+  const ventaTotSem  = ventaPendSem + ventaDespSem;
   const demandaTotPend = ventaPendSem + prodPendSem;
 
   // RESULTADO
@@ -7475,6 +7483,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
     compraTot, compraPend, compraEntr,
     ofertaTot,
     vtaSem, pendVincular, ventaCtosAjust, ventaCtos, ventaEntr,
+    ventaPendSem, ventaDespSem, ventaTotSem,
     prodPendSem, prodDespSem, prodTotSem,
     demandaTot, demandaTotPend,
     posPend, posicion,
