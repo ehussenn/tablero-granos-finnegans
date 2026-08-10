@@ -7386,6 +7386,8 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   if(origen && pnEsDemsupProd(producto)){
     silobolsaAuto = (PN_DEMSUP.campo_tn_prod     || {})[producto] || 0;
     siloAuto      = (PN_DEMSUP.semillero_tn_prod || {})[producto] || 0;
+    // clasificado "ajustado" de la vista colgado del producto granel (ej. DM 46I20)
+    if((PN_DEMSUP.clasif_tn_prod || {})[producto] !== undefined) bolsasAuto = PN_DEMSUP.clasif_tn_prod[producto];
   }
   if(origen && pnEsDemsupSem(producto)){
     bolsasAuto    = (PN_DEMSUP.clasif_tn_prod    || {})[producto] || 0;

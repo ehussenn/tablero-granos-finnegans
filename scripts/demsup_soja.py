@@ -35,9 +35,18 @@ Todo en BOLSAS de 40 kg salvo los dicts *_tn (toneladas = bls * 40 / 1000).
 """
 from __future__ import annotations
 
+import json
 import os
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+
+# API en vivo de la vista del extranet (la MISMA que consume /vistas/ops-demsup-soja).
+# Incluye los ajustes del analista (ej. DM 46I20 con la partida rota en Finnegans).
+# Si responde, sus números por variedad son los OFICIALES; las queries propias de
+# abajo quedan como respaldo y para el desglose por producto.
+VISTA_API_URL = "https://agnsja-operaciones-api.azurewebsites.net/api/operaciones/dem-sup-soja"
+VISTA_API_ORIGIN = "https://sanguine86.github.io"
 
 # ─── Campaña vigente del DEM-SUP (actualizar cuando cambie el ciclo) ─────────
 CAMPANA        = "CAMPAÑA 25-26"   # partida/campaña del granel y las compras
@@ -394,6 +403,54 @@ def fetch(verbose: bool = True):
     finally:
         cn.close()
 
+    # ── COPIA EXACTA DE LA VISTA DEL EXTRANET ──
+    # Se consulta la API en vivo de la vista; si responde, sus valores POR VARIEDAD
+    # pisan los calculados acá (incluyen los ajustes del analista). Después se
+    # concilian los desgloses por producto: si a una variedad le falta diferencia
+    # contra la vista, el ajuste se cuelga del producto "ancla" de esa variedad
+    # (su granel), para que los totales del tablero cierren idénticos a la vista.
+    fuente = "queries propias al DW"
+    try:
+        req = urllib.request.Request(VISTA_API_URL, headers={"User-Agent": "tablero-granos", "Origin": VISTA_API_ORIGIN})
+        api = json.loads(urllib.request.urlopen(req, timeout=60).read())
+        api_rows = api.get("rows") if isinstance(api.get("rows"), dict) else None
+    except Exception as e:
+        api_rows = None
+        print(f"    [!] API de la vista DEM-SUP no disponible ({type(e).__name__}); se usan las queries propias")
+    if api_rows:
+        fuente = "API en vivo de la vista del extranet"
+        anchor = {}   # variedad -> producto ancla (el granel de esa variedad)
+        for prod in list(campo_tn_prod) + list(semillero_tn_prod):
+            v2 = extract_var(prod)
+            if v2 and v2 not in anchor:
+                anchor[v2] = prod
+        gv = lambda v2, col: sf((api_rows.get(v2) or {}).get(col))
+        for v2 in VARIEDADES:
+            c_bls[v2] = gv(v2, "C"); d_bls[v2] = gv(v2, "D")
+            f_bls[v2] = gv(v2, "F"); e_bls[v2] = max(0.0, gv(v2, "E") - gv(v2, "F"))  # E de la vista = total contratado
+            k_bls[v2] = gv(v2, "K"); l_bls[v2] = gv(v2, "L")
+            o_bls[v2] = gv(v2, "O"); p_bls[v2] = gv(v2, "P")
+            s_bls[v2] = gv(v2, "S"); t_bls[v2] = gv(v2, "T")
+        def conciliar(dic, bls_por_var):
+            por_var = {}
+            for prod, tn in dic.items():
+                v2 = extract_var(prod)
+                if v2:
+                    por_var[v2] = por_var.get(v2, 0.0) + tn
+            for v2 in VARIEDADES:
+                delta = round(bls_por_var[v2] * 40 / 1000.0 - por_var.get(v2, 0.0), 4)
+                if abs(delta) > 0.05:
+                    prod = anchor.get(v2) or f"SEM. SOJA DM {v2} (vista extranet)"
+                    dic[prod] = round(dic.get(prod, 0.0) + delta, 4)
+        conciliar(campo_tn_prod, c_bls)
+        conciliar(semillero_tn_prod, d_bls)
+        conciliar(clasif_tn_prod, k_bls)
+        conciliar(corte_tn_prod, l_bls)
+        conciliar(venta_pend_tn_prod, o_bls)
+        conciliar(venta_desp_tn_prod, p_bls)
+        conciliar(prod_pend_tn_prod, s_bls)
+        conciliar(prod_desp_tn_prod, t_bls)
+
     # ── Filas por variedad + fila de toneladas totales ──
     rows, tot = {}, {}
     keys = ("C", "D", "E", "F", "G", "K", "L", "M", "O", "P", "Q", "S", "T")
@@ -412,7 +469,7 @@ def fetch(verbose: bool = True):
 
     now = datetime.now(timezone.utc)
     return {
-        "fuente": "DEM-SUP Soja · Extranet Agronasaja (DW Finnegans en vivo)",
+        "fuente": f"DEM-SUP Soja · Extranet Agronasaja ({fuente})",
         "campana": CAMPANA,
         "generated_at": now.isoformat(),
         "variedades": list(VARIEDADES),
