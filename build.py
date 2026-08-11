@@ -1898,7 +1898,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
         💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
         <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
-        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> — y ahora <strong>podés armarla clickeando celdas como en Excel</strong>: con el cursor dentro de la celda, click en cualquier celda de la tabla y se agrega sola (el = y el + van automáticos; para restar tipeá − y clickeá; Enter guarda, Esc cancela). Ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
+        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code>, sumando y restando números o nombres de columnas — ej. <code>=5918+17151-20397</code> o <code>=pendcos + pendingreso - ctospe</code>. Enter (o click afuera) guarda, Esc cancela. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
     </div>
 
@@ -2804,12 +2804,13 @@ function render(){
   const tnPdtLiq = tnEnt - tnLiq;
   const cumplimiento = tnAj>0 ? tnEnt/tnAj : null;
 
+  const kSty = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row').innerHTML = `
-    <div class="kpi"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA.length)} totales</div></div>
-    <div class="kpi"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
-    <div class="kpi green"><div class="lbl">Toneladas Entregadas</div><div class="val">${fmt.num(tnEnt)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
-    <div class="kpi orange"><div class="lbl">Tn Pendientes de Entrega</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Entregadas</div></div>
-    <div class="kpi red"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Entregadas − Liquidadas (de lo entregado)</div></div>
+    <div class="kpi" data-pnct="tot" style="${kSty}" title="Click: abrir el detalle por contrato"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA.length)} totales</div></div>
+    <div class="kpi" data-pnct="tot" style="${kSty}" title="Click: abrir el detalle por contrato"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
+    <div class="kpi green" data-pnct="entr" style="${kSty}" title="Click: detalle de lo entregado por contrato"><div class="lbl">Toneladas Entregadas</div><div class="val">${fmt.num(tnEnt)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
+    <div class="kpi orange" data-pnct="pend" style="${kSty}" title="Click: detalle del pendiente de entrega (fijado / sin fijar)"><div class="lbl">Tn Pendientes de Entrega</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Entregadas</div></div>
+    <div class="kpi red" data-pnct="pliq" style="${kSty}" title="Click: detalle del pendiente de liquidar (fijado, precios, anticipos)"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Entregadas − Liquidadas (de lo entregado)</div></div>
   `;
 
   // resumen por grano (sin importes)
@@ -4142,12 +4143,13 @@ function cpRender(){
   const tnPdt = tnAj - tnRec;
   const tnPdtLiq = tnRec - tnLiq;   // entregado pero aun no liquidado
   const cumplimiento = tnAj>0 ? tnRec/tnAj : null;
+  const kStyC = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row-cp').innerHTML = `
-    <div class="kpi"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA_CP.length)} totales</div></div>
-    <div class="kpi"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
-    <div class="kpi green"><div class="lbl">Toneladas Recibidas</div><div class="val">${fmt.num(tnRec)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
-    <div class="kpi orange"><div class="lbl">Tn Pendientes de Recibir</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Recibidas</div></div>
-    <div class="kpi red"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Recibidas − Liquidadas (de lo entregado)</div></div>
+    <div class="kpi" data-pnct="tot" style="${kStyC}" title="Click: abrir el detalle por contrato"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA_CP.length)} totales</div></div>
+    <div class="kpi" data-pnct="tot" style="${kStyC}" title="Click: abrir el detalle por contrato"><div class="lbl">Toneladas Ajustadas</div><div class="val">${fmt.num(tnAj)}</div><div class="hint">Cantidad final post-ajustes</div></div>
+    <div class="kpi green" data-pnct="entr" style="${kStyC}" title="Click: detalle de lo recibido por contrato"><div class="lbl">Toneladas Recibidas</div><div class="val">${fmt.num(tnRec)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
+    <div class="kpi orange" data-pnct="pend" style="${kStyC}" title="Click: detalle del pendiente de ingreso (fijado / sin fijar)"><div class="lbl">Tn Pendientes de Recibir</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Recibidas</div></div>
+    <div class="kpi red" data-pnct="pliq" style="${kStyC}" title="Click: detalle del pendiente de liquidar (fijado, precios)"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Recibidas − Liquidadas (de lo entregado)</div></div>
   `;
 
   const byG = {};
@@ -7155,42 +7157,10 @@ function ppfEval(formula, ctx){
   return Function('"use strict";return(' + expr + ')')();
 }
 
-/* ===== MODO PLANILLA (tipo Excel) =====
-   Con el cursor DENTRO de una celda editable (Pos Pend / Posición), un click en
-   cualquier celda numérica de la tabla agrega el nombre de esa columna a la
-   fórmula ("=" y "+" automáticos; para restar, tipeá "-" y clickeá la celda).
-   Enter guarda · Escape cancela. */
-const PN_ALIAS_DE_COL = {cosechado:'cosechado', pendCos:'pendcos', prodTot:'totalprod', plantaTot:'planta',
-  silobolsa:'granelcampo', silo:'semillero', bolsas:'clasificado', corteBolsa:'corte',
-  compraTot:'compra', compraPend:'pendingreso', compraEntr:'entregado', ofertaTot:'oferta',
-  vtaSem:'vtasem', pendVincular:'pendvincular', ventaCtosAjust:'totventa', ventaCtos:'ctospe', ventaEntr:'ctosentr',
-  ventaPendSem:'ventapendiente', ventaDespSem:'ventadespachada', ventaTotSem:'ventatotalsem',
-  prodPendSem:'prodpend', prodDespSem:'proddesp', prodTotSem:'totalprodsem',
-  demandaTot:'demanda', demandaTotPend:'demandapend', posPend:'pospend', posicion:'posicion'};
-document.addEventListener('mousedown', (e) => {
-  const inp = document.activeElement;
-  if(!inp || inp.tagName !== 'INPUT') return;
-  if(inp.dataset.ppf === undefined && inp.dataset.ppfFam === undefined) return;
-  if(e.target === inp) return;
-  const td = e.target.closest('#pn-tbody td');
-  if(!td || td.querySelector('input')) return;
-  const tr = td.closest('tr');
-  if(!tr || tr.classList.contains('pn-drill-row') || tr.classList.contains('pn-descarte') || tr.classList.contains('pn-potencial')) return;
-  const idx = [...tr.children].indexOf(td);
-  if(idx <= 0) return;
-  const keys = [];
-  PN_COLS.forEach(g => pnVisCols(g).forEach(c => keys.push(c.k)));
-  const alias = PN_ALIAS_DE_COL[keys[idx - 1]];
-  if(!alias) return;
-  e.preventDefault();   // clave: NO perder el foco del input (si no, se guardaba antes de tiempo)
-  // y SUPRIMIR el click que viene después: si no, la celda ejecuta su acción propia
-  // (abrir el drill o saltar a la pestaña Detalle Contratos) y te pisa la edición
-  document.addEventListener('click', function _supr(ev){ ev.stopPropagation(); ev.preventDefault(); }, {capture:true, once:true});
-  let v = (inp.value || '').trim();
-  if(!v.startsWith('=')) v = '=';                       // empezar fórmula nueva
-  if(/[a-z0-9áéíóúñ)]$/i.test(v)) v += ' + ';           // encadenar con + (para restar: tipeá "-")
-  inp.value = v + alias;
-});
+/* (El "modo planilla" de armar fórmulas clickeando celdas se quitó a pedido del usuario:
+   el click sobre un número siempre abre su DETALLE, y las fórmulas de Pos Pend /
+   Posición se tipean a mano: números (=5+5-3) o nombres de columnas. Enter o click
+   afuera guarda · Escape cancela.) */
 
 // Productos con denominación "SEMILLA X" (SEMILLA SOJA, SEMILLA MAIZ...): en realidad
 // son GRANO que se carga así porque la compra se cancela con factura. Van DENTRO del
@@ -7878,7 +7848,7 @@ function pnRender(){
         const f = PN_PPF[ppfKey(c.k, prod)];
         const err = r['_ppfErr_' + c.k];
         const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
-        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número o una fórmula con =, o CLICKEÁ celdas de la tabla para armarla (Enter guarda, Esc cancela)'));
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número fijo o una fórmula con = — con números (=5+5-3) o nombres de columnas (=pendcos+pendingreso-ctospe). Enter guarda, Esc cancela'));
         const colr = err ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : (c.k === 'posicion' ? ('font-weight:700;color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${colr}"/></td>`;
       } else if(c.edit){
@@ -7946,7 +7916,7 @@ function pnRender(){
       } else if(PN_PPF_EDIT_COLS[c.k] !== undefined){
         const f = famPpf[c.k], err = famPpfErr[c.k];
         const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
-        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número o una fórmula con =, o CLICKEÁ celdas de la tabla para armarla (Enter guarda, Esc cancela)'));
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número fijo o una fórmula con = — con números (=5+5-3) o nombres de columnas (=pendcos+pendingreso-ctospe). Enter guarda, Esc cancela'));
         const colr = err ? 'color:#dc2626' : (f !== undefined ? 'color:#7c3aed' : (c.k === 'posicion' ? ('color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         rowFam += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf-fam="${escapeHtml(fam)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="font-weight:700;${colr}"/></td>`;
       } else if(PN_DRILL[c.k] && v){
@@ -8169,16 +8139,25 @@ function pnctGo(opts){
 // Accesos directos "Pend. de liquidar" desde la Posición General de Compras y Ventas:
 // abren el Detalle de Contratos ya filtrado (fijado / sin fijar por contrato; en venta
 // además se ve el anticipo financiero en Liq. Anticip.). El Volver regresa a esa vista.
-function pnctDesdePosGeneral(tipo, nav, label){
-  // para el análisis de pendiente de liquidar se muestran TODAS las campañas
+function pnctDesdePosGeneral(tipo, field, nav, label){
+  // para estos análisis se muestran TODAS las campañas
   const sel = document.getElementById('pn-campana');
   if(sel && sel.value !== ''){ sel.value = ''; sel.dispatchEvent(new Event('change')); }
-  pnctGo({tipo, field:'pliq', origen:'Desde: ' + label, volverNav:nav, volverLabel:label});
+  pnctGo({tipo, field, origen:'Desde: ' + label, volverNav:nav, volverLabel:label});
 }
 document.getElementById('cp-pliq').addEventListener('click', () =>
-  pnctDesdePosGeneral('compra', {tab:'compra', sub:'cp-posicion'}, 'Compra · Posición General'));
+  pnctDesdePosGeneral('compra', 'pliq', {tab:'compra', sub:'cp-posicion'}, 'Compra · Posición General'));
 document.getElementById('vt-pliq').addEventListener('click', () =>
-  pnctDesdePosGeneral('venta', {tab:'venta', sub:'posicion'}, 'Venta · Posición General'));
+  pnctDesdePosGeneral('venta', 'pliq', {tab:'venta', sub:'posicion'}, 'Venta · Posición General'));
+// Los carteles KPI de las dos Posiciones Generales también abren el detalle (según el cartel)
+document.getElementById('kpi-row-cp').addEventListener('click', (e) => {
+  const k = e.target.closest('.kpi[data-pnct]'); if(!k) return;
+  pnctDesdePosGeneral('compra', k.dataset.pnct, {tab:'compra', sub:'cp-posicion'}, 'Compra · Posición General');
+});
+document.getElementById('kpi-row').addEventListener('click', (e) => {
+  const k = e.target.closest('.kpi[data-pnct]'); if(!k) return;
+  pnctDesdePosGeneral('venta', k.dataset.pnct, {tab:'venta', sub:'posicion'}, 'Venta · Posición General');
+});
 
 function pnctRender(){
   const tipo = PNCT.tipo, cp = (tipo === 'compra');
@@ -8223,6 +8202,7 @@ function pnctRender(){
 
   // KPIs — clickeables: dinamizan el filtro MOSTRAR de la tabla de abajo
   let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tEntPliq=0, tAntic=0, tSinFij=0, tImpLiqU=0, tImpLiqA=0;
+  let tPxFijImp=0, tPxFijTn=0;   // para el precio promedio PONDERADO de lo fijado
   rows.forEach(c => {
     const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
     const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
@@ -8232,7 +8212,10 @@ function pnctRender(){
     tSinFij += Math.max(0, (ent + pen) - fij);
     if((c.moneda||'').toUpperCase() === 'DOLARES') tImpLiqU += Number(c.importeliquidado)||0;
     else tImpLiqA += Number(c.importeliquidado)||0;
+    const pxF = Number(c.preciopromediofijado)||0;
+    if(pxF > 0 && fij > 0){ tPxFijImp += pxF * fij; tPxFijTn += fij; }
   });
+  const pxProm = tPxFijTn > 0 ? tPxFijImp / tPxFijTn : 0;   // $/tn ponderado por tn fijadas
   const kAct = f => PNCT.field === f ? 'outline:2.5px solid #16a34a;border-radius:10px;' : '';
   document.getElementById('pnct-kpis').innerHTML = `
     <div class="kpi"><div class="lbl">Contratos</div><div class="val">${rows.length}</div></div>
@@ -8242,7 +8225,8 @@ function pnctRender(){
     <div class="kpi red" data-field="pliq" style="cursor:pointer;${kAct('pliq')}" title="Click: mostrar entregado pendiente de liquidar"><div class="lbl">Entreg. Pend/Liq</div><div class="val">${fmt.num(tEntPliq)}</div></div>
     <div class="kpi green" data-field="liq" style="cursor:pointer;${kAct('liq')}" title="Click: mostrar con liquidado"><div class="lbl">Liquidado</div><div class="val">${fmt.num(tLiq)} tn</div></div>
     <div class="kpi" data-field="antic" style="cursor:pointer;${kAct('antic')}" title="Click: mostrar liquidado anticipado"><div class="lbl">Liq. Anticipado</div><div class="val">${fmt.num(tAntic)}</div></div>
-    <div class="kpi orange" data-field="nofij" style="cursor:pointer;${kAct('nofij')}" title="Click: mostrar con tn sin fijar"><div class="lbl">Sin Fijar</div><div class="val">${fmt.num(tSinFij)}</div></div>`;
+    <div class="kpi orange" data-field="nofij" style="cursor:pointer;${kAct('nofij')}" title="Click: mostrar con tn sin fijar"><div class="lbl">Sin Fijar</div><div class="val">${fmt.num(tSinFij)}</div></div>
+    <div class="kpi" title="Promedio de los precios fijados, ponderado por las tn fijadas de cada contrato (en $/tn)"><div class="lbl">Precio Prom. Fijado</div><div class="val">${pxProm ? '$ ' + fmt.num(pxProm) : '—'}</div><div class="hint">ponderado por tn fijadas</div></div>`;
   document.querySelectorAll('#pnct-kpis .kpi[data-field]').forEach(k => k.addEventListener('click', () => {
     PNCT.field = k.dataset.field;
     document.getElementById('pnct-field').value = PNCT.field;
