@@ -1896,7 +1896,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         </table>
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
+        💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA y la SEMILLA TRIGO</strong>, Planta usa el idioma y los números de las vistas <strong>DEM-SUP Soja y DEM-SUP Trigo del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
         <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
         <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code>, sumando y restando números o nombres de columnas — ej. <code>=5918+17151-20397</code> o <code>=pendcos + pendingreso - ctospe</code>. Enter (o click afuera) guarda, Esc cancela. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
@@ -7393,13 +7393,13 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   //  - TERMINADA (SEM. SOJA DM%): Stock Clasificado = col K (unidades → bolsas 40kg → tn).
   // El resto de productos sigue con el stock crudo por depósito.
   if(origen && pnEsDemsupProd(producto)){
-    silobolsaAuto = (PN_DEMSUP.campo_tn_prod     || {})[producto] || 0;
-    siloAuto      = (PN_DEMSUP.semillero_tn_prod || {})[producto] || 0;
+    silobolsaAuto = PN_DS.campo_tn_prod[producto] || 0;
+    siloAuto      = PN_DS.semillero_tn_prod[producto] || 0;
     // clasificado "ajustado" de la vista colgado del producto granel (ej. DM 46I20)
-    if((PN_DEMSUP.clasif_tn_prod || {})[producto] !== undefined) bolsasAuto = PN_DEMSUP.clasif_tn_prod[producto];
+    if(PN_DS.clasif_tn_prod[producto] !== undefined) bolsasAuto = PN_DS.clasif_tn_prod[producto];
   }
   if(origen && pnEsDemsupSem(producto)){
-    bolsasAuto    = (PN_DEMSUP.clasif_tn_prod    || {})[producto] || 0;
+    bolsasAuto    = PN_DS.clasif_tn_prod[producto] || 0;
   }
   // El valor cargado (manual en localStorage o default embebido de la bajada) tiene prioridad
   // sobre el auto de USR_RESSTOCKDEP; si no hay cargado, usa el auto.
@@ -7412,7 +7412,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const plantaTot  = silo + bolsas + silobolsa;
   // Corte de Bolsa (DEM-SUP col L: descarte de semilla ya embolsada) — informativa,
   // es una pérdida del proceso, NO suma al total de Planta.
-  const corteBolsa = (origen && PN_DEMSUP) ? ((PN_DEMSUP.corte_tn_prod || {})[producto] || 0) : 0;
+  const corteBolsa = origen ? (PN_DS.corte_tn_prod[producto] || 0) : 0;
 
   // PRODUCCIÓN
   // Cosechado AUTO desde traslados (Traslado CPE Agronasaja + Rec Sem PROPIA, origen Dep Cosecha)
@@ -7479,12 +7479,12 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   //   Prod Pendiente = col S (pedidos de campo pendientes, siembra propia)
   //   Prod Despachado = col T (traslados internos a depósitos de producción)
   //   Demanda Total Pendiente = venta pendiente (col O, NVs) + prod pendiente (col S)
-  const prodPendSem  = PN_DEMSUP ? ((PN_DEMSUP.prod_pend_tn_prod  || {})[producto] || 0) : 0;
-  const prodDespSem  = PN_DEMSUP ? ((PN_DEMSUP.prod_desp_tn_prod  || {})[producto] || 0) : 0;
+  const prodPendSem  = PN_DS.prod_pend_tn_prod[producto] || 0;
+  const prodDespSem  = PN_DS.prod_desp_tn_prod[producto] || 0;
   const prodTotSem   = prodPendSem + prodDespSem;
   // Venta de semilla alineada al DEM-SUP del extranet: O (pendiente), P (despachada), O+P
-  const ventaPendSem = PN_DEMSUP ? ((PN_DEMSUP.venta_pend_tn_prod || {})[producto] || 0) : 0;
-  const ventaDespSem = PN_DEMSUP ? ((PN_DEMSUP.venta_desp_tn_prod || {})[producto] || 0) : 0;
+  const ventaPendSem = PN_DS.venta_pend_tn_prod[producto] || 0;
+  const ventaDespSem = PN_DS.venta_desp_tn_prod[producto] || 0;
   const ventaTotSem  = ventaPendSem + ventaDespSem;
   const demandaTotPend = ventaPendSem + prodPendSem;
 
@@ -7553,10 +7553,19 @@ const PN_STOCK_DET = (PAYLOAD.stock_detalle || {});   // {producto:[{dep,cat,tn}
 // El GRANEL EN CAMPO (col C: silobolsa con merma por depósito) alimenta la columna Silo Bolsa
 // de la semilla granel soja; el payload trae además el resto de columnas de esa vista
 // (semillero, compras, clasificado, ventas) listas para usarse cuando haga falta.
-const PN_DEMSUP = PAYLOAD.demsup_soja || null;
-// granel (SEM. GRANEL SOJA DM%) → cols C/D del DEM-SUP; terminada (SEM. SOJA DM%) → cols K/L/O/S/T
-const pnEsDemsupProd = p => !!(PN_DEMSUP && p && p.toUpperCase().startsWith(PN_DEMSUP.prod_prefix));
-const pnEsDemsupSem  = p => !!(PN_DEMSUP && p && PN_DEMSUP.prod_prefix_sem && p.toUpperCase().startsWith(PN_DEMSUP.prod_prefix_sem));
+const PN_DEMSUP = PAYLOAD.demsup_soja || null;          // fuente soja (drill-downs)
+const PN_DEMSUP_TRIGO = PAYLOAD.demsup_trigo || null;   // fuente trigo (drill-downs)
+const PN_DEMSUP_SRCS = [PN_DEMSUP, PN_DEMSUP_TRIGO].filter(Boolean);
+// dicts FUSIONADOS por producto (soja + trigo) que alimentan las celdas de la tabla
+const PN_DS = (() => {
+  const out = {campo_tn_prod:{}, semillero_tn_prod:{}, clasif_tn_prod:{}, corte_tn_prod:{},
+               venta_pend_tn_prod:{}, venta_desp_tn_prod:{}, prod_pend_tn_prod:{}, prod_desp_tn_prod:{}};
+  PN_DEMSUP_SRCS.forEach(s => Object.keys(out).forEach(k => Object.assign(out[k], s[k] || {})));
+  return out;
+})();
+// granel (SEM. GRANEL SOJA/TRIGO DM%) → cols C/D; terminada (SEM. SOJA/TRIGO DM%) → cols K/L/O/S/T
+const pnEsDemsupProd = p => !!(p && PN_DEMSUP_SRCS.some(s => p.toUpperCase().startsWith(s.prod_prefix)));
+const pnEsDemsupSem  = p => !!(p && PN_DEMSUP_SRCS.some(s => s.prod_prefix_sem && p.toUpperCase().startsWith(s.prod_prefix_sem)));
 const PN_PROD_PEND_DET = (PAYLOAD.produccion_pend_det || {});  // {campaña:{producto:[{campo,tn}]}}
 let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
 const PN_DRILL = {
@@ -7580,22 +7589,24 @@ function pnFij(c){
   if(fij > 0.05)       return {t:'◑ '+Math.round(fij/aj*100)+'% fijado', cls:'pn-fij-par'};
   return {t:'○ A fijar', cls:'pn-fij-no'};
 }
-// Bloque DEM-SUP Soja para los drill-downs de Planta: granel en campo (col C),
+// Bloque DEM-SUP (soja o trigo) para los drill-downs de Planta: granel en campo (col C),
 // granel en semillero (col D) o stock clasificado (col K), por variedad —
 // mismos números que las columnas homónimas de la vista del Extranet Agronasaja.
-function pnDemsupDrillHTML(cat, conMargen){
-  if(!PN_DEMSUP) return '';
+function pnDemsupDrillHTML(src, cat, conMargen){
+  if(!src) return '';
+  const cult = (src.prod_prefix || '').includes('TRIGO') ? 'trigo' : 'soja';
+  const nom = cult === 'trigo' ? 'DEM-SUP Trigo' : 'DEM-SUP Soja';
   const cfg = {
-    SILOBOLSA: {det:'detalle_campo',       col:'C', titulo:'Semilla soja a granel en campo — DEM-SUP Soja',     unidad:'silobolsa(s)'},
-    SILO:      {det:'detalle_semillero',   col:'D', titulo:'Semilla soja a granel en semillero — DEM-SUP Soja', unidad:'silo(s) de planta'},
-    BOLSAS:    {det:'detalle_clasificado', col:'K', titulo:'Semilla soja clasificada (stock) — DEM-SUP Soja',   unidad:'producto(s)'},
+    SILOBOLSA: {det:'detalle_campo',       col:'C', titulo:`Semilla ${cult} a granel en campo — ${nom}`,     unidad:'silobolsa(s)'},
+    SILO:      {det:'detalle_semillero',   col:'D', titulo:`Semilla ${cult} a granel en semillero — ${nom}`, unidad:'silo(s) de planta'},
+    BOLSAS:    {det:'detalle_clasificado', col:'K', titulo:`Semilla ${cult} clasificada (stock) — ${nom}`,   unidad:'producto(s)'},
   }[cat];
   if(!cfg) return '';
   let rows = [];
-  (PN_DEMSUP.variedades||[]).forEach(v => ((PN_DEMSUP[cfg.det]||{})[v]||[]).forEach(d => rows.push(d)));
+  (src.variedades||[]).forEach(v => ((src[cfg.det]||{})[v]||[]).forEach(d => rows.push(d)));
   if(!rows.length) return '';
   rows.sort((a,b)=>b.tn-a.tn);
-  const totBls = (PN_DEMSUP.tot_bls||{})[cfg.col] || 0, totTn = (PN_DEMSUP.tot_tn||{})[cfg.col] || 0;
+  const totBls = (src.tot_bls||{})[cfg.col] || 0, totTn = (src.tot_tn||{})[cfg.col] || 0;
   let t = `<div class="pn-drill-head"${conMargen?' style="margin-top:12px"':''}>🌱 ${cfg.titulo} <span>· ${rows.length} ${cfg.unidad} · ${fmt.num(totBls)} bolsas 40kg · ${fmt.num(totTn)} tn</span></div>`;
   if(cat === 'BOLSAS'){
     t += `<table class="pn-drill-tbl"><thead><tr><th>Variedad</th><th>Producto (embalaje)</th><th class="num">Unidades</th><th class="num">Bolsas 40kg</th><th class="num">Toneladas</th></tr></thead><tbody>`;
@@ -7611,7 +7622,7 @@ function pnDemsupDrillHTML(cat, conMargen){
     t += `<tr class="pn-drill-tot"><td colspan="5">Total (col ${cfg.col} del DEM-SUP)</td><td class="num">${fmt.num(totBls)}</td><td class="num">${fmt.num(totTn)}</td></tr>`;
   }
   t += `</tbody></table>`;
-  t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>DEM-SUP Soja · Extranet Agronasaja</strong> (DW Finnegans en vivo, ${escapeHtml(PN_DEMSUP.campana||'')}). Misma lógica que la vista <em>/vistas/ops-demsup-soja</em>.</div>`;
+  t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>DEM-SUP Soja · Extranet Agronasaja</strong> (DW Finnegans en vivo, ${escapeHtml(src.campana||'')}). Misma lógica que la vista <em>/vistas/ops-demsup-${cult}</em> del extranet.</div>`;
   return t;
 }
 
@@ -7634,7 +7645,17 @@ function pnDrillHTML(type, prods){
       (PN_STOCK_DET[p]||[]).forEach(d => { if(d.cat===cfg.cat) rows.push({p, dep:d.dep, tn:d.tn}); });
     });
     rows.sort((a,b)=>b.tn-a.tn);
-    const demsupHTML = demsupAca ? pnDemsupDrillHTML(cfg.cat, rows.length > 0) : '';
+    let demsupHTML = '';
+    if(demsupAca){
+      let previo = rows.length > 0;
+      PN_DEMSUP_SRCS.forEach(src => {
+        const pref = (cfg.cat === 'BOLSAS') ? src.prod_prefix_sem : src.prod_prefix;
+        const mios = prods.some(p => (p || '').toUpperCase().startsWith(pref));
+        if(!mios) return;
+        const b = pnDemsupDrillHTML(src, cfg.cat, previo);
+        if(b){ demsupHTML += b; previo = true; }
+      });
+    }
     if(!rows.length && !demsupHTML) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin stock en depósitos de este tipo.</div></div>`;
     let t = `<div class="pn-drill-inner">`;
     if(rows.length){
@@ -7765,13 +7786,9 @@ function pnRender(){
   if(incluyePlanta){
     Object.keys(PN_MANUAL).forEach(p => prods.add(p));
     Object.keys(PN_DEFAULTS).forEach(p => prods.add(p));
-    // Semilla soja con datos en el DEM-SUP del extranet: entra aunque no tenga contratos
-    // en la campaña (si no, variedades como DM 46I20 quedaban afuera de los totales).
-    if(PN_DEMSUP){
-      ["campo_tn_prod","semillero_tn_prod","clasif_tn_prod","corte_tn_prod",
-       "venta_pend_tn_prod","prod_pend_tn_prod","prod_desp_tn_prod"]
-        .forEach(k => Object.keys(PN_DEMSUP[k] || {}).forEach(p => prods.add(p)));
-    }
+    // Semilla soja/trigo con datos en los DEM-SUP del extranet: entra aunque no tenga
+    // contratos en la campaña (si no, variedades sin contrato quedaban afuera).
+    Object.keys(PN_DS).forEach(k => Object.keys(PN_DS[k]).forEach(p => prods.add(p)));
   }
   const prodList = [...prods].sort();
 
@@ -12423,6 +12440,20 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] Error DEM-SUP Soja: {e}")
 
+    # DEM-SUP Trigo — misma arquitectura que soja (API en vivo de /vistas/ops-demsup-trigo
+    # + queries propias al DW para el desglose por producto)
+    print(f"\n[+] Bajando DEM-SUP Trigo (fuente Extranet Agronasaja)...", flush=True)
+    demsup_trigo_data = None
+    try:
+        import demsup_trigo
+        demsup_trigo_data = demsup_trigo.fetch()
+        if demsup_trigo_data:
+            _t2 = demsup_trigo_data["tot_tn"]
+            print(f"    -> campo {_t2['C']:,.1f} tn · semillero {_t2['D']:,.1f} · clasificado {_t2['K']:,.1f}"
+                  f" · corte {_t2['L']:,.1f} · venta desp {_t2['P']:,.1f}")
+    except Exception as e:
+        print(f"    [!] Error DEM-SUP Trigo: {e}")
+
     # Finales de Compra: análisis + factor desde la Balanza (api.agronasaja.com)
     print(f"\n[+] Bajando Finales de Compra (balanza) + calculando factor...", flush=True)
     try:
@@ -12502,6 +12533,7 @@ def main() -> int:
         "stock_detalle":   stock_detalle,
         "cosechado":       cosechado,
         "demsup_soja":     demsup_soja_data,
+        "demsup_trigo":    demsup_trigo_data,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
