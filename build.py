@@ -2277,11 +2277,14 @@ window.apiFetch = function(path, opts){
 
 <script>
 /* ============== FORZAR ACCESO POR EL PORTAL (Cloudflare Worker) ============== */
-/* Si entran directo por GitHub Pages, los rebotamos al Worker para que pasen por el login */
+/* Si entran directo por GitHub Pages, los rebotamos al Worker para que pasen por el login.
+   EXCEPCIÓN: embebido en la extranet de Agronasaja (iframe con ?user=) — el primer
+   script de la página ya validó el modo embebido y seteó la identidad; no rebotar. */
 (function(){
   try {
     var h = location.hostname || "";
     if (h.endsWith(".github.io")) {
+      if (window.__PN_USER_OVERRIDE && window.self !== window.top) return;
       location.replace("https://tablero-agronasaja.ehussen.workers.dev/" + (location.search || ""));
     }
   } catch(e) {}
