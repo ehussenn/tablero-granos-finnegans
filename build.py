@@ -1896,7 +1896,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
         💡 <strong>Cómo funciona</strong>: casi todo es automático — <strong>Compra</strong> y <strong>Venta</strong> salen de los contratos de Finnegans, <strong>Planta</strong> del Stock por Depósito y <strong>Producción</strong> (Pend Cos, Cosechado) del Portal de Producción. Para la <strong>SEMILLA SOJA</strong>, Planta usa el idioma y los números del <strong>DEM-SUP Soja del Extranet Agronasaja</strong>: <strong>Granel en Campo</strong> (col C, silobolsas × merma), <strong>Granel en Semillero</strong> (col D, silos planta × merma), <strong>Stock Clasificado</strong> (col K, semilla terminada en depósitos de venta) y <strong>Corte de Bolsa</strong> (col L, pérdida — no suma al total). Del lado de venta, <strong>Prod Pendiente / Prod Despachado / Total Prod</strong> (cols S y T: pedidos de campo y despachos a producción) y <strong>Demanda Tot Pendiente</strong> (venta pendiente col O + prod pendiente) también salen del DEM-SUP. Los contratos de <strong>compensación de convenio</strong> (COMPENSACIÓN… en la descripción o el Nº adicional) y los <strong>anulados</strong> quedan <strong>afuera de la posición</strong> — no son compra/venta real. <strong>Hacé click en un número</strong> (subrayado punteado) para ver el detalle: los de <strong>Compra y Venta abren la pestaña "Detalle Contratos"</strong> (cantidad, fijación, precio, contraparte, liquidación y cta. cte. por contrato); los de Planta y Producción despliegan el detalle acá abajo.
         <br/>📐 <strong>Grupos achicables</strong>: Producción, Planta, Compra (y Venta / Prod. Semilla) se pueden achicar a una sola columna con su total — <strong>click en el nombre del grupo</strong> (▸/▾) para desplegar o achicar. Arrancan achicados para ver toda la foto de la posición de una.
-        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> usando los nombres de columnas y +, −, ×, ÷ — ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
+        <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code> — y ahora <strong>podés armarla clickeando celdas como en Excel</strong>: con el cursor dentro de la celda, click en cualquier celda de la tabla y se agrega sola (el = y el + van automáticos; para restar tipeá − y clickeá; Enter guarda, Esc cancela). Ej. <code>=pendcos + pendingreso - ctospe</code>. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
     </div>
 
@@ -7153,6 +7153,40 @@ function ppfEval(formula, ctx){
   return Function('"use strict";return(' + expr + ')')();
 }
 
+/* ===== MODO PLANILLA (tipo Excel) =====
+   Con el cursor DENTRO de una celda editable (Pos Pend / Posición), un click en
+   cualquier celda numérica de la tabla agrega el nombre de esa columna a la
+   fórmula ("=" y "+" automáticos; para restar, tipeá "-" y clickeá la celda).
+   Enter guarda · Escape cancela. */
+const PN_ALIAS_DE_COL = {cosechado:'cosechado', pendCos:'pendcos', prodTot:'totalprod', plantaTot:'planta',
+  silobolsa:'granelcampo', silo:'semillero', bolsas:'clasificado', corteBolsa:'corte',
+  compraTot:'compra', compraPend:'pendingreso', compraEntr:'entregado', ofertaTot:'oferta',
+  vtaSem:'vtasem', pendVincular:'pendvincular', ventaCtosAjust:'totventa', ventaCtos:'ctospe', ventaEntr:'ctosentr',
+  ventaPendSem:'ventapendiente', ventaDespSem:'ventadespachada', ventaTotSem:'ventatotalsem',
+  prodPendSem:'prodpend', prodDespSem:'proddesp', prodTotSem:'totalprodsem',
+  demandaTot:'demanda', demandaTotPend:'demandapend', posPend:'pospend', posicion:'posicion'};
+document.addEventListener('mousedown', (e) => {
+  const inp = document.activeElement;
+  if(!inp || inp.tagName !== 'INPUT') return;
+  if(inp.dataset.ppf === undefined && inp.dataset.ppfFam === undefined) return;
+  if(e.target === inp) return;
+  const td = e.target.closest('#pn-tbody td');
+  if(!td || td.querySelector('input')) return;
+  const tr = td.closest('tr');
+  if(!tr || tr.classList.contains('pn-drill-row') || tr.classList.contains('pn-descarte') || tr.classList.contains('pn-potencial')) return;
+  const idx = [...tr.children].indexOf(td);
+  if(idx <= 0) return;
+  const keys = [];
+  PN_COLS.forEach(g => pnVisCols(g).forEach(c => keys.push(c.k)));
+  const alias = PN_ALIAS_DE_COL[keys[idx - 1]];
+  if(!alias) return;
+  e.preventDefault();   // clave: NO perder el foco del input (si no, se guardaba antes de tiempo)
+  let v = (inp.value || '').trim();
+  if(!v.startsWith('=')) v = '=';                       // empezar fórmula nueva
+  if(/[a-z0-9áéíóúñ)]$/i.test(v)) v += ' + ';           // encadenar con + (para restar: tipeá "-")
+  inp.value = v + alias;
+});
+
 // Productos con denominación "SEMILLA X" (SEMILLA SOJA, SEMILLA MAIZ...): en realidad
 // son GRANO que se carga así porque la compra se cancela con factura. Van DENTRO del
 // cultivo (suman en TOTAL SOJA, etc.) pero como fila propia diferenciada, separados
@@ -7839,7 +7873,7 @@ function pnRender(){
         const f = PN_PPF[ppfKey(c.k, prod)];
         const err = r['_ppfErr_' + c.k];
         const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
-        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número o una fórmula con =, o CLICKEÁ celdas de la tabla para armarla (Enter guarda, Esc cancela)'));
         const colr = err ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : (c.k === 'posicion' ? ('font-weight:700;color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${colr}"/></td>`;
       } else if(c.edit){
@@ -7907,7 +7941,7 @@ function pnRender(){
       } else if(PN_PPF_EDIT_COLS[c.k] !== undefined){
         const f = famPpf[c.k], err = famPpfErr[c.k];
         const auto = c.k === 'posicion' ? 'Automático: Oferta Tot − Demanda Tot' : 'Automático: Pend Cos + Pend Ing − Ctos P.E';
-        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: número o fórmula (ej. =pendcos + pendingreso - ctospe)'));
+        const tit = err ? ('Error: ' + err) : (f !== undefined ? ('ƒ ' + f + ' = ' + fmt.num(v)) : (auto + '. Editable: escribí un número o una fórmula con =, o CLICKEÁ celdas de la tabla para armarla (Enter guarda, Esc cancela)'));
         const colr = err ? 'color:#dc2626' : (f !== undefined ? 'color:#7c3aed' : (c.k === 'posicion' ? ('color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         rowFam += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf-fam="${escapeHtml(fam)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="font-weight:700;${colr}"/></td>`;
       } else if(PN_DRILL[c.k] && v){
@@ -7930,14 +7964,20 @@ function pnRender(){
       const potencial = descarte + semPendIng * 0.10;
       const ncols = PN_COLS.reduce((n,g) => n + pnVisCols(g).length, 0);
       if(descarte > 0.05 || potencial > 0.05){
+        // el valor va bajo PLANTA (no bajo Producción): es descarte del stock de semilla,
+        // calculado como 10% de (granel en campo + granel en semillero) — y el potencial
+        // le suma el 10% del pendiente de ingreso de los contratos de compra de semilla
+        const nProd = pnVisCols(PN_COLS.find(g => g.grp === 'PRODUCCIÓN')).length;
         body += `<tr class="pn-descarte" style="background:#f0fdf4">`+
           `<td class="pn-prod-cell" style="padding-left:36px;font-weight:600;color:#15803d">↳ Descarte semilla (10%)</td>`+
+          `<td colspan="${nProd}"></td>`+
           `<td class="pos-pos" style="font-weight:700;color:#15803d">${fmt.num(descarte)}</td>`+
-          `<td colspan="${ncols-1}" style="font-size:11px;color:var(--muted)">10% de ${fmt.num(semStock)} tn de semilla (granel + silo bolsa)</td></tr>`;
+          `<td colspan="${ncols-nProd-1}" style="font-size:11px;color:var(--muted)">10% de ${fmt.num(semStock)} tn de semilla a granel (en campo + en semillero)</td></tr>`;
         body += `<tr class="pn-potencial" style="background:#ecfeff">`+
           `<td class="pn-prod-cell" style="padding-left:36px;font-weight:700;color:#0e7490">↳ Potencial descarte</td>`+
+          `<td colspan="${nProd}"></td>`+
           `<td style="font-weight:800;color:#0e7490">${fmt.num(potencial)}</td>`+
-          `<td colspan="${ncols-1}" style="font-size:11px;color:var(--muted)">descarte + 10% de ${fmt.num(semPendIng)} tn pendiente de ingreso</td></tr>`;
+          `<td colspan="${ncols-nProd-1}" style="font-size:11px;color:var(--muted)">descarte + 10% de ${fmt.num(semPendIng)} tn de semilla pendiente de ingreso (contratos de compra)</td></tr>`;
       }
     }
 
@@ -8001,7 +8041,10 @@ function pnRender(){
       ppfSave();
       pnRender();
     });
-    inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
+    inp.addEventListener("keydown", e => {
+      if(e.key === "Enter") inp.blur();
+      if(e.key === "Escape"){ inp.value = inp.defaultValue; inp.blur(); }   // cancelar sin guardar
+    });
   });
 
   // Listener: click en fila TOTAL <FAM> (amarilla) → expande/colapsa los productos de ese grano
