@@ -7792,6 +7792,31 @@ function pnRender(){
     dataPorProd[p] = pnCalcRow(p, cp, vp, incluyePlanta);
   });
 
+  // POTENCIAL DESCARTE (SOJA y TRIGO): el 10% de la semilla a granel (en campo + en
+  // semillero) y el 10% de las compras de semilla pendientes de ingreso van a descarte.
+  // Ese 10% se RESTA de las filas de semilla (planta y pend. de ingreso) y se muestra en
+  // la fila "↳ Potencial descarte", que suma en Planta — la oferta del cultivo no cambia.
+  const PN_DESCARTE_FAM = {};
+  ['SOJA', 'TRIGO'].forEach(fam => {
+    let dCampo = 0, dSem = 0, dCompra = 0;
+    (byFamilia[fam] || []).forEach(p => {
+      if(pnEsSemillaGrano(p) || pnSubtipo(p) !== 'Semilla') return;
+      const r = dataPorProd[p]; if(!r) return;
+      const dc = (r.silobolsa || 0) * 0.10, ds = (r.silo || 0) * 0.10, dp = (r.compraPend || 0) * 0.10;
+      if(dc + ds + dp <= 0) return;
+      dCampo += dc; dSem += ds; dCompra += dp;
+      r.silobolsa -= dc; r.silo -= ds;
+      r.compraPend -= dp; r.compraTot -= dp;
+      r.plantaTot = r.silo + r.bolsas + r.silobolsa;
+      r.pcTot = r.prodTot + r.compraTot;
+      r.ofertaTot = r.plantaTot + r.prodTot + r.compraTot;
+      r.posPend = r.pendCos + r.compraPend - r.ventaCtos;
+      r.posicion = r.ofertaTot - r.demandaTot;
+    });
+    const total = dCampo + dSem + dCompra;
+    if(total > 0.05) PN_DESCARTE_FAM[fam] = {deCampo: dCampo, deSemillero: dSem, deCompras: dCompra, total};
+  });
+
   // POS PEND / POSICIÓN estilo Excel: si el usuario guardó un número/fórmula para el
   // producto, pisa el cálculo automático ANTES de armar los totales (familia y general
   // lo heredan). Pos Pend se aplica primero para que una fórmula de Posición pueda usarlo.
@@ -7890,6 +7915,16 @@ function pnRender(){
       PN_COLS.forEach(g => g.cols.forEach(c => { totSem[c.k] += (r[c.k] || 0); }));
     });
 
+    // el potencial descarte suma en la PLANTA del cultivo (y en oferta/posición),
+    // compensando lo que se restó de la semilla — la oferta total no cambia
+    const dscTot = PN_DESCARTE_FAM[fam];
+    if(dscTot){
+      ['plantaTot','ofertaTot','posicion'].forEach(k => {
+        totFam[k] = (totFam[k] || 0) + dscTot.total;
+        grandTotal[k] = (grandTotal[k] || 0) + dscTot.total;
+      });
+    }
+
     // Pos Pend / Posición de la familia: fórmula propia (clave "FAM:<familia>") o suma
     // de productos. Si hay fórmula, se ajusta también el TOTAL GENERAL por la diferencia.
     const famPpf = {}, famPpfErr = {};
@@ -7929,31 +7964,18 @@ function pnRender(){
     body += rowFam;
     totalsFam[fam] = totFam;
 
-    // DESCARTE + POTENCIAL (solo SOJA y TRIGO): el procesado de semilla deja ~10% de descarte (grano).
-    //  - Descarte  = 10% de la semilla en stock (a granel en silo + silobolsa)
-    //  - Potencial = descarte + 10% de la semilla en contratos pendientes de ingreso
-    if(fam === "SOJA" || fam === "TRIGO"){
-      const semStock = (totSem.silo || 0) + (totSem.silobolsa || 0);
-      const semPendIng = totSem.compraPend || 0;
-      const descarte  = semStock * 0.10;
-      const potencial = descarte + semPendIng * 0.10;
+    // ↳ POTENCIAL DESCARTE (solo SOJA y TRIGO): el 10% ya se restó de las filas de
+    // semilla (planta y pend. de ingreso); acá se muestra la fila con ese total, que
+    // SUMA en Planta del cultivo (así la oferta queda igual y el descarte se ve aparte).
+    const dscFam = PN_DESCARTE_FAM[fam];
+    if(dscFam){
       const ncols = PN_COLS.reduce((n,g) => n + pnVisCols(g).length, 0);
-      if(descarte > 0.05 || potencial > 0.05){
-        // el valor va bajo PLANTA (no bajo Producción): es descarte del stock de semilla,
-        // calculado como 10% de (granel en campo + granel en semillero) — y el potencial
-        // le suma el 10% del pendiente de ingreso de los contratos de compra de semilla
-        const nProd = pnVisCols(PN_COLS.find(g => g.grp === 'PRODUCCIÓN')).length;
-        body += `<tr class="pn-descarte" style="background:#f0fdf4">`+
-          `<td class="pn-prod-cell" style="padding-left:36px;font-weight:600;color:#15803d">↳ Descarte semilla (10%)</td>`+
-          `<td colspan="${nProd}"></td>`+
-          `<td class="pos-pos" style="font-weight:700;color:#15803d">${fmt.num(descarte)}</td>`+
-          `<td colspan="${ncols-nProd-1}" style="font-size:11px;color:var(--muted)">10% de ${fmt.num(semStock)} tn de semilla a granel (en campo + en semillero)</td></tr>`;
-        body += `<tr class="pn-potencial" style="background:#ecfeff">`+
-          `<td class="pn-prod-cell" style="padding-left:36px;font-weight:700;color:#0e7490">↳ Potencial descarte</td>`+
-          `<td colspan="${nProd}"></td>`+
-          `<td style="font-weight:800;color:#0e7490">${fmt.num(potencial)}</td>`+
-          `<td colspan="${ncols-nProd-1}" style="font-size:11px;color:var(--muted)">descarte + 10% de ${fmt.num(semPendIng)} tn de semilla pendiente de ingreso (contratos de compra)</td></tr>`;
-      }
+      const nProd = pnVisCols(PN_COLS.find(g => g.grp === 'PRODUCCIÓN')).length;
+      body += `<tr class="pn-potencial" style="background:#ecfeff">`+
+        `<td class="pn-prod-cell" style="padding-left:36px;font-weight:700;color:#0e7490">↳ Potencial descarte (10%)</td>`+
+        `<td colspan="${nProd}"></td>`+
+        `<td style="font-weight:800;color:#0e7490">${fmt.num(dscFam.total)}</td>`+
+        `<td colspan="${ncols-nProd-1}" style="font-size:11px;color:var(--muted)">sacado de la semilla: ${fmt.num(dscFam.deCampo)} del granel en campo + ${fmt.num(dscFam.deSemillero)} del semillero + ${fmt.num(dscFam.deCompras)} del pendiente de ingreso — suma acá en Planta, la oferta del cultivo no cambia</td></tr>`;
     }
 
     // 2) Detalle (productos + semillas) — SOLO si la familia está expandida
@@ -8107,6 +8129,13 @@ function pnRender(){
       cardTotals[dest].ofertaTot += r.ofertaTot || 0;
       cardTotals[dest].demandaTot += r.demandaTot || 0;
     });
+  });
+  // el potencial descarte también en las tarjetas del cultivo (misma lógica que la tabla)
+  Object.keys(PN_DESCARTE_FAM).forEach(fam => {
+    if(cardTotals[fam]){
+      cardTotals[fam].ofertaTot += PN_DESCARTE_FAM[fam].total;
+      cardTotals[fam].posicion  += PN_DESCARTE_FAM[fam].total;
+    }
   });
   cardOrden.sort(pnFamOrden);
   pnRenderCards(cardTotals, cardOrden);
