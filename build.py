@@ -336,6 +336,16 @@ HTML_TEMPLATE = r"""<!doctype html>
 (function(){
   try{
     if(location.hostname.endsWith(".github.io")){
+      // EMBEBIDO EN LA EXTRANET DE AGRONASAJA: las vistas embebidas llegan en un iframe
+      // con ?user=<email> (la extranet ya controló el acceso y pasa la identidad, igual
+      // que con las vistas de Julián/Juan Pablo). En ese caso NO se redirige al Worker
+      // y el email se usa para los permisos de edición (solo Ezequiel edita).
+      const u = new URLSearchParams(location.search).get("user");
+      const embebido = window.self !== window.top;
+      if(u && embebido){
+        window.__PN_USER_OVERRIDE = String(u).trim().toLowerCase();
+        return;
+      }
       location.replace("https://tablero-agronasaja.ehussen.workers.dev/");
     }
   }catch(e){}
