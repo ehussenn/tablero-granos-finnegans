@@ -1008,6 +1008,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div><label>CAMPAÑA</label><select id="cp-camp"><option value="">Todas</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="cp-q" placeholder="numero, descripción…" /></div>
         <button class="clear" id="btn-clear-cp">Limpiar</button>
+        <button class="clear" id="cp-pliq" style="background:#b45309;color:#fff;border-color:#b45309" title="Ver el pendiente de liquidar por contrato: fijado / sin fijar, cliente, cultivo, campaña">📑 Pend. de liquidar</button>
         <div class="count" id="row-count-cp">0 / 0 contratos</div>
       </div>
 
@@ -1674,6 +1675,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div><label>CAMPAÑA</label><select id="f-camp"><option value="">Todas</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="f-q" placeholder="numero, descripción…" /></div>
         <button class="clear" id="btn-clear">Limpiar</button>
+        <button class="clear" id="vt-pliq" style="background:#b45309;color:#fff;border-color:#b45309" title="Ver el pendiente de liquidar por contrato: fijado / sin fijar, anticipos financieros, cliente, cultivo, campaña">📑 Pend. de liquidar</button>
         <div class="count" id="row-count">0 / 0 contratos</div>
       </div>
 
@@ -8145,17 +8147,35 @@ const PNCT_SALDO_ORG = (() => {
 })();
 
 function pnctGo(opts){
-  // recordar desde qué subpestaña se vino (Granaria o Financiera) para el botón Volver
+  // recordar desde qué subpestaña se vino (Granaria o Financiera) para el botón Volver;
+  // volverNav = {tab, sub} permite volver a OTRO panel (ej. Compra · Posición General)
   const act = document.querySelector('.panel[data-panel="posicion"] .subpanel.active');
   const volverA = (opts && opts.volverA) || (act && act.dataset.subPanel !== 'pn-ctos' ? act.dataset.subPanel : 'pn-granaria');
-  PNCT = Object.assign({tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:'', volverA}, opts || {});
+  PNCT = Object.assign({tipo:'venta', field:'tot', fam:'', prods:null, exclSem:false, origen:'', volverA, volverNav:null, volverLabel:''}, opts || {});
   document.getElementById('pnct-tipo').value = PNCT.tipo;
   document.getElementById('pnct-field').value = PNCT.field;
   document.getElementById('pnct-fam').value = PNCT.fam || '';
+  // activar el panel Posición (por si venimos de otra pestaña, ej. Compra/Venta)
+  const tab = document.querySelector('.tab[data-tab="posicion"]');
+  if(tab) tab.click();
   const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-ctos"]');
   if(st) st.click();
   pnctRender();
 }
+
+// Accesos directos "Pend. de liquidar" desde la Posición General de Compras y Ventas:
+// abren el Detalle de Contratos ya filtrado (fijado / sin fijar por contrato; en venta
+// además se ve el anticipo financiero en Liq. Anticip.). El Volver regresa a esa vista.
+function pnctDesdePosGeneral(tipo, nav, label){
+  // para el análisis de pendiente de liquidar se muestran TODAS las campañas
+  const sel = document.getElementById('pn-campana');
+  if(sel && sel.value !== ''){ sel.value = ''; sel.dispatchEvent(new Event('change')); }
+  pnctGo({tipo, field:'pliq', origen:'Desde: ' + label, volverNav:nav, volverLabel:label});
+}
+document.getElementById('cp-pliq').addEventListener('click', () =>
+  pnctDesdePosGeneral('compra', {tab:'compra', sub:'cp-posicion'}, 'Compra · Posición General'));
+document.getElementById('vt-pliq').addEventListener('click', () =>
+  pnctDesdePosGeneral('venta', {tab:'venta', sub:'posicion'}, 'Venta · Posición General'));
 
 function pnctRender(){
   const tipo = PNCT.tipo, cp = (tipo === 'compra');
@@ -8229,13 +8249,13 @@ function pnctRender(){
   document.getElementById('pnct-title').textContent =
     (cp ? 'Contratos de Compra' : 'Contratos de Venta') + (PNCT.prods && PNCT.prods.length === 1 ? ` · ${PNCT.prods[0]}` : PNCT.fam ? ` · ${PNCT.fam}` : '');
   document.getElementById('pnct-volver').textContent =
-    '← Volver a ' + (PNCT.volverA === 'pn-financiera' ? 'Posición Financiera' : 'Posición Granaria');
+    '← Volver a ' + (PNCT.volverLabel || (PNCT.volverA === 'pn-financiera' ? 'Posición Financiera' : 'Posición Granaria'));
   document.getElementById('pnct-info').textContent = `${rows.length} contratos · ${fmt.num(tAj)} tn ajustadas`;
 
   // tabla — sin Fecha / Campaña / Entrega (la campaña ya se filtró antes del zoom);
   // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
   document.getElementById('pnct-thead').innerHTML = `<tr>
-    <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th>
+    <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th><th>Campaña</th>
     <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
     <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
     <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
@@ -8268,6 +8288,7 @@ function pnctRender(){
       <td class="pn-drill-nro">${nro}</td>
       <td title="${escapeHtml(org)}">${escapeHtml(org.length>34?org.slice(0,34)+'…':org)||'—'}</td>
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
+      <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
       <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
       <td class="num" style="font-weight:700;color:#b91c1c">${entPliq?fmt.num(entPliq):'—'}</td>
       <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(fijTn)}</td>
@@ -8278,9 +8299,9 @@ function pnctRender(){
       <td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
       <td>${cta}</td></tr>`;
   });
-  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="18" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
+  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="19" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
-    <td colspan="3">TOTAL (${rows.length} contratos)</td>
+    <td colspan="4">TOTAL (${rows.length} contratos)</td>
     <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
     <td class="num">${fmt.num(tEntPliq)}</td>
     <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
@@ -8345,6 +8366,10 @@ document.addEventListener('click', (e) => {
   pnctRender();
 }));
 document.getElementById('pnct-volver').addEventListener('click', () => {
+  if(PNCT && PNCT.volverNav){
+    const nv = document.querySelector(`.nav-item[data-go-tab="${PNCT.volverNav.tab}"][data-go-sub="${PNCT.volverNav.sub}"]`);
+    if(nv){ nv.click(); return; }
+  }
   const dest = (PNCT && PNCT.volverA) || 'pn-granaria';
   const st = document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="' + dest + '"]');
   if(st) st.click();
