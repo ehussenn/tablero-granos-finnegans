@@ -7183,6 +7183,9 @@ document.addEventListener('mousedown', (e) => {
   const alias = PN_ALIAS_DE_COL[keys[idx - 1]];
   if(!alias) return;
   e.preventDefault();   // clave: NO perder el foco del input (si no, se guardaba antes de tiempo)
+  // y SUPRIMIR el click que viene después: si no, la celda ejecuta su acción propia
+  // (abrir el drill o saltar a la pestaña Detalle Contratos) y te pisa la edición
+  document.addEventListener('click', function _supr(ev){ ev.stopPropagation(); ev.preventDefault(); }, {capture:true, once:true});
   let v = (inp.value || '').trim();
   if(!v.startsWith('=')) v = '=';                       // empezar fórmula nueva
   if(/[a-z0-9áéíóúñ)]$/i.test(v)) v += ' + ';           // encadenar con + (para restar: tipeá "-")
