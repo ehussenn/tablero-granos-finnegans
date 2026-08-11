@@ -333,6 +333,20 @@ HTML_TEMPLATE = r"""<!doctype html>
    link directo de GitHub Pages, lo mandamos al portal para que todos trabajen sobre la
    MISMA data (KV). Cuando el Worker sirve esta página, el hostname es workers.dev, así
    que este redirect NO se dispara ahí (no hay loop). */
+// apiFetch: las llamadas de datos (/api/...) van al mismo host cuando el tablero se
+// sirve desde el Worker, y al Worker ABSOLUTO (con la identidad embebida en un header)
+// cuando corre embebido en la extranet desde GitHub Pages. Así el estado compartido
+// (códigos de contratos, finales, balanza) funciona también adentro de la extranet.
+window.apiFetch = function(path, opts){
+  try{
+    if(location.hostname.endsWith(".github.io")){
+      opts = opts || {};
+      opts.headers = Object.assign({}, opts.headers || {}, {"X-Tablero-User": window.__PN_USER_OVERRIDE || ""});
+      return fetch("https://tablero-agronasaja.ehussen.workers.dev" + path, opts);
+    }
+  }catch(e){}
+  return fetch(path, opts);
+};
 (function(){
   try{
     if(location.hostname.endsWith(".github.io")){
@@ -2300,7 +2314,7 @@ const API_AVAILABLE = !location.hostname.endsWith(".github.io");  // si estamos 
 async function apiLoad(key){
   if(!API_AVAILABLE) return null;
   try{
-    const r = await fetch(`/api/data/${key}?t=${Date.now()}`, {cache:"no-store", credentials:"include"});
+    const r = await apiFetch(`/api/data/${key}?t=${Date.now()}`, {cache:"no-store", credentials:"include"});
     if(!r.ok) return null;
     const txt = await r.text();
     try { return JSON.parse(txt); } catch(e) { return null; }
@@ -2309,7 +2323,7 @@ async function apiLoad(key){
 async function apiSave(key, value){
   if(!API_AVAILABLE) return false;
   try{
-    const r = await fetch(`/api/data/${key}`, {
+    const r = await apiFetch(`/api/data/${key}`, {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       credentials:"include",
@@ -9244,7 +9258,7 @@ async function tzFetchDetail(ctg){
     return;
   }
   try{
-    const r = await fetch(`/api/finnegans/ctg/${encodeURIComponent(ctg)}`, {credentials:"include"});
+    const r = await apiFetch(`/api/finnegans/ctg/${encodeURIComponent(ctg)}`, {credentials:"include"});
     if(r.ok){
       const data = await r.json();
       TZ_DETAIL_CACHE[ctg] = data;

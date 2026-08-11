@@ -186,14 +186,37 @@ export default {
       return new Response(null, { status: 302, headers: h });
     }
 
+    // ---- EMBEBIDO EN LA EXTRANET: CORS para la página publicada (GitHub Pages) ----
+    // El tablero embebido como vista de la extranet se sirve desde ehussenn.github.io
+    // y llama a este Worker para el estado compartido (/api/data, whoami, balanza).
+    // La identidad viene en el header X-Tablero-User (el email que la extranet le
+    // pasó a la vista embebida) y solo se acepta si ese email existe en USUARIOS —
+    // mismo nivel de confianza que el ?user= de las vistas embebidas del extranet.
+    const EMBED_ORIGIN = "https://ehussenn.github.io";
+    const _origin = request.headers.get("Origin") || "";
+    const cors = _origin === EMBED_ORIGIN ? {
+      "Access-Control-Allow-Origin": EMBED_ORIGIN,
+      "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, X-Tablero-User",
+      "Vary": "Origin",
+    } : {};
+    if (request.method === "OPTIONS" && url.pathname.startsWith("/api/")) {
+      return new Response(null, { status: 204, headers: cors });
+    }
+
     // ---- Verificar sesión ----
     const token = getCookie(request, COOKIE_NAME);
-    const email = await validarToken(token, secret);
+    let email = await validarToken(token, secret);
+    if (!email && _origin === EMBED_ORIGIN) {
+      const u = (request.headers.get("X-Tablero-User") || "").trim().toLowerCase();
+      const usuariosEmb = env.USUARIOS_JSON ? JSON.parse(env.USUARIOS_JSON) : USUARIOS_FALLBACK;
+      if (u && usuariosEmb[u]) email = u;   // identidad embebida validada contra la lista
+    }
     if (!email) {
       // API endpoints require auth → 401 JSON, no HTML
       if (url.pathname.startsWith("/api/")) {
         return new Response(JSON.stringify({ error: "unauthenticated" }), {
-          status: 401, headers: { "Content-Type": "application/json" },
+          status: 401, headers: { "Content-Type": "application/json", ...cors },
         });
       }
       return new Response(loginHTML(null), {
@@ -260,6 +283,7 @@ export default {
             "Content-Type": "application/json",
             "Cache-Control": "no-store",
             "X-Agronasaja-Key": fullKey,
+            ...cors,
           },
         });
       }
@@ -282,7 +306,7 @@ export default {
           metadata: { user: email, ts: Date.now() },
         });
         return new Response(JSON.stringify({ ok: true, key: fullKey, savedBy: email }), {
-          status: 200, headers: { "Content-Type": "application/json" },
+          status: 200, headers: { "Content-Type": "application/json", ...cors },
         });
       }
 
@@ -294,7 +318,7 @@ export default {
     // ---- /api/whoami: el cliente pregunta quien esta logueado (para UI) ----
     if (url.pathname === "/api/whoami") {
       return new Response(JSON.stringify({ email }), {
-        status: 200, headers: { "Content-Type": "application/json" },
+        status: 200, headers: { "Content-Type": "application/json", ...cors },
       });
     }
 
