@@ -7852,7 +7852,7 @@ function pnRender(){
         const colr = err ? 'color:#dc2626;font-weight:700' : (f !== undefined ? 'color:#7c3aed;font-weight:700' : (c.k === 'posicion' ? ('font-weight:700;color:' + (v >= 0 ? '#16a34a' : '#dc2626')) : ''));
         row += `<td class="editable" title="${escapeHtml(tit)}"><input type="text" data-ppf="${escapeHtml(prod)}" data-ppf-col="${c.k}" value="${f !== undefined ? escapeHtml(f) : (v ? fmt.num(v) : '')}" placeholder="—" style="${colr}"/></td>`;
       } else if(c.edit){
-        row += `<td class="editable"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
+        row += `<td class="editable" title="Carga manual. Acepta cuenta rápida: =17151+2 guarda el resultado"><input type="text" data-prod="${escapeHtml(prod)}" data-k="${c.manK}" value="${v ? fmt.num(v) : ''}" placeholder="—"/></td>`;
       } else if(c.hl){
         const cls2 = v >= 0 ? "pos-pos" : "pos-neg";
         row += `<td class="${cls2}">${fmt.num(v)}</td>`;
@@ -7989,17 +7989,28 @@ function pnRender(){
   foot += "</tr>";
   document.getElementById("pn-tfoot").innerHTML = foot;
 
-  // Listeners inputs editables (solo los de valores manuales, con data-k)
+  // Listeners inputs editables (valores manuales, con data-k: Vta Sem / Pend Vincular).
+  // Aceptan CUENTA RÁPIDA: si empieza con "=", se calcula y se guarda el RESULTADO
+  // (ej. =17151+2 guarda 17.153). Solo números acá; las fórmulas con nombres de
+  // columnas van en Pos Pend / Posición.
   document.querySelectorAll("#pn-tbody input[data-k]").forEach(inp => {
     inp.addEventListener("blur", () => {
       const prod = inp.dataset.prod;
       const k = inp.dataset.k;
-      const raw = (inp.value || "").trim().replace(/\./g,"").replace(",",".");
-      const v = parseFloat(raw);
+      let v;
+      const txt = (inp.value || "").trim();
+      if(txt.startsWith("=")){
+        try { v = ppfEval(txt, {}); } catch(e){ v = NaN; }
+      } else {
+        v = parseFloat(txt.replace(/\./g,"").replace(",","."));
+      }
       pnSetMan(prod, k, isNaN(v) ? null : v);
       pnRender();
     });
-    inp.addEventListener("keydown", e => { if(e.key === "Enter") inp.blur(); });
+    inp.addEventListener("keydown", e => {
+      if(e.key === "Enter") inp.blur();
+      if(e.key === "Escape"){ inp.value = inp.defaultValue; inp.blur(); }
+    });
   });
 
   // Listeners POS PEND / POSICIÓN tipo Excel (por producto y por familia): guarda el
