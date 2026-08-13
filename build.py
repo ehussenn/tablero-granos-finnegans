@@ -892,7 +892,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-pend" data-title="Compra · Finales Pendientes">🧾 Finales Pendientes</a>
-          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales" data-title="Compra · Finales de Compra">🧮 Finales de Compra</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-resultados" data-title="Compra · Resultados">📈 Resultados</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
@@ -1016,7 +1016,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
       <button class="subtab" data-sub="cp-finales-pend">🧾 Finales Pendientes</button>
-      <button class="subtab" data-sub="cp-finales">🧮 Finales de Compra</button>
+      <button class="subtab" data-sub="cp-resultados">📈 Resultados</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
       <button class="subtab" data-sub="cp-calc-canje">🔄 Calc. Canje</button>
@@ -1167,6 +1167,34 @@ window.apiFetch = function(path, opts){
             <tbody id="fl-body"></tbody>
             <tfoot id="fl-foot"></tfoot>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SUB: RESULTADOS (margen fino de la reventa) ========== -->
+    <div class="subpanel" data-sub-panel="cp-resultados">
+      <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <h3>📈 Resultados — margen fino de la reventa <span class="badge" id="res-meta"></span></h3>
+        <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
+          Solo camiones con contrato de compra y de venta <b>liquidados</b>. Compra neta = precio liquidado
+          − comisión de corredor (Finnegans) − 1,25% de sellado (<b>a favor</b> donde Agronasaja es corredor).
+          Venta neta = precio liquidado − % del entregador (el % se edita en <b>Cruce Cliente × Comprador</b>).
+          Precios en USD convertidos al TC pizarra del día. La columna <b>Balanza</b> muestra lo enviado a liquidar.
+        </p>
+      </div>
+      <div class="filterbar">
+        <div><label>CULTIVO</label><select id="res-grano"><option value="">Todos</option></select></div>
+        <div class="count" id="res-count"></div>
+      </div>
+      <div id="res-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin-bottom:14px"></div>
+      <div class="section">
+        <h3 style="font-size:14px;margin-bottom:8px">Ganancia neta por mes</h3>
+        <div id="res-mensual"></div>
+      </div>
+      <div class="section">
+        <h3 style="font-size:14px;margin-bottom:8px">Detalle por contrato de compra <span class="badge">click en una fila para ver sus camiones</span></h3>
+        <div class="tbl-wrap" style="max-height:620px">
+          <table class="tbl" id="res-tbl"><thead id="res-head"></thead><tbody id="res-body"></tbody><tfoot id="res-foot"></tfoot></table>
         </div>
       </div>
     </div>
@@ -1904,6 +1932,7 @@ window.apiFetch = function(path, opts){
       <div><label>EMPRESA</label><select id="pn-empresa"><option value="">Todas</option></select></div>
       <button class="clear" id="pn-clear">Limpiar</button>
       <button class="clear" id="pn-exp-cols" title="Maximizar / minimizar todos los grupos de columnas">⇔ Columnas</button>
+      <span id="pn-live-badge" style="font-size:11px;color:var(--muted);white-space:nowrap" title="Datos DEM-SUP consultados en vivo a la API de operaciones (ajustes del analista incluidos)"></span>
       <button class="clear" id="pn-exp-rows" title="Maximizar / minimizar todas las filas (cultivos y semillas)">⇕ Filas</button>
       <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pn-info"></span>
     </div>
@@ -2318,7 +2347,8 @@ function uniqSorted(arr, key){
    apiSave/apiLoad devuelven null y el caller cae a localStorage como antes.
 
    Solo funciona cuando estamos detras del Worker (no en GitHub Pages directo). */
-const API_AVAILABLE = !location.hostname.endsWith(".github.io");  // si estamos en el Worker
+// Disponible detras del Worker, y TAMBIEN embebido en la extranet (?user= via apiFetch → Worker con CORS)
+const API_AVAILABLE = !location.hostname.endsWith(".github.io") || !!window.__PN_USER_OVERRIDE;
 async function apiLoad(key){
   if(!API_AVAILABLE) return null;
   try{
@@ -2393,6 +2423,8 @@ document.querySelectorAll('.subtab').forEach(st => {
     parent.querySelectorAll('.subpanel').forEach(x => x.classList.remove('active'));
     st.classList.add('active');
     parent.querySelector(`.subpanel[data-sub-panel="${st.dataset.sub}"]`).classList.add('active');
+    // Resultados se recalcula al entrar (toma cambios de % hechos en el Cruce)
+    if(st.dataset.sub === 'cp-resultados'){ try{ resRender(); }catch(e){} }
   });
 });
 
@@ -5799,6 +5831,16 @@ function cxGetPctCliente(cliente){
   }
   return CX_CLI_DEFAULT;
 }
+// % del cliente PARA UN CONTRATO: excepcion manual > % real del contrato (Finnegans) > default
+function cxGetPctClienteCto(cliente, contratoCompra){
+  const k = cxClienteUpper(cliente);
+  for(const [name, pct] of Object.entries(CX_CLI_EXCS)){
+    if(cxClienteUpper(name) === k) return pct;
+  }
+  const cc = CX_CONTRATOS_COMPRA_IDX[contratoCompra];
+  if(cc && Number(cc.comisioncorredor) > 0) return Number(cc.comisioncorredor);
+  return CX_CLI_DEFAULT;
+}
 function cxGetPctObj(comprador){
   if(comprador == null) return null;
   if(CX_PCT[comprador] != null) return CX_PCT[comprador];
@@ -5863,7 +5905,7 @@ function cxBuildOps(){
     const tn = kg/1000;
     const precioC = cxPrecioCompra(c.contrato_compra);
     const precioV = cxPrecioVenta(c.contrato_venta);
-    const pctC = cxGetPctCliente(c.cliente);
+    const pctC = cxGetPctClienteCto(c.cliente, c.contrato_compra);
     const pctV = cxGetPctComprador(c.comprador);
     const comComp = (precioC != null) ? tn * precioC * (pctC/100) : 0;
     const comVent = (precioV != null && pctV != null) ? tn * precioV * (pctV/100) : 0;
@@ -5896,6 +5938,124 @@ function mesNice(yyyymm){
   const [y,m] = yyyymm.split("-");
   return `${MES_LABELS[m] || m} ${y}`;
 }
+
+/* ============== RESULTADOS: margen fino de la reventa ============== */
+// Reusa el cruce por CTG (CRUCES_RAW + indices de contratos) y las tarifas editables del Cruce.
+const RES_TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 1490;
+const resArs = p => (p == null || !p) ? null : (p < 1000 ? p * RES_TC : p);   // USD -> ARS pizarra
+// balanza: kg enviados a liquidar por contrato de compra
+const RES_BALANZA = {};
+(PAYLOAD.finales || []).forEach(f => {
+  const c = String(f.contrato || "").trim();
+  if(!c) return;
+  const a = RES_BALANZA[c] = RES_BALANZA[c] || {kg: 0, n: 0};
+  a.kg += Number(f.kgAplicar) || Number(f.kgDescarga) || 0; a.n++;
+});
+function resOps(){
+  return cxBuildOps().filter(o => o.contrato_compra && o.contrato_venta).map(o => {
+    const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
+    const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
+    const pC = resArs(Number(cc.precioliquidado) || 0);   // SOLO liquidado
+    const pV = resArs(Number(cv.precioliquidado) || 0);
+    const pctCom = Number(cc.comisioncorredor) || 0;
+    const pctRec = pctCom > 0 ? pctCom + 1.25 : 0;        // comision + sellado A FAVOR
+    const pctV = (o.pctV != null) ? Number(o.pctV) : 0;   // tarifa del entregador (Cruce)
+    const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
+    const ventaNeta  = pV ? pV * (1 - pctV / 100) : null;
+    const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
+    return {...o, pC, pV, pctRec, pctVr: pctV, compraNeta, ventaNeta, margen};
+  });
+}
+const resFmt = n => Math.round(n).toLocaleString("es-AR");
+function resRender(){
+  if(!document.getElementById("res-cards")) return;
+  const todos = resOps();
+  // selector de cultivo
+  const sel = document.getElementById("res-grano");
+  const granos = [...new Set(todos.map(o => o.grano).filter(Boolean))].sort();
+  if(sel.options.length <= 1){
+    sel.innerHTML = `<option value="">Todos</option>` + granos.map(g => `<option>${escapeHtml(g)}</option>`).join("");
+    sel.addEventListener("change", resRender);
+  }
+  const fg = sel.value;
+  const liq = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
+  const pend = todos.filter(o => o.margen == null && (!fg || o.grano === fg));
+  document.getElementById("res-meta").textContent =
+    `${liq.length} camiones liquidados · ${pend.length} pendientes de liquidar`;
+  document.getElementById("res-count").textContent = `TC pizarra: $${resFmt(RES_TC)}`;
+
+  // tarjetas por cultivo
+  const porG = {};
+  todos.filter(o => o.margen != null).forEach(o => {
+    const g = o.grano || "—";
+    const a = porG[g] = porG[g] || {tn: 0, ic: 0, iv: 0, m: 0, cam: 0};
+    a.tn += o.tn; a.ic += o.pC * o.tn; a.iv += o.pV * o.tn; a.m += o.margen * o.tn; a.cam++;
+  });
+  document.getElementById("res-cards").innerHTML = Object.keys(porG).sort().map(g => {
+    const a = porG[g], pos = a.m >= 0;
+    return `<div class="section" style="margin:0;padding:14px 16px;border-top:3px solid ${pos ? 'var(--green)' : 'var(--red)'}">
+      <div style="font-weight:800;font-size:13px">${escapeHtml(g)}</div>
+      <div style="font-size:22px;font-weight:800;margin-top:4px;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}$ ${resFmt(Math.abs(a.m))}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px">
+        ${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})} tn · ${a.cam} camiones · ${resFmt(a.m / a.tn)} $/tn<br>
+        compré $${resFmt(a.ic / a.tn)} · vendí $${resFmt(a.iv / a.tn)}</div>
+    </div>`;
+  }).join("") || `<div style="color:var(--muted);font-size:13px">Sin camiones liquidados en ambas puntas todavía.</div>`;
+
+  // ganancia neta por mes (barras CSS)
+  const porM = {};
+  liq.forEach(o => { if(o.mes){ const a = porM[o.mes] = porM[o.mes] || {m: 0, tn: 0}; a.m += o.margen * o.tn; a.tn += o.tn; } });
+  const meses = Object.keys(porM).sort();
+  const maxAbs = Math.max(...meses.map(k => Math.abs(porM[k].m)), 1);
+  document.getElementById("res-mensual").innerHTML = !meses.length ? "" :
+    `<div style="display:flex;gap:14px;align-items:flex-end;min-height:170px;padding:6px 4px">` +
+    meses.map(k => {
+      const a = porM[k], pos = a.m >= 0, h = Math.max(6, Math.round(120 * Math.abs(a.m) / maxAbs));
+      return `<div style="flex:1;text-align:center" title="${mesNice(k)}: ${pos ? '+' : '−'}$${resFmt(Math.abs(a.m))} · ${a.tn.toLocaleString('es-AR', {maximumFractionDigits: 1})} tn">
+        <div style="font-size:11px;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(a.m))}</div>
+        <div style="height:${h}px;background:${pos ? 'var(--green)' : 'var(--red)'};border-radius:4px 4px 0 0;margin:4px auto 0;max-width:64px"></div>
+        <div style="font-size:11px;color:var(--muted);border-top:1px solid var(--line);padding-top:4px">${mesNice(k)}</div>
+      </div>`;
+    }).join("") + `</div>`;
+
+  // detalle por contrato de compra
+  const porC = {};
+  liq.forEach(o => {
+    const a = porC[o.contrato_compra] = porC[o.contrato_compra] || {cli: o.cliente, g: o.grano, tn: 0, ic: 0, icn: 0, ivn: 0, m: 0, cam: 0, pctRec: o.pctRec};
+    a.tn += o.tn; a.ic += o.pC * o.tn; a.icn += o.compraNeta * o.tn; a.ivn += o.ventaNeta * o.tn; a.m += o.margen * o.tn; a.cam++;
+  });
+  document.getElementById("res-head").innerHTML =
+    `<tr><th style="text-align:left">Contrato compra</th><th style="text-align:left">Le compré a</th><th style="text-align:left">Cultivo</th>
+     <th>Camiones</th><th>Tn liq.</th><th>Compré $/tn</th><th>% a favor</th><th>Compra neta</th>
+     <th>Venta neta</th><th>Margen $/tn</th><th>Margen $</th><th>Balanza (kg a liq.)</th></tr>`;
+  const claves = Object.keys(porC).sort((a, b) => porC[b].m - porC[a].m);
+  document.getElementById("res-body").innerHTML = claves.map(k => {
+    const a = porC[k], pos = a.m >= 0;
+    const bal = RES_BALANZA[k];
+    return `<tr>
+      <td style="text-align:left;font-weight:600">${escapeHtml(k)}</td>
+      <td style="text-align:left">${escapeHtml(a.cli || "—")}</td>
+      <td style="text-align:left">${escapeHtml(a.g || "—")}</td>
+      <td style="text-align:right">${a.cam}</td>
+      <td style="text-align:right">${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+      <td style="text-align:right">${resFmt(a.ic / a.tn)}</td>
+      <td style="text-align:right">${a.pctRec ? a.pctRec.toFixed(2) + "%" : "—"}</td>
+      <td style="text-align:right">${resFmt(a.icn / a.tn)}</td>
+      <td style="text-align:right">${resFmt(a.ivn / a.tn)}</td>
+      <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(a.m / a.tn))}</td>
+      <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(a.m))}</td>
+      <td style="text-align:right">${bal ? resFmt(bal.kg) + " (" + bal.n + " liq.)" : "—"}</td>
+    </tr>`;
+  }).join("");
+  const T = Object.values(porC).reduce((s, a) => ({tn: s.tn + a.tn, m: s.m + a.m, cam: s.cam + a.cam}), {tn: 0, m: 0, cam: 0});
+  document.getElementById("res-foot").innerHTML = !T.tn ? "" :
+    `<tr style="font-weight:800"><td style="text-align:left" colspan="3">TOTAL ${fg ? escapeHtml(fg) : ""}</td>
+     <td style="text-align:right">${T.cam}</td><td style="text-align:right">${T.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+     <td colspan="4"></td>
+     <td style="text-align:right;color:${T.m >= 0 ? 'var(--green)' : 'var(--red)'}">${T.m >= 0 ? '+' : '−'}${resFmt(Math.abs(T.m / T.tn))}</td>
+     <td style="text-align:right;color:${T.m >= 0 ? 'var(--green)' : 'var(--red)'}">${T.m >= 0 ? '+' : '−'}${resFmt(Math.abs(T.m))}</td><td></td></tr>`;
+}
+try{ resRender(); }catch(e){ console.warn("resultados:", e); }
 
 function cxInitFilters(){
   const ops = cxBuildOps();
@@ -7126,7 +7286,12 @@ const PN_KEY = "tablero-granos-posicion-granaria-v1";
 //  { producto: { silo, bolsas, silobolsa, pendcos, cosechado, campoest }, ... }
 let PN_MANUAL = {};
 try { PN_MANUAL = JSON.parse(localStorage.getItem(PN_KEY) || "{}") || {}; } catch(e){ PN_MANUAL = {}; }
-function pnSave(){ localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL)); }
+function pnSave(){
+  localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL));
+  // capa COMPARTIDA: lo que edita un autorizado se guarda en el Worker (clave pn_manual)
+  // para que TODOS los usuarios vean los mismos numeros manuales en la Posicion.
+  try{ if(pnPuedeEditar()) apiSaveDebounced("pn_manual", () => PN_MANUAL); }catch(e){}
+}
 
 // ===== POS PEND y POSICIÓN editables tipo Excel =====
 // El usuario puede escribir en las celdas Pos Pend y Posición un número fijo o una
@@ -7147,7 +7312,7 @@ function ppfKey(colK, base){ return (PN_PPF_EDIT_COLS[colK] || '') + base; }
 // Solo los usuarios de esta lista pueden editar (Vta Sem, Pend Vincular, Pos Pend,
 // Posición). El resto ve la posición de SOLO LECTURA. Para dar permiso a alguien
 // más adelante: agregar su email acá y regenerar el tablero.
-const PN_EDIT_USERS = new Set(["ehussen@agronasaja.com.ar"]);
+const PN_EDIT_USERS = new Set(["ehussen@agronasaja.com.ar", "sanguine@agronasaja.com.ar"]);
 function pnPuedeEditar(){
   try{
     const m = (document.cookie || "").match(/(?:^|; )agronasaja_user=([^;]*)/);
@@ -7157,6 +7322,23 @@ function pnPuedeEditar(){
     return location.protocol === 'file:';   // abriendo el archivo local (sin login) se permite
   }catch(e){ return false; }
 }
+// ===== CAPA COMPARTIDA de ediciones manuales (Worker, clave pn_manual) =====
+// Al abrir: si el servidor tiene datos, pisan lo local (todos ven lo mismo).
+// Migracion one-shot: si el servidor esta vacio y este usuario es editor con
+// datos locales viejos (epoca localStorage), se suben una vez para no perderlos.
+(async () => {
+  try{
+    const shared = await apiLoad("pn_manual");
+    if(shared && typeof shared === "object" && !Array.isArray(shared) && Object.keys(shared).length){
+      PN_MANUAL = shared;
+      try{ localStorage.setItem(PN_KEY, JSON.stringify(PN_MANUAL)); }catch(e){}
+      try{ if(typeof pnRender === "function" && document.getElementById("pn-tabla")) pnRender(); }catch(e){}
+    } else if(shared !== null && Object.keys(PN_MANUAL).length && pnPuedeEditar()){
+      apiSave("pn_manual", PN_MANUAL);
+    }
+  }catch(e){}
+})();
+
 // Alias (sin acentos, minúsculas) -> key interna de la fila
 const PN_PPF_ALIAS = {
   cosechado:'cosechado', pendcos:'pendCos', totalprod:'prodTot',
@@ -7589,15 +7771,89 @@ const PN_DEMSUP = PAYLOAD.demsup_soja || null;          // fuente soja (drill-do
 const PN_DEMSUP_TRIGO = PAYLOAD.demsup_trigo || null;   // fuente trigo (drill-downs)
 const PN_DEMSUP_SRCS = [PN_DEMSUP, PN_DEMSUP_TRIGO].filter(Boolean);
 // dicts FUSIONADOS por producto (soja + trigo) que alimentan las celdas de la tabla
-const PN_DS = (() => {
+function pnBuildDS(){
   const out = {campo_tn_prod:{}, semillero_tn_prod:{}, clasif_tn_prod:{}, corte_tn_prod:{},
                venta_pend_tn_prod:{}, venta_desp_tn_prod:{}, prod_pend_tn_prod:{}, prod_desp_tn_prod:{}};
   PN_DEMSUP_SRCS.forEach(s => Object.keys(out).forEach(k => Object.assign(out[k], s[k] || {})));
   return out;
-})();
+}
+let PN_DS = pnBuildDS();
 // granel (SEM. GRANEL SOJA/TRIGO DM%) → cols C/D; terminada (SEM. SOJA/TRIGO DM%) → cols K/L/O/S/T
 const pnEsDemsupProd = p => !!(p && PN_DEMSUP_SRCS.some(s => p.toUpperCase().startsWith(s.prod_prefix)));
 const pnEsDemsupSem  = p => !!(p && PN_DEMSUP_SRCS.some(s => s.prod_prefix_sem && p.toUpperCase().startsWith(s.prod_prefix_sem)));
+
+// ===== DEM-SUP EN VIVO =====
+// Consulta la MISMA API que usan las vistas del extranet (con los ajustes del analista)
+// y actualiza las celdas DEM-SUP al abrir y cada 10 minutos, sin esperar la regeneracion.
+// Solo puede responder cuando la pagina corre en un origen autorizado por esa API
+// (sanguine86.github.io); en otro origen el fetch falla por CORS y queda la foto del snapshot.
+const PN_DEMSUP_API = [
+  [PN_DEMSUP,       "https://agnsja-operaciones-api.azurewebsites.net/api/operaciones/dem-sup-soja"],
+  [PN_DEMSUP_TRIGO, "https://agnsja-operaciones-api.azurewebsites.net/api/operaciones/dem-sup-trigo"],
+];
+const PN_DS_DICT_BY_COL = {C:"campo_tn_prod", D:"semillero_tn_prod", K:"clasif_tn_prod", L:"corte_tn_prod",
+                           O:"venta_pend_tn_prod", P:"venta_desp_tn_prod", S:"prod_pend_tn_prod", T:"prod_desp_tn_prod"};
+// producto "ancla" de una variedad: donde se cuelga la diferencia contra la vista
+// (mismo criterio que conciliar() en scripts/demsup_soja.py)
+function pnDemsupAnchor(src, v){
+  const V = String(v).toUpperCase();
+  for(const d of [src.campo_tn_prod, src.semillero_tn_prod, src.clasif_tn_prod, src.corte_tn_prod]){
+    for(const p of Object.keys(d || {})) if(p.toUpperCase().includes(V)) return p;
+  }
+  return (src.prod_prefix || "DEM-SUP") + " " + v + " (vivo)";
+}
+async function pnDemsupLive(){
+  let cambio = false, algunaOk = false;
+  for(const [src, url] of PN_DEMSUP_API){
+    if(!src || !src.rows) continue;
+    let rows;
+    try{
+      const r = await fetch(url, {cache:"no-store"});
+      if(!r.ok) continue;
+      rows = (await r.json()).rows;
+    }catch(e){ continue; }
+    if(!rows || typeof rows !== "object") continue;
+    algunaOk = true;
+    (src.variedades || Object.keys(src.rows)).forEach(v => {
+      const live = rows[v], snap = src.rows[v];
+      if(!live || !snap) return;
+      const n = x => Number(x) || 0;
+      const nuevo = {C:n(live.C), D:n(live.D), F:n(live.F), K:n(live.K), L:n(live.L),
+                     O:n(live.O), P:n(live.P), S:n(live.S), T:n(live.T)};
+      nuevo.E = Math.max(0, n(live.E) - nuevo.F);   // E de la vista = total contratado
+      nuevo.G = nuevo.E + nuevo.F;
+      nuevo.M = nuevo.C + nuevo.D + nuevo.F + nuevo.K;
+      nuevo.Q = nuevo.O + nuevo.P;
+      Object.keys(PN_DS_DICT_BY_COL).forEach(col => {
+        const deltaTn = (nuevo[col] - n(snap[col])) * 0.04;   // bolsas 40kg -> tn
+        if(Math.abs(deltaTn) <= 0.05) return;
+        const dic = src[PN_DS_DICT_BY_COL[col]] = src[PN_DS_DICT_BY_COL[col]] || {};
+        const prod = pnDemsupAnchor(src, v);
+        dic[prod] = Math.round(((dic[prod] || 0) + deltaTn) * 10000) / 10000;
+        cambio = true;
+      });
+      Object.assign(snap, nuevo);   // proxima corrida: deltas contra lo ya aplicado
+    });
+    const tot = {};
+    Object.values(src.rows).forEach(r0 => Object.keys(r0).forEach(k => tot[k] = (tot[k] || 0) + (Number(r0[k]) || 0)));
+    src.tot_bls = tot;
+    src.tot_tn = {}; Object.keys(tot).forEach(k => src.tot_tn[k] = Math.round(tot[k] * 40) / 1000);
+  }
+  if(cambio){
+    PN_DS = pnBuildDS();
+    try{ if(typeof pnRender === "function" && document.getElementById("pn-tabla")) pnRender(); }catch(e){}
+  }
+  if(algunaOk){
+    try{
+      const b = document.getElementById("pn-live-badge");
+      if(b){
+        const hh = new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+        b.textContent = "· DEM-SUP en vivo " + hh + (cambio ? " · hubo cambios" : " · sin cambios");
+      }
+    }catch(e){}
+  }
+}
+try{ pnDemsupLive(); setInterval(pnDemsupLive, 10 * 60 * 1000); }catch(e){}
 const PN_PROD_PEND_DET = (PAYLOAD.produccion_pend_det || {});  // {campaña:{producto:[{campo,tn}]}}
 let PN_LAST_COMPRAS = [], PN_LAST_VENTAS = [];         // ops filtradas del ultimo render
 const PN_DRILL = {
@@ -11790,6 +12046,30 @@ def main() -> int:
     pilot_norm  = [r for r in pilot_norm  if _no_anul(r)]
     compra_norm = [r for r in compra_norm if _no_anul(r)]
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
+
+    # COMISION DE CORREDOR por contrato de compra (para la vista Resultados y el Cruce):
+    # Agronasaja actua de corredor en muchas compras y RECUPERA comision + 1,25% sellado.
+    # El % vive en el DW (resumen de contrato de compra); se mergea por nombre de contrato.
+    if all(os.environ.get(k) for k in ("FNN_DW_HOST", "FNN_DW_USER", "FNN_DW_PASS")):
+        try:
+            import psycopg2 as _pg2
+            _cn2 = _pg2.connect(
+                host=os.environ["FNN_DW_HOST"], user=os.environ["FNN_DW_USER"],
+                password=os.environ["FNN_DW_PASS"], dbname=os.environ.get("FNN_DW_DB", "finnegansbi"),
+                port=int(os.environ.get("FNN_DW_PORT", "5432")), sslmode="require", connect_timeout=30)
+            _cur2 = _cn2.cursor()
+            _cur2.execute("""select nombre, coalesce(nullif(trim(comisioncorredor),'')::numeric,0)
+                             from agronasajasrl_resumen_de_contrato_de_compra_de_granos""")
+            _com_map = {str(n).strip(): float(p) for n, p in _cur2.fetchall()}
+            _cn2.close()
+            _con_com = 0
+            for _r in compra_norm:
+                _pct = _com_map.get(str(_r.get("nombre") or "").strip(), 0.0)
+                _r["comisioncorredor"] = _pct
+                if _pct > 0: _con_com += 1
+            print(f"[+] Comision de corredor (DW): {_con_com} contratos de compra con % cargado")
+        except Exception as _e:
+            print(f"    [!] no pude traer comisioncorredor del DW: {_e}")
 
     # Composicion de Saldos para modulo Canjes — usamos API REST con getCurrentDate
     # (el DW tiene historia completa de saldos, no filtra al snapshot actual; no nos sirve)
