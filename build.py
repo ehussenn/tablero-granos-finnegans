@@ -1177,8 +1177,8 @@ window.apiFetch = function(path, opts){
         <h3>📈 Resultados — margen fino de la reventa <span class="badge" id="res-meta"></span></h3>
         <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
           Solo camiones con contrato de compra y de venta <b>liquidados</b>. Compra neta = precio liquidado
-          − comisión de corredor (Finnegans) − 1,25% de sellado (<b>a favor</b> donde Agronasaja es corredor).
-          Venta neta = precio liquidado − % del entregador (el % se edita en <b>Cruce Cliente × Comprador</b>).
+          − comisión del contrato (Finnegans) − <b>1,25% de sellado siempre</b> (a favor; no aplica en RT/transferencias).
+          Venta neta = precio liquidado − <b>tarifa del entregador</b> (tabla de Comisiones; si falta, el % manual del Cruce).
           Precios en USD convertidos al TC pizarra del día. La columna <b>Balanza</b> muestra lo enviado a liquidar.
         </p>
       </div>
@@ -5951,19 +5951,35 @@ const RES_BALANZA = {};
   const a = RES_BALANZA[c] = RES_BALANZA[c] || {kg: 0, n: 0};
   a.kg += Number(f.kgAplicar) || Number(f.kgDescarga) || 0; a.n++;
 });
+// tarifa de venta del entregador: Excel de Comisiones (payload) > % manual del Cruce > sin tarifa
+const RES_TARIFAS = PAYLOAD.tarifas_venta || {};
+function resTarifaVenta(comprador){
+  const cu = (comprador || "").trim().toUpperCase();
+  if(!cu) return null;
+  for(const org of Object.keys(RES_TARIFAS)){
+    if(cu.startsWith(org.slice(0, 18)) || org.startsWith(cu.slice(0, 18)))
+      return Number(RES_TARIFAS[org].total) || 0;
+  }
+  return null;
+}
 function resOps(){
   return cxBuildOps().filter(o => o.contrato_compra && o.contrato_venta).map(o => {
     const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
     const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
     const pC = resArs(Number(cc.precioliquidado) || 0);   // SOLO liquidado
     const pV = resArs(Number(cv.precioliquidado) || 0);
+    // COMPRA a favor: comision del contrato (Finnegans) + sellado 1,25% SIEMPRE,
+    // salvo RT / transferencia de granos (sin movimiento fisico)
+    const esRT = /transferencia|\brt\b/i.test(String(o.subtipo_compra || ""));
     const pctCom = Number(cc.comisioncorredor) || 0;
-    const pctRec = pctCom > 0 ? pctCom + 1.25 : 0;        // comision + sellado A FAVOR
-    const pctV = (o.pctV != null) ? Number(o.pctV) : 0;   // tarifa del entregador (Cruce)
+    const pctRec = pctCom + (esRT ? 0 : 1.25);
+    // VENTA: tarifa del Excel de Comisiones; si el entregador no esta, % manual del Cruce
+    const tarifa = resTarifaVenta(o.comprador);
+    const pctV = (tarifa != null) ? tarifa : ((o.pctV != null) ? Number(o.pctV) : null);
     const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
-    const ventaNeta  = pV ? pV * (1 - pctV / 100) : null;
+    const ventaNeta  = (pV && pctV != null) ? pV * (1 - pctV / 100) : (pV || null);
     const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
-    return {...o, pC, pV, pctRec, pctVr: pctV, compraNeta, ventaNeta, margen};
+    return {...o, pC, pV, pctRec, pctVr: pctV, sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
   });
 }
 const resFmt = n => Math.round(n).toLocaleString("es-AR");
@@ -12769,6 +12785,17 @@ def main() -> int:
     # Finales de Compra: análisis + factor desde la Balanza (api.agronasaja.com)
     print(f"\n[+] Bajando Finales de Compra (balanza) + calculando factor...", flush=True)
     try:
+        # Tarifas de venta por entregador (comision/sellado/otros %) — data/tarifas_venta.json
+        # (generado desde el Excel de Comisiones; commiteado en el repo). Vista Resultados.
+        _tarifas_venta = {}
+        try:
+            _tf = Path(__file__).resolve().parent / "data" / "tarifas_venta.json"
+            if _tf.exists():
+                _tarifas_venta = json.loads(_tf.read_text(encoding="utf-8"))
+                print(f"[+] Tarifas de venta por entregador: {len(_tarifas_venta)} cargadas")
+        except Exception as _e:
+            print(f"    [!] tarifas_venta.json: {_e}")
+
         finales = balanza_finales.fetch_finales()
         from collections import Counter as _C
         _est = _C(r["estado"] for r in finales)
@@ -12811,6 +12838,7 @@ def main() -> int:
         "produccion_camp": produccion_camp,
         "produccion_pend_det": produccion_pend_det,
         "finales": finales,
+        "tarifas_venta": _tarifas_venta,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
         "finales_gastos": finales_gastos,

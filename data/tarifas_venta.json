@@ -1,0 +1,146 @@
+{
+ "LDC ARGENTINA S.A.": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "ALLARIA AGRONEGOCIOS S.A.": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ },
+ "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL": {
+  "comision": 1.0,
+  "sellado": 1.25,
+  "otros": 0.3,
+  "total": 2.55
+ },
+ "COFCO INTERNATIONAL ARGENTINA S.A": {
+  "comision": 1.0,
+  "sellado": 0.7,
+  "otros": 0.0,
+  "total": 1.7
+ },
+ "GEAR S A A I C F E I": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ },
+ "TOMAS HNOS Y CIA SA": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "GRANEROS Y ELEVADORES ARGENTINOS DE COLON  SCL": {
+  "comision": 2.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 2.0
+ },
+ "AGRICULTORES FEDERADOS ARGENTINOS SOC COOP LTDA": {
+  "comision": 2.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 2.0
+ },
+ "LA BRAGADENSE SA": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.5,
+  "total": 1.5
+ },
+ "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA": {
+  "comision": 1.0,
+  "sellado": 1.25,
+  "otros": 0.3,
+  "total": 2.55
+ },
+ "COOP DEFENSA DE AGRICULTORES LTDA": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ },
+ "COOP AGROP DE LA VIOLETA LTDA": {
+  "comision": 2.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 2.5
+ },
+ "EDUARDO BERAZA S. A.": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ },
+ "AGROTECNOLOGIA Y SERVICIOS SA": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ },
+ "COOP AGRICOLA LTDA LA UNION DE ALFONSO": {
+  "comision": 1.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.5
+ },
+ "LARTIRIGOYEN Y CIA SA": {
+  "comision": 2.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 2.0
+ },
+ "ARGENTRADING S.A.": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "BUNGE ARGENTINA S.A.": {
+  "comision": 0.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.0
+ },
+ "PUERTO ARROYO SECO SA": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.4,
+  "total": 1.4
+ },
+ "FYO ACOPIO S.A.": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "RECTA AGRO SA": {
+  "comision": 0.75,
+  "sellado": 0.5,
+  "otros": 0.0,
+  "total": 1.25
+ },
+ "COMMODITIES S.A.": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "J.H.B SAU": {
+  "comision": 0.5,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 0.5
+ },
+ "ACEITERA GENERAL DEHEZA S A": {
+  "comision": 1.0,
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
+ }
+}
