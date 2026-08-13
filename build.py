@@ -1184,6 +1184,7 @@ window.apiFetch = function(path, opts){
       </div>
       <div class="filterbar">
         <div><label>CULTIVO</label><select id="res-grano"><option value="">Todos</option></select></div>
+        <div><label>CAMPAÑA</label><select id="res-cosecha"><option value="">Todas</option></select></div>
         <div class="count" id="res-count"></div>
       </div>
       <div id="res-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin-bottom:14px"></div>
@@ -5966,12 +5967,19 @@ function resOps(){
   return cxBuildOps().filter(o => o.contrato_compra && o.contrato_venta).map(o => {
     const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
     const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
-    const pC = resArs(Number(cc.precioliquidado) || 0);   // SOLO liquidado
-    const pV = resArs(Number(cv.precioliquidado) || 0);
+    // SOLO precio liquidado, con control de cordura: 50-500 USD/tn o 50.000-600.000 ARS/tn.
+    // Afuera de ese rango el dato de Finnegans viene contaminado (contratos parcialmente
+    // fijados mezclan monedas) y el camion queda como "pendiente" en vez de ensuciar el margen.
+    const plaus = p => (p >= 50 && p <= 500) || (p >= 50000 && p <= 600000) ? p : 0;
+    const pC = resArs(plaus(Number(cc.precioliquidado) || 0));
+    const pV = resArs(plaus(Number(cv.precioliquidado) || 0));
     // COMPRA a favor: comision del contrato (Finnegans) + sellado 1,25% SIEMPRE,
     // salvo RT / transferencia de granos (sin movimiento fisico)
     const esRT = /transferencia|\brt\b/i.test(String(o.subtipo_compra || ""));
-    const pctCom = Number(cc.comisioncorredor) || 0;
+    // cordura: una comision de corredor creible es <= 5%; mas que eso es un error de carga
+    // en Finnegans (ej. contrato con "95") y se ignora para no pulverizar el precio neto
+    const pctComRaw = Number(cc.comisioncorredor) || 0;
+    const pctCom = (pctComRaw > 0 && pctComRaw <= 5) ? pctComRaw : 0;
     const pctRec = pctCom + (esRT ? 0 : 1.25);
     // VENTA: tarifa del Excel de Comisiones; si el entregador no esta, % manual del Cruce
     const tarifa = resTarifaVenta(o.comprador);
@@ -5985,14 +5993,22 @@ function resOps(){
 const resFmt = n => Math.round(n).toLocaleString("es-AR");
 function resRender(){
   if(!document.getElementById("res-cards")) return;
-  const todos = resOps();
-  // selector de cultivo
+  const brutos = resOps();
+  // selectores de cultivo y campana
   const sel = document.getElementById("res-grano");
-  const granos = [...new Set(todos.map(o => o.grano).filter(Boolean))].sort();
+  const granos = [...new Set(brutos.map(o => o.grano).filter(Boolean))].sort();
   if(sel.options.length <= 1){
     sel.innerHTML = `<option value="">Todos</option>` + granos.map(g => `<option>${escapeHtml(g)}</option>`).join("");
     sel.addEventListener("change", resRender);
   }
+  const selC = document.getElementById("res-cosecha");
+  const cosechas = [...new Set(brutos.map(o => o.cosecha).filter(Boolean))].sort().reverse();
+  if(selC.options.length <= 1){
+    selC.innerHTML = `<option value="">Todas</option>` + cosechas.map(c => `<option>${escapeHtml(c)}</option>`).join("");
+    selC.addEventListener("change", resRender);
+  }
+  const fc = selC.value;
+  const todos = brutos.filter(o => !fc || o.cosecha === fc);
   const fg = sel.value;
   const liq = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
   const pend = todos.filter(o => o.margen == null && (!fg || o.grano === fg));
@@ -6037,9 +6053,11 @@ function resRender(){
   // detalle por contrato de compra
   const porC = {};
   liq.forEach(o => {
-    const a = porC[o.contrato_compra] = porC[o.contrato_compra] || {cli: o.cliente, g: o.grano, tn: 0, ic: 0, icn: 0, ivn: 0, m: 0, cam: 0, pctRec: o.pctRec};
+    const a = porC[o.contrato_compra] = porC[o.contrato_compra] || {cli: o.cliente, g: o.grano, tn: 0, ic: 0, icn: 0, ivn: 0, m: 0, cam: 0, pctRec: o.pctRec, ops: []};
     a.tn += o.tn; a.ic += o.pC * o.tn; a.icn += o.compraNeta * o.tn; a.ivn += o.ventaNeta * o.tn; a.m += o.margen * o.tn; a.cam++;
+    a.ops.push(o);
   });
+  RES_POR_CTO = porC;   // para el drill de camiones (click en la fila)
   document.getElementById("res-head").innerHTML =
     `<tr><th style="text-align:left">Contrato compra</th><th style="text-align:left">Le compré a</th><th style="text-align:left">Cultivo</th>
      <th>Camiones</th><th>Tn liq.</th><th>Compré $/tn</th><th>% a favor</th><th>Compra neta</th>
@@ -6048,7 +6066,7 @@ function resRender(){
   document.getElementById("res-body").innerHTML = claves.map(k => {
     const a = porC[k], pos = a.m >= 0;
     const bal = RES_BALANZA[k];
-    return `<tr>
+    return `<tr class="res-row" data-cto="${escapeHtml(k)}" style="cursor:pointer">
       <td style="text-align:left;font-weight:600">${escapeHtml(k)}</td>
       <td style="text-align:left">${escapeHtml(a.cli || "—")}</td>
       <td style="text-align:left">${escapeHtml(a.g || "—")}</td>
@@ -6071,6 +6089,45 @@ function resRender(){
      <td style="text-align:right;color:${T.m >= 0 ? 'var(--green)' : 'var(--red)'}">${T.m >= 0 ? '+' : '−'}${resFmt(Math.abs(T.m / T.tn))}</td>
      <td style="text-align:right;color:${T.m >= 0 ? 'var(--green)' : 'var(--red)'}">${T.m >= 0 ? '+' : '−'}${resFmt(Math.abs(T.m))}</td><td></td></tr>`;
 }
+// Drill: click en la fila de un contrato -> sus camiones CTG por CTG (para verificar contra Finnegans)
+let RES_POR_CTO = {};
+document.getElementById("res-body") && document.getElementById("res-body").addEventListener("click", e => {
+  const tr = e.target.closest("tr.res-row");
+  if(!tr) return;
+  const abierto = tr.nextElementSibling && tr.nextElementSibling.classList.contains("res-drill");
+  document.querySelectorAll("#res-body tr.res-drill").forEach(x => x.remove());
+  if(abierto) return;
+  const a = RES_POR_CTO[tr.dataset.cto];
+  if(!a) return;
+  const filas = a.ops.slice().sort((x, y) => String(x.fecha).localeCompare(String(y.fecha))).map(o => {
+    const pos = o.margen >= 0;
+    return `<tr>
+      <td style="padding:4px 8px">CTG ${escapeHtml(o.ctg || "—")}</td>
+      <td style="padding:4px 8px">${escapeHtml(String(o.fecha || "").slice(0, 10))}</td>
+      <td style="padding:4px 8px;text-align:right">${o.tn.toLocaleString("es-AR", {maximumFractionDigits: 2})}</td>
+      <td style="padding:4px 8px">${escapeHtml(o.comprador || "—")} (${escapeHtml(o.contrato_venta || "—")})</td>
+      <td style="padding:4px 8px;text-align:right">${resFmt(o.pC)}</td>
+      <td style="padding:4px 8px;text-align:right">${resFmt(o.compraNeta)}</td>
+      <td style="padding:4px 8px;text-align:right">${o.pctVr != null ? o.pctVr.toFixed(2) + "%" : "s/tarifa"}</td>
+      <td style="padding:4px 8px;text-align:right">${resFmt(o.ventaNeta)}</td>
+      <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen))}</td>
+      <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen * o.tn))}</td>
+    </tr>`;
+  }).join("");
+  const drill = document.createElement("tr");
+  drill.className = "res-drill";
+  drill.innerHTML = `<td colspan="12" style="background:#f5f8fc;padding:10px 16px">
+    <div style="font-weight:700;font-size:12px;margin-bottom:6px">Camiones de ${escapeHtml(tr.dataset.cto)} · ${a.ops.length} CTG</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums">
+      <thead><tr style="color:var(--muted);text-transform:uppercase;font-size:10px">
+        <th style="text-align:left;padding:4px 8px">CTG</th><th style="text-align:left;padding:4px 8px">Fecha</th>
+        <th style="text-align:right;padding:4px 8px">Tn</th><th style="text-align:left;padding:4px 8px">Vendido a (contrato)</th>
+        <th style="text-align:right;padding:4px 8px">Compré $/tn</th><th style="text-align:right;padding:4px 8px">Compra neta</th>
+        <th style="text-align:right;padding:4px 8px">% entregador</th><th style="text-align:right;padding:4px 8px">Venta neta</th>
+        <th style="text-align:right;padding:4px 8px">Margen $/tn</th><th style="text-align:right;padding:4px 8px">Margen $</th>
+      </tr></thead><tbody>${filas}</tbody></table></td>`;
+  tr.after(drill);
+});
 try{ resRender(); }catch(e){ console.warn("resultados:", e); }
 
 function cxInitFilters(){
@@ -12100,9 +12157,11 @@ def main() -> int:
     print(f"    -> {len(saldos_norm)} filas de saldos, {canjes_n} con condicion 'Canje'")
 
     # Traslados de granos para modulo "Cruce Cliente x Comprador" (cruzando por CTG)
-    print(f"\n[+] Bajando Traslados de Granos (2026) para cruce Cliente x Comprador...", flush=True)
+    # Desde jul-2025 para cubrir la campana 25/26 COMPLETA (el trigo entrega nov-dic 2025;
+    # antes arrancaba en 2026-01-01 y el cruce perdia esos camiones -> Resultados daba de menos)
+    print(f"\n[+] Bajando Traslados de Granos (desde jul-2025) para cruce Cliente x Comprador...", flush=True)
     traslados_raw = api.call("/reports/trasladoGranos", {
-        "PARAMFechaDesde": "2026-01-01",
+        "PARAMFechaDesde": "2025-07-01",
         "PARAMFechaHasta": "2030-12-31",
     })
     if not isinstance(traslados_raw, list):
