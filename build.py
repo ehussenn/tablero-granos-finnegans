@@ -5981,13 +5981,25 @@ function resOps(){
     const pctComRaw = Number(cc.comisioncorredor) || 0;
     const pctCom = (pctComRaw > 0 && pctComRaw <= 5) ? pctComRaw : 0;
     const pctRec = pctCom + (esRT ? 0 : 1.25);
-    // VENTA: tarifa del Excel de Comisiones; si el entregador no esta, % manual del Cruce
+    // VENTA: 1) gastos REALES de la liquidacion de Cargill para este CTG (comision/paritaria/
+    // laboratorio, sin fletes); 2) si no hay, tarifa del Excel de Comisiones; 3) % manual del Cruce
+    const gReal = (PAYLOAD.cargill_ctg_gastos || {})[String(o.ctg || "").replace(/^0+/, "")];
     const tarifa = resTarifaVenta(o.comprador);
-    const pctV = (tarifa != null) ? tarifa : ((o.pctV != null) ? Number(o.pctV) : null);
+    const tn0 = (Number(o.kg) || 0) / 1000;
+    let pctV = null, ventaNeta = pV || null, origenV = "";
+    if(pV && gReal && ((gReal.usd || 0) > 0 || (gReal.ars || 0) > 0) && tn0 > 0){
+      const cargoTn = ((gReal.usd || 0) * RES_TC + (gReal.ars || 0)) / tn0;  // cada moneda en la suya
+      ventaNeta = pV - cargoTn;
+      pctV = cargoTn / pV * 100;
+      origenV = "real Cargill";
+    } else if(pV && tarifa != null){
+      pctV = tarifa; ventaNeta = pV * (1 - tarifa / 100); origenV = "tarifa";
+    } else if(pV && o.pctV != null){
+      pctV = Number(o.pctV); ventaNeta = pV * (1 - pctV / 100); origenV = "cruce";
+    }
     const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
-    const ventaNeta  = (pV && pctV != null) ? pV * (1 - pctV / 100) : (pV || null);
     const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
-    return {...o, pC, pV, pctRec, pctVr: pctV, sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
+    return {...o, pC, pV, pctRec, pctVr: pctV, origenV, sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
   });
 }
 const resFmt = n => Math.round(n).toLocaleString("es-AR");
@@ -6108,7 +6120,7 @@ document.getElementById("res-body") && document.getElementById("res-body").addEv
       <td style="padding:4px 8px">${escapeHtml(o.comprador || "—")} (${escapeHtml(o.contrato_venta || "—")})</td>
       <td style="padding:4px 8px;text-align:right">${resFmt(o.pC)}</td>
       <td style="padding:4px 8px;text-align:right">${resFmt(o.compraNeta)}</td>
-      <td style="padding:4px 8px;text-align:right">${o.pctVr != null ? o.pctVr.toFixed(2) + "%" : "s/tarifa"}</td>
+      <td style="padding:4px 8px;text-align:right">${o.pctVr != null ? o.pctVr.toFixed(2) + "%" + (o.origenV === "real Cargill" ? " ✓real" : "") : "s/tarifa"}</td>
       <td style="padding:4px 8px;text-align:right">${resFmt(o.ventaNeta)}</td>
       <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen))}</td>
       <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen * o.tn))}</td>
@@ -12556,6 +12568,22 @@ def main() -> int:
     _con = sum(1 for v in finales_gastos.values() if v["ctgs_con_gastos"])
     print(f"    -> {len(finales_gastos)} contratos con CTG en traza · {_con} con gastos de Cargill")
 
+    # COMISION REAL DE CARGILL POR CTG para la vista Resultados (USD, liquidaciones del
+    # portal). SOLO los renglones "COMISION ...": paritaria, secada, laboratorio, fumigada,
+    # etc se REFACTURAN (no ensucian el precio), y los fletes son logistica.
+    cargill_ctg_gastos = {}
+    for _ctg, _servs in _ctg_serv.items():
+        _usd = _ars = 0.0
+        for g in _servs:
+            if not str(g["name"]).upper().startswith("COMISION"): continue
+            if "eso" in str(g["moneda"] or ""):   # Pesos
+                _ars += g["importe"]
+            else:                                  # Dolares (default)
+                _usd += g["importe"]
+        if _usd > 0 or _ars > 0:
+            cargill_ctg_gastos[_ctg] = {"usd": round(_usd, 2), "ars": round(_ars, 2)}
+    print(f"    -> comision real Cargill por CTG para Resultados: {len(cargill_ctg_gastos)} camiones")
+
     # Data LDC (Louis Dreyfus) - mildc.com/webportal
     # Se actualiza con: py scripts/ldc_fetch_all.py
     print(f"\n[+] Cargando data LDC (si existe)...", flush=True)
@@ -12898,6 +12926,7 @@ def main() -> int:
         "produccion_pend_det": produccion_pend_det,
         "finales": finales,
         "tarifas_venta": _tarifas_venta,
+        "cargill_ctg_gastos": cargill_ctg_gastos,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
         "finales_gastos": finales_gastos,

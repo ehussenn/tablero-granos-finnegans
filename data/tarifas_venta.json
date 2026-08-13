@@ -13,9 +13,9 @@
  },
  "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL": {
   "comision": 1.0,
-  "sellado": 1.25,
-  "otros": 0.3,
-  "total": 2.55
+  "sellado": 0.0,
+  "otros": 0.0,
+  "total": 1.0
  },
  "COFCO INTERNATIONAL ARGENTINA S.A": {
   "comision": 1.0,
