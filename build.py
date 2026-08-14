@@ -7853,6 +7853,14 @@ const PN_PROD_BY_CAMP = (PAYLOAD.produccion_camp && Object.keys(PAYLOAD.producci
   ? PAYLOAD.produccion_camp : PN_PROD_FALLBACK;
 const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
 let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
+// Pendiente de entrega AJUSTADO: ajustada - entregada (el campo crudo del reporte
+// no refleja ampliaciones/reducciones — caso maiz). El crudo queda de respaldo.
+function pnPendE(c){
+  const ent = Number(c.cantidadentregada) || 0;
+  const aj = Number(c.cantidadajustada) || 0;
+  if(aj > 0) return Math.max(0, aj - ent);
+  return pnPendE(c);
+}
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
   // PRODUCCIÓN (cosechado/pendcos/campoest): el override manual vale POR CAMPAÑA
@@ -7946,7 +7954,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   let compraTot = 0, compraEntr = 0, compraPend = 0;
   opsCompra.forEach(c => {
     const ent = Number(c.cantidadentregada) || 0;
-    const pen = Number(c.cantidadpendienteentrega) || 0;
+    const pen = pnPendE(c);
     compraEntr += ent;
     compraPend += pen;
     compraTot  += ent + pen;   // ajustada
@@ -7972,7 +7980,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   opsVenta.forEach(c => {
     if(!esFilaSemillaPropia && (c.producto || "").toLowerCase().includes("sem")) return;  // semilla DM va aparte (manual)
     const ent = Number(c.cantidadentregada) || 0;
-    const pen = Number(c.cantidadpendienteentrega) || 0;
+    const pen = pnPendE(c);
     ventaEntr      += ent;
     ventaCtos      += pen;         // pendiente de entrega (directo del contrato)
     ventaCtosAjust += ent + pen;   // ajustada = total venta
@@ -8162,7 +8170,7 @@ const PN_DRILL = {
   ventaEntr:      {kind:'venta',  field:'entr', title:'Venta · ya entregado'},
 };
 function pnFij(c){
-  const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+  const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
   const aj = ent + pen, fij = Number(c.cantidadfijada)||0;
   if(aj <= 0) return {t:'—', cls:''};
   if(fij >= aj - 0.05) return {t:'✓ A precio', cls:'pn-fij-si'};
@@ -8278,7 +8286,7 @@ function pnDrillHTML(type, prods){
   const src = (cfg.kind==='compra') ? PN_LAST_COMPRAS : PN_LAST_VENTAS;
   const cp = (cfg.kind==='compra');
   const val = c => {
-    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     return cfg.field==='pend' ? pen : cfg.field==='entr' ? ent : ent+pen;
   };
   // venta: la semilla va aparte (manual), igual que en pnCalcRow → excluir de los contratos
@@ -8801,7 +8809,7 @@ function pnctRender(){
   const src = cp ? PN_LAST_COMPRAS : PN_LAST_VENTAS;   // ya filtrados por campaña/empresa
   // valor según el filtro MOSTRAR (también define el orden inicial)
   const val = c => {
-    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
     switch(PNCT.field){
       case 'pend':  return pen;
@@ -8841,7 +8849,7 @@ function pnctRender(){
   let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tEntPliq=0, tAntic=0, tSinFij=0, tImpLiqU=0, tImpLiqA=0;
   let tPxFijImp=0, tPxFijTn=0;   // para el precio promedio PONDERADO de lo fijado
   rows.forEach(c => {
-    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
     tAj += ent + pen; tEnt += ent; tPen += pen; tFij += fij; tLiq += liq;
     tEntPliq += Math.max(0, ent - liq);
@@ -8887,7 +8895,7 @@ function pnctRender(){
     <th>${cp?'Cta. Cte. (¿se pagó?)':'Cta. Cte. (¿se cobró?)'}</th></tr>`;
   let html = '';
   rows.forEach(c => {
-    const ent = Number(c.cantidadentregada)||0, pen = Number(c.cantidadpendienteentrega)||0;
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'—') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
     const mon = (c.moneda||'').toUpperCase() === 'DOLARES' ? 'USD' : ((c.moneda||'').toUpperCase() ? 'ARS' : '—');
@@ -9254,7 +9262,7 @@ function fnDetAgg(rows, cp){
     const ent = Number(r.cantidadentregada)||0, liq = Number(r.cantidadliquidada)||0;
     const entP = cp ? Math.max(0, ent - liq)
                     : ((Number(r.cantidadentregadapendienteliquidar)||0) || Math.max(0, ent - liq));
-    const pendEnt = Number(r.cantidadpendienteentrega)||0;
+    const pendEnt = pnPendE(r);
     const pliq = (Number(r.cantidadpendienteliquidar)||0) || (entP + pendEnt);
     // los importes de Finnegans vienen SIEMPRE en pesos (moneda principal),
     // aunque el contrato sea en dólares — se convierte a USD con el TC del tablero
