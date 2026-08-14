@@ -5981,18 +5981,23 @@ function resOps(){
     // COMPRA a favor: comision del contrato (Finnegans) + sellado 1,25% SIEMPRE,
     // salvo RT / transferencia de granos (sin movimiento fisico)
     const esRT = /transferencia|\brt\b/i.test(String(o.subtipo_compra || ""));
-    // cordura: una comision de corredor creible es <= 5%; mas que eso es un error de carga
-    // en Finnegans (ej. contrato con "95") y se ignora para no pulverizar el precio neto
+    // 1) % REAL del libro mayor (recupero + secada efectivamente cobrados al productor);
+    // 2) si no hay: % del contrato (tope de cordura 5%) + sellado 1,25 (salvo RT)
     const pctComRaw = Number(cc.comisioncorredor) || 0;
     const pctCom = (pctComRaw > 0 && pctComRaw <= 5) ? pctComRaw : 0;
-    const pctRec = pctCom + (esRT ? 0 : 1.25);
+    const pctRec = (cc.recupero_real_pct != null) ? Number(cc.recupero_real_pct)
+                                                  : pctCom + (esRT ? 0 : 1.25);
+    const recReal = (cc.recupero_real_pct != null);
     // VENTA: 1) gastos REALES de la liquidacion de Cargill para este CTG (comision/paritaria/
     // laboratorio, sin fletes); 2) si no hay, tarifa del Excel de Comisiones; 3) % manual del Cruce
     const gReal = (PAYLOAD.cargill_ctg_gastos || {})[String(o.ctg || "").replace(/^0+/, "")];
     const tarifa = resTarifaVenta(o.comprador);
     const tn0 = (Number(o.kg) || 0) / 1000;
     let pctV = null, ventaNeta = pV || null, origenV = "";
-    if(pV && gReal && ((gReal.usd || 0) > 0 || (gReal.ars || 0) > 0) && tn0 > 0){
+    if(pV && cv.comision_real_pct != null){
+      // % REAL del libro mayor: gastos comercializacion + sellado + honorarios del entregador
+      pctV = Number(cv.comision_real_pct); ventaNeta = pV * (1 - pctV / 100); origenV = "real mayor";
+    } else if(pV && gReal && ((gReal.usd || 0) > 0 || (gReal.ars || 0) > 0) && tn0 > 0){
       const cargoTn = ((gReal.usd || 0) * RES_TC + (gReal.ars || 0)) / tn0;  // cada moneda en la suya
       ventaNeta = pV - cargoTn;
       pctV = cargoTn / pV * 100;
@@ -6004,7 +6009,7 @@ function resOps(){
     }
     const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
     const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
-    return {...o, pC, pV, pctRec, pctVr: pctV, origenV, finPendC, finPendV,
+    return {...o, pC, pV, pctRec, recReal, pctVr: pctV, origenV, finPendC, finPendV,
             sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
   });
 }
@@ -6077,7 +6082,7 @@ function resRender(){
   // detalle por contrato de compra
   const porC = {};
   liq.forEach(o => {
-    const a = porC[o.contrato_compra] = porC[o.contrato_compra] || {cli: o.cliente, g: o.grano, tn: 0, ic: 0, icn: 0, ivn: 0, m: 0, cam: 0, pctRec: o.pctRec, ops: []};
+    const a = porC[o.contrato_compra] = porC[o.contrato_compra] || {cli: o.cliente, g: o.grano, tn: 0, ic: 0, icn: 0, ivn: 0, m: 0, cam: 0, pctRec: o.pctRec, recReal: o.recReal, ops: []};
     a.tn += o.tn; a.ic += o.pC * o.tn; a.icn += o.compraNeta * o.tn; a.ivn += o.ventaNeta * o.tn; a.m += o.margen * o.tn; a.cam++;
     a.ops.push(o);
   });
@@ -6097,7 +6102,7 @@ function resRender(){
       <td style="text-align:right">${a.cam}</td>
       <td style="text-align:right">${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
       <td style="text-align:right">${resFmt(a.ic / a.tn)}</td>
-      <td style="text-align:right">${a.pctRec ? a.pctRec.toFixed(2) + "%" : "—"}</td>
+      <td style="text-align:right">${a.pctRec ? a.pctRec.toFixed(2) + "%" + (a.recReal ? " ✓real" : "") : "—"}</td>
       <td style="text-align:right">${resFmt(a.icn / a.tn)}</td>
       <td style="text-align:right">${resFmt(a.ivn / a.tn)}</td>
       <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(a.m / a.tn))}</td>
@@ -12165,8 +12170,89 @@ def main() -> int:
                 _r["comisioncorredor"] = _pct
                 if _pct > 0: _con_com += 1
             print(f"[+] Comision de corredor (DW): {_con_com} contratos de compra con % cargado")
+
+            # RECUPERO REAL desde el LIBRO MAYOR (validado contra las liquidaciones de Finnegans):
+            # compra: cuentas "Recupero de gastos de comercializacion" + "Gastos De Secada..."
+            #         (HABER = a favor de Agronasaja, lo que le recupera al productor)
+            # venta:  "Gastos Comercializacion" + "Derecho de Registro y Sellado" + "Honorarios"
+            #         + "Secada" (DEBE = lo que descuenta el entregador) - Bonificaciones (HABER)
+            # Agrupado por organizacion + cultivo + campana (dimensionvalor "Campaña 25-26 - COM TRIGO")
+            _cn3 = _pg2.connect(
+                host=os.environ["FNN_DW_HOST"], user=os.environ["FNN_DW_USER"],
+                password=os.environ["FNN_DW_PASS"], dbname=os.environ.get("FNN_DW_DB", "finnegansbi"),
+                port=int(os.environ.get("FNN_DW_PORT", "5432")), sslmode="require", connect_timeout=30)
+            _cur3 = _cn3.cursor()
+            _cur3.execute("""
+                select clasevo, cuenta, upper(coalesce(organizaciontransaccion,'')),
+                       coalesce(dimensionvalor,''),
+                       coalesce(nullif(trim(debemonedappal),'')::numeric,0),
+                       coalesce(nullif(trim(habermonedappal),'')::numeric,0)
+                from agronasajasrl_libro_mayor
+                where fecha >= '2025-07' and clasevo in ('LiquidacionGranosCompraVO','LiquidacionGranosVentaVO')
+                  and (cuenta ilike 'Recupero de gastos de comercializacion%%'
+                       or cuenta ilike 'Gastos De Secada%%'
+                       or cuenta ilike 'Gastos Comercializaci%%'
+                       or cuenta ilike 'Derecho de Registro%%'
+                       or cuenta ilike 'Honorarios Granos%%'
+                       or cuenta ilike 'Bonificaciones Comerciales%%')""")
+            def _dim_cc(dv):
+                # "Campaña 25-26 - COM TRIGO" -> ("25-26", "TRIGO")
+                m1 = re.search(r"(\d\d-\d\d)", dv or "")
+                m2 = re.search(r"(TRIGO|SOJA|MAIZ|MAÍZ|GIRASOL|SORGO|ARVEJA|CEBADA|MANI|MANÍ)", (dv or "").upper())
+                return (m1.group(1) if m1 else "", m2.group(1).replace("Í", "I") if m2 else "")
+            recupero_real = {}   # "PROV|CULTIVO|CAMP" -> $ a favor (compra)
+            comision_real_venta = {}   # "COMPRADOR|CULTIVO|CAMP" -> $ en contra (venta)
+            for _cv, _cta, _org, _dv, _debe, _haber in _cur3.fetchall():
+                _camp, _cult = _dim_cc(_dv)
+                _k = f"{_org}|{_cult}|{_camp}"
+                if _cv == "LiquidacionGranosCompraVO":
+                    recupero_real[_k] = recupero_real.get(_k, 0.0) + float(_haber) - float(_debe)
+                else:
+                    _s = float(_debe) - float(_haber)
+                    if _cta.startswith("Bonificaciones"): _s = -_s
+                    comision_real_venta[_k] = comision_real_venta.get(_k, 0.0) + _s
+            _cn3.close()
+            print(f"[+] Libro mayor: recupero real compra {sum(recupero_real.values()):,.0f} $ "
+                  f"({len(recupero_real)} grupos) · comisiones venta {sum(comision_real_venta.values()):,.0f} $ "
+                  f"({len(comision_real_venta)} grupos)")
         except Exception as _e:
-            print(f"    [!] no pude traer comisioncorredor del DW: {_e}")
+            recupero_real, comision_real_venta = {}, {}
+            print(f"    [!] no pude traer comisiones del DW: {_e}")
+    else:
+        recupero_real, comision_real_venta = {}, {}
+
+    # % EFECTIVO por contrato: $ reales del mayor / bruto liquidado del grupo
+    # (proveedor o comprador + cultivo + campana). Se cuelga de cada contrato como
+    # recupero_real_pct (compra) / comision_real_pct (venta) para la vista Resultados.
+    def _cult_kw(prod):
+        p = (prod or "").upper().replace("Í", "I")
+        for kw in ("TRIGO", "SOJA", "MAIZ", "GIRASOL", "SORGO", "ARVEJA", "CEBADA", "MANI"):
+            if kw in p: return kw
+        return ""
+    def _camp_kw(c):
+        m = re.search(r"(\d\d-\d\d)", str(c or ""))
+        return m.group(1) if m else ""
+    def _attach_pct(rows, reales, campo_pct):
+        grupos = {}
+        for _r in rows:
+            k = f"{str(_r.get('organizacion') or '').strip().upper()}|{_cult_kw(_r.get('producto'))}|{_camp_kw(_r.get('campana') or _r.get('campania') or _r.get('cosecha'))}"
+            try: _imp = float(_r.get("importeliquidado") or 0)
+            except (TypeError, ValueError): _imp = 0.0
+            if _imp > 0:
+                grupos.setdefault(k, [0.0, []])[0] += _imp
+                grupos[k][1].append(_r)
+        _n = 0
+        for k, (bruto, lst) in grupos.items():
+            real = reales.get(k)
+            if real and bruto > 0:
+                pct = round(real / bruto * 100, 3)
+                if 0 < pct <= 8:          # cordura: mas de 8% es mezcla de grupos u otra cosa
+                    for _r in lst: _r[campo_pct] = pct
+                    _n += len(lst)
+        return _n
+    _nc = _attach_pct(compra_norm, recupero_real, "recupero_real_pct")
+    _nv = _attach_pct(pilot_norm, comision_real_venta, "comision_real_pct")
+    print(f"[+] % reales del mayor aplicados: {_nc} contratos de compra · {_nv} de venta")
 
     # Composicion de Saldos para modulo Canjes — usamos API REST con getCurrentDate
     # (el DW tiene historia completa de saldos, no filtra al snapshot actual; no nos sirve)
