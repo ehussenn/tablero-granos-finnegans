@@ -6071,19 +6071,20 @@ function resRender(){
   const kw = g => { const p = (g || "").toUpperCase().replace("Í", "I");
     for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
     return ""; };
-  let com = 0;
+  let com = 0, comCob = 0, comPag = 0;
   if(fm){
     // filtro por MES: usa la apertura mensual del mayor (cultivo|campana|mes)
     for(const [g, v] of Object.entries(NC.grupos_mes || {})){
       const [cu, ca, me] = g.split("|");
-      if(me === fm && (!fg || cu === kw(fg)) && (!fc || ca === fc)) com += (v.cobrado || 0) - (v.pagado || 0);
+      if(me === fm && (!fg || cu === kw(fg)) && (!fc || ca === fc)){ comCob += (v.cobrado || 0); comPag += (v.pagado || 0); }
     }
   } else if(fg || fc){
     for(const [g, v] of Object.entries(NC.grupos || {})){
       const [cu, ca] = g.split("|");
-      if((!fg || cu === kw(fg)) && (!fc || ca === fc)) com += (v.cobrado || 0) - (v.pagado || 0);
+      if((!fg || cu === kw(fg)) && (!fc || ca === fc)){ comCob += (v.cobrado || 0); comPag += (v.pagado || 0); }
     }
-  } else { com = (NC.cobrado || 0) - (NC.pagado || 0); }
+  } else { comCob = (NC.cobrado || 0); comPag = (NC.pagado || 0); }
+  com = comCob - comPag;
   const cardN = (t, v, sub) => `<div class="section" style="margin:0;padding:12px 14px;border-top:3px solid ${v >= 0 ? 'var(--green)' : 'var(--red)'}">
     <div style="font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)">${t}</div>
     <div style="font-size:19px;font-weight:800;margin-top:3px;color:${v >= 0 ? 'var(--green)' : 'var(--red)'}">${v >= 0 ? '+' : '−'}$ ${resFmt(Math.abs(v))}</div>
@@ -6092,7 +6093,7 @@ function resRender(){
   if(elN) elN.innerHTML =
     cardN("🔄 Canje (grano cobranza insumos)", mCanje, tnCanje.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · resultado granario; el margen del insumo va aparte") +
     cardN("🔁 Reventa pura", mRev, tnRev.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · compra con plata y reventa") +
-    cardN("💼 Comisiones (mayor)", com, "cobrado en compras − pagado a entregadores" + ((fg || fc) ? "" : " · todas las campañas")) +
+    cardN("💼 Comisiones (mayor)", com, `cobraste $${resFmt(comCob)} − pagaste $${resFmt(comPag)} (incluye ventas de prod. propia)`) +
     cardN("Σ CONSOLIDADO", mCanje + mRev + com, "canje + reventa + comisiones");
   // CONCILIACION contra Finnegans: donde esta cada tonelada del filtro actual
   let tnLiq = 0, tnPendV = 0, tnPendC = 0;
