@@ -6310,15 +6310,17 @@ function cc2Render(){
   const fil = ops.filter(o => (!sg.value || o.grano === sg.value) && (!sc.value || o.cosecha === sc.value));
   const A = {};
   fil.forEach(o => {
-    const a = A[o.cliente || "—"] = A[o.cliente || "—"] || {tn: 0, cam: 0, cob: 0, real: 0};
+    const a = A[o.cliente || "—"] = A[o.cliente || "—"] || {tn: 0, cam: 0, cob: 0, real: 0, ic: 0, iv: 0};
     a.tn += o.tn; a.cam++;
     a.cob += (o.pC - o.compraNeta) * o.tn;    // gastos COBRADOS al cliente (comision + 1,25%)
     a.real += (o.pV - o.ventaNeta) * o.tn;    // gastos REALES del entregador
+    a.ic += o.pC * o.tn; a.iv += o.pV * o.tn; // mercaderia: comprado y vendido
   });
   document.getElementById("cc2-meta").textContent = `${Object.keys(A).length} clientes · ${fil.length} camiones`;
   document.getElementById("cc2-head").innerHTML =
     `<tr><th style="text-align:left">Cliente</th><th>Camiones</th><th>Toneladas totales</th>
-     <th>Gastos COBRADOS $</th><th>Gastos REALES $</th><th>Diferencia $</th><th>Dif $/tn</th></tr>`;
+     <th>Gastos COBRADOS $</th><th>Gastos REALES $</th><th>Dif comisiones $</th>
+     <th>Compré $/tn</th><th>Vendí $/tn</th><th>DIF PRECIO $/tn</th></tr>`;
   let ttn = 0, tcob = 0, treal = 0, tcam = 0;
   document.getElementById("cc2-body").innerHTML = Object.keys(A).sort((x, y) => A[y].cob - A[x].cob).map(k => {
     const a = A[k], dif = a.cob - a.real, pos = dif >= 0;
@@ -6329,15 +6331,21 @@ function cc2Render(){
       <td style="text-align:right">${resFmt(a.cob)}</td>
       <td style="text-align:right">${resFmt(a.real)}</td>
       <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(dif))}</td>
-      <td style="text-align:right;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(dif / (a.tn || 1)))}</td></tr>`;
+      <td style="text-align:right">${resFmt(a.ic / (a.tn || 1))}</td>
+      <td style="text-align:right">${resFmt(a.iv / (a.tn || 1))}</td>
+      <td style="text-align:right;font-weight:700;color:${(a.iv - a.ic) >= 0 ? 'var(--green)' : 'var(--red)'}">${(a.iv - a.ic) >= 0 ? '+' : '−'}${resFmt(Math.abs((a.iv - a.ic) / (a.tn || 1)))}</td></tr>`;
   }).join("");
   const td = tcob - treal;
+  let tic = 0, tiv = 0;
+  Object.values(A).forEach(a => { tic += a.ic; tiv += a.iv; });
+  const dp = (tiv - tic) / (ttn || 1);
   document.getElementById("cc2-foot").innerHTML =
     `<tr style="font-weight:800"><td style="text-align:left">TOTAL</td><td style="text-align:right">${tcam}</td>
      <td style="text-align:right">${ttn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
      <td style="text-align:right">${resFmt(tcob)}</td><td style="text-align:right">${resFmt(treal)}</td>
      <td style="text-align:right;color:${td >= 0 ? 'var(--green)' : 'var(--red)'}">${td >= 0 ? '+' : '−'}${resFmt(Math.abs(td))}</td>
-     <td style="text-align:right">${resFmt(td / (ttn || 1))}</td></tr>`;
+     <td style="text-align:right">${resFmt(tic / (ttn || 1))}</td><td style="text-align:right">${resFmt(tiv / (ttn || 1))}</td>
+     <td style="text-align:right;color:${dp >= 0 ? 'var(--green)' : 'var(--red)'}">${dp >= 0 ? '+' : '−'}${resFmt(Math.abs(dp))}</td></tr>`;
 }
 try{ cc2Render(); }catch(e){ console.warn("cierre clientes:", e); }
 
