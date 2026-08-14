@@ -7853,13 +7853,12 @@ const PN_PROD_BY_CAMP = (PAYLOAD.produccion_camp && Object.keys(PAYLOAD.producci
   ? PAYLOAD.produccion_camp : PN_PROD_FALLBACK;
 const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
 let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
-// Pendiente de entrega AJUSTADO: ajustada - entregada (el campo crudo del reporte
-// no refleja ampliaciones/reducciones — caso maiz). El crudo queda de respaldo.
+// Pendiente de entrega: SIEMPRE cantidad ajustada - entregada (regla del usuario;
+// el campo crudo del reporte no refleja ampliaciones/reducciones — caso maiz).
 function pnPendE(c){
   const ent = Number(c.cantidadentregada) || 0;
   const aj = Number(c.cantidadajustada) || 0;
-  if(aj > 0) return Math.max(0, aj - ent);
-  return pnPendE(c);
+  return Math.max(0, aj - ent);
 }
 function pnGetMan(prod, k){
   const o = PN_MANUAL[prod] || {};
