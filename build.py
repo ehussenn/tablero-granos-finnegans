@@ -6111,20 +6111,11 @@ function resRender(){
   const kw = g => { const p = (g || "").toUpperCase().replace("Í", "I");
     for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
     return ""; };
-  let com = 0, comCob = 0, comPag = 0;
-  if(fm){
-    // filtro por MES: usa la apertura mensual del mayor (cultivo|campana|mes)
-    for(const [g, v] of Object.entries(NC.grupos_mes || {})){
-      const [cu, ca, me] = g.split("|");
-      if(me === fm && (!fg || cu === kw(fg)) && (!fc || ca === fc)){ comCob += (v.cobrado || 0); comPag += (v.pagado || 0); }
-    }
-  } else if(fg || fc){
-    for(const [g, v] of Object.entries(NC.grupos || {})){
-      const [cu, ca] = g.split("|");
-      if((!fg || cu === kw(fg)) && (!fc || ca === fc)){ comCob += (v.cobrado || 0); comPag += (v.pagado || 0); }
-    }
-  } else { comCob = (NC.cobrado || 0); comPag = (NC.pagado || 0); }
-  com = comCob - comPag;
+  // COMISIONES SOLO DE TERCEROS (reventa): camion por camion, lo cobrado al productor
+  // (comision + gastos) menos lo pagado al entregador. La produccion propia NO entra.
+  let comCob = 0, comPag = 0;
+  base.forEach(o => { comCob += (o.pC - o.compraNeta) * o.tn; comPag += (o.pV - o.ventaNeta) * o.tn; });
+  const com = comCob - comPag;
   const cardN = (t, v, sub) => `<div class="section" style="margin:0;padding:12px 14px;border-top:3px solid ${v >= 0 ? 'var(--green)' : 'var(--red)'}">
     <div style="font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)">${t}</div>
     <div style="font-size:19px;font-weight:800;margin-top:3px;color:${v >= 0 ? 'var(--green)' : 'var(--red)'}">${v >= 0 ? '+' : '−'}$ ${resFmt(Math.abs(v))}</div>
@@ -6133,7 +6124,7 @@ function resRender(){
   if(elN) elN.innerHTML =
     cardN("🔄 Canje (grano cobranza insumos)", mCanje, tnCanje.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · resultado granario; el margen del insumo va aparte") +
     cardN("🔁 Reventa pura", mRev, tnRev.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · compra con plata y reventa") +
-    cardN("💼 Comisiones (mayor)", com, `cobraste $${resFmt(comCob)} − pagaste $${resFmt(comPag)} (incluye ventas de prod. propia)`) +
+    cardN("💼 Comisiones (solo terceros)", com, `cobraste $${resFmt(comCob)} − pagaste $${resFmt(comPag)} · solo reventa, sin produccion propia`) +
     cardN("Σ CONSOLIDADO", mCanje + mRev + com, "canje + reventa + comisiones");
   // CONCILIACION contra Finnegans: donde esta cada tonelada del filtro actual
   let tnLiq = 0, tnPendV = 0, tnPendC = 0;
@@ -6152,34 +6143,36 @@ function resRender(){
     const kwx = g => { const p = (g || "").toUpperCase().replace("Í", "I");
       for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
       return ""; };
-    const fuente = fm ? (NCx.grupos_mes || {}) : (NCx.grupos || {});
-    const filas = Object.entries(fuente).filter(([g]) => {
-      if(fm && (g.split("|")[2] || "") !== fm) return false;
-      if(fc && !(g || "").includes(fc)) return false;
-      if(fg && kwx(g) !== kwx(fg)) return false;
-      return true;
-    }).map(([g, v]) => ({g: fm ? g.split("|").slice(0, 2).join("|") : g,
-                          cob: v.cobrado || 0, pag: v.pagado || 0, neto: (v.cobrado || 0) - (v.pagado || 0)}))
-      .sort((a, b) => b.neto - a.neto);
+    const liqT = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
     document.getElementById("res-cards").innerHTML = "";
     document.getElementById("res-mensual").innerHTML =
-      `<div style="font-size:12.5px;color:var(--muted)">Negocio de comisiones — plata REAL del libro mayor: lo que cobrás como corredor en las compras (recupero + gastos) contra lo que te descuentan los entregadores en las ventas.</div>`;
+      `<div style="font-size:12.5px;color:var(--muted)">Negocio de comisiones SOLO TERCEROS (reventa), camión por camión: lo cobrado al productor (comisión + gastos) contra lo pagado al entregador. La producción propia no entra.</div>`;
     document.getElementById("res-head").innerHTML =
-      `<tr><th style="text-align:left">Campaña · Cultivo</th><th>Cobrado en compras $</th><th>Pagado en ventas $</th><th>NETO $</th><th>Veredicto</th></tr>`;
-    let tc0 = 0, tp0 = 0;
-    document.getElementById("res-body").innerHTML = filas.map(f => {
-      tc0 += f.cob; tp0 += f.pag;
-      const pos = f.neto >= 0;
-      return `<tr><td style="text-align:left;font-weight:600">${escapeHtml((f.g || "(sin distribuir)").replace("|", " · "))}</td>
-        <td style="text-align:right">${resFmt(f.cob)}</td><td style="text-align:right">−${resFmt(f.pag)}</td>
-        <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(f.neto))}</td>
-        <td style="font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? 'GANÁS' : 'PAGÁS DE MÁS'}</td></tr>`;
+      `<tr><th style="text-align:left">Cliente</th><th>Camiones</th><th>Tn</th><th>Cobrado $</th><th>Pagado $</th><th>NETO $</th><th>Neto $/tn</th></tr>`;
+    const AA = {};
+    liqT.forEach(o => {
+      const a = AA[o.cliente || "—"] = AA[o.cliente || "—"] || {tn: 0, cam: 0, cob: 0, pag: 0};
+      a.tn += o.tn; a.cam++;
+      a.cob += (o.pC - o.compraNeta) * o.tn; a.pag += (o.pV - o.ventaNeta) * o.tn;
+    });
+    let tc0 = 0, tp0 = 0, ttn0 = 0, tcam0 = 0;
+    document.getElementById("res-body").innerHTML = Object.keys(AA).sort((x, y) => (AA[y].cob - AA[y].pag) - (AA[x].cob - AA[x].pag)).map(k => {
+      const a = AA[k], neto = a.cob - a.pag, pos = neto >= 0;
+      tc0 += a.cob; tp0 += a.pag; ttn0 += a.tn; tcam0 += a.cam;
+      return `<tr><td style="text-align:left;font-weight:600">${escapeHtml(k)}</td>
+        <td style="text-align:right">${a.cam}</td>
+        <td style="text-align:right">${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+        <td style="text-align:right">${resFmt(a.cob)}</td><td style="text-align:right">−${resFmt(a.pag)}</td>
+        <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(neto))}</td>
+        <td style="text-align:right;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(neto / (a.tn || 1)))}</td></tr>`;
     }).join("");
-    const tn0 = tc0 - tp0;
+    const tnet = tc0 - tp0;
     document.getElementById("res-foot").innerHTML =
-      `<tr style="font-weight:800"><td style="text-align:left">TOTAL</td><td style="text-align:right">${resFmt(tc0)}</td>
-       <td style="text-align:right">−${resFmt(tp0)}</td>
-       <td style="text-align:right;color:${tn0 >= 0 ? 'var(--green)' : 'var(--red)'}">${tn0 >= 0 ? '+' : '−'}${resFmt(Math.abs(tn0))}</td><td></td></tr>`;
+      `<tr style="font-weight:800"><td style="text-align:left">TOTAL TERCEROS</td><td style="text-align:right">${tcam0}</td>
+       <td style="text-align:right">${ttn0.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+       <td style="text-align:right">${resFmt(tc0)}</td><td style="text-align:right">−${resFmt(tp0)}</td>
+       <td style="text-align:right;color:${tnet >= 0 ? 'var(--green)' : 'var(--red)'}">${tnet >= 0 ? '+' : '−'}${resFmt(Math.abs(tnet))}</td>
+       <td style="text-align:right">${resFmt(tnet / (ttn0 || 1))}</td></tr>`;
     return;
   }
 
