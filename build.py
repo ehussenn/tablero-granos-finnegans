@@ -5975,12 +5975,22 @@ function resOps(){
     const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
     const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
     // Precio LIQUIDADO EN PESOS, ambas puntas (las liquidaciones se hacen en pesos;
-    // incluyen parciales y finales tal como esten emitidas en Finnegans). Cordura:
-    // 50.000-600.000 $/tn. Si el contrato muestra el liquidado en escala dolar o
-    // contaminado, ese camion queda "pendiente" — NO se convierte al TC de hoy.
+    // incluyen parciales y finales tal como esten emitidas en Finnegans).
+    // Contratos en DOLARES: el resumen informa el liquidado en USD, pero el
+    // "precio promedio fijado" guarda la PESIFICACION REAL (el TC del dia de la
+    // fijacion, verificado: 188,81 USD ↔ $270.560 = TC 1.433). Si hay cantidad
+    // liquidada y el liquidado viene en escala dolar, se usa ese precio pesificado.
+    // NUNCA se convierte al TC de hoy. Cordura: 50.000-600.000 $/tn.
     const plausArs = p => (p >= 50000 && p <= 600000) ? p : 0;
-    const pC = plausArs(Number(cc.precioliquidado) || 0);
-    const pV = plausArs(Number(cv.precioliquidado) || 0);
+    const pesosLiq = (r) => {
+      if(!r) return 0;
+      const liq = plausArs(Number(r.precioliquidado) || 0);
+      if(liq) return liq;
+      if((Number(r.cantidadliquidada) || 0) > 0) return plausArs(Number(r.preciopromediofijado) || 0);
+      return 0;
+    };
+    const pC = pesosLiq(cc);
+    const pV = pesosLiq(cv);
     const finPendC = false, finPendV = false;
     // COMPRA a favor: comision del contrato (Finnegans) + sellado 1,25% SIEMPRE,
     // salvo RT / transferencia de granos (sin movimiento fisico)
@@ -6077,8 +6087,15 @@ function resRender(){
     cardN("🔁 Reventa pura", mRev, tnRev.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · compra con plata y reventa") +
     cardN("💼 Comisiones (mayor)", com, "cobrado en compras − pagado a entregadores" + ((fg || fc) ? "" : " · todas las campañas")) +
     cardN("Σ CONSOLIDADO", mCanje + mRev + com, "canje + reventa + comisiones");
+  // CONCILIACION contra Finnegans: donde esta cada tonelada del filtro actual
+  let tnLiq = 0, tnPendV = 0, tnPendC = 0;
+  liq.forEach(o => tnLiq += o.tn);
+  pend.forEach(o => { if(!o.pC) tnPendC += o.tn; else tnPendV += o.tn; });
   document.getElementById("res-meta").textContent =
-    `${liq.length} camiones liquidados · ${pend.length} pendientes de liquidar`;
+    `${liq.length} camiones analizados (${Math.round(tnLiq).toLocaleString("es-AR")} tn liquidadas punta a punta)` +
+    ` · pendientes: ${Math.round(tnPendV).toLocaleString("es-AR")} tn con venta sin liquidar` +
+    ` + ${Math.round(tnPendC).toLocaleString("es-AR")} tn con compra sin pesificar` +
+    ` · (la semilla CONT-CPRA-SEM va sin CTG: no entra en esta reventa)`;
   document.getElementById("res-count").textContent = `TC pizarra: $${resFmt(RES_TC)}`;
 
   // tarjetas por cultivo
