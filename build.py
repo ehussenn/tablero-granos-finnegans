@@ -6072,7 +6072,13 @@ function resRender(){
     for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
     return ""; };
   let com = 0;
-  if(fg || fc){
+  if(fm){
+    // filtro por MES: usa la apertura mensual del mayor (cultivo|campana|mes)
+    for(const [g, v] of Object.entries(NC.grupos_mes || {})){
+      const [cu, ca, me] = g.split("|");
+      if(me === fm && (!fg || cu === kw(fg)) && (!fc || ca === fc)) com += (v.cobrado || 0) - (v.pagado || 0);
+    }
+  } else if(fg || fc){
     for(const [g, v] of Object.entries(NC.grupos || {})){
       const [cu, ca] = g.split("|");
       if((!fg || cu === kw(fg)) && (!fc || ca === fc)) com += (v.cobrado || 0) - (v.pagado || 0);
@@ -6105,11 +6111,14 @@ function resRender(){
     const kwx = g => { const p = (g || "").toUpperCase().replace("Í", "I");
       for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
       return ""; };
-    const filas = Object.entries(NCx.grupos || {}).filter(([g]) => {
+    const fuente = fm ? (NCx.grupos_mes || {}) : (NCx.grupos || {});
+    const filas = Object.entries(fuente).filter(([g]) => {
+      if(fm && (g.split("|")[2] || "") !== fm) return false;
       if(fc && !(g || "").includes(fc)) return false;
       if(fg && kwx(g) !== kwx(fg)) return false;
       return true;
-    }).map(([g, v]) => ({g, cob: v.cobrado || 0, pag: v.pagado || 0, neto: (v.cobrado || 0) - (v.pagado || 0)}))
+    }).map(([g, v]) => ({g: fm ? g.split("|").slice(0, 2).join("|") : g,
+                          cob: v.cobrado || 0, pag: v.pagado || 0, neto: (v.cobrado || 0) - (v.pagado || 0)}))
       .sort((a, b) => b.neto - a.neto);
     document.getElementById("res-cards").innerHTML = "";
     document.getElementById("res-mensual").innerHTML =
@@ -12274,7 +12283,8 @@ def main() -> int:
                 select clasevo, cuenta, upper(coalesce(organizaciontransaccion,'')),
                        coalesce(dimensionvalor,''),
                        coalesce(nullif(trim(debemonedappal),'')::numeric,0),
-                       coalesce(nullif(trim(habermonedappal),'')::numeric,0)
+                       coalesce(nullif(trim(habermonedappal),'')::numeric,0),
+                       substr(fecha, 1, 7)
                 from agronasajasrl_libro_mayor
                 where fecha >= '2025-07' and clasevo in ('LiquidacionGranosCompraVO','LiquidacionGranosVentaVO')
                   and (cuenta ilike 'Recupero de gastos de comercializacion%%'
@@ -12290,24 +12300,29 @@ def main() -> int:
                 return (m1.group(1) if m1 else "", m2.group(1).replace("Í", "I") if m2 else "")
             recupero_real = {}   # "PROV|CULTIVO|CAMP" -> $ a favor (compra)
             comision_real_venta = {}   # "COMPRADOR|CULTIVO|CAMP" -> $ en contra (venta)
-            for _cv, _cta, _org, _dv, _debe, _haber in _cur3.fetchall():
+            com_mes = {}   # "CULTIVO|CAMP|YYYY-MM" -> {cobrado, pagado} (para filtro por MES)
+            for _cv, _cta, _org, _dv, _debe, _haber, _mes in _cur3.fetchall():
                 _camp, _cult = _dim_cc(_dv)
                 _k = f"{_org}|{_cult}|{_camp}"
+                _km = f"{_cult}|{_camp}|{_mes}"
+                _cm = com_mes.setdefault(_km, {"cobrado": 0.0, "pagado": 0.0})
                 if _cv == "LiquidacionGranosCompraVO":
                     recupero_real[_k] = recupero_real.get(_k, 0.0) + float(_haber) - float(_debe)
+                    _cm["cobrado"] += float(_haber) - float(_debe)
                 else:
                     _s = float(_debe) - float(_haber)
                     if _cta.startswith("Bonificaciones"): _s = -_s
                     comision_real_venta[_k] = comision_real_venta.get(_k, 0.0) + _s
+                    _cm["pagado"] += _s
             _cn3.close()
             print(f"[+] Libro mayor: recupero real compra {sum(recupero_real.values()):,.0f} $ "
                   f"({len(recupero_real)} grupos) · comisiones venta {sum(comision_real_venta.values()):,.0f} $ "
                   f"({len(comision_real_venta)} grupos)")
         except Exception as _e:
-            recupero_real, comision_real_venta = {}, {}
+            recupero_real, comision_real_venta, com_mes = {}, {}, {}
             print(f"    [!] no pude traer comisiones del DW: {_e}")
     else:
-        recupero_real, comision_real_venta = {}, {}
+        recupero_real, comision_real_venta, com_mes = {}, {}, {}
 
     # % EFECTIVO por contrato: $ reales del mayor / bruto liquidado del grupo
     # (proveedor o comprador + cultivo + campana). Se cuelga de cada contrato como
@@ -12371,7 +12386,9 @@ def main() -> int:
     # resumen del negocio de comisiones (para la vista): por campana-cultivo
     negocio_comisiones = {"cobrado": round(sum(recupero_real.values())),
                           "pagado": round(sum(comision_real_venta.values())),
-                          "grupos": {}}
+                          "grupos": {},
+                          "grupos_mes": {k: {"cobrado": round(v["cobrado"]), "pagado": round(v["pagado"])}
+                                          for k, v in com_mes.items()}}
     for _k, _v in recupero_real.items():
         _g = "|".join(_k.split("|")[1:])   # CULTIVO|CAMP
         negocio_comisiones["grupos"].setdefault(_g, {"cobrado": 0, "pagado": 0})["cobrado"] += round(_v)
