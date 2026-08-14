@@ -1188,8 +1188,12 @@ window.apiFetch = function(path, opts){
         <div><label>CULTIVO</label><select id="res-grano"><option value="">Todos</option></select></div>
         <div><label>CAMPAÑA</label><select id="res-cosecha"><option value="">Todas</option></select></div>
         <div><label>MES</label><select id="res-mes"><option value="">Todos</option></select></div>
+        <div><label>NEGOCIO</label><select id="res-negocio"><option value="">Todos</option>
+          <option value="canje">Canje (cobranza de insumos)</option>
+          <option value="reventa">Reventa pura</option></select></div>
         <div class="count" id="res-count"></div>
       </div>
+      <div id="res-negocios" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px"></div>
       <div id="res-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin-bottom:14px"></div>
       <div class="section">
         <h3 style="font-size:14px;margin-bottom:8px">Ganancia neta por mes</h3>
@@ -6009,7 +6013,8 @@ function resOps(){
     }
     const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
     const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
-    return {...o, pC, pV, pctRec, recReal, pctVr: pctV, origenV, finPendC, finPendV,
+    const esCanje = !!(PAYLOAD.canje_clientes || {})[(o.cliente || "").trim().toUpperCase()];
+    return {...o, pC, pV, pctRec, recReal, pctVr: pctV, origenV, finPendC, finPendV, esCanje,
             sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
   });
 }
@@ -6036,11 +6041,42 @@ function resRender(){
     selM.innerHTML = `<option value="">Todos</option>` + mesesTodos.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
     selM.addEventListener("change", resRender);
   }
-  const fc = selC.value, fm = selM.value;
-  const todos = brutos.filter(o => (!fc || o.cosecha === fc) && (!fm || o.mes === fm));
+  const selN = document.getElementById("res-negocio");
+  if(selN && !selN.dataset.on){ selN.dataset.on = "1"; selN.addEventListener("change", resRender); }
+  const fc = selC.value, fm = selM.value, fn = selN ? selN.value : "";
+  const todos = brutos.filter(o => (!fc || o.cosecha === fc) && (!fm || o.mes === fm)
+    && (!fn || (fn === "canje" ? o.esCanje : !o.esCanje)));
   const fg = sel.value;
   const liq = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
   const pend = todos.filter(o => o.margen == null && (!fg || o.grano === fg));
+
+  // FRANJA: los tres negocios (canje granario / reventa pura / comisiones) + consolidado
+  const base = brutos.filter(o => o.margen != null && (!fc || o.cosecha === fc) && (!fm || o.mes === fm) && (!fg || o.grano === fg));
+  const mCanje = base.filter(o => o.esCanje).reduce((s, o) => s + o.margen * o.tn, 0);
+  const tnCanje = base.filter(o => o.esCanje).reduce((s, o) => s + o.tn, 0);
+  const mRev = base.filter(o => !o.esCanje).reduce((s, o) => s + o.margen * o.tn, 0);
+  const tnRev = base.filter(o => !o.esCanje).reduce((s, o) => s + o.tn, 0);
+  const NC = PAYLOAD.negocio_comisiones || {cobrado: 0, pagado: 0, grupos: {}};
+  const kw = g => { const p = (g || "").toUpperCase().replace("Í", "I");
+    for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
+    return ""; };
+  let com = 0;
+  if(fg || fc){
+    for(const [g, v] of Object.entries(NC.grupos || {})){
+      const [cu, ca] = g.split("|");
+      if((!fg || cu === kw(fg)) && (!fc || ca === fc)) com += (v.cobrado || 0) - (v.pagado || 0);
+    }
+  } else { com = (NC.cobrado || 0) - (NC.pagado || 0); }
+  const cardN = (t, v, sub) => `<div class="section" style="margin:0;padding:12px 14px;border-top:3px solid ${v >= 0 ? 'var(--green)' : 'var(--red)'}">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)">${t}</div>
+    <div style="font-size:19px;font-weight:800;margin-top:3px;color:${v >= 0 ? 'var(--green)' : 'var(--red)'}">${v >= 0 ? '+' : '−'}$ ${resFmt(Math.abs(v))}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">${sub}</div></div>`;
+  const elN = document.getElementById("res-negocios");
+  if(elN) elN.innerHTML =
+    cardN("🔄 Canje (grano cobranza insumos)", mCanje, tnCanje.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · resultado granario; el margen del insumo va aparte") +
+    cardN("🔁 Reventa pura", mRev, tnRev.toLocaleString("es-AR", {maximumFractionDigits: 0}) + " tn · compra con plata y reventa") +
+    cardN("💼 Comisiones (mayor)", com, "cobrado en compras − pagado a entregadores" + ((fg || fc) ? "" : " · todas las campañas")) +
+    cardN("Σ CONSOLIDADO", mCanje + mRev + com, "canje + reventa + comisiones");
   document.getElementById("res-meta").textContent =
     `${liq.length} camiones liquidados · ${pend.length} pendientes de liquidar`;
   document.getElementById("res-count").textContent = `TC pizarra: $${resFmt(RES_TC)}`;
@@ -12254,6 +12290,43 @@ def main() -> int:
     _nv = _attach_pct(pilot_norm, comision_real_venta, "comision_real_pct")
     print(f"[+] % reales del mayor aplicados: {_nc} contratos de compra · {_nv} de venta")
 
+    # NEGOCIO DE CANJE: clientes que pagan insumos con grano. Fuente: facturas de venta
+    # con condicion de pago "Canje" (incluye las ya canceladas) — por cliente, desde jul-2025.
+    # La vista Resultados separa los camiones de proveedores-canje (cobranza de insumos)
+    # de la reventa pura, y muestra el negocio de comisiones aparte (libro mayor).
+    canje_clientes = {}
+    if all(os.environ.get(k) for k in ("FNN_DW_HOST", "FNN_DW_USER", "FNN_DW_PASS")):
+        try:
+            import psycopg2 as _pg4
+            _cn4 = _pg4.connect(
+                host=os.environ["FNN_DW_HOST"], user=os.environ["FNN_DW_USER"],
+                password=os.environ["FNN_DW_PASS"], dbname=os.environ.get("FNN_DW_DB", "finnegansbi"),
+                port=int(os.environ.get("FNN_DW_PORT", "5432")), sslmode="require", connect_timeout=30)
+            _cur4 = _cn4.cursor()
+            _cur4.execute("""
+                select upper(trim(organizacion)),
+                       round(sum(coalesce(nullif(trim(importemonppal),'')::numeric,0)))
+                from agronasajasrl_composicion_de_saldos
+                where condicionpago ilike '%%canje%%'
+                group by 1""")
+            canje_clientes = {r[0]: float(r[1] or 0) for r in _cur4.fetchall() if r[0]}
+            _cn4.close()
+            print(f"[+] Canje: {len(canje_clientes)} clientes con facturas de insumos en canje"
+                  f" · $ {sum(canje_clientes.values()):,.0f} facturados")
+        except Exception as _e:
+            print(f"    [!] canje: {_e}")
+
+    # resumen del negocio de comisiones (para la vista): por campana-cultivo
+    negocio_comisiones = {"cobrado": round(sum(recupero_real.values())),
+                          "pagado": round(sum(comision_real_venta.values())),
+                          "grupos": {}}
+    for _k, _v in recupero_real.items():
+        _g = "|".join(_k.split("|")[1:])   # CULTIVO|CAMP
+        negocio_comisiones["grupos"].setdefault(_g, {"cobrado": 0, "pagado": 0})["cobrado"] += round(_v)
+    for _k, _v in comision_real_venta.items():
+        _g = "|".join(_k.split("|")[1:])
+        negocio_comisiones["grupos"].setdefault(_g, {"cobrado": 0, "pagado": 0})["pagado"] += round(_v)
+
     # Composicion de Saldos para modulo Canjes — usamos API REST con getCurrentDate
     # (el DW tiene historia completa de saldos, no filtra al snapshot actual; no nos sirve)
     print(f"\n[+] Bajando Composicion Saldo Cliente (snapshot actual via API REST)...", flush=True)
@@ -13025,6 +13098,8 @@ def main() -> int:
         "finales": finales,
         "tarifas_venta": _tarifas_venta,
         "cargill_ctg_gastos": cargill_ctg_gastos,
+        "canje_clientes": canje_clientes,
+        "negocio_comisiones": negocio_comisiones,
         "taqueo": taqueo_data,
         "taqueo_liq": taqueo_liq,
         "finales_gastos": finales_gastos,
