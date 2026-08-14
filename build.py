@@ -1190,7 +1190,8 @@ window.apiFetch = function(path, opts){
         <div><label>MES</label><select id="res-mes"><option value="">Todos</option></select></div>
         <div><label>NEGOCIO</label><select id="res-negocio"><option value="">Todos</option>
           <option value="canje">Canje (cobranza de insumos)</option>
-          <option value="reventa">Reventa pura</option></select></div>
+          <option value="reventa">Reventa pura</option>
+          <option value="comisiones">Comisiones (libro mayor)</option></select></div>
         <div class="count" id="res-count"></div>
       </div>
       <div id="res-negocios" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px"></div>
@@ -6055,7 +6056,7 @@ function resRender(){
   if(selN && !selN.dataset.on){ selN.dataset.on = "1"; selN.addEventListener("change", resRender); }
   const fc = selC.value, fm = selM.value, fn = selN ? selN.value : "";
   const todos = brutos.filter(o => (!fc || o.cosecha === fc) && (!fm || o.mes === fm)
-    && (!fn || (fn === "canje" ? o.esCanje : !o.esCanje)));
+    && (!fn || fn === "comisiones" || (fn === "canje" ? o.esCanje : !o.esCanje)));
   const fg = sel.value;
   const liq = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
   const pend = todos.filter(o => o.margen == null && (!fg || o.grano === fg));
@@ -6097,6 +6098,40 @@ function resRender(){
     ` + ${Math.round(tnPendC).toLocaleString("es-AR")} tn con compra sin pesificar` +
     ` · (la semilla CONT-CPRA-SEM va sin CTG: no entra en esta reventa)`;
   document.getElementById("res-count").textContent = `TC pizarra: $${resFmt(RES_TC)}`;
+
+  // MODO COMISIONES: el detalle pasa a mostrar el negocio de comisiones (libro mayor)
+  if(fn === "comisiones"){
+    const NCx = PAYLOAD.negocio_comisiones || {cobrado: 0, pagado: 0, grupos: {}};
+    const kwx = g => { const p = (g || "").toUpperCase().replace("Í", "I");
+      for(const w of ["TRIGO","SOJA","MAIZ","GIRASOL","SORGO","ARVEJA","CEBADA","MANI"]) if(p.includes(w)) return w;
+      return ""; };
+    const filas = Object.entries(NCx.grupos || {}).filter(([g]) => {
+      if(fc && !(g || "").includes(fc)) return false;
+      if(fg && kwx(g) !== kwx(fg)) return false;
+      return true;
+    }).map(([g, v]) => ({g, cob: v.cobrado || 0, pag: v.pagado || 0, neto: (v.cobrado || 0) - (v.pagado || 0)}))
+      .sort((a, b) => b.neto - a.neto);
+    document.getElementById("res-cards").innerHTML = "";
+    document.getElementById("res-mensual").innerHTML =
+      `<div style="font-size:12.5px;color:var(--muted)">Negocio de comisiones — plata REAL del libro mayor: lo que cobrás como corredor en las compras (recupero + gastos) contra lo que te descuentan los entregadores en las ventas.</div>`;
+    document.getElementById("res-head").innerHTML =
+      `<tr><th style="text-align:left">Campaña · Cultivo</th><th>Cobrado en compras $</th><th>Pagado en ventas $</th><th>NETO $</th><th>Veredicto</th></tr>`;
+    let tc0 = 0, tp0 = 0;
+    document.getElementById("res-body").innerHTML = filas.map(f => {
+      tc0 += f.cob; tp0 += f.pag;
+      const pos = f.neto >= 0;
+      return `<tr><td style="text-align:left;font-weight:600">${escapeHtml((f.g || "(sin distribuir)").replace("|", " · "))}</td>
+        <td style="text-align:right">${resFmt(f.cob)}</td><td style="text-align:right">−${resFmt(f.pag)}</td>
+        <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(f.neto))}</td>
+        <td style="font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? 'GANÁS' : 'PAGÁS DE MÁS'}</td></tr>`;
+    }).join("");
+    const tn0 = tc0 - tp0;
+    document.getElementById("res-foot").innerHTML =
+      `<tr style="font-weight:800"><td style="text-align:left">TOTAL</td><td style="text-align:right">${resFmt(tc0)}</td>
+       <td style="text-align:right">−${resFmt(tp0)}</td>
+       <td style="text-align:right;color:${tn0 >= 0 ? 'var(--green)' : 'var(--red)'}">${tn0 >= 0 ? '+' : '−'}${resFmt(Math.abs(tn0))}</td><td></td></tr>`;
+    return;
+  }
 
   // tarjetas por cultivo
   const porG = {};
