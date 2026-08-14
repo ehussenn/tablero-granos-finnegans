@@ -1178,13 +1178,16 @@ window.apiFetch = function(path, opts){
         <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
           Solo camiones con contrato de compra y de venta <b>liquidados</b>. Compra neta = precio liquidado
           − comisión del contrato (Finnegans) − <b>1,25% de sellado siempre</b> (a favor; no aplica en RT/transferencias).
-          Venta neta = precio liquidado − <b>tarifa del entregador</b> (tabla de Comisiones; si falta, el % manual del Cruce).
-          Precios en USD convertidos al TC pizarra del día. La columna <b>Balanza</b> muestra lo enviado a liquidar.
+          Venta neta = precio − comisión: <b>real de Cargill</b> por camión (✓real), o tarifa del entregador (tabla de Comisiones).
+          <b>Todo en pesos liquidados</b> (parciales + finales tal como estén emitidas en Finnegans);
+          los contratos cuyo liquidado aún no está pesificado quedan como pendientes.
+          La columna <b>Balanza</b> muestra lo enviado a liquidar.
         </p>
       </div>
       <div class="filterbar">
         <div><label>CULTIVO</label><select id="res-grano"><option value="">Todos</option></select></div>
         <div><label>CAMPAÑA</label><select id="res-cosecha"><option value="">Todas</option></select></div>
+        <div><label>MES</label><select id="res-mes"><option value="">Todos</option></select></div>
         <div class="count" id="res-count"></div>
       </div>
       <div id="res-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px;margin-bottom:14px"></div>
@@ -5967,12 +5970,14 @@ function resOps(){
   return cxBuildOps().filter(o => o.contrato_compra && o.contrato_venta).map(o => {
     const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
     const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
-    // SOLO precio liquidado, con control de cordura: 50-500 USD/tn o 50.000-600.000 ARS/tn.
-    // Afuera de ese rango el dato de Finnegans viene contaminado (contratos parcialmente
-    // fijados mezclan monedas) y el camion queda como "pendiente" en vez de ensuciar el margen.
-    const plaus = p => (p >= 50 && p <= 500) || (p >= 50000 && p <= 600000) ? p : 0;
-    const pC = resArs(plaus(Number(cc.precioliquidado) || 0));
-    const pV = resArs(plaus(Number(cv.precioliquidado) || 0));
+    // Precio LIQUIDADO EN PESOS, ambas puntas (las liquidaciones se hacen en pesos;
+    // incluyen parciales y finales tal como esten emitidas en Finnegans). Cordura:
+    // 50.000-600.000 $/tn. Si el contrato muestra el liquidado en escala dolar o
+    // contaminado, ese camion queda "pendiente" — NO se convierte al TC de hoy.
+    const plausArs = p => (p >= 50000 && p <= 600000) ? p : 0;
+    const pC = plausArs(Number(cc.precioliquidado) || 0);
+    const pV = plausArs(Number(cv.precioliquidado) || 0);
+    const finPendC = false, finPendV = false;
     // COMPRA a favor: comision del contrato (Finnegans) + sellado 1,25% SIEMPRE,
     // salvo RT / transferencia de granos (sin movimiento fisico)
     const esRT = /transferencia|\brt\b/i.test(String(o.subtipo_compra || ""));
@@ -5999,7 +6004,8 @@ function resOps(){
     }
     const compraNeta = pC ? pC * (1 - pctRec / 100) : null;
     const margen = (compraNeta != null && ventaNeta != null) ? ventaNeta - compraNeta : null;
-    return {...o, pC, pV, pctRec, pctVr: pctV, origenV, sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
+    return {...o, pC, pV, pctRec, pctVr: pctV, origenV, finPendC, finPendV,
+            sinTarifa: (pV > 0 && pctV == null), compraNeta, ventaNeta, margen};
   });
 }
 const resFmt = n => Math.round(n).toLocaleString("es-AR");
@@ -6019,8 +6025,14 @@ function resRender(){
     selC.innerHTML = `<option value="">Todas</option>` + cosechas.map(c => `<option>${escapeHtml(c)}</option>`).join("");
     selC.addEventListener("change", resRender);
   }
-  const fc = selC.value;
-  const todos = brutos.filter(o => !fc || o.cosecha === fc);
+  const selM = document.getElementById("res-mes");
+  const mesesTodos = [...new Set(brutos.map(o => o.mes).filter(Boolean))].sort();
+  if(selM.options.length <= 1){
+    selM.innerHTML = `<option value="">Todos</option>` + mesesTodos.map(m => `<option value="${m}">${mesNice(m)}</option>`).join("");
+    selM.addEventListener("change", resRender);
+  }
+  const fc = selC.value, fm = selM.value;
+  const todos = brutos.filter(o => (!fc || o.cosecha === fc) && (!fm || o.mes === fm));
   const fg = sel.value;
   const liq = todos.filter(o => o.margen != null && (!fg || o.grano === fg));
   const pend = todos.filter(o => o.margen == null && (!fg || o.grano === fg));
@@ -6118,10 +6130,10 @@ document.getElementById("res-body") && document.getElementById("res-body").addEv
       <td style="padding:4px 8px">${escapeHtml(String(o.fecha || "").slice(0, 10))}</td>
       <td style="padding:4px 8px;text-align:right">${o.tn.toLocaleString("es-AR", {maximumFractionDigits: 2})}</td>
       <td style="padding:4px 8px">${escapeHtml(o.comprador || "—")} (${escapeHtml(o.contrato_venta || "—")})</td>
-      <td style="padding:4px 8px;text-align:right">${resFmt(o.pC)}</td>
+      <td style="padding:4px 8px;text-align:right">${resFmt(o.pC)}${o.finPendC ? " ⏳fijado" : ""}</td>
       <td style="padding:4px 8px;text-align:right">${resFmt(o.compraNeta)}</td>
       <td style="padding:4px 8px;text-align:right">${o.pctVr != null ? o.pctVr.toFixed(2) + "%" + (o.origenV === "real Cargill" ? " ✓real" : "") : "s/tarifa"}</td>
-      <td style="padding:4px 8px;text-align:right">${resFmt(o.ventaNeta)}</td>
+      <td style="padding:4px 8px;text-align:right">${resFmt(o.ventaNeta)}${o.finPendV ? " ⏳fijado" : ""}</td>
       <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen))}</td>
       <td style="padding:4px 8px;text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(o.margen * o.tn))}</td>
     </tr>`;
