@@ -893,6 +893,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-pend" data-title="Compra · Finales Pendientes">🧾 Finales Pendientes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-resultados" data-title="Compra · Resultados">📈 Resultados</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cierre-cli" data-title="Compra · Cierre de Clientes">🧾 Cierre de Clientes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cruce" data-title="Compra · Cruce Cliente × Comprador">Cruce Cliente × Comprador</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="pg-pagos" data-title="Compra · Proyectado Pagos Granos">Proyectado Pagos</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-calc-canje" data-title="Compra · Calculador de Canje">🔄 Calculador Canje</a>
@@ -1017,6 +1018,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
       <button class="subtab" data-sub="cp-finales-pend">🧾 Finales Pendientes</button>
       <button class="subtab" data-sub="cp-resultados">📈 Resultados</button>
+      <button class="subtab" data-sub="cp-cierre-cli">🧾 Cierre de Clientes</button>
       <button class="subtab" data-sub="cp-cruce">Cruce Cliente × Comprador</button>
       <button class="subtab" data-sub="pg-pagos">📅 Proyectado Pagos Granos</button>
       <button class="subtab" data-sub="cp-calc-canje">🔄 Calc. Canje</button>
@@ -1204,6 +1206,27 @@ window.apiFetch = function(path, opts){
         <h3 style="font-size:14px;margin-bottom:8px">Detalle por contrato de compra <span class="badge">click en una fila para ver sus camiones</span></h3>
         <div class="tbl-wrap" style="max-height:620px">
           <table class="tbl" id="res-tbl"><thead id="res-head"></thead><tbody id="res-body"></tbody><tfoot id="res-foot"></tfoot></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SUB: CIERRE DE CLIENTES ========== -->
+    <div class="subpanel" data-sub-panel="cp-cierre-cli">
+      <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <h3>🧾 Cierre de Clientes <span class="badge" id="cc2-meta"></span></h3>
+        <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
+          Por cada cliente (productor): <b>toneladas totales</b> liquidadas punta a punta,
+          <b>gastos COBRADOS</b> (tu comisión + gastos sobre la compra) y <b>gastos REALES</b>
+          (lo que descontó el entregador en la venta de esos camiones). Diferencia = resultado del corretaje por cliente.</p>
+      </div>
+      <div class="filterbar">
+        <div><label>CULTIVO</label><select id="cc2-grano"><option value="">Todos</option></select></div>
+        <div><label>CAMPAÑA</label><select id="cc2-camp"><option value="">Todas</option></select></div>
+        <div class="count" id="cc2-count"></div>
+      </div>
+      <div class="section">
+        <div class="tbl-wrap" style="max-height:640px">
+          <table class="tbl" id="cc2-tbl"><thead id="cc2-head"></thead><tbody id="cc2-body"></tbody><tfoot id="cc2-foot"></tfoot></table>
         </div>
       </div>
     </div>
@@ -2434,6 +2457,7 @@ document.querySelectorAll('.subtab').forEach(st => {
     parent.querySelector(`.subpanel[data-sub-panel="${st.dataset.sub}"]`).classList.add('active');
     // Resultados se recalcula al entrar (toma cambios de % hechos en el Cruce)
     if(st.dataset.sub === 'cp-resultados'){ try{ resRender(); }catch(e){} }
+    if(st.dataset.sub === 'cp-cierre-cli'){ try{ cc2Render(); }catch(e){} }
   });
 });
 
@@ -6277,6 +6301,52 @@ document.getElementById("res-body") && document.getElementById("res-body").addEv
   tr.after(drill);
 });
 try{ resRender(); }catch(e){ console.warn("resultados:", e); }
+
+/* ============== CIERRE DE CLIENTES (toneladas / gastos cobrados / gastos reales) ============== */
+function cc2Render(){
+  if(!document.getElementById("cc2-body")) return;
+  const ops = resOps().filter(o => o.margen != null);
+  const sg = document.getElementById("cc2-grano"), sc = document.getElementById("cc2-camp");
+  if(sg.options.length <= 1){
+    sg.innerHTML = `<option value="">Todos</option>` + [...new Set(ops.map(o => o.grano).filter(Boolean))].sort().map(g => `<option>${escapeHtml(g)}</option>`).join("");
+    const cs = [...new Set(ops.map(o => o.cosecha).filter(Boolean))].sort().reverse();
+    sc.innerHTML = `<option value="">Todas</option>` + cs.map(c => `<option>${escapeHtml(c)}</option>`).join("");
+    if(cs.length) sc.value = cs[0];
+    sg.addEventListener("change", cc2Render); sc.addEventListener("change", cc2Render);
+  }
+  const fil = ops.filter(o => (!sg.value || o.grano === sg.value) && (!sc.value || o.cosecha === sc.value));
+  const A = {};
+  fil.forEach(o => {
+    const a = A[o.cliente || "—"] = A[o.cliente || "—"] || {tn: 0, cam: 0, cob: 0, real: 0};
+    a.tn += o.tn; a.cam++;
+    a.cob += (o.pC - o.compraNeta) * o.tn;    // gastos COBRADOS al cliente (comision + 1,25%)
+    a.real += (o.pV - o.ventaNeta) * o.tn;    // gastos REALES del entregador
+  });
+  document.getElementById("cc2-meta").textContent = `${Object.keys(A).length} clientes · ${fil.length} camiones`;
+  document.getElementById("cc2-head").innerHTML =
+    `<tr><th style="text-align:left">Cliente</th><th>Camiones</th><th>Toneladas totales</th>
+     <th>Gastos COBRADOS $</th><th>Gastos REALES $</th><th>Diferencia $</th><th>Dif $/tn</th></tr>`;
+  let ttn = 0, tcob = 0, treal = 0, tcam = 0;
+  document.getElementById("cc2-body").innerHTML = Object.keys(A).sort((x, y) => A[y].cob - A[x].cob).map(k => {
+    const a = A[k], dif = a.cob - a.real, pos = dif >= 0;
+    ttn += a.tn; tcob += a.cob; treal += a.real; tcam += a.cam;
+    return `<tr><td style="text-align:left;font-weight:600">${escapeHtml(k)}</td>
+      <td style="text-align:right">${a.cam}</td>
+      <td style="text-align:right">${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+      <td style="text-align:right">${resFmt(a.cob)}</td>
+      <td style="text-align:right">${resFmt(a.real)}</td>
+      <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(dif))}</td>
+      <td style="text-align:right;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(dif / (a.tn || 1)))}</td></tr>`;
+  }).join("");
+  const td = tcob - treal;
+  document.getElementById("cc2-foot").innerHTML =
+    `<tr style="font-weight:800"><td style="text-align:left">TOTAL</td><td style="text-align:right">${tcam}</td>
+     <td style="text-align:right">${ttn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
+     <td style="text-align:right">${resFmt(tcob)}</td><td style="text-align:right">${resFmt(treal)}</td>
+     <td style="text-align:right;color:${td >= 0 ? 'var(--green)' : 'var(--red)'}">${td >= 0 ? '+' : '−'}${resFmt(Math.abs(td))}</td>
+     <td style="text-align:right">${resFmt(td / (ttn || 1))}</td></tr>`;
+}
+try{ cc2Render(); }catch(e){ console.warn("cierre clientes:", e); }
 
 function cxInitFilters(){
   const ops = cxBuildOps();
