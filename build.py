@@ -12361,7 +12361,7 @@ def main() -> int:
     # antes arrancaba en 2026-01-01 y el cruce perdia esos camiones -> Resultados daba de menos)
     print(f"\n[+] Bajando Traslados de Granos (desde jul-2025) para cruce Cliente x Comprador...", flush=True)
     traslados_raw = api.call("/reports/trasladoGranos", {
-        "PARAMFechaDesde": "2025-07-01",
+        "PARAMFechaDesde": "2025-11-01",
         "PARAMFechaHasta": "2030-12-31",
     })
     if not isinstance(traslados_raw, list):
