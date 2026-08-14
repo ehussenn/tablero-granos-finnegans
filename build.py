@@ -6059,6 +6059,7 @@ function resRender(){
   const cosechas = [...new Set(brutos.map(o => o.cosecha).filter(Boolean))].sort().reverse();
   if(selC.options.length <= 1){
     selC.innerHTML = `<option value="">Todas</option>` + cosechas.map(c => `<option>${escapeHtml(c)}</option>`).join("");
+    if(cosechas.length) selC.value = cosechas[0];   // arranca en la campana vigente
     selC.addEventListener("change", resRender);
   }
   const selM = document.getElementById("res-mes");
@@ -6162,8 +6163,10 @@ function resRender(){
   const porG = {};
   todos.filter(o => o.margen != null).forEach(o => {
     const g = o.grano || "—";
-    const a = porG[g] = porG[g] || {tn: 0, ic: 0, iv: 0, m: 0, cam: 0};
+    const a = porG[g] = porG[g] || {tn: 0, ic: 0, iv: 0, m: 0, cam: 0, rec: 0, gv: 0};
     a.tn += o.tn; a.ic += o.pC * o.tn; a.iv += o.pV * o.tn; a.m += o.margen * o.tn; a.cam++;
+    a.rec += (o.pC - o.compraNeta) * o.tn;   // comisiones+gastos A FAVOR (recupero)
+    a.gv  += (o.pV - o.ventaNeta) * o.tn;    // gastos del entregador
   });
   document.getElementById("res-cards").innerHTML = Object.keys(porG).sort().map(g => {
     const a = porG[g], pos = a.m >= 0;
@@ -6172,7 +6175,10 @@ function resRender(){
       <div style="font-size:22px;font-weight:800;margin-top:4px;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}$ ${resFmt(Math.abs(a.m))}</div>
       <div style="font-size:11.5px;color:var(--muted);margin-top:4px">
         ${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})} tn · ${a.cam} camiones · ${resFmt(a.m / a.tn)} $/tn<br>
-        compré $${resFmt(a.ic / a.tn)} · vendí $${resFmt(a.iv / a.tn)}</div>
+        compré $${resFmt(a.ic / a.tn)} · vendí $${resFmt(a.iv / a.tn)}<br>
+        <span style="color:var(--green);font-weight:600">comisiones a favor +$${resFmt(a.rec)}</span>
+        · gastos venta −$${resFmt(a.gv)}
+        · mercadería ${(a.m - a.rec + a.gv) >= 0 ? "+" : "−"}$${resFmt(Math.abs(a.m - a.rec + a.gv))}</div>
     </div>`;
   }).join("") || `<div style="color:var(--muted);font-size:13px">Sin camiones liquidados en ambas puntas todavía.</div>`;
 
