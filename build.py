@@ -12450,6 +12450,55 @@ def main() -> int:
             c["contrato_venta"] = r.get("NOMBRECONTRATO")
             c["doc_contrato_venta"] = r.get("NUMERODOCUMENTOCONTRATO")
 
+    # DATOS RAIZ por camion: precio/recupero de la liquidacion de compra y precio/gastos
+    # reales de la de venta (cosecha de la API de transacciones + libro mayor), adjuntados
+    # a cada cruce. La vista Resultados los usa como fuente primaria ("raiz").
+    try:
+        _dd = Path(__file__).resolve().parent / "data"
+        _liqs = {}
+        for _f, _pref in [("liq_compra_api.json", "LIQPRICPRA"), ("liq_cpragra_api.json", "LIQCPRAGRA"),
+                          ("liq_venta_pri_api.json", "LIQ-PRI-VTA"), ("liq_venta_sec_api.json", "LIQ-SEC-VTA"),
+                          ("liq_vta_int_api.json", "LIQ-VTA-INT"), ("liq_pri_vta_int_api.json", "LIQ-PRI-VTA-INT")]:
+            _p = _dd / _f
+            if _p.exists():
+                for _n, _d in json.loads(_p.read_text(encoding="utf-8")).items():
+                    _liqs[f"{_pref} - {_n}"] = _d
+        _gv = json.loads((_dd / "com_venta_por_liq.json").read_text(encoding="utf-8")) if (_dd / "com_venta_por_liq.json").exists() else {}
+        def _fnum(v):
+            try: return float(str(v).replace(",", "") or 0)
+            except Exception: return 0.0
+        _lpt = {}
+        for _nom, _d in _liqs.items():
+            _prods = _d.get("productos") or []
+            _tnl = sum(_fnum(p.get("cantidad")) for p in _prods
+                       if "sellado" not in str(p.get("producto") or "").lower() and _fnum(p.get("cantidad")) > 0)
+            _conr = _d.get("conceptos") or {}
+            _rec = ((_fnum(_conr.get("RECCOM")) + _fnum(_conr.get("GTOSCOM")) + _fnum(_conr.get("RECCOMNG"))) / _tnl) if _tnl else 0.0
+            _g = _gv.get(_nom)
+            _gvt = ((_fnum(_g.get("comision")) + _fnum(_g.get("sellado")) - _fnum(_g.get("bonif"))) / _tnl) if (_g and _tnl) else None
+            for _p2 in _prods:
+                _t = str(_p2.get("traslado") or "").strip()
+                if _t and _t != "None":
+                    _es_sec = "SEC" in _nom
+                    _ant = _lpt.get(_t)
+                    if _ant is None or (_ant.get("sec") and not _es_sec):
+                        _lpt[_t] = {"precio": _fnum(_p2.get("precio")), "rec_tn": _rec,
+                                    "gv_tn": _gvt, "sec": _es_sec, "liq": _nom}
+        _con_raiz = 0
+        for _c in cruces.values():
+            _lc = _lpt.get(str(_c.get("doc_compra") or ""))
+            _lv = _lpt.get(str(_c.get("doc_venta") or ""))
+            if _lc and _lc["precio"] > 0:
+                _c["pc_raiz"] = round(_lc["precio"], 2); _c["rec_tn_raiz"] = round(_lc["rec_tn"], 2)
+            if _lv and _lv["precio"] > 0:
+                _c["pv_raiz"] = round(_lv["precio"], 2)
+                _c["gv_tn_raiz"] = round(_lv["gv_tn"], 2) if _lv["gv_tn"] is not None else None
+                _c["liq_v_raiz"] = _lv["liq"]
+            if _c.get("pc_raiz") and _c.get("pv_raiz"): _con_raiz += 1
+        print(f"    -> datos RAIZ adjuntos: {_con_raiz} camiones con ambas liquidaciones reales")
+    except Exception as _e:
+        print(f"    [!] raiz por camion: {_e}")
+
     cruces_list = list(cruces.values())
     completos = sum(1 for c in cruces_list if c.get("cliente") and c.get("comprador"))
     print(f"    -> {len(cruces_list)} CTGs unicos, {completos} con cliente+comprador completos")
