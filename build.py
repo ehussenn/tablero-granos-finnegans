@@ -5973,6 +5973,21 @@ function resTarifaVenta(comprador){
 }
 function resOps(){
   return cxBuildOps().filter(o => o.contrato_compra && o.contrato_venta).map(o => {
+    // FUENTE PRIMARIA: datos RAIZ del camion (su liquidacion real cosechada de Finnegans):
+    // precio pleno + recupero completo (comision+gastos) en compra, precio + gastos reales
+    // del mayor en venta (tarifa del Excel si el mayor no tiene el dato).
+    if(o.pc_raiz && o.pv_raiz){
+      const rec = o.rec_tn_raiz || 0;
+      let gv = o.gv_tn_raiz;
+      if(gv == null){
+        const t = resTarifaVenta(o.comprador);
+        gv = (t != null) ? o.pv_raiz * t / 100 : 0;
+      }
+      const compraNeta = o.pc_raiz - rec, ventaNeta = o.pv_raiz - gv;
+      return {...o, pC: o.pc_raiz, pV: o.pv_raiz, pctRec: rec / o.pc_raiz * 100,
+              pctVr: gv / o.pv_raiz * 100, compraNeta, ventaNeta,
+              margen: ventaNeta - compraNeta, raiz: true};
+    }
     const cc = CX_CONTRATOS_COMPRA_IDX[o.contrato_compra] || {};
     const cv = CX_CONTRATOS_VENTA_IDX[o.contrato_venta] || {};
     // Precio LIQUIDADO EN PESOS, ambas puntas (las liquidaciones se hacen en pesos;
@@ -12445,10 +12460,12 @@ def main() -> int:
             c["cliente"] = r.get("ORGANIZACIONNOMBRE")
             c["contrato_compra"] = r.get("NOMBRECONTRATO")
             c["doc_contrato_compra"] = r.get("NUMERODOCUMENTOCONTRATO")
+            c["doc_compra"] = str(r.get("DOCUMENTO") or "").strip()
         elif r.get("OPERACIONTIPO") == "Venta":
             c["comprador"] = r.get("ORGANIZACIONNOMBRE")
             c["contrato_venta"] = r.get("NOMBRECONTRATO")
             c["doc_contrato_venta"] = r.get("NUMERODOCUMENTOCONTRATO")
+            c["doc_venta"] = str(r.get("DOCUMENTO") or "").strip()
 
     # DATOS RAIZ por camion: precio/recupero de la liquidacion de compra y precio/gastos
     # reales de la de venta (cosecha de la API de transacciones + libro mayor), adjuntados
