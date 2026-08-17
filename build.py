@@ -7955,12 +7955,16 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // COMPRA (auto desde contratos de compra, reporte REST)
   // Cantidad ajustada = entregado + pendiente de entrega (como el "Resumen de Contratos" de Finnegans).
   let compraTot = 0, compraEntr = 0, compraPend = 0;
+  // SEMILLA SOJA/MAIZ/TRIGO/GIRASOL (grano facturado como semilla, CP de Agronasaja):
+  // cuenta como GRANO del cultivo pero SOLO lo entregado — su pendiente y su total
+  // con pendiente NO se computan (regla del usuario).
+  const esSemGranoCpra = pnEsSemillaGrano(producto);
   opsCompra.forEach(c => {
     const ent = Number(c.cantidadentregada) || 0;
-    const pen = pnPendE(c);
+    const pen = esSemGranoCpra ? 0 : pnPendE(c);
     compraEntr += ent;
     compraPend += pen;
-    compraTot  += ent + pen;   // ajustada
+    compraTot  += ent + pen;   // ajustada (para SEMILLA X: solo lo entregado)
   });
 
   // P+C
