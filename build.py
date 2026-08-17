@@ -7856,8 +7856,12 @@ let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción cor
 // Pendiente de entrega: SIEMPRE cantidad ajustada - entregada (regla del usuario;
 // el campo crudo del reporte no refleja ampliaciones/reducciones — caso maiz).
 function pnPendE(c){
+  // regla del usuario: pendiente de entrega = cantidad AJUSTADA - entregada, SIEMPRE,
+  // para compra y venta de todos los cultivos y campañas.
+  // La ajustada en las filas es cantidadmax (= pactada + ampliada - reducida; validado
+  // contra Finnegans en contratos 935, 816, 861, 897, 1043, 1059).
   const ent = Number(c.cantidadentregada) || 0;
-  const aj = Number(c.cantidadajustada) || 0;
+  const aj = Number(c.cantidadmax) || 0;
   return Math.max(0, aj - ent);
 }
 function pnGetMan(prod, k){
