@@ -1210,24 +1210,48 @@ window.apiFetch = function(path, opts){
       </div>
     </div>
 
-    <!-- ========== SUB: CIERRE DE CLIENTES ========== -->
+    <!-- ========== SUB: CIERRE DE CLIENTES (cruce trigo 25/26 camion x camion) ========== -->
     <div class="subpanel" data-sub-panel="cp-cierre-cli">
       <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
-        <h3>🧾 Cierre de Clientes <span class="badge" id="cc2-meta"></span></h3>
+        <h3>🧾 Cierre de Clientes — Trigo 25/26 camión por camión <span class="badge" id="tc-meta"></span></h3>
         <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
-          Por cada cliente (productor): <b>toneladas totales</b> liquidadas punta a punta,
-          <b>gastos COBRADOS</b> (tu comisión + gastos sobre la compra) y <b>gastos REALES</b>
-          (lo que descontó el entregador en la venta de esos camiones). Diferencia = resultado del corretaje por cliente.</p>
+          Cada camión de tus <b>contratos de compra</b> cruzado por CTG con su <b>venta</b>: precio en USD
+          (TC BNA divisa vendedor del día de fijación), destino, comisión y sellado de las dos puntas.
+          Clic en una fila azul despliega las entregas · clic en un encabezado ordena la columna (asc/desc).</p>
+      </div>
+      <div id="tc-cards" style="display:flex;flex-wrap:wrap;gap:10px;margin:10px 0"></div>
+      <div style="display:flex;gap:6px;margin:6px 0 0">
+        <button class="tc-tab" data-tc="C" style="font-weight:700;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">COMPRA por contrato</button>
+        <button class="tc-tab" data-tc="V" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">VENTA (solo camiones de tus compras)</button>
+        <button class="tc-tab" data-tc="X" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">CRUCE por CTG</button>
       </div>
       <div class="filterbar">
-        <div><label>CULTIVO</label><select id="cc2-grano"><option value="">Todos</option></select></div>
-        <div><label>CAMPAÑA</label><select id="cc2-camp"><option value="">Todas</option></select></div>
-        <div class="count" id="cc2-count"></div>
+        <div><label>CONTRATO</label><select id="tc-cto"><option value="">Todos</option></select></div>
+        <div><label>PROV / COMPRADOR</label><select id="tc-prov"><option value="">Todos</option></select></div>
+        <div><label>DESTINO</label><select id="tc-dest"><option value="">Todos</option></select></div>
+        <div><label>MES FIJACIÓN</label><select id="tc-mes"><option value="">Todos</option></select></div>
+        <div><label>FUENTE GASTOS</label><select id="tc-fu"><option value="">Todas</option></select></div>
+        <div><label>BUSCAR</label><input id="tc-txt" placeholder="CTG / traslado / texto" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+        <div style="display:flex;gap:6px;align-items:flex-end">
+          <button id="tc-exp" style="padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">Expandir</button>
+          <button id="tc-col" style="padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">Colapsar</button>
+          <button id="tc-clr" style="padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">Limpiar</button>
+        </div>
       </div>
       <div class="section">
         <div class="tbl-wrap" style="max-height:640px">
-          <table class="tbl" id="cc2-tbl"><thead id="cc2-head"></thead><tbody id="cc2-body"></tbody><tfoot id="cc2-foot"></tfoot></table>
+          <table class="tbl" id="tc-tbl"><thead id="tc-head"></thead><tbody id="tc-body"></tbody><tfoot id="tc-foot"></tfoot></table>
         </div>
+      </div>
+      <div class="section" style="font-size:12px;color:var(--muted)">
+        <b>Aclaraciones:</b>
+        ① Dólar = precio $ ÷ TC BNA divisa vendedor del día de la <b>fijación</b> (si no hay fijación, del día de la liquidación).
+        ② En COMPRA, comisión (RECCOM) y sellado/gastos (GTOSCOM 1,25%) son los que <b>cobra Agronasaja</b> en cada liquidación.
+        ③ En VENTA, son los que <b>descuenta el entregador/comprador</b>: salen de las líneas de la propia liquidación; si no las trae, del mayor contable, y si no, del tarifario (columna Fuente).
+        ④ Importes "sin gastos" = tn × precio exactos de cada liquidación. Tn de compra y de venta pueden diferir por mermas.
+        ⑤ Reversas (liq anuladas con contrapartida negativa) ya están neteadas — los totales cuadran contrato por contrato con el resumen de Finnegans.
+        ⑥ Contratos grises = convenio / préstamo de origen, liquidados simbólico $1 (sin liq de granos).
+        Datos: liquidaciones reales de Finnegans (cosecha vía API de transacciones) · se actualiza al regenerar el cruce, no con el cron horario.
       </div>
     </div>
 
@@ -6295,59 +6319,251 @@ document.getElementById("res-body") && document.getElementById("res-body").addEv
 });
 try{ resRender(); }catch(e){ console.warn("resultados:", e); }
 
-/* ============== CIERRE DE CLIENTES (toneladas / gastos cobrados / gastos reales) ============== */
-function cc2Render(){
-  if(!document.getElementById("cc2-body")) return;
-  const ops = resOps().filter(o => o.margen != null);
-  const sg = document.getElementById("cc2-grano"), sc = document.getElementById("cc2-camp");
-  if(sg.options.length <= 1){
-    sg.innerHTML = `<option value="">Todos</option>` + [...new Set(ops.map(o => o.grano).filter(Boolean))].sort().map(g => `<option>${escapeHtml(g)}</option>`).join("");
-    const cs = [...new Set(ops.map(o => o.cosecha).filter(Boolean))].sort().reverse();
-    sc.innerHTML = `<option value="">Todas</option>` + cs.map(c => `<option>${escapeHtml(c)}</option>`).join("");
-    if(cs.length) sc.value = cs[0];
-    sg.addEventListener("change", cc2Render); sc.addEventListener("change", cc2Render);
-  }
-  const fil = ops.filter(o => (!sg.value || o.grano === sg.value) && (!sc.value || o.cosecha === sc.value));
-  const A = {};
-  fil.forEach(o => {
-    const a = A[o.cliente || "—"] = A[o.cliente || "—"] || {tn: 0, cam: 0, cob: 0, real: 0, ic: 0, iv: 0};
-    a.tn += o.tn; a.cam++;
-    a.cob += (o.pC - o.compraNeta) * o.tn;    // gastos COBRADOS al cliente (comision + 1,25%)
-    a.real += (o.pV - o.ventaNeta) * o.tn;    // gastos REALES del entregador
-    a.ic += o.pC * o.tn; a.iv += o.pV * o.tn; // mercaderia: comprado y vendido
-  });
-  document.getElementById("cc2-meta").textContent = `${Object.keys(A).length} clientes · ${fil.length} camiones`;
-  document.getElementById("cc2-head").innerHTML =
-    `<tr><th style="text-align:left">Cliente</th><th>Camiones</th><th>Toneladas totales</th>
-     <th>Gastos COBRADOS $</th><th>Gastos REALES $</th><th>Dif comisiones $</th>
-     <th>Compré $/tn</th><th>Vendí $/tn</th><th>DIF PRECIO $/tn</th></tr>`;
-  let ttn = 0, tcob = 0, treal = 0, tcam = 0;
-  document.getElementById("cc2-body").innerHTML = Object.keys(A).sort((x, y) => A[y].cob - A[x].cob).map(k => {
-    const a = A[k], dif = a.cob - a.real, pos = dif >= 0;
-    ttn += a.tn; tcob += a.cob; treal += a.real; tcam += a.cam;
-    return `<tr><td style="text-align:left;font-weight:600">${escapeHtml(k)}</td>
-      <td style="text-align:right">${a.cam}</td>
-      <td style="text-align:right">${a.tn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
-      <td style="text-align:right">${resFmt(a.cob)}</td>
-      <td style="text-align:right">${resFmt(a.real)}</td>
-      <td style="text-align:right;font-weight:700;color:${pos ? 'var(--green)' : 'var(--red)'}">${pos ? '+' : '−'}${resFmt(Math.abs(dif))}</td>
-      <td style="text-align:right">${resFmt(a.ic / (a.tn || 1))}</td>
-      <td style="text-align:right">${resFmt(a.iv / (a.tn || 1))}</td>
-      <td style="text-align:right;font-weight:700;color:${(a.iv - a.ic) >= 0 ? 'var(--green)' : 'var(--red)'}">${(a.iv - a.ic) >= 0 ? '+' : '−'}${resFmt(Math.abs((a.iv - a.ic) / (a.tn || 1)))}</td></tr>`;
-  }).join("");
-  const td = tcob - treal;
-  let tic = 0, tiv = 0;
-  Object.values(A).forEach(a => { tic += a.ic; tiv += a.iv; });
-  const dp = (tiv - tic) / (ttn || 1);
-  document.getElementById("cc2-foot").innerHTML =
-    `<tr style="font-weight:800"><td style="text-align:left">TOTAL</td><td style="text-align:right">${tcam}</td>
-     <td style="text-align:right">${ttn.toLocaleString("es-AR", {maximumFractionDigits: 1})}</td>
-     <td style="text-align:right">${resFmt(tcob)}</td><td style="text-align:right">${resFmt(treal)}</td>
-     <td style="text-align:right;color:${td >= 0 ? 'var(--green)' : 'var(--red)'}">${td >= 0 ? '+' : '−'}${resFmt(Math.abs(td))}</td>
-     <td style="text-align:right">${resFmt(tic / (ttn || 1))}</td><td style="text-align:right">${resFmt(tiv / (ttn || 1))}</td>
-     <td style="text-align:right;color:${dp >= 0 ? 'var(--green)' : 'var(--red)'}">${dp >= 0 ? '+' : '−'}${resFmt(Math.abs(dp))}</td></tr>`;
+/* ============== CIERRE DE CLIENTES: cruce trigo 25/26 camion x camion (compra vs venta) ============== */
+const TC = PAYLOAD.trigo_cruce || {compra: [], venta: [], convenio: {}};
+const tcVxCtg = {};
+TC.venta.forEach(v => { if(v.ctg && !tcVxCtg[v.ctg]) tcVxCtg[v.ctg] = v; });
+TC.compra.forEach(c => { c.v = c.ctg ? tcVxCtg[c.ctg] : null; c.mes = (c.ffij || c.fecha || "").slice(0, 7); });
+TC.venta.forEach(v => { v.mes = (v.ffij || v.fecha || "").slice(0, 7); });
+const tcCtgs = new Set(TC.compra.map(c => c.ctg).filter(Boolean));
+const TCV = TC.venta.filter(v => tcCtgs.has(v.ctg));
+const TCX = TC.compra.filter(c => c.v && c.tn > 0).map(c => {
+  const v = c.v, sh = v.tn ? c.tn / v.tn : 0;
+  return {ctg: c.ctg, cto: c.cto, prov: c.prov, ctov: v.cto, org: v.org, dest: v.dest, mes: c.mes,
+          ffij: c.ffij || c.fecha, tn: c.tn, tnv: v.tn, pc: c.pc, pc_usd: c.pc_usd, pv: v.pv,
+          pv_usd: v.pv_usd, fu: v.fu, impC: c.tn * c.pc, impV: v.tn * v.pv,
+          comC: c.com, selC: c.sel, gasC: c.com + c.sel,
+          comV: v.com * sh, selV: v.sel * sh, otrV: v.otros * sh, gasV: (v.com + v.sel + v.otros) * sh};
+});
+let tcTab = "C", tcAbiertos = new Set(), tcSort = {C: null, V: null, X: null};
+const tcFmt = (n, d = 0) => n == null || isNaN(n) ? "—" : n.toLocaleString("es-AR", {minimumFractionDigits: d, maximumFractionDigits: d});
+const tcPct = n => n == null || isNaN(n) ? "—" : (n * 100).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + "%";
+function tcCard(t, v, s){ return `<div style="background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:8px 13px;border-top:3px solid var(--blue,#3b82f6);min-width:125px">
+  <div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">${t}</div>
+  <div style="font-size:17px;font-weight:800">${v}</div><div style="font-size:11px;color:var(--muted)">${s}</div></div>`; }
+function tcOpts(id, vals, lbl){
+  const s = document.getElementById(id); if(!s) return; const cur = s.value;
+  s.innerHTML = `<option value="">${lbl}</option>` + [...new Set(vals.filter(Boolean))].sort().map(v => `<option>${escapeHtml(v)}</option>`).join("");
+  s.value = cur;
 }
-try{ cc2Render(); }catch(e){ console.warn("cierre clientes:", e); }
+function tcPasa(r){
+  const g = id => (document.getElementById(id) || {value: ""}).value;
+  const txt = g("tc-txt").toLowerCase();
+  if(g("tc-cto") && r.cto !== g("tc-cto")) return false;
+  if(g("tc-prov") && (tcTab === "V" ? r.org : r.prov) !== g("tc-prov")) return false;
+  if(g("tc-dest")){ const d = tcTab === "C" ? (r.v ? r.v.dest : r.dest) : r.dest; if(d !== g("tc-dest")) return false; }
+  if(g("tc-mes") && r.mes !== g("tc-mes")) return false;
+  if(g("tc-fu")){ const f = tcTab === "C" ? (r.v ? r.v.fu : "") : r.fu; if(f !== g("tc-fu")) return false; }
+  if(txt && !JSON.stringify(r).toLowerCase().includes(txt)) return false;
+  return true;
+}
+function tcTh(cols){
+  const s = tcSort[tcTab];
+  return "<tr>" + cols.map((c, i) =>
+    `<th data-tci="${i}" style="cursor:pointer;white-space:nowrap;${c.izq ? 'text-align:left' : ''}" title="clic para ordenar">${c.t}${s && s.i === i ? (s.d > 0 ? " ▲" : " ▼") : ""}</th>`).join("") + "</tr>";
+}
+function tcOrd(arr, vals){
+  const s = tcSort[tcTab];
+  if(!s) return arr;
+  return [...arr].sort((a, b) => {
+    const va = vals(a)[s.i], vb = vals(b)[s.i];
+    if(typeof va === "string" || typeof vb === "string") return String(va || "").localeCompare(String(vb || "")) * s.d;
+    return ((va || 0) - (vb || 0)) * s.d;
+  });
+}
+function tcSum(a, f){ return a.reduce((s, x) => s + (f(x) || 0), 0); }
+function tcRender(){
+  const body = document.getElementById("tc-body"); if(!body) return;
+  const head = document.getElementById("tc-head"), foot = document.getElementById("tc-foot"), cards = document.getElementById("tc-cards");
+  document.querySelectorAll(".tc-tab").forEach(b => b.style.fontWeight = b.dataset.tc === tcTab ? "800" : "400");
+  const rowsBase = tcTab === "C" ? TC.compra : (tcTab === "V" ? TCV : TCX);
+  tcOpts("tc-cto", rowsBase.map(r => r.cto), "Todos");
+  tcOpts("tc-prov", rowsBase.map(r => tcTab === "V" ? r.org : r.prov), "Todos");
+  tcOpts("tc-dest", tcTab === "C" ? TC.compra.map(r => r.v ? r.v.dest : r.dest) : rowsBase.map(r => r.dest), "Todos");
+  tcOpts("tc-mes", rowsBase.map(r => r.mes), "Todos");
+  tcOpts("tc-fu", TC.venta.map(r => r.fu), "Todas");
+  const det = `style="color:var(--muted);font-size:11.5px"`;
+  const izq = `style="text-align:left"`;
+  const der = `style="text-align:right"`;
+  if(tcTab === "C"){
+    const cols = [{t:"Contrato / entrega",izq:1},{t:"Proveedor",izq:1},{t:"Destinos",izq:1},{t:"Tn"},{t:"P.compra $/tn"},{t:"P.compra USD"},
+      {t:"P.venta $/tn"},{t:"P.venta USD"},{t:"Dif USD/tn"},{t:"Com.compra $"},{t:"% com C"},{t:"Sellado C $"},{t:"% sell C"},
+      {t:"Com.venta $"},{t:"% com V"},{t:"Sell+otros V $"},{t:"% V"}];
+    head.innerHTML = tcTh(cols);
+    const rows = TC.compra.filter(tcPasa);
+    const G = {}; rows.forEach(r => (G[r.cto || "(sin contrato)"] = G[r.cto || "(sin contrato)"] || []).push(r));
+    const gAgg = cto => {
+      const g = G[cto];
+      const tn = tcSum(g, r => r.tn), imp = tcSum(g, r => r.tn * r.pc);
+      const impU = tcSum(g, r => r.tn * (r.pc_usd || 0)), tnU = tcSum(g, r => r.pc_usd ? r.tn : 0);
+      const cv = g.filter(r => r.v), tnV = tcSum(cv, r => r.tn);
+      const impV = tcSum(cv, r => r.tn * r.v.pv), impVU = tcSum(cv, r => r.tn * (r.v.pv_usd || 0));
+      const comC = tcSum(g, r => r.com), selC = tcSum(g, r => r.sel);
+      const comV = tcSum(cv, r => r.v.tn ? r.v.com * (r.tn / r.v.tn) : 0);
+      const selV = tcSum(cv, r => r.v.tn ? (r.v.sel + r.v.otros) * (r.tn / r.v.tn) : 0);
+      return {g, tn, imp, impU, tnU, cv, tnV, impV, impVU, comC, selC, comV, selV};
+    };
+    const gVals = cto => { const a = gAgg(cto); return [cto, a.g[0].prov || "", "", a.tn, a.imp / (a.tn || 1), a.tnU ? a.impU / a.tnU : 0,
+      a.cv.length ? a.impV / a.tnV : 0, a.cv.length ? a.impVU / a.tnV : 0, a.cv.length && a.tnU ? a.impVU / a.tnV - a.impU / a.tnU : 0,
+      a.comC, a.comC / (a.imp || 1), a.selC, a.selC / (a.imp || 1), a.comV, a.comV / (a.impV || 1), a.selV, a.selV / (a.impV || 1)]; };
+    let out = "";
+    tcOrd(Object.keys(G).sort(), gVals).forEach(cto => {
+      const a = gAgg(cto), ab = tcAbiertos.has(cto);
+      const dests = [...new Set(a.g.map(r => r.v ? r.v.dest : r.dest).filter(Boolean))];
+      out += `<tr class="tc-grp" data-cto="${escapeHtml(cto)}" style="cursor:pointer;font-weight:700;background:var(--bg2)">
+        <td ${izq}>${ab ? "▾" : "▸"} ${escapeHtml(cto)} <span style="font-weight:400;color:var(--muted)">(${a.g.length})</span></td>
+        <td ${izq}>${escapeHtml(a.g[0].prov || "")}</td><td ${izq}>${escapeHtml(dests.slice(0, 2).join(" · "))}${dests.length > 2 ? " +" + (dests.length - 2) : ""}</td>
+        <td ${der}>${tcFmt(a.tn, 1)}</td><td ${der}>${tcFmt(a.imp / (a.tn || 1))}</td><td ${der}><b>${tcFmt(a.tnU ? a.impU / a.tnU : null, 2)}</b></td>
+        <td ${der}>${a.cv.length ? tcFmt(a.impV / a.tnV) : "—"}</td><td ${der}><b>${a.cv.length ? tcFmt(a.impVU / a.tnV, 2) : "—"}</b></td>
+        <td style="text-align:right;color:${(a.impVU / a.tnV - a.impU / a.tnU) >= 0 ? 'var(--green)' : 'var(--red)'}">${a.cv.length && a.tnU ? tcFmt(a.impVU / a.tnV - a.impU / a.tnU, 2) : "—"}</td>
+        <td ${der}>${tcFmt(a.comC)}</td><td ${der}>${tcPct(a.comC / (a.imp || 1))}</td><td ${der}>${tcFmt(a.selC)}</td><td ${der}>${tcPct(a.selC / (a.imp || 1))}</td>
+        <td ${der}>${a.cv.length ? tcFmt(a.comV) : "—"}</td><td ${der}>${a.cv.length ? tcPct(a.comV / a.impV) : "—"}</td>
+        <td ${der}>${a.cv.length ? tcFmt(a.selV) : "—"}</td><td ${der}>${a.cv.length ? tcPct(a.selV / a.impV) : "—"}</td></tr>`;
+      if(ab) a.g.slice().sort((x, y) => (x.ffij || x.fecha || "").localeCompare(y.ffij || y.fecha || "")).forEach(r => {
+        const v = r.v, sh = v && v.tn ? r.tn / v.tn : 0;
+        out += `<tr ${det}><td style="text-align:left;padding-left:22px;color:var(--muted)">${escapeHtml(r.liq)}${r.tn < 0 ? ' <span style="color:var(--red)">(reversa)</span>' : ''} · ${escapeHtml(r.ffij || r.fecha || "")} · ${escapeHtml(r.ctg || "")}</td>
+          <td ${izq}>${escapeHtml(r.prov || "")}</td><td ${izq}>${escapeHtml(v ? v.dest : (r.dest || ""))}${v ? " · " + escapeHtml(v.org || "") : ""}</td>
+          <td ${der}>${tcFmt(r.tn, 2)}</td><td ${der}>${tcFmt(r.pc)}</td><td ${der}><b>${tcFmt(r.pc_usd, 2)}</b></td>
+          <td ${der}>${v ? tcFmt(v.pv) : "—"}</td><td ${der}><b>${v ? tcFmt(v.pv_usd, 2) : "—"}</b></td>
+          <td style="text-align:right;color:${v && (v.pv_usd - r.pc_usd) >= 0 ? 'var(--green)' : 'var(--red)'}">${v && r.pc_usd ? tcFmt(v.pv_usd - r.pc_usd, 2) : "—"}</td>
+          <td ${der}>${tcFmt(r.com)}</td><td ${der}>${tcPct(r.com / (r.tn * r.pc))}</td><td ${der}>${tcFmt(r.sel)}</td><td ${der}>${tcPct(r.sel / (r.tn * r.pc))}</td>
+          <td ${der}>${v ? tcFmt(v.com * sh) : "—"}</td><td ${der}>${v ? tcPct(v.com / (v.tn * v.pv)) : "—"}</td>
+          <td ${der}>${v ? tcFmt((v.sel + v.otros) * sh) : "—"}</td><td ${der}>${v ? tcPct((v.sel + v.otros) / (v.tn * v.pv)) : "—"}</td></tr>`;
+      });
+    });
+    Object.entries(TC.convenio || {}).forEach(([cto, c]) => {
+      const fCto = (document.getElementById("tc-cto") || {value: ""}).value;
+      if(fCto && cto !== fCto) return;
+      out += `<tr style="color:var(--muted);font-style:italic;background:var(--bg2)"><td ${izq}>${escapeHtml(cto)}</td>
+        <td ${izq}>${escapeHtml(c.org || "")}</td><td ${izq}>convenio / préstamo de origen — sin liq de granos</td>
+        <td ${der}>${tcFmt(c.tn, 1)}</td><td ${der}>${String(c.moneda || "").toUpperCase().includes("DOLAR") ? "—" : tcFmt(c.precio)}</td>
+        <td ${der}>${c.precio > 1.01 ? (String(c.moneda || "").toUpperCase().includes("DOLAR") ? tcFmt(c.precio, 2) : "—") : "$1 simbólico"}</td>
+        <td colspan="11"></td></tr>`;
+    });
+    body.innerHTML = out;
+    const tnT = tcSum(rows, r => r.tn), impT = tcSum(rows, r => r.tn * r.pc);
+    const impUT = tcSum(rows, r => r.tn * (r.pc_usd || 0)), tnUT = tcSum(rows, r => r.pc_usd ? r.tn : 0);
+    const cvT = rows.filter(r => r.v), tnVT = tcSum(cvT, r => r.tn);
+    const impVT = tcSum(cvT, r => r.tn * r.v.pv), impVUT = tcSum(cvT, r => r.tn * (r.v.pv_usd || 0));
+    const comCT = tcSum(rows, r => r.com), selCT = tcSum(rows, r => r.sel);
+    foot.innerHTML = `<tr style="font-weight:800"><td ${izq} colspan="3">TOTAL (filtro aplicado)</td>
+      <td ${der}>${tcFmt(tnT, 1)}</td><td ${der}>${tcFmt(impT / (tnT || 1))}</td><td ${der}>${tcFmt(tnUT ? impUT / tnUT : null, 2)}</td>
+      <td ${der}>${cvT.length ? tcFmt(impVT / tnVT) : "—"}</td><td ${der}>${cvT.length ? tcFmt(impVUT / tnVT, 2) : "—"}</td>
+      <td ${der}>${cvT.length ? tcFmt(impVUT / tnVT - impUT / tnUT, 2) : "—"}</td>
+      <td ${der}>${tcFmt(comCT)}</td><td ${der}>${tcPct(comCT / (impT || 1))}</td><td ${der}>${tcFmt(selCT)}</td><td ${der}>${tcPct(selCT / (impT || 1))}</td><td colspan="4"></td></tr>`;
+    document.getElementById("tc-meta").textContent = `${Object.keys(G).length} contratos · ${rows.length} camiones`;
+    cards.innerHTML = tcCard("Camiones", tcFmt(rows.length), "compra 25/26") + tcCard("Tn compradas", tcFmt(tnT, 1), "netas de reversas")
+      + tcCard("P. compra pond.", "USD " + tcFmt(tnUT ? impUT / tnUT : null, 2), tcFmt(impT / (tnT || 1)) + " $/tn")
+      + tcCard("Cruzadas c/venta", tcFmt(tnVT, 1) + " tn", tcFmt(cvT.length) + " camiones")
+      + tcCard("P. venta pond. (cruz.)", cvT.length ? "USD " + tcFmt(impVUT / tnVT, 2) : "—", cvT.length ? tcFmt(impVT / tnVT) + " $/tn" : "")
+      + tcCard("Comisión compra", tcPct(comCT / (impT || 1)), "$ " + tcFmt(comCT)) + tcCard("Sellado compra", tcPct(selCT / (impT || 1)), "$ " + tcFmt(selCT));
+  } else if(tcTab === "V"){
+    const cols = [{t:"Contrato / entrega",izq:1},{t:"Comprador",izq:1},{t:"Destinos",izq:1},{t:"Tn"},{t:"P.venta $/tn"},{t:"P.venta USD"},
+      {t:"Comisión $"},{t:"% com"},{t:"Sellado $"},{t:"% sell"},{t:"Otros $"},{t:"% total gastos"}];
+    head.innerHTML = tcTh(cols);
+    const rows = TCV.filter(tcPasa);
+    const G = {}; rows.forEach(r => (G[r.cto || "(sin contrato)"] = G[r.cto || "(sin contrato)"] || []).push(r));
+    const gVals = cto => { const g = G[cto]; const tn = tcSum(g, r => r.tn), imp = tcSum(g, r => r.tn * r.pv);
+      const impU = tcSum(g, r => r.tn * (r.pv_usd || 0)), tnU = tcSum(g, r => r.pv_usd ? r.tn : 0);
+      const com = tcSum(g, r => r.com), sel = tcSum(g, r => r.sel), otr = tcSum(g, r => r.otros);
+      return [cto, g[0].org || "", "", tn, imp / (tn || 1), tnU ? impU / tnU : 0, com, com / (imp || 1), sel, sel / (imp || 1), otr, (com + sel + otr) / (imp || 1)]; };
+    let out = "";
+    tcOrd(Object.keys(G).sort(), gVals).forEach(cto => {
+      const g = G[cto], ab = tcAbiertos.has(cto);
+      const v0 = gVals(cto);
+      const dests = [...new Set(g.map(r => r.dest).filter(Boolean))];
+      out += `<tr class="tc-grp" data-cto="${escapeHtml(cto)}" style="cursor:pointer;font-weight:700;background:var(--bg2)">
+        <td ${izq}>${ab ? "▾" : "▸"} ${escapeHtml(cto)} <span style="font-weight:400;color:var(--muted)">(${g.length})</span></td>
+        <td ${izq}>${escapeHtml(g[0].org || "")}</td><td ${izq}>${escapeHtml(dests.slice(0, 2).join(" · "))}${dests.length > 2 ? " +" + (dests.length - 2) : ""}</td>
+        <td ${der}>${tcFmt(v0[3], 1)}</td><td ${der}>${tcFmt(v0[4])}</td><td ${der}><b>${tcFmt(v0[5], 2)}</b></td>
+        <td ${der}>${tcFmt(v0[6])}</td><td ${der}>${tcPct(v0[7])}</td><td ${der}>${tcFmt(v0[8])}</td><td ${der}>${tcPct(v0[9])}</td>
+        <td ${der}>${tcFmt(v0[10])}</td><td ${der}>${tcPct(v0[11])}</td></tr>`;
+      if(ab) g.slice().sort((x, y) => (x.ffij || x.fecha || "").localeCompare(y.ffij || y.fecha || "")).forEach(r => {
+        const impr = r.tn * r.pv;
+        out += `<tr ${det}><td style="text-align:left;padding-left:22px;color:var(--muted)">${escapeHtml(r.liq)} · ${escapeHtml(r.ffij || r.fecha || "")} · ${escapeHtml(r.ctg || "")}</td>
+          <td ${izq}>${escapeHtml(r.org || "")}</td><td ${izq}>${escapeHtml(r.dest || "")} <span style="color:var(--muted)">(${escapeHtml(r.fu)})</span></td>
+          <td ${der}>${tcFmt(r.tn, 2)}</td><td ${der}>${tcFmt(r.pv)}</td><td ${der}><b>${tcFmt(r.pv_usd, 2)}</b></td>
+          <td ${der}>${tcFmt(r.com)}</td><td ${der}>${tcPct(r.com / impr)}</td><td ${der}>${tcFmt(r.sel)}</td><td ${der}>${tcPct(r.sel / impr)}</td>
+          <td ${der}>${tcFmt(r.otros)}</td><td ${der}>${tcPct((r.com + r.sel + r.otros) / impr)}</td></tr>`;
+      });
+    });
+    body.innerHTML = out;
+    const tnT = tcSum(rows, r => r.tn), impT = tcSum(rows, r => r.tn * r.pv);
+    const impUT = tcSum(rows, r => r.tn * (r.pv_usd || 0)), tnUT = tcSum(rows, r => r.pv_usd ? r.tn : 0);
+    const comT = tcSum(rows, r => r.com), selT = tcSum(rows, r => r.sel), otrT = tcSum(rows, r => r.otros);
+    foot.innerHTML = `<tr style="font-weight:800"><td ${izq} colspan="3">TOTAL (filtro aplicado)</td>
+      <td ${der}>${tcFmt(tnT, 1)}</td><td ${der}>${tcFmt(impT / (tnT || 1))}</td><td ${der}>${tcFmt(tnUT ? impUT / tnUT : null, 2)}</td>
+      <td ${der}>${tcFmt(comT)}</td><td ${der}>${tcPct(comT / (impT || 1))}</td><td ${der}>${tcFmt(selT)}</td><td ${der}>${tcPct(selT / (impT || 1))}</td>
+      <td ${der}>${tcFmt(otrT)}</td><td ${der}>${tcPct((comT + selT + otrT) / (impT || 1))}</td></tr>`;
+    document.getElementById("tc-meta").textContent = `${Object.keys(G).length} contratos · ${rows.length} camiones (solo CTG de tus compras)`;
+    cards.innerHTML = tcCard("Camiones", tcFmt(rows.length), "solo CTG de tus compras") + tcCard("Tn vendidas", tcFmt(tnT, 1), "")
+      + tcCard("P. venta pond.", "USD " + tcFmt(tnUT ? impUT / tnUT : null, 2), tcFmt(impT / (tnT || 1)) + " $/tn")
+      + tcCard("Comisión venta", tcPct(comT / (impT || 1)), "$ " + tcFmt(comT)) + tcCard("Sellado venta", tcPct(selT / (impT || 1)), "$ " + tcFmt(selT))
+      + tcCard("Otros gastos", tcPct(otrT / (impT || 1)), "$ " + tcFmt(otrT))
+      + tcCard("Gastos totales", tcPct((comT + selT + otrT) / (impT || 1)), "sobre el precio de venta");
+  } else {
+    const cols = [{t:"CTG",izq:1},{t:"Cto compra",izq:1},{t:"Proveedor",izq:1},{t:"Cto venta",izq:1},{t:"Comprador",izq:1},{t:"Destino",izq:1},{t:"Fecha fij.",izq:1},
+      {t:"Tn compra"},{t:"Tn venta"},{t:"P.compra $/tn"},{t:"P.venta $/tn"},{t:"IMPORTE COMPRA $ (sin gastos)"},{t:"IMPORTE VENTA $ (sin gastos)"},{t:"Dif importe $"},
+      {t:"P.compra USD"},{t:"P.venta USD"},{t:"Dif USD/tn"},{t:"Com.compra $"},{t:"Com.venta $"},{t:"Sell.compra $"},{t:"Sell.venta $"},
+      {t:"Gastos COMPRA $"},{t:"Gastos VENTA $"},{t:"DIF gastos $"},{t:"Dif $/tn"}];
+    head.innerHTML = tcTh(cols);
+    const xVals = r => [r.ctg, r.cto, r.prov || "", r.ctov || "", r.org || "", r.dest || "", r.ffij || "", r.tn, r.tnv, r.pc, r.pv,
+      r.impC, r.impV, r.impV - r.impC, r.pc_usd || 0, r.pv_usd || 0, (r.pv_usd || 0) - (r.pc_usd || 0),
+      r.comC, r.comV, r.selC, r.selV, r.gasC, r.gasV, r.gasC - r.gasV, (r.gasC - r.gasV) / (r.tn || 1)];
+    let rows = TCX.filter(tcPasa).sort((a, b) => (a.cto + a.ffij).localeCompare(b.cto + b.ffij));
+    rows = tcOrd(rows, xVals);
+    body.innerHTML = rows.map(r => {
+      const dg = r.gasC - r.gasV, di = r.impV - r.impC;
+      return `<tr ${det}><td ${izq}>${escapeHtml(r.ctg)}</td><td ${izq}>${escapeHtml(r.cto)}</td><td ${izq}>${escapeHtml(r.prov || "")}</td>
+        <td ${izq}>${escapeHtml(r.ctov || "")}</td><td ${izq}>${escapeHtml(r.org || "")}</td><td ${izq}>${escapeHtml(r.dest || "")}</td><td ${izq}>${escapeHtml(r.ffij || "")}</td>
+        <td ${der}>${tcFmt(r.tn, 2)}</td><td ${der}>${tcFmt(r.tnv, 2)}</td><td ${der}>${tcFmt(r.pc, 2)}</td><td ${der}>${tcFmt(r.pv, 2)}</td>
+        <td ${der}><b>${tcFmt(r.impC, 2)}</b></td><td ${der}><b>${tcFmt(r.impV, 2)}</b></td>
+        <td style="text-align:right;color:${di >= 0 ? 'var(--green)' : 'var(--red)'}">${tcFmt(di, 2)}</td>
+        <td ${der}><b>${tcFmt(r.pc_usd, 2)}</b></td><td ${der}><b>${tcFmt(r.pv_usd, 2)}</b></td>
+        <td style="text-align:right;color:${(r.pv_usd - r.pc_usd) >= 0 ? 'var(--green)' : 'var(--red)'}">${r.pc_usd && r.pv_usd ? tcFmt(r.pv_usd - r.pc_usd, 2) : "—"}</td>
+        <td ${der}>${tcFmt(r.comC)}</td><td ${der}>${tcFmt(r.comV)}</td><td ${der}>${tcFmt(r.selC)}</td><td ${der}>${tcFmt(r.selV)}</td>
+        <td ${der}>${tcFmt(r.gasC)}</td><td ${der}>${tcFmt(r.gasV)}</td>
+        <td style="text-align:right;font-weight:700;color:${dg >= 0 ? 'var(--green)' : 'var(--red)'}">${tcFmt(dg)}</td>
+        <td style="text-align:right;color:${dg >= 0 ? 'var(--green)' : 'var(--red)'}">${tcFmt(dg / (r.tn || 1))}</td></tr>`;
+    }).join("");
+    const tn = tcSum(rows, r => r.tn), tnv = tcSum(rows, r => r.tnv), impC = tcSum(rows, r => r.impC), impV = tcSum(rows, r => r.impV);
+    const usdC = tcSum(rows, r => r.tn * (r.pc_usd || 0)) / (tn || 1), usdV = tcSum(rows, r => r.tn * (r.pv_usd || 0)) / (tn || 1);
+    const comC = tcSum(rows, r => r.comC), comV = tcSum(rows, r => r.comV), selC = tcSum(rows, r => r.selC), selV = tcSum(rows, r => r.selV), otrV = tcSum(rows, r => r.otrV);
+    const gasC = tcSum(rows, r => r.gasC), gasV = tcSum(rows, r => r.gasV), dg = gasC - gasV, di = impV - impC;
+    foot.innerHTML = `<tr style="font-weight:800"><td ${izq} colspan="7">TOTAL · ${rows.length} camiones</td>
+      <td ${der}>${tcFmt(tn, 1)}</td><td ${der}>${tcFmt(tnv, 1)}</td><td ${der}>${tcFmt(impC / (tn || 1))}</td><td ${der}>${tcFmt(impV / (tnv || 1))}</td>
+      <td ${der}>${tcFmt(impC)}</td><td ${der}>${tcFmt(impV)}</td><td style="text-align:right;color:${di >= 0 ? 'var(--green)' : 'var(--red)'}">${tcFmt(di)}</td>
+      <td ${der}>${tcFmt(usdC, 2)}</td><td ${der}>${tcFmt(usdV, 2)}</td><td ${der}>${tcFmt(usdV - usdC, 2)}</td>
+      <td ${der}>${tcFmt(comC)}</td><td ${der}>${tcFmt(comV)}</td><td ${der}>${tcFmt(selC)}</td><td ${der}>${tcFmt(selV)}</td>
+      <td ${der}>${tcFmt(gasC)}</td><td ${der}>${tcFmt(gasV)}</td><td style="text-align:right;color:${dg >= 0 ? 'var(--green)' : 'var(--red)'}">${tcFmt(dg)}</td>
+      <td ${der}>${tcFmt(dg / (tn || 1))}</td></tr>`;
+    document.getElementById("tc-meta").textContent = `${rows.length} camiones cruzados por CTG`;
+    cards.innerHTML = tcCard("Camiones cruzados", tcFmt(rows.length), tcFmt(tn, 1) + " tn compra · " + tcFmt(tnv, 1) + " tn venta")
+      + tcCard("IMPORTE COMPRA (sin gastos)", "$ " + tcFmt(impC), "tn × precio exacto · USD pond. " + tcFmt(usdC, 2))
+      + tcCard("IMPORTE VENTA (sin gastos)", "$ " + tcFmt(impV), "tn × precio exacto · USD pond. " + tcFmt(usdV, 2))
+      + tcCard("DIF importe", "$ " + tcFmt(di), "venta − compra, mercadería pura")
+      + tcCard("Gastos COMPRA (cobrás)", "$ " + tcFmt(gasC), "comisión " + tcFmt(comC) + " + sellado " + tcFmt(selC))
+      + tcCard("Gastos VENTA (pagás)", "$ " + tcFmt(gasV), "comisión " + tcFmt(comV) + " + sellado " + tcFmt(selV) + " + otros " + tcFmt(otrV))
+      + tcCard("DIFERENCIA gastos", "$ " + tcFmt(dg), tcFmt(dg / (tn || 1)) + " $/tn a " + (dg >= 0 ? "FAVOR" : "PÉRDIDA"))
+      + tcCard("NEGOCIO COMPLETO", "$ " + tcFmt(di + dg), "mercadería + comisiones");
+  }
+}
+function cc2Render(){ try{ tcRender(); }catch(e){ console.warn("cierre clientes:", e); } }
+document.addEventListener("click", ev => {
+  const tb = ev.target.closest(".tc-tab");
+  if(tb){ tcTab = tb.dataset.tc; tcAbiertos = new Set(); tcRender(); return; }
+  const th = ev.target.closest("#tc-head th[data-tci]");
+  if(th){ const i = +th.dataset.tci; const s = tcSort[tcTab];
+    tcSort[tcTab] = s && s.i === i ? (s.d > 0 ? {i, d: -1} : null) : {i, d: 1}; tcRender(); return; }
+  const gr = ev.target.closest("tr.tc-grp");
+  if(gr){ const c = gr.dataset.cto; tcAbiertos.has(c) ? tcAbiertos.delete(c) : tcAbiertos.add(c); tcRender(); return; }
+  if(ev.target.id === "tc-exp"){ (tcTab === "C" ? TC.compra : TCV).forEach(r => tcAbiertos.add(r.cto || "(sin contrato)")); tcRender(); return; }
+  if(ev.target.id === "tc-col"){ tcAbiertos = new Set(); tcRender(); return; }
+  if(ev.target.id === "tc-clr"){ ["tc-cto","tc-prov","tc-dest","tc-mes","tc-fu","tc-txt"].forEach(i => { const el = document.getElementById(i); if(el) el.value = ""; }); tcRender(); return; }
+});
+["tc-cto","tc-prov","tc-dest","tc-mes","tc-fu"].forEach(i => { const el = document.getElementById(i); if(el) el.addEventListener("change", tcRender); });
+(() => { const el = document.getElementById("tc-txt"); if(el) el.addEventListener("input", tcRender); })();
+try{ tcRender(); }catch(e){ console.warn("cierre clientes:", e); }
 
 function cxInitFilters(){
   const ops = cxBuildOps();
@@ -13103,6 +13319,19 @@ def main() -> int:
         print(f"[.] No existe {pagos_path}, modulo de pagos arranca vacio")
         pagos_iniciales = []
 
+    # Cruce trigo 25/26 camion por camion (Cierre de Clientes): generado offline desde las
+    # liquidaciones cosechadas de la API + TC BNA divisa vendedor por fecha de fijacion.
+    # Se regenera con scratchpad/completar_v4.py + copia a data/tablero_trigo_cruce.json
+    tc_path = Path(__file__).resolve().parent / "data" / "tablero_trigo_cruce.json"
+    trigo_cruce_data = {"compra": [], "venta": [], "convenio": {}}
+    if tc_path.exists():
+        try:
+            trigo_cruce_data = json.loads(tc_path.read_text(encoding="utf-8"))
+            print(f"[+] Cruce trigo 25/26: {len(trigo_cruce_data.get('compra', []))} camiones compra · "
+                  f"{len(trigo_cruce_data.get('venta', []))} venta")
+        except Exception as e:
+            print(f"[!] Error leyendo {tc_path}: {e}")
+
     # Cosechado: total trasladado desde el campo a depositos
     # Filtro: subtipos 'Traslado CPE Agronasaja' (TRAS-VTA-GRANO-AS = granos) +
     #         'Recepción de Semilla PROPIA' (REC-SEM-PPIO = semilla propia)
@@ -13363,6 +13592,7 @@ def main() -> int:
         "cosechado":       cosechado,
         "demsup_soja":     demsup_soja_data,
         "demsup_trigo":    demsup_trigo_data,
+        "trigo_cruce":     trigo_cruce_data,
     }
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
