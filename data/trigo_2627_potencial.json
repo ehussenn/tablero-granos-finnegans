@@ -1,478 +1,484 @@
 {
  "fuente": "Reporte Semilla-Consumo.xlsx (usuario, 18/08/2026)",
- "producto": "Grano Trigo Pan",
- "pendcos": 7805.0,
- "semilla_tn": 4721.2,
- "consumo_tn": 3083.8,
- "detalle": [
-  {
-   "campo": "DOYLE",
-   "lote": "LOTE UNICO",
-   "cultivo": "TRIGO DM TIPA (Consumo)",
-   "tn": 821.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ISABEL",
-   "lote": "1",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 357.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN BERNARDO",
-   "lote": "T1",
-   "cultivo": "TRIGO DM CATALPA (Consumo)",
-   "tn": 340.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "BARADERO",
-   "lote": "LOTE 1",
-   "cultivo": "TRIGO DM TIPA (Consumo)",
-   "tn": 337.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA SARA",
-   "lote": "13 Y 14",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 315.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JOSE",
-   "lote": "1",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 270.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LOS LAURELES",
-   "lote": "LOTE UNICO",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 252.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA EMILIA",
-   "lote": "10",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 238.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA SARA",
-   "lote": "13 Y 14",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 225.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON DAVID",
-   "lote": "LOTE 2",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 202.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JORGE PERGAMINO",
-   "lote": "LOTE 4",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 202.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON DAVID",
-   "lote": "LOTE 3",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 189.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA SARA",
-   "lote": "5",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 173.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ENSENADA",
-   "lote": "12",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 170.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JORGE PERGAMINO",
-   "lote": "LOTE 5",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 166.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JOSE",
-   "lote": "2",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 162.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "FRAILE",
-   "lote": "UNICO",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 153.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JORGE PERGAMINO",
-   "lote": "LOTE 6",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 148.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN RAMON",
-   "lote": "11",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 144.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN RAMON",
-   "lote": "1 Y 2 BC",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 140.4,
-   "rinde": 4500
-  },
-  {
-   "campo": "RAIES",
-   "lote": "LOTE 12",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 128.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "8",
-   "cultivo": "TRIGO DM AROMO (Consumo)",
-   "tn": 126.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA VICTORIA",
-   "lote": "41+33",
-   "cultivo": "TRIGO DM AROMO (Semilla)",
-   "tn": 116.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON VICENTE",
-   "lote": "2",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 115.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "SANTA TERESA",
-   "lote": "UNICO",
-   "cultivo": "TRIGO DM PEHUEN (Consumo)",
-   "tn": 112.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA VICTORIA",
-   "lote": "28+39",
-   "cultivo": "TRIGO DM TIPA (Consumo)",
-   "tn": 105.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "RAIES",
-   "lote": "LOTE 1",
-   "cultivo": "TRIGO DM ACACIA (Semilla)",
-   "tn": 103.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "BARADERO",
-   "lote": "RIEGO",
-   "cultivo": "TRIGO DM CATALPA (Consumo)",
-   "tn": 102.4,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON VICENTE",
-   "lote": "1B",
-   "cultivo": "TRIGO DM EUCALIPTO (Semilla)",
-   "tn": 100.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA EMILIA",
-   "lote": "9",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 99.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON LUIS",
-   "lote": "UNICO",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 85.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "4",
-   "cultivo": "TRIGO DM AROMO (Consumo)",
-   "tn": 85.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "5",
-   "cultivo": "TRIGO DM AROMO (Semilla)",
-   "tn": 76.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN RAMON",
-   "lote": "1 Y 2 BC",
-   "cultivo": "TRIGO DM EUCALIPTO (Semilla)",
-   "tn": 75.6,
-   "rinde": 4500
-  },
-  {
-   "campo": "EL GATO",
-   "lote": "6 Y 7",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 74.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ENSENADA",
-   "lote": "13",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 69.1,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON EUSEBIO",
-   "lote": "LOTE 9",
-   "cultivo": "TRIGO DM ACACIO (Semilla)",
-   "tn": 63.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN BERNARDO",
-   "lote": "T2",
-   "cultivo": "TRIGO DM CATALPA (Consumo)",
-   "tn": 62.1,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "2 Y 3",
-   "cultivo": "TRIGO DM TIPA (Consumo)",
-   "tn": 60.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA MERCED",
-   "lote": "DIOGENES GRANDE",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 60.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "RASUK",
-   "lote": "LOTE ENSAYOS",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 58.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "RAIES",
-   "lote": "LOTE 3",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 58.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA EMILIA",
-   "lote": "8",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 49.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN LUIS DE LOS ARROYOS",
-   "lote": "LOTE ENTRADA IZQUIERDA",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 49.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "DON EUSEBIO",
-   "lote": "LOTE 7",
-   "cultivo": "TRIGO DM ACACIO (Semilla)",
-   "tn": 48.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN RAMON",
-   "lote": "2A",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 48.6,
-   "rinde": 4500
-  },
-  {
-   "campo": "RAIES",
-   "lote": "LOTE 4",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 47.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA PALOMA",
-   "lote": "12",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 46.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "RASUK",
-   "lote": "TRIANGULO FONDO",
-   "cultivo": "TRIGO DM EUCALIPTO (Semilla)",
-   "tn": 45.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SEBASTIAN CRESPO",
-   "lote": "2 BUENO",
-   "cultivo": "TRIGO DM CATALPA (Semilla)",
-   "tn": 45.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "7",
-   "cultivo": "TRIGO DM AROMO (Consumo)",
-   "tn": 45.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA MERCED",
-   "lote": "ARROYO GRANDE",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 45.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ENSENADA",
-   "lote": "14",
-   "cultivo": "TRIGO DM ARAUCARIA (Semilla)",
-   "tn": 41.6,
-   "rinde": 4500
-  },
-  {
-   "campo": "RASUK",
-   "lote": "TRIANGULO RUTA",
-   "cultivo": "TRIGO DM EUCALIPTO (Semilla)",
-   "tn": 40.5,
-   "rinde": 4500
-  },
-  {
-   "campo": "SEBASTIAN CRESPO",
-   "lote": "1",
-   "cultivo": "TRIGO DM CATALPA (Semilla)",
-   "tn": 37.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "RAIES",
-   "lote": "LOTE 2",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 36.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "SAN JORGE",
-   "lote": "LOTE 2 A",
-   "cultivo": "TRIGO DM PEHUEN (Consumo)",
-   "tn": 32.4,
-   "rinde": 4500
-  },
-  {
-   "campo": "AYARZA",
-   "lote": "1A",
-   "cultivo": "TRIGO DM TIPA (Semilla)",
-   "tn": 31.7,
-   "rinde": 4500
-  },
-  {
-   "campo": "EL GATO",
-   "lote": "1",
-   "cultivo": "TRIGO DM CASUARINA (Semilla)",
-   "tn": 29.7,
-   "rinde": 4500
-  },
-  {
-   "campo": "POLASTRINI",
-   "lote": "UNICO",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 27.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA MERCED",
-   "lote": "ARROYO CHICO",
-   "cultivo": "TRIGO DM PEHUEN (Consumo)",
-   "tn": 27.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ENSENADA",
-   "lote": "18",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 19.3,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA PALOMA",
-   "lote": "1",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 18.0,
-   "rinde": 4500
-  },
-  {
-   "campo": "EL GATO",
-   "lote": "5",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 16.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "BARADERO",
-   "lote": "SECANO",
-   "cultivo": "TRIGO DM CATALPA (Consumo)",
-   "tn": 11.2,
-   "rinde": 4500
-  },
-  {
-   "campo": "EL GATO",
-   "lote": "2",
-   "cultivo": "TRIGO DM CASUARINA (Consumo)",
-   "tn": 10.8,
-   "rinde": 4500
-  },
-  {
-   "campo": "LA ENSENADA",
-   "lote": "19",
-   "cultivo": "TRIGO DM PEHUEN (Semilla)",
-   "tn": 5.9,
-   "rinde": 4500
+ "productos": {
+  "Grano Trigo Pan": {
+   "pendcos": 3083.8,
+   "detalle": [
+    {
+     "campo": "DOYLE",
+     "lote": "LOTE UNICO",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 821.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN BERNARDO",
+     "lote": "T1",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 340.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "BARADERO",
+     "lote": "LOTE 1",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 337.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA SARA",
+     "lote": "13 Y 14",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 315.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA EMILIA",
+     "lote": "10",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 238.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "8",
+     "cultivo": "TRIGO DM AROMO",
+     "tn": 126.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "SANTA TERESA",
+     "lote": "UNICO",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 112.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA VICTORIA",
+     "lote": "28+39",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 105.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "BARADERO",
+     "lote": "RIEGO",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 102.4,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA EMILIA",
+     "lote": "9",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 99.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "4",
+     "cultivo": "TRIGO DM AROMO",
+     "tn": 85.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN BERNARDO",
+     "lote": "T2",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 62.1,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "2 Y 3",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 60.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "RASUK",
+     "lote": "LOTE ENSAYOS",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 58.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA EMILIA",
+     "lote": "8",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 49.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "7",
+     "cultivo": "TRIGO DM AROMO",
+     "tn": 45.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JORGE",
+     "lote": "LOTE 2 A",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 32.4,
+     "rinde": 4500
+    },
+    {
+     "campo": "POLASTRINI",
+     "lote": "UNICO",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 27.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA MERCED",
+     "lote": "ARROYO CHICO",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 27.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "EL GATO",
+     "lote": "5",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 16.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "BARADERO",
+     "lote": "SECANO",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 11.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "EL GATO",
+     "lote": "2",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 10.8,
+     "rinde": 4500
+    }
+   ]
+  },
+  "SEMILLA TRIGO": {
+   "pendcos": 4721.2,
+   "detalle": [
+    {
+     "campo": "LA ISABEL",
+     "lote": "1",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 357.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JOSE",
+     "lote": "1",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 270.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LOS LAURELES",
+     "lote": "LOTE UNICO",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 252.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA SARA",
+     "lote": "13 Y 14",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 225.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON DAVID",
+     "lote": "LOTE 2",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 202.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JORGE PERGAMINO",
+     "lote": "LOTE 4",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 202.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON DAVID",
+     "lote": "LOTE 3",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 189.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA SARA",
+     "lote": "5",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 173.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA ENSENADA",
+     "lote": "12",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 170.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JORGE PERGAMINO",
+     "lote": "LOTE 5",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 166.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JOSE",
+     "lote": "2",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 162.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "FRAILE",
+     "lote": "UNICO",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 153.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN JORGE PERGAMINO",
+     "lote": "LOTE 6",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 148.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN RAMON",
+     "lote": "11",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 144.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN RAMON",
+     "lote": "1 Y 2 BC",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 140.4,
+     "rinde": 4500
+    },
+    {
+     "campo": "RAIES",
+     "lote": "LOTE 12",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 128.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA VICTORIA",
+     "lote": "41+33",
+     "cultivo": "TRIGO DM AROMO",
+     "tn": 116.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON VICENTE",
+     "lote": "2",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 115.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "RAIES",
+     "lote": "LOTE 1",
+     "cultivo": "TRIGO DM ACACIA",
+     "tn": 103.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON VICENTE",
+     "lote": "1B",
+     "cultivo": "TRIGO DM EUCALIPTO",
+     "tn": 100.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON LUIS",
+     "lote": "UNICO",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 85.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "5",
+     "cultivo": "TRIGO DM AROMO",
+     "tn": 76.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN RAMON",
+     "lote": "1 Y 2 BC",
+     "cultivo": "TRIGO DM EUCALIPTO",
+     "tn": 75.6,
+     "rinde": 4500
+    },
+    {
+     "campo": "EL GATO",
+     "lote": "6 Y 7",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 74.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA ENSENADA",
+     "lote": "13",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 69.1,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON EUSEBIO",
+     "lote": "LOTE 9",
+     "cultivo": "TRIGO DM ACACIO",
+     "tn": 63.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA MERCED",
+     "lote": "DIOGENES GRANDE",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 60.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "RAIES",
+     "lote": "LOTE 3",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 58.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN LUIS DE LOS ARROYOS",
+     "lote": "LOTE ENTRADA IZQUIERDA",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 49.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "DON EUSEBIO",
+     "lote": "LOTE 7",
+     "cultivo": "TRIGO DM ACACIO",
+     "tn": 48.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "SAN RAMON",
+     "lote": "2A",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 48.6,
+     "rinde": 4500
+    },
+    {
+     "campo": "RAIES",
+     "lote": "LOTE 4",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 47.2,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA PALOMA",
+     "lote": "12",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 46.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "RASUK",
+     "lote": "TRIANGULO FONDO",
+     "cultivo": "TRIGO DM EUCALIPTO",
+     "tn": 45.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "SEBASTIAN CRESPO",
+     "lote": "2 BUENO",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 45.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA MERCED",
+     "lote": "ARROYO GRANDE",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 45.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA ENSENADA",
+     "lote": "14",
+     "cultivo": "TRIGO DM ARAUCARIA",
+     "tn": 41.6,
+     "rinde": 4500
+    },
+    {
+     "campo": "RASUK",
+     "lote": "TRIANGULO RUTA",
+     "cultivo": "TRIGO DM EUCALIPTO",
+     "tn": 40.5,
+     "rinde": 4500
+    },
+    {
+     "campo": "SEBASTIAN CRESPO",
+     "lote": "1",
+     "cultivo": "TRIGO DM CATALPA",
+     "tn": 37.8,
+     "rinde": 4500
+    },
+    {
+     "campo": "RAIES",
+     "lote": "LOTE 2",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 36.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "AYARZA",
+     "lote": "1A",
+     "cultivo": "TRIGO DM TIPA",
+     "tn": 31.7,
+     "rinde": 4500
+    },
+    {
+     "campo": "EL GATO",
+     "lote": "1",
+     "cultivo": "TRIGO DM CASUARINA",
+     "tn": 29.7,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA ENSENADA",
+     "lote": "18",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 19.3,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA PALOMA",
+     "lote": "1",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 18.0,
+     "rinde": 4500
+    },
+    {
+     "campo": "LA ENSENADA",
+     "lote": "19",
+     "cultivo": "TRIGO DM PEHUEN",
+     "tn": 5.9,
+     "rinde": 4500
+    }
+   ]
   }
- ]
+ }
 }

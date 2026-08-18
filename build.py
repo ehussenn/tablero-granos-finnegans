@@ -324,10 +324,12 @@ def fetch_produccion() -> tuple[dict, dict]:
         _tp = _P(__file__).resolve().parent / "data" / "trigo_2627_potencial.json"
         if _tp.exists():
             _t = json.loads(_tp.read_text(encoding="utf-8"))
-            out["CAMPAÑA 26-27"] = {_t["producto"]: {"pendcos": _t["pendcos"]}}
-            det["CAMPAÑA 26-27"] = {_t["producto"]: {"cosechado": [], "pendcos": _t.get("detalle", [])}}
-            print(f"    -> trigo 26/27 (Excel del usuario): {_t['pendcos']:,.1f} tn AGNSJ · "
-                  f"semilla {_t.get('semilla_tn', 0):,.1f} / consumo {_t.get('consumo_tn', 0):,.1f} · {len(_t.get('detalle', []))} lotes")
+            # shape nuevo: {"productos": {"Grano Trigo Pan": {pendcos, detalle}, "SEMILLA TRIGO": {...}}}
+            _prods = _t.get("productos") or {_t.get("producto", "Grano Trigo Pan"): {"pendcos": _t.get("pendcos", 0), "detalle": _t.get("detalle", [])}}
+            out["CAMPAÑA 26-27"] = {p: {"pendcos": v.get("pendcos", 0)} for p, v in _prods.items() if v.get("pendcos", 0) > 0}
+            det["CAMPAÑA 26-27"] = {p: {"cosechado": [], "pendcos": v.get("detalle", [])} for p, v in _prods.items() if v.get("pendcos", 0) > 0}
+            for p, v in _prods.items():
+                print(f"    -> 26/27 (Excel del usuario) {p}: {v.get('pendcos', 0):,.1f} tn · {len(v.get('detalle', []))} lotes")
     except Exception as e:
         print(f"    [!] trigo 26/27 Excel: {e}")
     return out, det
@@ -9189,9 +9191,11 @@ function pnctRender(){
 
   // tabla — sin Fecha / Campaña / Entrega (la campaña ya se filtró antes del zoom);
   // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
+  // Regla del usuario (18/08/2026): en el zoom de COMPRA no mostrar la columna
+  // "Pend. Ingreso" — es dato sucio a limpiar en Finnegans, queda fuera de la vista.
   document.getElementById('pnct-thead').innerHTML = `<tr>
     <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th><th>Campaña</th>
-    <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
+    <th class="num">Ajustada</th><th class="num">Entregada</th>${cp?'':'<th class="num">Pend. Entrega</th>'}<th class="num">Entreg. P/Liq</th>
     <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
     <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
     <th class="num">Liquidada (tn)</th><th class="num">Liq. Anticip. (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
@@ -9224,7 +9228,7 @@ function pnctRender(){
       <td title="${escapeHtml(org)}">${escapeHtml(org.length>34?org.slice(0,34)+'…':org)||'—'}</td>
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
-      <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
+      <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td>${cp?'':`<td class="num" style="font-weight:700">${fmt.num(pen)}</td>`}
       <td class="num" style="font-weight:700;color:#b91c1c">${entPliq?fmt.num(entPliq):'—'}</td>
       <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(fijTn)}</td>
       <td class="num" style="${sinFij>0.05?'color:#B5740E;font-weight:700':''}">${sinFij>0.05?fmt.num(sinFij):'—'}</td>
@@ -9234,10 +9238,10 @@ function pnctRender(){
       <td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
       <td>${cta}</td></tr>`;
   });
-  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="19" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
+  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="${cp?18:19}" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
     <td colspan="4">TOTAL (${rows.length} contratos)</td>
-    <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
+    <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td>${cp?'':`<td class="num">${fmt.num(tPen)}</td>`}
     <td class="num">${fmt.num(tEntPliq)}</td>
     <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
     <td></td><td></td><td></td>
@@ -13630,6 +13634,35 @@ def main() -> int:
     # Producción por campaña/cultivo desde el Portal de Producción de Agronasaja (app pública)
     print(f"\n[+] Bajando Producción (Portal de Producción Agronasaja)...", flush=True)
     produccion_camp, produccion_pend_det = fetch_produccion()
+
+    # Regla del usuario (18/08/2026): en producción 25-26 el COSECHADO de grano es SOLO lo
+    # que salió del campo con CP de Agronasaja (Traslado CPE), y lo que fue del campo a
+    # semilla va aparte en la fila SEMILLA (Recepción de Semilla PROPIA). El total del
+    # portal (p.ej. soja 24.736) mezclaba ambos en la fila de grano.
+    try:
+        sem_propia = {"SEMILLA SOJA": 0.0, "SEMILLA TRIGO": 0.0, "SEMILLA MAIZ": 0.0}
+        for row in traslados_raw:
+            if row.get("TRANSACCIONSUBTIPONOMBRE") != "Recepción de Semilla PROPIA": continue
+            if "25-26" not in str(row.get("COSECHA") or ""): continue
+            gU = str(row.get("GRANO") or "").upper()
+            try: kg = float(row.get("PESONETO") or 0)
+            except: kg = 0.0
+            if "SOJA" in gU: sem_propia["SEMILLA SOJA"] += kg / 1000
+            elif "TRIGO" in gU: sem_propia["SEMILLA TRIGO"] += kg / 1000
+            elif "MAIZ" in gU or "MAÍZ" in gU: sem_propia["SEMILLA MAIZ"] += kg / 1000
+        p25 = produccion_camp.get("CAMPAÑA 25-26") or {}
+        for gr in ("Grano Soja", "Grano Trigo Pan", "Grano Maíz", "Grano Girasol"):
+            if gr in cosechado and cosechado[gr] > 0:
+                ant = (p25.get(gr) or {}).get("cosechado")
+                p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(cosechado[gr], 1)
+                if ant: print(f"    -> {gr}: cosechado portal {ant:,.1f} -> CPE {cosechado[gr]:,.1f} tn (regla usuario)")
+        for sem, tn in sem_propia.items():
+            if tn > 0.5:
+                p25.setdefault(sem, {"pendcos": 0})["cosechado"] = round(tn, 1)
+                print(f"    -> {sem}: cosechado propio (Rec Sem PROPIA) {tn:,.1f} tn")
+        produccion_camp["CAMPAÑA 25-26"] = p25
+    except Exception as e:
+        print(f"    [!] split grano/semilla 25-26: {e}")
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
