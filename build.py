@@ -8253,16 +8253,17 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // COMPRA (auto desde contratos de compra, reporte REST)
   // Cantidad ajustada = entregado + pendiente de entrega (como el "Resumen de Contratos" de Finnegans).
   let compraTot = 0, compraEntr = 0, compraPend = 0;
-  // SEMILLA SOJA/MAIZ/TRIGO/GIRASOL (grano facturado como semilla, CP de Agronasaja):
-  // cuenta como GRANO del cultivo pero SOLO lo entregado — su pendiente y su total
-  // con pendiente NO se computan (regla del usuario).
+  // SEMILLA SOJA/MAIZ/TRIGO/GIRASOL = PRÉSTAMO CP (regla del usuario 18/08/2026):
+  // son CP nuestras que salieron de producción, cumplieron una VENTA, y el contrato de
+  // compra es solo para facturar. Se ven en el detalle de contratos y en la tarjeta
+  // PRÉSTAMO CP, pero NO cuentan en compra, totales ni posición (duplicarían).
   const esSemGranoCpra = pnEsSemillaGrano(producto);
-  opsCompra.forEach(c => {
+  if (!esSemGranoCpra) opsCompra.forEach(c => {
     const ent = Number(c.cantidadentregada) || 0;
-    const pen = esSemGranoCpra ? 0 : pnPendE(c);
+    const pen = pnPendE(c);
     compraEntr += ent;
     compraPend += pen;
-    compraTot  += ent + pen;   // ajustada (para SEMILLA X: solo lo entregado)
+    compraTot  += ent + pen;   // ajustada
   });
 
   // P+C
@@ -9026,14 +9027,14 @@ function pnRender(){
     });
   });
 
-  // Tarjetas de arriba (Posición por Cultivo): el cultivo se muestra SIN los "SEMILLA X"
-  // y cada "SEMILLA X" tiene su tarjeta propia — así se chequea cada camino por separado.
-  // (En la tabla sí suman dentro del cultivo.)
+  // Tarjetas de arriba (Posición por Cultivo): SOJA / MAÍZ / TRIGO / OTROS / PRÉSTAMO CP.
+  // Los "SEMILLA X" (préstamo de CP) ya no suman en compra (pnCalcRow los excluye);
+  // lo que les quede (producción propia) suma dentro de su cultivo.
   const cardTotals = {}, cardOrden = [];
   familias.forEach(fam => {
     (byFamilia[fam] || []).forEach(p => {
       const r = dataPorProd[p]; if(!r) return;
-      const dest = pnEsSemillaGrano(p) ? p.trim().toUpperCase() : fam;
+      const dest = fam;
       if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0}; cardOrden.push(dest); }
       cardTotals[dest].posicion  += r.posicion  || 0;
       cardTotals[dest].ofertaTot += r.ofertaTot || 0;
@@ -9048,7 +9049,7 @@ function pnRender(){
     }
   });
   cardOrden.sort(pnFamOrden);
-  pnRenderCards(cardTotals, cardOrden);
+  pnRenderCards(cardTotals, cardOrden, byFamilia, dataPorProd);
 }
 
 /* ============ DETALLE DE CONTRATOS (pestaña) ============ */
@@ -9316,22 +9317,77 @@ document.getElementById('pnct-volver').addEventListener('click', () => {
 // si entran a la pestaña directo desde el subtab, render con el estado actual
 document.querySelector('.panel[data-panel="posicion"] .subtab[data-sub="pn-ctos"]').addEventListener('click', () => setTimeout(pnctRender, 30));
 
-function pnRenderCards(totalsFam, familias){
+function pnCardHTML(fam, t, extraAttr){
   const cls = {SOJA:"soja", "MAÍZ":"maiz", TRIGO:"trigo", GIRASOL:"girasol", SORGO:"sorgo"};
-  const html = familias.map(fam => {
-    const t = totalsFam[fam];
-    const posicion = t.posicion;
-    const cobertura = t.ofertaTot > 0 ? t.demandaTot / t.ofertaTot : 0;
-    return `<div class="pn-card ${cls[fam] || ''}">
-      <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Posición</span></div>
-      <div class="pos-val ${posicion>=0?'pos':'neg'}">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
-      <div class="of-de"><span>Of ${fmt.num(t.ofertaTot)}</span><span>De ${fmt.num(t.demandaTot)}</span></div>
-      <div class="bar-cobertura"><div style="width:${Math.min(100, cobertura*100)}%"></div></div>
-      <div class="pct">${fmt.pct(cobertura)} cobertura</div>
-    </div>`;
-  }).join("");
+  const posicion = t.posicion;
+  const cobertura = t.ofertaTot > 0 ? t.demandaTot / t.ofertaTot : 0;
+  return `<div class="pn-card ${cls[fam] || ''}" ${extraAttr || ''}>
+    <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Posición</span></div>
+    <div class="pos-val ${posicion>=0?'pos':'neg'}">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
+    <div class="of-de"><span>Of ${fmt.num(t.ofertaTot)}</span><span>De ${fmt.num(t.demandaTot)}</span></div>
+    <div class="bar-cobertura"><div style="width:${Math.min(100, cobertura*100)}%"></div></div>
+    <div class="pct">${fmt.pct(cobertura)} cobertura</div>
+  </div>`;
+}
+function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
+  // Regla del usuario (18/08/2026): tarjetas SOJA / MAÍZ / TRIGO / OTROS / PRÉSTAMO CP.
+  // OTROS agrupa el resto de cultivos (click = desplegar); PRÉSTAMO CP muestra las
+  // cartas de porte prestadas (click = detalle por cultivo y cliente).
+  const MAIN = ["SOJA", "MAÍZ", "TRIGO"];
+  const otras = familias.filter(f => !MAIN.includes(f));
+  let html = MAIN.filter(f => totalsFam[f]).map(f => pnCardHTML(f, totalsFam[f])).join("");
+  const tO = {posicion:0, ofertaTot:0, demandaTot:0};
+  otras.forEach(f => { const t = totalsFam[f]; tO.posicion += t.posicion; tO.ofertaTot += t.ofertaTot; tO.demandaTot += t.demandaTot; });
+  if (otras.length) html += pnCardHTML("OTROS", tO, 'id="pn-card-otros" style="cursor:pointer" title="Click: ver los demás cultivos"');
+  const PCP = PAYLOAD.prestamo_cp || {camiones:0, tn:0, cultivos:{}, clientes:{}};
+  html += `<div class="pn-card" id="pn-card-prestamo" style="cursor:pointer" title="Click: detalle de las CP prestadas">
+    <div class="name"><span>PRÉSTAMO CP</span><span style="font-size:11px;color:var(--muted)">25/26</span></div>
+    <div class="pos-val" style="color:#0e7490">${fmt.int(PCP.camiones)} <span style="font-size:14px;color:var(--muted)">CP</span></div>
+    <div class="of-de"><span>${fmt.num(PCP.tn)} tn</span><span>facturación</span></div>
+    <div class="pct" style="margin-top:14px">cartas de porte prestadas a clientes</div>
+  </div>`;
   document.getElementById("pn-cards").innerHTML = html;
-  document.getElementById("pn-cards-meta").textContent = `${familias.length} cultivos`;
+  // strip de detalle debajo de las tarjetas
+  let det = document.getElementById("pn-cards-det");
+  if(!det){
+    det = document.createElement("div"); det.id = "pn-cards-det"; det.style.cssText = "display:none;margin:10px 0";
+    document.getElementById("pn-cards").after(det);
+  }
+  det.style.display = "none";
+  const otrosCard = document.getElementById("pn-card-otros");
+  if (otrosCard) otrosCard.onclick = () => {
+    if (det.dataset.que === "otros" && det.style.display !== "none"){ det.style.display = "none"; return; }
+    det.dataset.que = "otros";
+    // abrir los PRODUCTOS que componen "otros" (girasol, sorgo, arveja, semillas, etc.)
+    let cardsProd = "";
+    otras.forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
+      const r = dataPorProd && dataPorProd[p]; if(!r) return;
+      if(!((r.ofertaTot||0) > 0.5 || (r.demandaTot||0) > 0.5 || Math.abs(r.posicion||0) > 0.5)) return;
+      cardsProd += pnCardHTML(p.replace("Grano ", "").toUpperCase(),
+        {posicion: r.posicion||0, ofertaTot: r.ofertaTot||0, demandaTot: r.demandaTot||0});
+    }));
+    if(!cardsProd) cardsProd = otras.map(f => pnCardHTML(f, totalsFam[f])).join("");
+    det.innerHTML = `<div class="pn-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px">${cardsProd}</div>`;
+    det.style.display = "block";
+  };
+  const pcpCard = document.getElementById("pn-card-prestamo");
+  if (pcpCard) pcpCard.onclick = () => {
+    if (det.dataset.que === "pcp" && det.style.display !== "none"){ det.style.display = "none"; return; }
+    det.dataset.que = "pcp";
+    const filas = (obj, lbl) => Object.entries(obj).sort((a,b) => b[1].tn - a[1].tn)
+      .map(([k, v]) => `<tr><td style="text-align:left;padding:4px 10px">${escapeHtml(k)}</td>
+        <td style="text-align:right;padding:4px 10px">${fmt.int(v.camiones)}</td>
+        <td style="text-align:right;padding:4px 10px">${fmt.num(v.tn)}</td></tr>`).join("");
+    det.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+      <b>PRÉSTAMO CP 25/26 — ${fmt.int(PCP.camiones)} cartas de porte prestadas · ${fmt.num(PCP.tn)} tn</b>
+      <div style="font-size:12px;color:var(--muted);margin:4px 0 10px">Salen de producción con CP Agronasaja, cumplen un contrato de venta, y el contrato de compra SEMILLA X es solo para facturar. No cuentan en la posición.</div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap">
+        <table style="border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 10px">Cultivo</th><th style="padding:4px 10px">CP</th><th style="padding:4px 10px">Tn</th></tr></thead><tbody>${filas(PCP.cultivos)}</tbody></table>
+        <table style="border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 10px">Cliente</th><th style="padding:4px 10px">CP</th><th style="padding:4px 10px">Tn</th></tr></thead><tbody>${filas(PCP.clientes)}</tbody></table>
+      </div></div>`;
+    det.style.display = "block";
+  };
+  document.getElementById("pn-cards-meta").textContent = `${MAIN.filter(f=>totalsFam[f]).length + (otras.length?1:0)} cultivos + préstamo CP`;
 }
 
 pnInitFiltros();
@@ -9677,14 +9733,50 @@ function fnRender(){
   const tStk = fnRenderStock(camp);
   const tPdt = fnRenderPendientes();
   const kpi = document.getElementById('fn-kpis');
-  const cxc = tVta.usd, cxp = tCpr.usd, stock = tStk.usd + tPdt.usd;
-  const neto = stock + cxc - cxp;
+  // Regla del usuario (18/08/2026): fuera las tarjetas Stock/CxC/CxP/Posición Neta (info
+  // no validada). En su lugar: pendiente de LIQUIDAR de compra y venta (con fijado vs sin
+  // fijar) y precio ponderado de lo YA liquidado. Click = zoom por contrato con
+  // beneficiario, cultivo, campaña y estado de fijación.
+  const stats = (rows) => {
+    const s = {pdte:0, fijPdte:0, sinFijPdte:0, liqTn:0, pondU:{tn:0,imp:0}, pondA:{tn:0,imp:0}};
+    (rows||[]).forEach(r => {
+      const c = r.campana || '—', e = r.empresa || r.organizacion || '—';
+      if(!FN_CAMP_OK.has(c)) return;
+      if(camp && c !== camp) return;
+      if(emp && e !== emp) return;
+      const ent = Number(r.cantidadentregada)||0, liq = Number(r.cantidadliquidada)||0, fij = Number(r.cantidadfijada)||0;
+      const pdte = Math.max(0, ent - liq);
+      const fp = Math.max(0, Math.min(pdte, fij - liq));
+      s.pdte += pdte; s.fijPdte += fp; s.sinFijPdte += pdte - fp;
+      const pLiq = Number(r.precioliquidado)||0;
+      if(liq > 0 && pLiq > 0){
+        s.liqTn += liq;
+        const es_usd = String(r.moneda||'').toUpperCase().includes('DOLAR');
+        const dest = es_usd ? s.pondU : s.pondA;
+        dest.tn += liq; dest.imp += liq * pLiq;
+      }
+      return;
+    });
+    return s;
+  };
+  const sc = stats(PAYLOAD.compra), sv = stats(PAYLOAD.pilot);
+  const pond = (o) => o.tn > 0 ? fmt.num(o.imp / o.tn, 2) : '—';
   kpi.innerHTML = `
-    <div class="kpi green"><div class="lbl">STOCK + PENDIENTES (USD)</div><div class="val">${fnFmtUsd(stock)}</div><div class="hint">${fmt.num(tStk.tn+tPdt.tn)} tn valoradas</div></div>
-    <div class="kpi"><div class="lbl">CUENTAS POR COBRAR (USD)</div><div class="val">${fnFmtUsd(cxc)}</div><div class="hint">Venta pte. liquidar · ${fmt.num(tVta.tn)} tn</div></div>
-    <div class="kpi red"><div class="lbl">CUENTAS POR PAGAR (USD)</div><div class="val">${fnFmtUsd(cxp)}</div><div class="hint">Compra pte. liquidar · ${fmt.num(tCpr.tn)} tn</div></div>
-    <div class="kpi orange"><div class="lbl">POSICIÓN NETA (USD)</div><div class="val">${fnFmtUsd(neto)}</div><div class="hint">Stock+Pdtes + CxC − CxP</div></div>
+    <div class="kpi red" id="fn-kpi-cpliq" style="cursor:pointer" title="Click: contratos de compra con pendiente de liquidar (beneficiario, cultivo, campaña, fijación)">
+      <div class="lbl">COMPRA PEND. LIQUIDAR</div><div class="val">${fmt.num(sc.pdte)} tn</div>
+      <div class="hint">✓ fijado ${fmt.num(sc.fijPdte)} tn · ◑ sin fijar ${fmt.num(sc.sinFijPdte)} tn</div></div>
+    <div class="kpi"><div class="lbl">POND. COMPRA LIQUIDADA</div><div class="val">USD ${pond(sc.pondU)}</div>
+      <div class="hint">contratos en $: ${pond(sc.pondA)} $/tn · ${fmt.num(sc.liqTn)} tn liquidadas</div></div>
+    <div class="kpi green" id="fn-kpi-vpliq" style="cursor:pointer" title="Click: contratos de venta con pendiente de liquidar (cliente, cultivo, campaña, fijación)">
+      <div class="lbl">VENTA PEND. LIQUIDAR</div><div class="val">${fmt.num(sv.pdte)} tn</div>
+      <div class="hint">✓ fijado ${fmt.num(sv.fijPdte)} tn · ◑ sin fijar ${fmt.num(sv.sinFijPdte)} tn</div></div>
+    <div class="kpi"><div class="lbl">POND. VENTA LIQUIDADA</div><div class="val">USD ${pond(sv.pondU)}</div>
+      <div class="hint">contratos en $: ${pond(sv.pondA)} $/tn · ${fmt.num(sv.liqTn)} tn liquidadas</div></div>
   `;
+  const kc = document.getElementById('fn-kpi-cpliq');
+  if(kc) kc.onclick = () => pnctGo({tipo:'compra', field:'pliq', volverA:'pn-financiera', origen:'Desde: Financiera · Compra pend. liquidar'});
+  const kv = document.getElementById('fn-kpi-vpliq');
+  if(kv) kv.onclick = () => pnctGo({tipo:'venta', field:'pliq', volverA:'pn-financiera', origen:'Desde: Financiera · Venta pend. liquidar'});
   document.getElementById('fn-info').textContent = `Calculado al ${new Date().toLocaleString('es-AR')}`;
 }
 
@@ -13443,6 +13535,34 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] Error cosechado: {e}")
 
+    # PRÉSTAMO CP (regla del usuario 18/08/2026): los camiones de 'Recepción de Semilla
+    # COMPRA' son cartas de porte NUESTRAS prestadas a clientes (salen de producción con
+    # CP Agronasaja, cumplen un contrato de venta, y el contrato de compra SEMILLA X es
+    # solo para facturar). Se muestran en su propia tarjeta, fuera de la posición.
+    prestamo_cp = {"camiones": 0, "tn": 0.0, "cultivos": {}, "clientes": {}}
+    try:
+        for row in traslados_raw:
+            if row.get("TRANSACCIONSUBTIPONOMBRE") != "Recepción de Semilla COMPRA": continue
+            if "25-26" not in str(row.get("COSECHA") or ""): continue
+            try: tn = float(row.get("PESONETO") or 0) / 1000
+            except: tn = 0.0
+            gU = str(row.get("GRANO") or "").upper()
+            cult = ("SOJA" if "SOJA" in gU else "TRIGO" if "TRIGO" in gU else
+                    "MAÍZ" if ("MAIZ" in gU or "MAÍZ" in gU) else "GIRASOL" if "GIRASOL" in gU else "OTROS")
+            cli = str(row.get("ORGANIZACIONNOMBRE") or "").strip() or "—"
+            prestamo_cp["camiones"] += 1
+            prestamo_cp["tn"] += tn
+            c = prestamo_cp["cultivos"].setdefault(cult, {"camiones": 0, "tn": 0.0})
+            c["camiones"] += 1; c["tn"] += tn
+            k = prestamo_cp["clientes"].setdefault(cli, {"camiones": 0, "tn": 0.0})
+            k["camiones"] += 1; k["tn"] += tn
+        prestamo_cp["tn"] = round(prestamo_cp["tn"], 1)
+        for d in list(prestamo_cp["cultivos"].values()) + list(prestamo_cp["clientes"].values()):
+            d["tn"] = round(d["tn"], 1)
+        print(f"    -> PRÉSTAMO CP 25-26: {prestamo_cp['camiones']} cartas de porte prestadas · {prestamo_cp['tn']:,.1f} tn")
+    except Exception as e:
+        print(f"    [!] prestamo_cp: {e}")
+
     # Liquidaciones VENTA (DW) — para matchear con CTGs via COE en Trazabilidad
     print(f"\n[+] Bajando Liquidaciones VENTA desde DW...", flush=True)
     liquidaciones_dw = []
@@ -13651,11 +13771,17 @@ def main() -> int:
             elif "TRIGO" in gU: sem_propia["SEMILLA TRIGO"] += kg / 1000
             elif "MAIZ" in gU or "MAÍZ" in gU: sem_propia["SEMILLA MAIZ"] += kg / 1000
         p25 = produccion_camp.get("CAMPAÑA 25-26") or {}
+        # cosechado de GRANO = CPE − lo que salió de producción y fue a SEMILLA propia
+        # (regla del usuario 18/08: "restale lo de producción que salió y fue a semilla")
+        SEM_DE = {"Grano Soja": "SEMILLA SOJA", "Grano Trigo Pan": "SEMILLA TRIGO", "Grano Maíz": "SEMILLA MAIZ"}
         for gr in ("Grano Soja", "Grano Trigo Pan", "Grano Maíz", "Grano Girasol"):
             if gr in cosechado and cosechado[gr] > 0:
                 ant = (p25.get(gr) or {}).get("cosechado")
-                p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(cosechado[gr], 1)
-                if ant: print(f"    -> {gr}: cosechado portal {ant:,.1f} -> CPE {cosechado[gr]:,.1f} tn (regla usuario)")
+                sem_tn = sem_propia.get(SEM_DE.get(gr, ""), 0.0)
+                neto = max(0.0, cosechado[gr] - sem_tn)
+                p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(neto, 1)
+                print(f"    -> {gr}: CPE {cosechado[gr]:,.1f} − a semilla {sem_tn:,.1f} = {neto:,.1f} tn"
+                      + (f" (portal decía {ant:,.1f})" if ant else ""))
         for sem, tn in sem_propia.items():
             if tn > 0.5:
                 p25.setdefault(sem, {"pendcos": 0})["cosechado"] = round(tn, 1)
@@ -13669,6 +13795,7 @@ def main() -> int:
         "counts": counts,
         "produccion_camp": produccion_camp,
         "produccion_pend_det": produccion_pend_det,
+        "prestamo_cp": prestamo_cp,
         "finales": finales,
         "tarifas_venta": _tarifas_venta,
         "cargill_ctg_gastos": cargill_ctg_gastos,
