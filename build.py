@@ -314,10 +314,22 @@ def fetch_produccion() -> tuple[dict, dict]:
                 c26[fina]["pendcos"] += ha * RINDE_FINA[fina] * pa
                 c26det[fina]["pendcos"].append({"campo": campo, "lote": lote, "cultivo": cu26.split("/")[0].upper().strip(),
                                                 "tn": round(ha * RINDE_FINA[fina] * pa, 1), "rinde": round(RINDE_FINA[fina] * 1000)})
-        out["CAMPAÑA 26-27"] = {p: {"pendcos": round(v["pendcos"], 1)} for p, v in c26.items() if v["pendcos"] > 0.5}
-        det["CAMPAÑA 26-27"] = {p: {k: sorted(v[k], key=lambda d: -d["tn"]) for k in ("cosechado", "pendcos")}
-                                for p, v in c26det.items() if p in out["CAMPAÑA 26-27"]}
-        print(f"    -> siembra 26/27 (AGNSJ x participación): {len(sie)} lotes · {len(out['CAMPAÑA 26-27'])} cultivos")
+        # Regla del usuario (18/08/2026): campaña 26/27 SIN producción estimada del portal —
+        # el estimado por rinde teórico mostraba números erróneos en la posición.
+        print(f"    -> siembra 26/27: {len(sie)} lotes leídos pero EXCLUIDA del tablero (sin producción real, pedido del usuario)")
+    # 26/27: SOLO trigo, desde el Excel del usuario (Reporte Semilla-Consumo.xlsx →
+    # data/trigo_2627_potencial.json). El resto de los cultivos 26/27 no se muestra.
+    try:
+        from pathlib import Path as _P
+        _tp = _P(__file__).resolve().parent / "data" / "trigo_2627_potencial.json"
+        if _tp.exists():
+            _t = json.loads(_tp.read_text(encoding="utf-8"))
+            out["CAMPAÑA 26-27"] = {_t["producto"]: {"pendcos": _t["pendcos"]}}
+            det["CAMPAÑA 26-27"] = {_t["producto"]: {"cosechado": [], "pendcos": _t.get("detalle", [])}}
+            print(f"    -> trigo 26/27 (Excel del usuario): {_t['pendcos']:,.1f} tn AGNSJ · "
+                  f"semilla {_t.get('semilla_tn', 0):,.1f} / consumo {_t.get('consumo_tn', 0):,.1f} · {len(_t.get('detalle', []))} lotes")
+    except Exception as e:
+        print(f"    [!] trigo 26/27 Excel: {e}")
     return out, det
 
 
@@ -13404,13 +13416,17 @@ def main() -> int:
     # Filtro: subtipos 'Traslado CPE Agronasaja' (TRAS-VTA-GRANO-AS = granos) +
     #         'Recepción de Semilla PROPIA' (REC-SEM-PPIO = semilla propia)
     # Suma PESONETO (kg) por GRANO -> convertido a tn
-    print(f"\n[+] Calculando COSECHADO desde traslados (Traslado CPE Agronasaja + Rec Sem PROPIA)...", flush=True)
+    # Regla del usuario (18/08/2026): cosechado = SOLO lo que salió con CP de Agronasaja
+    # (Traslado CPE Agronasaja). NO sumar remitos (convenio/alquileres) ni recepciones de
+    # semilla propia o de terceros — esas no son cosecha comercial propia. Solo 25-26.
+    print(f"\n[+] Calculando COSECHADO desde traslados (solo Traslado CPE Agronasaja, 25-26)...", flush=True)
     cosechado = {}
     try:
-        SUBT_COS = {"Traslado CPE Agronasaja", "Recepción de Semilla PROPIA"}
+        SUBT_COS = {"Traslado CPE Agronasaja"}
         acum_cos = {}
         for row in traslados_raw:
             if row.get("TRANSACCIONSUBTIPONOMBRE") not in SUBT_COS: continue
+            if "25-26" not in str(row.get("COSECHA") or ""): continue
             g = row.get("GRANO") or ""
             if not g: continue
             try: kg = float(row.get("PESONETO") or 0)
