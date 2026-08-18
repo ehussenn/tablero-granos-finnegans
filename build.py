@@ -526,7 +526,9 @@ window.apiFetch = function(path, opts){
   table.resizable-cols th{position:relative}
   table.resizable-cols th .col-resize{position:absolute;top:0;right:0;bottom:0;width:6px;cursor:col-resize;user-select:none;z-index:2}
   table.resizable-cols th .col-resize:hover,table.resizable-cols th .col-resize.dragging{background:rgba(51,103,160,.4)}
-  table.resizable-cols td,table.resizable-cols th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* regla del usuario (19/08/2026): la organización se tiene que leer COMPLETA en todos
+     lados — las celdas envuelven el texto en varias lineas en vez de cortarlo con "..." */
+  table.resizable-cols td,table.resizable-cols th{overflow:hidden;white-space:normal;word-break:break-word;line-height:1.15}
   table.resizable-cols td.allow-wrap{white-space:normal}
   /* encabezados legibles: que el titulo se acomode en varias lineas en vez de cortarse con "..." */
   table.resizable-cols thead th{white-space:normal;text-overflow:clip;line-height:1.12;vertical-align:bottom}
@@ -3261,7 +3263,7 @@ function vpRender(){
     }).join("");
     const prods = [...v.productos].slice(0,3).join(", ") + (v.productos.size>3 ? "…" : "");
     return `<div class="grain-card">
-      <div class="name"><span title="${vpEscape(org)}">${vpEscape(org.length>34?org.slice(0,34)+"…":org)}</span><span class="cnt">${v.cnt} ctos</span></div>
+      <div class="name"><span title="${vpEscape(org)}">${vpEscape(org)}</span><span class="cnt">${v.cnt} ctos</span></div>
       <div class="row"><span class="k">Tn Fijadas</span><span><b>${fmt.num(v.tn)}</b></span></div>
       ${monRows}
       <div class="row"><span class="k">Importe</span><span>${fmt.num(v.imp)}</span></div>
@@ -6712,7 +6714,7 @@ function cxRenderPctGrid(){
     const totalBg = !hasAny ? "#fee2e2" : (total === 0 ? "#f3f4f6" : "#dcfce7");
     const totalCol = !hasAny ? "var(--red)" : (total === 0 ? "var(--muted)" : "var(--green)");
     html += `<tr style="border-bottom:1px solid var(--line)${inOps?'':';opacity:0.7'}">
-      <td style="padding:4px 8px;font-size:11.5px;font-weight:${inOps?'600':'400'}" title="${escapeHtml(name)}">${escapeHtml(name.length>34?name.slice(0,34)+'…':name)}</td>
+      <td style="padding:4px 8px;font-size:11.5px;font-weight:${inOps?'600':'400'}" title="${escapeHtml(name)}">${escapeHtml(name)}</td>
       ${CX_PCT_COMPS.map(c => {
         const v = obj[c];
         const show = (v == null || v === "") ? "" : String(v).replace(".",",");
@@ -8851,8 +8853,15 @@ function pnRender(){
     });
 
     // 1) TOTAL familia = ENCABEZADO clickeable (amarillo). Por defecto COLAPSADO -> solo totales.
+    // Regla del usuario (19/08/2026): en SOJA/MAÍZ/TRIGO la fila TOTAL no muestra números
+    // (grano y semilla son negocios distintos, sumarlos confunde) — queda solo como
+    // encabezado desplegable; los pendientes y totales se leen en el desglose.
+    const famSinTotal = ["SOJA", "MAÍZ", "TRIGO"].includes(fam);
     const famExpanded = PN_FAM_EXPANDED.has(fam);
-    let rowFam = `<tr class="pn-grupo pn-fam-header" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${famExpanded ? '▾' : '▸'} TOTAL ${fam}</td>`;
+    let rowFam = `<tr class="pn-grupo pn-fam-header" data-fam="${escapeHtml(fam)}" style="cursor:pointer"><td class="pn-prod-cell">${famExpanded ? '▾' : '▸'} TOTAL ${fam}${famSinTotal ? ' <span style="font-weight:400;font-size:10.5px;color:var(--muted)">(ver desglose)</span>' : ''}</td>`;
+    if(famSinTotal){
+      PN_COLS.forEach(g => pnVisCols(g).forEach(() => { rowFam += `<td style="color:var(--muted)">—</td>`; }));
+    } else
     PN_COLS.forEach(g => pnVisCols(g).forEach(c => {
       const v = totFam[c.k];
       const cls = c.hl ? (v >= 0 ? "pos-pos" : "pos-neg") : "";
@@ -9028,13 +9037,15 @@ function pnRender(){
   });
 
   // Tarjetas de arriba (Posición por Cultivo): SOJA / MAÍZ / TRIGO / OTROS / PRÉSTAMO CP.
-  // Los "SEMILLA X" (préstamo de CP) ya no suman en compra (pnCalcRow los excluye);
-  // lo que les quede (producción propia) suma dentro de su cultivo.
+  // Regla del usuario (19/08/2026): las tarjetas SOJA/MAÍZ/TRIGO llevan SOLO los granos;
+  // las semillas de esos cultivos y todos los demás productos van juntos en OTROS.
+  const CARD_MAIN = ["SOJA", "MAÍZ", "TRIGO"];
   const cardTotals = {}, cardOrden = [];
   familias.forEach(fam => {
     (byFamilia[fam] || []).forEach(p => {
       const r = dataPorProd[p]; if(!r) return;
-      const dest = fam;
+      const dest = (CARD_MAIN.includes(fam) && p.indexOf("Grano ") === 0) ? fam
+                   : (CARD_MAIN.includes(fam) ? "OTROS" : fam);
       if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0}; cardOrden.push(dest); }
       cardTotals[dest].posicion  += r.posicion  || 0;
       cardTotals[dest].ofertaTot += r.ofertaTot || 0;
@@ -9226,7 +9237,7 @@ function pnctRender(){
     }
     html += `<tr title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'}">
       <td class="pn-drill-nro">${nro}</td>
-      <td title="${escapeHtml(org)}">${escapeHtml(org.length>34?org.slice(0,34)+'…':org)||'—'}</td>
+      <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}</td>
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
       <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td>${cp?'':`<td class="num" style="font-weight:700">${fmt.num(pen)}</td>`}
@@ -9360,9 +9371,11 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
   }
   const otrosCard = document.getElementById("pn-card-otros");
   const renderOtrosDet = () => {
-    // abrir los PRODUCTOS que componen "otros" (girasol, sorgo, arveja, semillas, etc.)
+    // abrir los PRODUCTOS que componen "otros": todos los cultivos menores + las
+    // SEMILLAS de soja/maíz/trigo (que ya no van en las tarjetas de grano)
     let cardsProd = "";
-    otras.forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
+    Object.keys(byFamilia || {}).forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
+      if(MAIN.includes(f) && p.indexOf("Grano ") === 0) return;   // los granos grandes van en su tarjeta
       const r = dataPorProd && dataPorProd[p]; if(!r) return;
       if(!((r.ofertaTot||0) > 0.5 || (r.demandaTot||0) > 0.5 || Math.abs(r.posicion||0) > 0.5)) return;
       cardsProd += pnCardHTML(p.replace("Grano ", "").toUpperCase(),
@@ -10485,7 +10498,7 @@ function tzRenderDetailExtra(ctg, data){
                 <td style="padding:5px">${tzEscape(l.documento||"")}</td>
                 <td style="padding:5px"><span style="background:#1e40af;color:#fff;padding:1px 6px;border-radius:4px;font-size:10px">${tzEscape(tipo)}</span> ${l.tipoliquidacion?'<span style="font-size:10px;color:var(--muted)">·'+tzEscape(l.tipoliquidacion)+'</span>':''}</td>
                 <td style="padding:5px">${tzEscape(l.fecha||"")}</td>
-                <td style="padding:5px">${tzEscape((l.organizacionnombre||"").slice(0,28))}</td>
+                <td style="padding:5px">${tzEscape(l.organizacionnombre||"")}</td>
                 <td style="padding:5px" class="num">${l.importegravado!=null?fmt.num(l.importegravado):'—'}</td>
                 <td style="padding:5px" class="num">${l.importeotros!=null?fmt.num(l.importeotros):'—'}</td>
                 <td style="padding:5px" class="num"><b>${l.importetotal!=null?fmt.num(l.importetotal):'—'}</b></td>
@@ -12762,6 +12775,16 @@ def main() -> int:
     _ant_pilot = len(pilot_norm); _ant_compra = len(compra_norm)
     pilot_norm  = [r for r in pilot_norm  if _no_anul(r)]
     compra_norm = [r for r in compra_norm if _no_anul(r)]
+    # Exclusión manual (regla del usuario 19/08/2026): contrato de VENTA #1335 BASF soja
+    # 3.000 tn — ya está liquidado en la realidad pero Finnegans lo muestra pendiente
+    # (dato sucio). Se saca del tablero hasta que lo corrijan en el sistema.
+    def _excl_manual(r):
+        return (str(r.get("numerointerno") or "").strip() == "1335"
+                and "BASF" in (r.get("organizacion") or "").upper())
+    _ant = len(pilot_norm)
+    pilot_norm = [r for r in pilot_norm if not _excl_manual(r)]
+    if len(pilot_norm) < _ant:
+        print(f"[+] Exclusión manual: venta #1335 BASF (ya liquidada) fuera del tablero")
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
 
     # COMISION DE CORREDOR por contrato de compra (para la vista Resultados y el Cruce):
