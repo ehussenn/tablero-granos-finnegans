@@ -9339,11 +9339,16 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
   const tO = {posicion:0, ofertaTot:0, demandaTot:0};
   otras.forEach(f => { const t = totalsFam[f]; tO.posicion += t.posicion; tO.ofertaTot += t.ofertaTot; tO.demandaTot += t.demandaTot; });
   if (otras.length) html += pnCardHTML("OTROS", tO, 'id="pn-card-otros" style="cursor:pointer" title="Click: ver los demás cultivos"');
-  const PCP = PAYLOAD.prestamo_cp || {camiones:0, tn:0, cultivos:{}, clientes:{}};
+  // PRÉSTAMO CP: obedece los filtros generales (campaña + empresa) como todo lo demás
+  const selCamp = (document.getElementById("pn-campana") || {value:""}).value;
+  const selEmp = (document.getElementById("pn-empresa") || {value:""}).value;
+  const pcpRows = ((PAYLOAD.prestamo_cp || {}).rows || []).filter(r =>
+    (!selCamp || r.camp === selCamp) && (!selEmp || !r.emp || r.emp === selEmp));
+  const pcpCP = pcpRows.reduce((s, r) => s + r.cp, 0), pcpTN = pcpRows.reduce((s, r) => s + r.tn, 0);
   html += `<div class="pn-card" id="pn-card-prestamo" style="cursor:pointer" title="Click: detalle de las CP prestadas">
-    <div class="name"><span>PRÉSTAMO CP</span><span style="font-size:11px;color:var(--muted)">25/26</span></div>
-    <div class="pos-val" style="color:#0e7490">${fmt.int(PCP.camiones)} <span style="font-size:14px;color:var(--muted)">CP</span></div>
-    <div class="of-de"><span>${fmt.num(PCP.tn)} tn</span><span>facturación</span></div>
+    <div class="name"><span>PRÉSTAMO CP</span><span style="font-size:11px;color:var(--muted)">${selCamp ? selCamp.replace("CAMPAÑA ","") : "todas"}</span></div>
+    <div class="pos-val" style="color:#0e7490">${fmt.int(pcpCP)} <span style="font-size:14px;color:var(--muted)">CP</span></div>
+    <div class="of-de"><span>${fmt.num(pcpTN)} tn</span><span>facturación</span></div>
     <div class="pct" style="margin-top:14px">cartas de porte prestadas a clientes</div>
   </div>`;
   document.getElementById("pn-cards").innerHTML = html;
@@ -9353,11 +9358,8 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
     det = document.createElement("div"); det.id = "pn-cards-det"; det.style.cssText = "display:none;margin:10px 0";
     document.getElementById("pn-cards").after(det);
   }
-  det.style.display = "none";
   const otrosCard = document.getElementById("pn-card-otros");
-  if (otrosCard) otrosCard.onclick = () => {
-    if (det.dataset.que === "otros" && det.style.display !== "none"){ det.style.display = "none"; return; }
-    det.dataset.que = "otros";
+  const renderOtrosDet = () => {
     // abrir los PRODUCTOS que componen "otros" (girasol, sorgo, arveja, semillas, etc.)
     let cardsProd = "";
     otras.forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
@@ -9369,24 +9371,40 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
     if(!cardsProd) cardsProd = otras.map(f => pnCardHTML(f, totalsFam[f])).join("");
     det.innerHTML = `<div class="pn-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px">${cardsProd}</div>`;
     det.style.display = "block";
+    det.dataset.que = "otros";
   };
+  if (otrosCard) otrosCard.onclick = () => {
+    if (det.dataset.que === "otros" && det.style.display !== "none"){ det.style.display = "none"; return; }
+    renderOtrosDet();
+  };
+  if (det.dataset.que === "otros" && det.style.display !== "none") renderOtrosDet();
   const pcpCard = document.getElementById("pn-card-prestamo");
-  if (pcpCard) pcpCard.onclick = () => {
-    if (det.dataset.que === "pcp" && det.style.display !== "none"){ det.style.display = "none"; return; }
-    det.dataset.que = "pcp";
-    const filas = (obj, lbl) => Object.entries(obj).sort((a,b) => b[1].tn - a[1].tn)
-      .map(([k, v]) => `<tr><td style="text-align:left;padding:4px 10px">${escapeHtml(k)}</td>
-        <td style="text-align:right;padding:4px 10px">${fmt.int(v.camiones)}</td>
-        <td style="text-align:right;padding:4px 10px">${fmt.num(v.tn)}</td></tr>`).join("");
+  const renderPcpDet = () => {
+    // resumen por cultivo + detalle Cliente × Cultivo, ambos con los filtros aplicados
+    const th = (t, izq) => `<th style="text-align:${izq?'left':'right'};padding:5px 12px;background:#014074;color:#fff;font-size:11.5px">${t}</th>`;
+    const td = (v, izq) => `<td style="text-align:${izq?'left':'right'};padding:4px 12px;border-bottom:1px solid var(--line)">${v}</td>`;
+    const porCult = {};
+    pcpRows.forEach(r => { const a = porCult[r.cult] = porCult[r.cult] || [0,0]; a[0] += r.cp; a[1] += r.tn; });
+    const tCult = Object.entries(porCult).sort((a,b) => b[1][1]-a[1][1]).map(([c, v]) =>
+      `<tr>${td(escapeHtml(c),1)}${td(fmt.int(v[0]))}${td(fmt.num(v[1]))}</tr>`).join("");
+    const tDet = pcpRows.slice().sort((a,b) => b.tn - a.tn).map(r =>
+      `<tr>${td(escapeHtml(r.cliente),1)}${td(escapeHtml(r.cult),1)}${td(fmt.int(r.cp))}${td(fmt.num(r.tn))}</tr>`).join("");
     det.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
-      <b>PRÉSTAMO CP 25/26 — ${fmt.int(PCP.camiones)} cartas de porte prestadas · ${fmt.num(PCP.tn)} tn</b>
-      <div style="font-size:12px;color:var(--muted);margin:4px 0 10px">Salen de producción con CP Agronasaja, cumplen un contrato de venta, y el contrato de compra SEMILLA X es solo para facturar. No cuentan en la posición.</div>
-      <div style="display:flex;gap:26px;flex-wrap:wrap">
-        <table style="border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 10px">Cultivo</th><th style="padding:4px 10px">CP</th><th style="padding:4px 10px">Tn</th></tr></thead><tbody>${filas(PCP.cultivos)}</tbody></table>
-        <table style="border-collapse:collapse"><thead><tr><th style="text-align:left;padding:4px 10px">Cliente</th><th style="padding:4px 10px">CP</th><th style="padding:4px 10px">Tn</th></tr></thead><tbody>${filas(PCP.clientes)}</tbody></table>
+      <b>PRÉSTAMO CP ${selCamp ? selCamp.replace("CAMPAÑA ","") : "(todas las campañas)"} — ${fmt.int(pcpCP)} cartas de porte prestadas · ${fmt.num(pcpTN)} tn</b>
+      <div style="font-size:12px;color:var(--muted);margin:4px 0 10px">Salen de producción con CP Agronasaja, cumplen un contrato de venta, y el contrato de compra SEMILLA X es solo para facturar. No cuentan en la posición. Responde a los filtros de campaña y empresa.</div>
+      <div style="display:flex;gap:30px;flex-wrap:wrap;align-items:flex-start">
+        <table style="border-collapse:collapse;min-width:280px"><thead><tr>${th("CULTIVO",1)}${th("CP")}${th("TN")}</tr></thead><tbody>${tCult}</tbody></table>
+        <table style="border-collapse:collapse;min-width:480px"><thead><tr>${th("CLIENTE",1)}${th("CULTIVO",1)}${th("CP")}${th("TN")}</tr></thead><tbody>${tDet}</tbody></table>
       </div></div>`;
     det.style.display = "block";
+    det.dataset.que = "pcp";
   };
+  if (pcpCard) pcpCard.onclick = () => {
+    if (det.dataset.que === "pcp" && det.style.display !== "none"){ det.style.display = "none"; return; }
+    renderPcpDet();
+  };
+  // si el detalle estaba abierto y se movió un filtro (re-render), actualizarlo en vivo
+  if (det.dataset.que === "pcp" && det.style.display !== "none") renderPcpDet();
   document.getElementById("pn-cards-meta").textContent = `${MAIN.filter(f=>totalsFam[f]).length + (otras.length?1:0)} cultivos + préstamo CP`;
 }
 
@@ -13539,27 +13557,29 @@ def main() -> int:
     # COMPRA' son cartas de porte NUESTRAS prestadas a clientes (salen de producción con
     # CP Agronasaja, cumplen un contrato de venta, y el contrato de compra SEMILLA X es
     # solo para facturar). Se muestran en su propia tarjeta, fuera de la posición.
-    prestamo_cp = {"camiones": 0, "tn": 0.0, "cultivos": {}, "clientes": {}}
+    prestamo_cp = {"rows": []}
     try:
+        _agg = {}
         for row in traslados_raw:
             if row.get("TRANSACCIONSUBTIPONOMBRE") != "Recepción de Semilla COMPRA": continue
-            if "25-26" not in str(row.get("COSECHA") or ""): continue
             try: tn = float(row.get("PESONETO") or 0) / 1000
             except: tn = 0.0
             gU = str(row.get("GRANO") or "").upper()
             cult = ("SOJA" if "SOJA" in gU else "TRIGO" if "TRIGO" in gU else
                     "MAÍZ" if ("MAIZ" in gU or "MAÍZ" in gU) else "GIRASOL" if "GIRASOL" in gU else "OTROS")
+            camp = str(row.get("COSECHA") or "").strip()
+            camp = ("CAMPAÑA " + camp) if camp and not camp.upper().startswith("CAMP") else (camp or "—")
             cli = str(row.get("ORGANIZACIONNOMBRE") or "").strip() or "—"
-            prestamo_cp["camiones"] += 1
-            prestamo_cp["tn"] += tn
-            c = prestamo_cp["cultivos"].setdefault(cult, {"camiones": 0, "tn": 0.0})
-            c["camiones"] += 1; c["tn"] += tn
-            k = prestamo_cp["clientes"].setdefault(cli, {"camiones": 0, "tn": 0.0})
-            k["camiones"] += 1; k["tn"] += tn
-        prestamo_cp["tn"] = round(prestamo_cp["tn"], 1)
-        for d in list(prestamo_cp["cultivos"].values()) + list(prestamo_cp["clientes"].values()):
-            d["tn"] = round(d["tn"], 1)
-        print(f"    -> PRÉSTAMO CP 25-26: {prestamo_cp['camiones']} cartas de porte prestadas · {prestamo_cp['tn']:,.1f} tn")
+            emp = str(row.get("EMPRESANOMBRE") or row.get("EMPRESA") or "").strip()
+            k = (camp, cult, cli, emp)
+            a = _agg.setdefault(k, [0, 0.0])
+            a[0] += 1; a[1] += tn
+        prestamo_cp["rows"] = [{"camp": c, "cult": cu, "cliente": cl, "emp": e,
+                                "cp": n, "tn": round(t, 1)}
+                               for (c, cu, cl, e), (n, t) in _agg.items()]
+        _tot = sum(r["cp"] for r in prestamo_cp["rows"])
+        print(f"    -> PRÉSTAMO CP: {_tot} cartas de porte prestadas · "
+              f"{sum(r['tn'] for r in prestamo_cp['rows']):,.1f} tn · {len(prestamo_cp['rows'])} filas (todas las campañas)")
     except Exception as e:
         print(f"    [!] prestamo_cp: {e}")
 
@@ -13761,12 +13781,19 @@ def main() -> int:
     # portal (p.ej. soja 24.736) mezclaba ambos en la fila de grano.
     try:
         sem_propia = {"SEMILLA SOJA": 0.0, "SEMILLA TRIGO": 0.0, "SEMILLA MAIZ": 0.0}
+        sem_var = {}   # cosechado propio POR VARIEDAD (SEM. GRANEL ...) para el neto final
         for row in traslados_raw:
             if row.get("TRANSACCIONSUBTIPONOMBRE") != "Recepción de Semilla PROPIA": continue
-            if "25-26" not in str(row.get("COSECHA") or ""): continue
-            gU = str(row.get("GRANO") or "").upper()
+            # hay recepciones 25-26 mal etiquetadas ("26-27" o sin campaña) — la ventana de
+            # fechas (desde nov-2025) garantiza que son de la cosecha 25-26; solo se
+            # excluyen las que están explícitamente marcadas como campañas viejas.
+            _cos = str(row.get("COSECHA") or "")
+            if any(v in _cos for v in ("22-23", "23-24", "24-25")): continue
+            g = str(row.get("GRANO") or "").strip()
+            gU = g.upper()
             try: kg = float(row.get("PESONETO") or 0)
             except: kg = 0.0
+            sem_var[g] = sem_var.get(g, 0.0) + kg / 1000
             if "SOJA" in gU: sem_propia["SEMILLA SOJA"] += kg / 1000
             elif "TRIGO" in gU: sem_propia["SEMILLA TRIGO"] += kg / 1000
             elif "MAIZ" in gU or "MAÍZ" in gU: sem_propia["SEMILLA MAIZ"] += kg / 1000
@@ -13782,10 +13809,16 @@ def main() -> int:
                 p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(neto, 1)
                 print(f"    -> {gr}: CPE {cosechado[gr]:,.1f} − a semilla {sem_tn:,.1f} = {neto:,.1f} tn"
                       + (f" (portal decía {ant:,.1f})" if ant else ""))
-        for sem, tn in sem_propia.items():
+        # cosechado propio POR VARIEDAD (regla del usuario 18/08: lo necesita abierto por
+        # variedad para el neto final; la fila genérica SEMILLA X ya no lleva el agregado
+        # porque duplicaría el total del cultivo)
+        n_var = 0
+        for vari, tn in sem_var.items():
             if tn > 0.5:
-                p25.setdefault(sem, {"pendcos": 0})["cosechado"] = round(tn, 1)
-                print(f"    -> {sem}: cosechado propio (Rec Sem PROPIA) {tn:,.1f} tn")
+                p25.setdefault(vari, {"pendcos": 0})["cosechado"] = round(tn, 1)
+                n_var += 1
+        print(f"    -> cosechado propio por variedad: {n_var} variedades · {sum(sem_var.values()):,.1f} tn "
+              f"(soja {sem_propia['SEMILLA SOJA']:,.1f} · trigo {sem_propia['SEMILLA TRIGO']:,.1f})")
         produccion_camp["CAMPAÑA 25-26"] = p25
     except Exception as e:
         print(f"    [!] split grano/semilla 25-26: {e}")
