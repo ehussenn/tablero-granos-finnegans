@@ -8118,8 +8118,8 @@ const PN_COLS = [
     {k:"demandaTotPend", lbl:"Demanda Tot Pendiente", calc:true},
   ]},
   {grp:"RESULTADO",  cls:"grp-resultado", cols:[
-    {k:"posPend",      lbl:"Pos Pend",   calc:true},
-    {k:"posicion",     lbl:"Posición",   calc:true, hl:true},
+    {k:"posPend",      lbl:"Pos Pendiente", calc:true},
+    {k:"posicion",     lbl:"Teórico",       calc:true, hl:true},
   ]},
 ];
 
@@ -9058,10 +9058,11 @@ function pnRender(){
       const dest = (CARD_MAIN.includes(fam) && p.indexOf("Grano ") === 0) ? fam
                    : (CARD_MAIN.includes(fam) ? null : fam);
       if(!dest) return;
-      if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0}; cardOrden.push(dest); }
+      if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0, posPend:0}; cardOrden.push(dest); }
       cardTotals[dest].posicion  += r.posicion  || 0;
       cardTotals[dest].ofertaTot += r.ofertaTot || 0;
       cardTotals[dest].demandaTot += r.demandaTot || 0;
+      cardTotals[dest].posPend   += r.posPend   || 0;
     });
   });
   // el potencial descarte también en las tarjetas del cultivo (misma lógica que la tabla)
@@ -9343,9 +9344,13 @@ function pnCardHTML(fam, t, extraAttr){
   const cls = {SOJA:"soja", "MAÍZ":"maiz", TRIGO:"trigo", GIRASOL:"girasol", SORGO:"sorgo"};
   const posicion = t.posicion;
   const cobertura = t.ofertaTot > 0 ? t.demandaTot / t.ofertaTot : 0;
+  const pp = t.posPend;
+  const ppHtml = (pp === undefined || pp === null) ? '' :
+    `<div class="of-de" title="Pos Pendiente = Pend Cosecha + Pend Ingreso − Ctos Pend. Entrega"><span>Pos Pendiente</span><span style="font-weight:800;color:${pp>=0?'var(--green,#2E8B57)':'var(--red,#C0392B)'}">${pp>=0?'+':''}${fmt.num(pp)} Tn</span></div>`;
   return `<div class="pn-card ${cls[fam] || ''}" ${extraAttr || ''}>
-    <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Posición</span></div>
-    <div class="pos-val ${posicion>=0?'pos':'neg'}">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
+    <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Teórico</span></div>
+    <div class="pos-val ${posicion>=0?'pos':'neg'}" title="Teórico = Oferta total − Demanda total">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
+    ${ppHtml}
     <div class="of-de"><span>Of ${fmt.num(t.ofertaTot)}</span><span>De ${fmt.num(t.demandaTot)}</span></div>
     <div class="bar-cobertura"><div style="width:${Math.min(100, cobertura*100)}%"></div></div>
     <div class="pct">${fmt.pct(cobertura)} cobertura</div>
