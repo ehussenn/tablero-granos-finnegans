@@ -9055,8 +9055,13 @@ function pnRender(){
       // semillas de esos cultivos NO van en ninguna tarjeta (ni en OTROS) — de la
       // semilla solo interesa el bolsón sin procesar y su descarte, que se leen en el
       // desglose de la tabla. OTROS = cultivos menores nada más.
-      const dest = (CARD_MAIN.includes(fam) && p.indexOf("Grano ") === 0) ? fam
-                   : (CARD_MAIN.includes(fam) ? null : fam);
+      // tarjeta del cultivo = SOLO el grano principal (así el Pos Pendiente de la tarjeta
+      // coincide con la fila, regla usuario 19/08); pisingallo/oleico/trigo no-pan -> OTROS;
+      // semillas de los 3 grandes -> fuera de tarjetas.
+      const FLAG = {"SOJA": "Grano Soja", "MAÍZ": "Grano Maíz", "TRIGO": "Grano Trigo Pan"};
+      const dest = CARD_MAIN.includes(fam)
+        ? (p === FLAG[fam] ? fam : (p.indexOf("Grano ") === 0 ? "OTROS" : null))
+        : fam;
       if(!dest) return;
       if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0, posPend:0}; cardOrden.push(dest); }
       cardTotals[dest].posicion  += r.posicion  || 0;
@@ -9390,8 +9395,12 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
     // abrir los PRODUCTOS que componen "otros": todos los cultivos menores + las
     // SEMILLAS de soja/maíz/trigo (que ya no van en las tarjetas de grano)
     let cardsProd = "";
+    const FLAG = {"SOJA": "Grano Soja", "MAÍZ": "Grano Maíz", "TRIGO": "Grano Trigo Pan"};
     Object.keys(byFamilia || {}).forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
-      if(MAIN.includes(f)) return;   // grano grande en su tarjeta; semillas de soja/maíz/trigo fuera de las tarjetas
+      if(MAIN.includes(f)){
+        if(p === FLAG[f]) return;                 // el grano principal va en su tarjeta
+        if(p.indexOf("Grano ") !== 0) return;     // semillas de los 3 grandes: fuera de tarjetas
+      }
       const r = dataPorProd && dataPorProd[p]; if(!r) return;
       if(!((r.ofertaTot||0) > 0.5 || (r.demandaTot||0) > 0.5 || Math.abs(r.posicion||0) > 0.5)) return;
       cardsProd += pnCardHTML(p.replace("Grano ", "").toUpperCase(),
@@ -12796,8 +12805,23 @@ def main() -> int:
     # corrijan en el sistema.
     #   VENTA  #1335 BASF soja 3.000 tn        -> ya liquidada en la realidad
     #   COMPRA #1139 CUMARINA maíz 3.740 tn    -> pedido del usuario (19/08)
-    EXCL_VENTA  = [("1335", "BASF")]
+    EXCL_VENTA  = [("1335", "BASF"),
+                   ("1123", "LINEUP"),        # venta de ALQUILER, no es venta de mercado (19/08)
+                   ("1130", "EL GAUCHO")]     # venta de ALQUILER, no es venta de mercado (19/08)
     EXCL_COMPRA = [("1139", "CUMARINA")]
+    # Ajustes de PENDIENTE de entrega en venta (regla usuario 19/08): el pendiente real
+    # de estos contratos difiere del sistema — se capea (cantidadmax = entregada + tope).
+    #   YARA #922 soja: solo 60 tn reales de las 144 · ALLARIA #1217 y ACA #1064: descartar pendiente.
+    PEND_CAP_VENTA = {("922", "YARA"): 60.0, ("1217", "ALLARIA"): 0.0, ("1064", "ASOC DE COOPERATIVAS"): 0.0}
+    for r in pilot_norm:
+        n = str(r.get("numerointerno") or "").strip()
+        o = (r.get("organizacion") or "").upper()
+        for (num, org), tope in PEND_CAP_VENTA.items():
+            if n == num and org in o:
+                try: ent = float(r.get("cantidadentregada") or 0)
+                except: ent = 0.0
+                r["cantidadmax"] = ent + tope
+                print(f"[+] Pendiente capeado: venta #{n} {o[:26]} -> pend {tope:,.0f} tn (regla usuario)")
     def _excl(r, lista):
         n = str(r.get("numerointerno") or "").strip()
         o = (r.get("organizacion") or "").upper()
