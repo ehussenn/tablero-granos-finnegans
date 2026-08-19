@@ -12839,6 +12839,17 @@ def main() -> int:
         print(f"[+] Exclusiones manuales: venta -{_ant_v - len(pilot_norm)} · compra -{_ant_c - len(compra_norm)} (datos sucios, ver comentario)")
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
 
+    # Unificación de cultivo (regla usuario 19/08/2026): "Grano Maní en caja" se muestra
+    # DENTRO de "Grano Maní" — una sola fila con la posición total del maní.
+    def _unif_mani(p):
+        return "Grano Maní" if str(p or "").strip().lower() in ("grano maní en caja", "grano mani en caja") else p
+    _n_mani = 0
+    for _r in pilot_norm + compra_norm:
+        if _r.get("producto") != _unif_mani(_r.get("producto")):
+            _r["producto"] = "Grano Maní"; _n_mani += 1
+    if _n_mani:
+        print(f"[+] Unificación maní: {_n_mani} contratos de 'Grano Maní en caja' -> 'Grano Maní'")
+
     # COMISION DE CORREDOR por contrato de compra (para la vista Resultados y el Cruce):
     # Agronasaja actua de corredor en muchas compras y RECUPERA comision + 1,25% sellado.
     # El % vive en el DW (resumen de contrato de compra); se mergea por nombre de contrato.
@@ -13902,6 +13913,26 @@ def main() -> int:
         produccion_camp["CAMPAÑA 25-26"] = p25
     except Exception as e:
         print(f"    [!] split grano/semilla 25-26: {e}")
+
+    # Unificación maní también en cosechado y producción (una sola línea "Grano Maní")
+    try:
+        _CAJA, _MANI = "Grano Maní en caja", "Grano Maní"
+        if _CAJA in cosechado:
+            cosechado[_MANI] = round(cosechado.get(_MANI, 0) + cosechado.pop(_CAJA), 4)
+        for _camp, _prods in (produccion_camp or {}).items():
+            if _CAJA in _prods:
+                _dst = _prods.setdefault(_MANI, {"pendcos": 0})
+                _src = _prods.pop(_CAJA)
+                for _k in ("cosechado", "pendcos"):
+                    if _src.get(_k): _dst[_k] = round((_dst.get(_k) or 0) + _src[_k], 1)
+        for _camp, _prods in (produccion_pend_det or {}).items():
+            if _CAJA in _prods:
+                _dst = _prods.setdefault(_MANI, {"cosechado": [], "pendcos": []})
+                _src = _prods.pop(_CAJA)
+                for _k in ("cosechado", "pendcos"):
+                    _dst[_k] = (_dst.get(_k) or []) + (_src.get(_k) or [])
+    except Exception as e:
+        print(f"    [!] unificación maní producción: {e}")
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
