@@ -528,7 +528,7 @@ window.apiFetch = function(path, opts){
   table.resizable-cols th .col-resize:hover,table.resizable-cols th .col-resize.dragging{background:rgba(51,103,160,.4)}
   /* regla del usuario (19/08/2026): la organización se tiene que leer COMPLETA en todos
      lados — las celdas envuelven el texto en varias lineas en vez de cortarlo con "..." */
-  table.resizable-cols td,table.resizable-cols th{overflow:hidden;white-space:normal;word-break:break-word;line-height:1.15}
+  table.resizable-cols td,table.resizable-cols th{overflow:hidden;white-space:normal;line-height:1.15}
   table.resizable-cols td.allow-wrap{white-space:normal}
   /* encabezados legibles: que el titulo se acomode en varias lineas en vez de cortarse con "..." */
   table.resizable-cols thead th{white-space:normal;text-overflow:clip;line-height:1.12;vertical-align:bottom}
@@ -2683,8 +2683,8 @@ function makeColumnsResizable(tableEl, persistKey){
 
 // Aplicar al cargar — y re-aplicar después de que cada tabla se haya renderizado
 function applyResizableTables(){
-  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos-v3');  // Compra · Posición Física (v3: anchos por defecto más amplios)
-  makeColumnsResizable(document.getElementById('tbl'),         'venta-pos');     // Venta · Posición Física
+  makeColumnsResizable(document.getElementById('tbl-cp'),     'compra-pos-v4');  // Compra · Posición Física (v4: sin certif/entrega/campaña/corredor)
+  makeColumnsResizable(document.getElementById('tbl'),         'venta-pos-v2');  // Venta · Posición Física (v2: sin campaña/corredor/puerto)
   makeColumnsResizable(document.getElementById('tbl-cpfin'),  'compra-fin');     // Compra · Financiera
   makeColumnsResizable(document.getElementById('tbl-fin'),     'venta-fin');     // Venta · Financiera
   makeColumnsResizable(document.getElementById('tbl-canjes'), 'compra-canjes'); // Compra · Canjes
@@ -2834,9 +2834,7 @@ const TABLE_COLS = [
   {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
   {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false},
-  {k:'campana',                     lbl:'Campaña',         num:false},
-  {k:'corredor',                    lbl:'Corredor',        num:false},
-  {k:'puertoreferencia',            lbl:'Puerto',          num:false},
+  // Campaña / Corredor / Puerto: sacadas del detalle de VENTA (regla usuario 19/08 — no suman)
   {k:'_estado',                     lbl:'Estado',          num:false, html:true},
 ];
 
@@ -2943,6 +2941,10 @@ function render(){
   const tnPdt = tnAj - tnEnt;
   const tnPdtLiq = tnEnt - tnLiq;
   const cumplimiento = tnAj>0 ? tnEnt/tnAj : null;
+  // promedio ponderado de VENTA sobre lo liquidado (regla usuario 19/08), por moneda
+  const pvU = {tn:0,imp:0}, pvA = {tn:0,imp:0};
+  filtered.forEach(r => { const lq = r.cantidadliquidada||0, px = r.precioliquidado||0;
+    if(lq>0 && px>0){ const d = String(r.moneda||'').toUpperCase().includes('DOLAR') ? pvU : pvA; d.tn += lq; d.imp += lq*px; } });
 
   const kSty = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row').innerHTML = `
@@ -2951,6 +2953,7 @@ function render(){
     <div class="kpi green" data-pnct="entr" style="${kSty}" title="Click: detalle de lo entregado por contrato"><div class="lbl">Toneladas Entregadas</div><div class="val">${fmt.num(tnEnt)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
     <div class="kpi orange" data-pnct="pend" style="${kSty}" title="Click: detalle del pendiente de entrega (fijado / sin fijar)"><div class="lbl">Tn Pendientes de Entrega</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Entregadas</div></div>
     <div class="kpi red" data-pnct="pliq" style="${kSty}" title="Click: detalle del pendiente de liquidar (fijado, precios, anticipos)"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Entregadas − Liquidadas (de lo entregado)</div></div>
+    <div class="kpi" title="Precio promedio ponderado por tn de lo YA liquidado (contratos en dólares y en pesos por separado)"><div class="lbl">P. Pond. Venta (liquidado)</div><div class="val">USD ${pvU.tn?fmt.num(pvU.imp/pvU.tn,2):'—'}</div><div class="hint">en $: ${pvA.tn?fmt.num(pvA.imp/pvA.tn):'—'} $/tn · ${fmt.num(pvU.tn+pvA.tn)} tn liq.</div></div>
   `;
 
   // resumen por grano (sin importes)
@@ -4180,12 +4183,8 @@ const CP_TABLE_COLS = [
   {k:'_cpPdteRecibir',              lbl:'Tn Pdte Recibir', num:true, sum:true, w:'95px'},
   {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true, w:'95px'},
   {k:'_cpPdteLiquidar',             lbl:'Tn Pdte Liquidar',num:true, sum:true, w:'95px'},
-  {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true, w:'90px'},
-  {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true, w:'90px'},
-  {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false, w:'110px'},
-  {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false, w:'110px'},
-  {k:'campana',                     lbl:'Campaña',         num:false, w:'150px'},
-  {k:'corredor',                    lbl:'Corredor',        num:false, w:'150px'},
+  // Tn Certif. / Tn Pdte Cert. / Entrega Desde-Hasta / Campaña / Corredor: sacadas del
+  // detalle de COMPRA (regla usuario 19/08 — no suman al análisis)
   {k:'_cpEstado',                   lbl:'Estado',          num:false, html:true, w:'110px'},
 ];
 
@@ -4283,6 +4282,10 @@ function cpRender(){
   const tnPdt = tnAj - tnRec;
   const tnPdtLiq = tnRec - tnLiq;   // entregado pero aun no liquidado
   const cumplimiento = tnAj>0 ? tnRec/tnAj : null;
+  // promedio ponderado de COMPRA sobre lo liquidado (regla usuario 19/08), por moneda
+  const pcU = {tn:0,imp:0}, pcA = {tn:0,imp:0};
+  cpFiltered.forEach(r => { const lq = r.cantidadliquidada||0, px = r.precioliquidado||0;
+    if(lq>0 && px>0){ const d = String(r.moneda||'').toUpperCase().includes('DOLAR') ? pcU : pcA; d.tn += lq; d.imp += lq*px; } });
   const kStyC = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row-cp').innerHTML = `
     <div class="kpi" data-pnct="tot" style="${kStyC}" title="Click: abrir el detalle por contrato"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA_CP.length)} totales</div></div>
@@ -4290,6 +4293,7 @@ function cpRender(){
     <div class="kpi green" data-pnct="entr" style="${kStyC}" title="Click: detalle de lo recibido por contrato"><div class="lbl">Toneladas Recibidas</div><div class="val">${fmt.num(tnRec)}</div><div class="hint">Cumplimiento: ${fmt.pct(cumplimiento)}</div></div>
     <div class="kpi orange" data-pnct="pend" style="${kStyC}" title="Click: detalle del pendiente de ingreso (fijado / sin fijar)"><div class="lbl">Tn Pendientes de Recibir</div><div class="val">${fmt.num(tnPdt)}</div><div class="hint">= Ajustadas − Recibidas</div></div>
     <div class="kpi red" data-pnct="pliq" style="${kStyC}" title="Click: detalle del pendiente de liquidar (fijado, precios)"><div class="lbl">Tn Pendientes de Liquidar</div><div class="val">${fmt.num(tnPdtLiq)}</div><div class="hint">= Recibidas − Liquidadas (de lo entregado)</div></div>
+    <div class="kpi" title="Precio promedio ponderado por tn de lo YA liquidado (contratos en dólares y en pesos por separado)"><div class="lbl">P. Pond. Compra (liquidado)</div><div class="val">USD ${pcU.tn?fmt.num(pcU.imp/pcU.tn,2):'—'}</div><div class="hint">en $: ${pcA.tn?fmt.num(pcA.imp/pcA.tn):'—'} $/tn · ${fmt.num(pcU.tn+pcA.tn)} tn liq.</div></div>
   `;
 
   const byG = {};
@@ -9044,8 +9048,13 @@ function pnRender(){
   familias.forEach(fam => {
     (byFamilia[fam] || []).forEach(p => {
       const r = dataPorProd[p]; if(!r) return;
+      // regla usuario 19/08: las tarjetas de SOJA/MAÍZ/TRIGO llevan SOLO el grano; las
+      // semillas de esos cultivos NO van en ninguna tarjeta (ni en OTROS) — de la
+      // semilla solo interesa el bolsón sin procesar y su descarte, que se leen en el
+      // desglose de la tabla. OTROS = cultivos menores nada más.
       const dest = (CARD_MAIN.includes(fam) && p.indexOf("Grano ") === 0) ? fam
-                   : (CARD_MAIN.includes(fam) ? "OTROS" : fam);
+                   : (CARD_MAIN.includes(fam) ? null : fam);
+      if(!dest) return;
       if(!cardTotals[dest]){ cardTotals[dest] = {posicion:0, ofertaTot:0, demandaTot:0}; cardOrden.push(dest); }
       cardTotals[dest].posicion  += r.posicion  || 0;
       cardTotals[dest].ofertaTot += r.ofertaTot || 0;
@@ -9375,7 +9384,7 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
     // SEMILLAS de soja/maíz/trigo (que ya no van en las tarjetas de grano)
     let cardsProd = "";
     Object.keys(byFamilia || {}).forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
-      if(MAIN.includes(f) && p.indexOf("Grano ") === 0) return;   // los granos grandes van en su tarjeta
+      if(MAIN.includes(f)) return;   // grano grande en su tarjeta; semillas de soja/maíz/trigo fuera de las tarjetas
       const r = dataPorProd && dataPorProd[p]; if(!r) return;
       if(!((r.ofertaTot||0) > 0.5 || (r.demandaTot||0) > 0.5 || Math.abs(r.posicion||0) > 0.5)) return;
       cardsProd += pnCardHTML(p.replace("Grano ", "").toUpperCase(),
@@ -12775,16 +12784,22 @@ def main() -> int:
     _ant_pilot = len(pilot_norm); _ant_compra = len(compra_norm)
     pilot_norm  = [r for r in pilot_norm  if _no_anul(r)]
     compra_norm = [r for r in compra_norm if _no_anul(r)]
-    # Exclusión manual (regla del usuario 19/08/2026): contrato de VENTA #1335 BASF soja
-    # 3.000 tn — ya está liquidado en la realidad pero Finnegans lo muestra pendiente
-    # (dato sucio). Se saca del tablero hasta que lo corrijan en el sistema.
-    def _excl_manual(r):
-        return (str(r.get("numerointerno") or "").strip() == "1335"
-                and "BASF" in (r.get("organizacion") or "").upper())
-    _ant = len(pilot_norm)
-    pilot_norm = [r for r in pilot_norm if not _excl_manual(r)]
-    if len(pilot_norm) < _ant:
-        print(f"[+] Exclusión manual: venta #1335 BASF (ya liquidada) fuera del tablero")
+    # Exclusiones manuales (regla del usuario 19/08/2026): contratos con dato sucio en
+    # Finnegans que distorsionan la posición — se sacan del tablero hasta que los
+    # corrijan en el sistema.
+    #   VENTA  #1335 BASF soja 3.000 tn        -> ya liquidada en la realidad
+    #   COMPRA #1139 CUMARINA maíz 3.740 tn    -> pedido del usuario (19/08)
+    EXCL_VENTA  = [("1335", "BASF")]
+    EXCL_COMPRA = [("1139", "CUMARINA")]
+    def _excl(r, lista):
+        n = str(r.get("numerointerno") or "").strip()
+        o = (r.get("organizacion") or "").upper()
+        return any(n == num and org in o for num, org in lista)
+    _ant_v, _ant_c = len(pilot_norm), len(compra_norm)
+    pilot_norm  = [r for r in pilot_norm  if not _excl(r, EXCL_VENTA)]
+    compra_norm = [r for r in compra_norm if not _excl(r, EXCL_COMPRA)]
+    if len(pilot_norm) < _ant_v or len(compra_norm) < _ant_c:
+        print(f"[+] Exclusiones manuales: venta -{_ant_v - len(pilot_norm)} · compra -{_ant_c - len(compra_norm)} (datos sucios, ver comentario)")
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
 
     # COMISION DE CORREDOR por contrato de compra (para la vista Resultados y el Cruce):
