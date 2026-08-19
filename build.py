@@ -9350,13 +9350,13 @@ function pnCardHTML(fam, t, extraAttr){
   const cls = {SOJA:"soja", "MAÍZ":"maiz", TRIGO:"trigo", GIRASOL:"girasol", SORGO:"sorgo"};
   const posicion = t.posicion;
   const cobertura = t.ofertaTot > 0 ? t.demandaTot / t.ofertaTot : 0;
-  const pp = t.posPend;
-  const ppHtml = (pp === undefined || pp === null) ? '' :
-    `<div class="of-de" title="Pos Pendiente = Pend Cosecha + Pend Ingreso − Ctos Pend. Entrega"><span>Pos Pendiente</span><span style="font-weight:800;color:${pp>=0?'var(--green,#2E8B57)':'var(--red,#C0392B)'}">${pp>=0?'+':''}${fmt.num(pp)} Tn</span></div>`;
+  // Regla del usuario (19/08/2026): el número GRANDE de la tarjeta es POS PENDIENTE
+  // (Pend Cosecha + Pend Ingreso − Ctos Pend. Entrega); el Teórico va abajo, chico.
+  const pp = (t.posPend === undefined || t.posPend === null) ? 0 : t.posPend;
   return `<div class="pn-card ${cls[fam] || ''}" ${extraAttr || ''}>
-    <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Teórico</span></div>
-    <div class="pos-val ${posicion>=0?'pos':'neg'}" title="Teórico = Oferta total − Demanda total">${posicion>=0?'+':''}${fmt.num(posicion)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
-    ${ppHtml}
+    <div class="name"><span>${fam}</span><span style="font-size:11px;color:var(--muted)">Pos Pendiente</span></div>
+    <div class="pos-val ${pp>=0?'pos':'neg'}" title="Pos Pendiente = Pend Cosecha + Pend Ingreso − Ctos Pend. Entrega">${pp>=0?'+':''}${fmt.num(pp)} <span style="font-size:14px;color:var(--muted)">Tn</span></div>
+    <div class="of-de" title="Teórico = Oferta total − Demanda total"><span>Teórico</span><span style="font-weight:800;color:${posicion>=0?'var(--green,#2E8B57)':'var(--red,#C0392B)'}">${posicion>=0?'+':''}${fmt.num(posicion)} Tn</span></div>
     <div class="of-de"><span>Of ${fmt.num(t.ofertaTot)}</span><span>De ${fmt.num(t.demandaTot)}</span></div>
     <div class="bar-cobertura"><div style="width:${Math.min(100, cobertura*100)}%"></div></div>
     <div class="pct">${fmt.pct(cobertura)} cobertura</div>
@@ -9369,8 +9369,8 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
   const MAIN = ["SOJA", "MAÍZ", "TRIGO"];
   const otras = familias.filter(f => !MAIN.includes(f));
   let html = MAIN.filter(f => totalsFam[f]).map(f => pnCardHTML(f, totalsFam[f])).join("");
-  const tO = {posicion:0, ofertaTot:0, demandaTot:0};
-  otras.forEach(f => { const t = totalsFam[f]; tO.posicion += t.posicion; tO.ofertaTot += t.ofertaTot; tO.demandaTot += t.demandaTot; });
+  const tO = {posicion:0, ofertaTot:0, demandaTot:0, posPend:0};
+  otras.forEach(f => { const t = totalsFam[f]; tO.posicion += t.posicion; tO.ofertaTot += t.ofertaTot; tO.demandaTot += t.demandaTot; tO.posPend += (t.posPend || 0); });
   if (otras.length) html += pnCardHTML("OTROS", tO, 'id="pn-card-otros" style="cursor:pointer" title="Click: ver los demás cultivos"');
   // PRÉSTAMO CP: obedece los filtros generales (campaña + empresa) como todo lo demás
   const selCamp = (document.getElementById("pn-campana") || {value:""}).value;
@@ -13640,6 +13640,11 @@ def main() -> int:
                     "MAÍZ" if ("MAIZ" in gU or "MAÍZ" in gU) else "GIRASOL" if "GIRASOL" in gU else "OTROS")
             camp = str(row.get("COSECHA") or "").strip()
             camp = ("CAMPAÑA " + camp) if camp and not camp.upper().startswith("CAMP") else (camp or "—")
+            # CP con campaña mal cargada en Finnegans: nada de 26/27 puede moverse antes
+            # de nov-2026 — si la fecha es anterior, es mercadería 25/26 (regla usuario 19/08)
+            fch = str(row.get("FECHA") or "")[:10]
+            if camp in ("CAMPAÑA 26-27", "—") and fch and fch < "2026-11-01":
+                camp = "CAMPAÑA 25-26"
             cli = str(row.get("ORGANIZACIONNOMBRE") or "").strip() or "—"
             emp = str(row.get("EMPRESANOMBRE") or row.get("EMPRESA") or "").strip()
             k = (camp, cult, cli, emp)
