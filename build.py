@@ -8264,8 +8264,11 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // compra es solo para facturar. Se ven en el detalle de contratos y en la tarjeta
   // PRÉSTAMO CP, pero NO cuentan en compra, totales ni posición (duplicarían).
   const esSemGranoCpra = pnEsSemillaGrano(producto);
-  if (!esSemGranoCpra) opsCompra.forEach(c => {
+  opsCompra.forEach(c => {
     const ent = Number(c.cantidadentregada) || 0;
+    if (esSemGranoCpra) { compraEntr += ent; return; }   // SEMILLA X (préstamo CP): se MUESTRA
+    // lo entregado en la columna de compra (regla usuario 19/08) pero NO suma pendiente,
+    // total ni oferta/posición — la mercadería ya salió por venta, la compra es facturación.
     const pen = pnPendE(c);
     compraEntr += ent;
     compraPend += pen;
@@ -9212,11 +9215,10 @@ function pnctRender(){
 
   // tabla — sin Fecha / Campaña / Entrega (la campaña ya se filtró antes del zoom);
   // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
-  // Regla del usuario (18/08/2026): en el zoom de COMPRA no mostrar la columna
-  // "Pend. Ingreso" — es dato sucio a limpiar en Finnegans, queda fuera de la vista.
+  // Pend. Ingreso (compra) / Pend. Entrega (venta) = ajustada − entregada (regla usuario)
   document.getElementById('pnct-thead').innerHTML = `<tr>
     <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th><th>Campaña</th>
-    <th class="num">Ajustada</th><th class="num">Entregada</th>${cp?'':'<th class="num">Pend. Entrega</th>'}<th class="num">Entreg. P/Liq</th>
+    <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
     <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
     <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
     <th class="num">Liquidada (tn)</th><th class="num">Liq. Anticip. (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
@@ -9249,7 +9251,7 @@ function pnctRender(){
       <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}</td>
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
-      <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td>${cp?'':`<td class="num" style="font-weight:700">${fmt.num(pen)}</td>`}
+      <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
       <td class="num" style="font-weight:700;color:#b91c1c">${entPliq?fmt.num(entPliq):'—'}</td>
       <td class="${f.cls}">${f.t}</td><td class="num">${fmt.num(fijTn)}</td>
       <td class="num" style="${sinFij>0.05?'color:#B5740E;font-weight:700':''}">${sinFij>0.05?fmt.num(sinFij):'—'}</td>
@@ -9259,10 +9261,10 @@ function pnctRender(){
       <td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
       <td>${cta}</td></tr>`;
   });
-  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="${cp?18:19}" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
+  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="19" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
     <td colspan="4">TOTAL (${rows.length} contratos)</td>
-    <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td>${cp?'':`<td class="num">${fmt.num(tPen)}</td>`}
+    <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
     <td class="num">${fmt.num(tEntPliq)}</td>
     <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
     <td></td><td></td><td></td>
