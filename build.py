@@ -9059,6 +9059,7 @@ function pnRender(){
       // coincide con la fila, regla usuario 19/08); pisingallo/oleico/trigo no-pan -> OTROS;
       // semillas de los 3 grandes -> fuera de tarjetas.
       const FLAG = {"SOJA": "Grano Soja", "MAÍZ": "Grano Maíz", "TRIGO": "Grano Trigo Pan"};
+      if(p === "Grano Maíz Oleico") return;   // no existe (regla usuario 19/08) — desestimado
       const dest = CARD_MAIN.includes(fam)
         ? (p === FLAG[fam] ? fam : (p.indexOf("Grano ") === 0 ? "OTROS" : null))
         : fam;
@@ -9397,6 +9398,7 @@ function pnRenderCards(totalsFam, familias, byFamilia, dataPorProd){
     let cardsProd = "";
     const FLAG = {"SOJA": "Grano Soja", "MAÍZ": "Grano Maíz", "TRIGO": "Grano Trigo Pan"};
     Object.keys(byFamilia || {}).forEach(f => ((byFamilia && byFamilia[f]) || []).forEach(p => {
+      if(p === "Grano Maíz Oleico") return;       // no existe (regla usuario) — desestimado
       if(MAIN.includes(f)){
         if(p === FLAG[f]) return;                 // el grano principal va en su tarjeta
         if(p.indexOf("Grano ") !== 0) return;     // semillas de los 3 grandes: fuera de tarjetas
