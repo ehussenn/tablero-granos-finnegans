@@ -11930,8 +11930,12 @@ function ctRender(){
     '1042','1068','1020','1074','1055','1066','829','828','834','903','1065','1071','1102','1022','1086','972','975','979','984','983',
     '989','990','991','996','997','998','994','1008','1007','1016','1094','1040','1052','1051','1090','1106','1080','1091','1107','1104'
   ];
-  function fpEnsureMerge(){   // garantiza las enviadas de FP_MERGE en _fpEnv (salvo si ya están hechas)
+  // Finales que FINNEGANS confirma efectuadas (pen. efectuar final = 0): se marcan 🟢
+  // Hecha automáticamente en cada lectura. Solo AGREGA — jamás borra estados manuales.
+  const FP_AUTO_HECHAS = (PAYLOAD.fp_auto_hechas || []).map(String);
+  function fpEnsureMerge(){   // garantiza autos-hechas + enviadas de FP_MERGE (Hecha gana)
     if(!_fpEnv) return;
+    if(_fpHec) FP_AUTO_HECHAS.forEach(c => _fpHec.add(c));
     FP_MERGE_ENVIADAS.forEach(c => { const id=String(c); if(!(_fpHec && _fpHec.has(id))) _fpEnv.add(id); });
   }
   function initSeed(){
@@ -13934,9 +13938,27 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] unificación maní producción: {e}")
 
+    # Finales auto-detectadas como HECHAS (regla usuario 20/08/2026): si Finnegans dice
+    # que la final ya se efectuó (CANTIDADPENEFECTUARFINAL = 0 con entregado = liquidado),
+    # el semáforo la marca 🟢 Hecha solo. NUNCA borra estados manuales — solo agrega.
+    fp_auto_hechas = []
+    try:
+        for _r in compra_norm:
+            _ent = float(_r.get("cantidadentregada") or 0)
+            _liq = float(_r.get("cantidadliquidada") or 0)
+            _pf = _r.get("cantidadpenefectuarfinal")
+            if _pf is None: continue
+            if _ent > 0 and abs(_ent - _liq) < 1 and float(_pf or 0) < 1:
+                _n = str(_r.get("numerointerno") or "").strip()
+                if _n: fp_auto_hechas.append(_n)
+        print(f"[+] Finales auto-hechas (Finnegans: pen. efectuar final = 0): {len(fp_auto_hechas)} contratos")
+    except Exception as e:
+        print(f"    [!] fp_auto_hechas: {e}")
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
+        "fp_auto_hechas": fp_auto_hechas,
         "produccion_camp": produccion_camp,
         "produccion_pend_det": produccion_pend_det,
         "prestamo_cp": prestamo_cp,
