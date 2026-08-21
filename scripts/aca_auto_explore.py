@@ -2,6 +2,7 @@
 from __future__ import annotations
 import sys, os, json, time, threading
 from pathlib import Path
+from _env import need
 
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,8 +18,8 @@ if env_path.exists():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-USER = os.environ.get("ACA_USER", "agronasaja")
-PWD = os.environ.get("ACA_PASS", "nasaja12345")
+USER = need("ACA_USER")
+PWD = need("ACA_PASS")
 
 REQ_LOG = []; RESP_LOG = []; TOKEN = [None]; LOCK = threading.Lock()
 EXCLUDE = (".css", ".js", ".png", ".jpg", ".jpeg", ".woff", ".woff2", ".svg", ".ico", ".gif", ".ttf",

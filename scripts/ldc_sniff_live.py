@@ -3,6 +3,7 @@ Usa el perfil persistente — si ya estás logueado, no pide login otra vez."""
 from __future__ import annotations
 import sys, os, json, time, threading
 from pathlib import Path
+from _env import need
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -19,8 +20,8 @@ if env_path.exists():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-USER = os.environ.get("LDC_USER", "pgauto@agronasaja.com.ar")
-PWD = os.environ.get("LDC_PASS", "Nasaja1234.")
+USER = need("LDC_USER")
+PWD = need("LDC_PASS")
 
 REQ_LOG = []
 RESP_LOG = []

@@ -1,10 +1,12 @@
-"""Refresh diario LDC — corre headless, baja settlements + fixations, hace git push.
+"""Refresh diario LDC — corre headless y baja settlements + fixations a data/ldc/.
+(2026-08: ya no hace git push; la subida es manual via /granos-tablero/subir-datos.)
 Diseñado para Windows Task Scheduler. Logs a data/ldc/refresh.log.
 Replica del patrón de cargill_daily_refresh.py."""
 from __future__ import annotations
 import sys, os, json, time, subprocess
 from pathlib import Path
 from datetime import datetime
+from _env import need
 
 sys.stdout.reconfigure(encoding='utf-8')
 
@@ -22,8 +24,8 @@ DATA = ROOT / "data" / "ldc"
 DATA.mkdir(parents=True, exist_ok=True)
 LOG = DATA / "refresh.log"
 
-USER = os.environ.get("LDC_USER", "pgauto@agronasaja.com.ar")
-PWD = os.environ.get("LDC_PASS", "Nasaja1234.")
+USER = need("LDC_USER")
+PWD = need("LDC_PASS")
 CUIT = "30710712758"
 API = "https://mildc.com/Dreyfus.Extranet.Site.UI.Services/api"
 
@@ -135,21 +137,9 @@ def main():
     except Exception as e:
         log(f"    [!] err DW: {e}")
 
-    # Git commit + push
-    try:
-        os.chdir(str(ROOT))
-        subprocess.run(["git", "add", "data/ldc/settlements.json", "data/ldc/fixations.json",
-                         "data/ldc/not_applied_product.json", "data/ldc/ldc_ctgs.json"], check=True)
-        r = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True)
-        if r.stdout.strip():
-            msg = f"LDC auto-refresh {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-            subprocess.run(["git", "commit", "-m", msg], check=True)
-            subprocess.run(["git", "push"], check=True)
-            log(f"[+] git push OK: {msg}")
-        else:
-            log("[.] Sin cambios, no commit")
-    except subprocess.CalledProcessError as e:
-        log(f"[!] git error: {e}"); return 1
+    # 2026-08: ya no se pushea a GitHub (repos dados de baja por incidente de
+    # seguridad). Los JSON quedan en data/ y se suben a mano desde la extranet:
+    # /granos-tablero/subir-datos -> boton "Carpeta data/..." (cuando este online).
 
     log("[OK] DONE"); return 0
 

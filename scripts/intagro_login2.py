@@ -1,8 +1,9 @@
 import sys
 from playwright.sync_api import sync_playwright
+from _env import need
 sys.stdout.reconfigure(encoding="utf-8")
-email = sys.argv[1] if len(sys.argv)>1 else "ehussen@agronasaja.com.ar"
-pwd   = sys.argv[2] if len(sys.argv)>2 else "nasaja1234"
+email = sys.argv[1] if len(sys.argv)>1 else need("FINNEGANS_WEB_USER")
+pwd   = sys.argv[2] if len(sys.argv)>2 else need("INTAGRO_PASS")
 reqs=[]
 with sync_playwright() as p:
     b=p.chromium.connect_over_cdp("http://localhost:9334")

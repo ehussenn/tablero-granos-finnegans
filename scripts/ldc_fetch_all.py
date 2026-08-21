@@ -19,8 +19,8 @@ if env_path.exists():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-USER = os.environ.get("LDC_USER", "pgauto@agronasaja.com.ar")
-PWD = os.environ.get("LDC_PASS", "Nasaja1234.")
+USER = need("LDC_USER")
+PWD = need("LDC_PASS")
 CUIT = "30710712758"  # Agronasaja
 DATE_FROM_ISO = "2026-01-01T00:00:00.000Z"
 DATE_UNTIL_ISO = datetime.now().strftime("%Y-%m-%dT23:59:59.999Z")
@@ -35,6 +35,7 @@ def on_req(r):
         if a and "bearer" in a.lower() and not TOKEN[0]: TOKEN[0] = a
 
 from playwright.sync_api import sync_playwright
+from _env import need
 
 with sync_playwright() as p:
     ctx = p.chromium.launch_persistent_context(

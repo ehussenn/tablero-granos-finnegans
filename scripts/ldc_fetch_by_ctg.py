@@ -21,8 +21,8 @@ if env_path.exists():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-USER = os.environ.get("LDC_USER", "pgauto@agronasaja.com.ar")
-PWD = os.environ.get("LDC_PASS", "Nasaja1234.")
+USER = need("LDC_USER")
+PWD = need("LDC_PASS")
 API = "https://mildc.com/Dreyfus.Extranet.Site.UI.Services/api"
 TOKEN = [None]
 
@@ -37,6 +37,7 @@ ctgs_unicos = sorted({str(c.get("numerodocumentoadicional")) for c in ctgs_data 
 print(f"[+] {len(ctgs_unicos)} CTGs únicos a probar")
 
 from playwright.sync_api import sync_playwright
+from _env import need
 with sync_playwright() as p:
     ctx = p.chromium.launch_persistent_context(user_data_dir=str(PROFILE), headless=False, viewport={"width":1500,"height":950})
     page = ctx.pages[0] if ctx.pages else ctx.new_page()

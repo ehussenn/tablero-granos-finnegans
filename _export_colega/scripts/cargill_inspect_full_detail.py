@@ -2,6 +2,7 @@
 import sys, json
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from _env import need
 
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = Path(__file__).resolve().parent
@@ -25,7 +26,7 @@ with sync_playwright() as p:
     print(f"[+] URL: {page.url}")
     if "/login" in page.url:
         # Re-loguear
-        u = "santiagolm@agronasaja.com.ar"; w = "<PASSWORD>"
+        u = need("CARGILL_USER"); w = "<PASSWORD>"
         try:
             page.locator("input[name='username']").fill(u)
             page.locator("input[name='password']").fill(w)

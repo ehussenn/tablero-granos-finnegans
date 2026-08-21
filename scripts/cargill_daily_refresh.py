@@ -1,4 +1,5 @@
-"""Refresh diario Cargill GPS — corre headless, baja JSON, hace git push.
+"""Refresh diario Cargill GPS — corre headless y baja JSON a data/cargill/.
+(2026-08: ya no hace git push; la subida es manual via /granos-tablero/subir-datos.)
 Diseñado para Windows Task Scheduler. Logs a data/cargill/refresh.log."""
 from __future__ import annotations
 import sys, os, json, time, subprocess
@@ -173,24 +174,9 @@ def main():
     (DATA/"invoices.json").write_text(json.dumps(invs, ensure_ascii=False, indent=2), encoding="utf-8")
     log("[+] JSONs guardados en data/cargill/")
 
-    # Git commit + push
-    try:
-        os.chdir(str(ROOT))
-        subprocess.run(["git", "add", "data/cargill/movements.json",
-                         "data/cargill/payments.json", "data/cargill/invoices.json",
-                         "data/cargill/movements_detail.json"], check=True)
-        # Solo commitear si hay cambios
-        r = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True)
-        if r.stdout.strip():
-            msg = f"Cargill auto-refresh {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-            subprocess.run(["git", "commit", "-m", msg], check=True)
-            subprocess.run(["git", "push"], check=True)
-            log(f"[+] git push OK: {msg}")
-        else:
-            log("[.] Sin cambios, no commit")
-    except subprocess.CalledProcessError as e:
-        log(f"[!] git error: {e}")
-        return 1
+    # 2026-08: ya no se pushea a GitHub (repos dados de baja por incidente de
+    # seguridad). Los JSON quedan en data/ y se suben a mano desde la extranet:
+    # /granos-tablero/subir-datos -> boton "Carpeta data/..." (cuando este online).
 
     log("[OK] DONE")
     return 0

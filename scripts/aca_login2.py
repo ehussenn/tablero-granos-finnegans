@@ -1,8 +1,9 @@
 import sys
 from playwright.sync_api import sync_playwright
+from _env import need
 sys.stdout.reconfigure(encoding="utf-8")
-USER=sys.argv[1] if len(sys.argv)>1 else "agronasaja"
-PWD =sys.argv[2] if len(sys.argv)>2 else "nasaja12345"
+USER=sys.argv[1] if len(sys.argv)>1 else need("ACA_USER")
+PWD =sys.argv[2] if len(sys.argv)>2 else need("ACA_PASS")
 reqs=[]
 with sync_playwright() as p:
     b=p.chromium.connect_over_cdp("http://localhost:9335")

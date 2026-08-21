@@ -4,11 +4,12 @@ Reutilizable para el refresco automático."""
 import sys, json, re
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from _env import need
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parent
 PROFILE = ROOT / "scraper" / ".ldc_profile"
 DATA = ROOT.parent / "data" / "ldc"; DATA.mkdir(parents=True, exist_ok=True)
-USER, PWD = "pgauto@agronasaja.com.ar", "Nasaja1234."
+USER, PWD = need("LDC_USER"), need("LDC_PASS")
 RESP = []   # respuestas ApplicationsQuality
 
 def main(headless=True):

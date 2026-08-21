@@ -1,6 +1,6 @@
 """Login + exploración de balanza.agronasaja.com (la app de balanza/análisis).
 
-Loguea con EHussen / Nasaja@2024, guarda perfil persistente, y vuelca:
+Loguea con las credenciales BALANZA_USER/BALANZA_PASS del .env, guarda perfil persistente, y vuelca:
 - screenshot post-login
 - HTML
 - listado de links del menú, botones e inputs (para mapear dónde están
@@ -10,6 +10,7 @@ from __future__ import annotations
 import sys, time, json
 from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
+from _env import need
 
 ROOT = Path(__file__).resolve().parent
 PROFILE = ROOT / "scraper" / ".balanza_profile"
@@ -17,8 +18,8 @@ OUT = ROOT / "scraper" / "out"
 PROFILE.mkdir(parents=True, exist_ok=True)
 OUT.mkdir(parents=True, exist_ok=True)
 
-USER = "EzHussen"
-PASS = "Nasaja@2024"
+USER = need("BALANZA_USER")
+PASS = need("BALANZA_PASS")
 BASE = "https://balanza.agronasaja.com"
 
 def run(headless=True):

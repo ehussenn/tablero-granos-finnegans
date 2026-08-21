@@ -3,10 +3,11 @@
 import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from _env import need
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = Path(__file__).resolve().parent
 PROFILE = ROOT / "scraper" / ".ldc_profile"
-USER, PWD = "pgauto@agronasaja.com.ar", "Nasaja1234."
+USER, PWD = need("LDC_USER"), need("LDC_PASS")
 
 with sync_playwright() as p:
     ctx = p.chromium.launch_persistent_context(user_data_dir=str(PROFILE), headless=True,

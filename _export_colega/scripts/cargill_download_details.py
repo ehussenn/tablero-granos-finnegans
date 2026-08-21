@@ -3,6 +3,7 @@ Toma el movementNumber de cada uno en movements.json, llama /v1/movements/{num},
 import sys, json, time, os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from _env import need
 
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT = Path(__file__).resolve().parent
@@ -42,7 +43,7 @@ with sync_playwright() as p:
     page.goto("https://www.mycargill.com/cascsa/v2/app/Movements", wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(15000)
     if "/login" in page.url:
-        u = os.environ.get("CARGILL_USER", "santiagolm@agronasaja.com.ar")
+        u = need("CARGILL_USER")
         w = os.environ.get("CARGILL_PASS", "<PASSWORD>")
         page.locator("input[name='username']").fill(u)
         page.locator("input[name='password']").fill(w)

@@ -1,4 +1,5 @@
-"""Refresh diario Allaria — login + scrappear clientes_fis + clientes_cta + parse + git push.
+"""Refresh diario Allaria — login + scrappear clientes_fis + clientes_cta + parse.
+(2026-08: ya no hace git push; la subida es manual via /granos-tablero/subir-datos.)
 Diseñado para Windows Task Scheduler. Logs en data/allaria/refresh.log."""
 from __future__ import annotations
 import sys, os, json, time, subprocess, re
@@ -111,20 +112,9 @@ def main():
     except Exception as e:
         log(f"    [!] DW err: {e}")
 
-    # Git
-    try:
-        os.chdir(str(ROOT))
-        subprocess.run(["git", "add", "data/allaria/"], check=True)
-        r = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True)
-        if r.stdout.strip():
-            msg = f"Allaria auto-refresh {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-            subprocess.run(["git", "commit", "-m", msg], check=True)
-            subprocess.run(["git", "push"], check=True)
-            log(f"[+] git push OK")
-        else:
-            log("[.] sin cambios")
-    except subprocess.CalledProcessError as e:
-        log(f"[!] git err: {e}"); return 1
+    # 2026-08: ya no se pushea a GitHub (repos dados de baja por incidente de
+    # seguridad). Los JSON quedan en data/ y se suben a mano desde la extranet:
+    # /granos-tablero/subir-datos -> boton "Carpeta data/..." (cuando este online).
 
     log("[OK] DONE"); return 0
 

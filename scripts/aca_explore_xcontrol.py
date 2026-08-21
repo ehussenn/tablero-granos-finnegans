@@ -17,10 +17,11 @@ if env_path.exists():
         k, _, v = line.partition("=")
         os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-USER = os.environ.get("ACA_USER", "agronasaja")
-PWD = os.environ.get("ACA_PASS", "nasaja12345")
+USER = need("ACA_USER")
+PWD = need("ACA_PASS")
 
 from playwright.sync_api import sync_playwright
+from _env import need
 
 with sync_playwright() as p:
     ctx = p.chromium.launch_persistent_context(
