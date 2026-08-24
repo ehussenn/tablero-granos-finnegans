@@ -8025,12 +8025,26 @@ function pnInitFiltros(){
   };
   fillSel("pn-campana", camps, "Todas");
   fillSel("pn-empresa", emps,  "Todas");
-  // Default: campaña más reciente (la más alta alfabéticamente)
+  // Default: campaña de COSECHA VIGENTE = la más reciente con grano realmente entregado
+  // (>=20% del máximo entregado de cualquier campaña) — misma regla que usa pnRender para
+  // el stock físico. Antes se elegía "la más alta alfabéticamente", pero al aparecer los
+  // primeros forwards de una campaña nueva (ej. 26-27) el tablero arrancaba parado en una
+  // campaña sin grano y los números descolocaban (reportado por Ezequiel el 24/08/2026).
+  const entrPorCampIni = {};
+  (DATA_CP || []).forEach(c => {
+    if(!c.campana) return;
+    entrPorCampIni[c.campana] = (entrPorCampIni[c.campana] || 0) + (Number(c.cantidadentregada) || 0);
+  });
+  const maxEntrIni = Math.max(0, ...Object.values(entrPorCampIni));
+  let campIni = null;
+  Object.keys(entrPorCampIni).forEach(k => {
+    if(entrPorCampIni[k] >= maxEntrIni * 0.2 && entrPorCampIni[k] > 0 && (campIni === null || k > campIni)) campIni = k;
+  });
   const campArr = [...camps].sort();
-  if(campArr.length){
-    const last = campArr[campArr.length - 1];
-    document.getElementById("pn-campana").value = last;
-    document.getElementById("pn-campana-chip").textContent = last;
+  if(!campIni && campArr.length) campIni = campArr[campArr.length - 1];
+  if(campIni){
+    document.getElementById("pn-campana").value = campIni;
+    document.getElementById("pn-campana-chip").textContent = campIni;
   }
 
   ["pn-campana","pn-empresa"].forEach(id => document.getElementById(id).addEventListener("change", () => {
