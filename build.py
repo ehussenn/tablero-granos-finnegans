@@ -1834,10 +1834,7 @@ window.apiFetch = function(path, opts){
 
       <!-- DETALLE -->
       <div class="section">
-        <h3>Detalle de Contratos — Posición Física <span class="badge">Click en encabezado para ordenar</span>
-          <label style="font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap" title="Para analizar el pendiente de liquidar: esconde los contratos con pdte. de liquidar entre 0 y 15 tn (ya liquidados o casi) y los anulados. Los negativos (liquidado de más) siempre quedan.">
-            <input type="checkbox" id="f-pliq15" checked style="vertical-align:-2px;accent-color:#B5740E"> Ocultar pdte. liq. 0–15 tn y anulados
-          </label></h3>
+        <h3>Detalle de Contratos — Posición Física <span class="badge">Click en encabezado para ordenar · sin los "a acomodar" (están abajo)</span></h3>
         <div class="tbl-wrap">
           <table id="tbl">
             <thead><tr id="tbl-head"></tr></thead>
@@ -1846,6 +1843,20 @@ window.apiFetch = function(path, opts){
           </table>
         </div>
       </div>
+
+      <!-- PENDIENTES A ACOMODAR: contratos que no suman al análisis (pdte. liq. 0–15 tn
+           y anulados) pero NO se ocultan — quedan acá abajo, a la vista, con sus totales -->
+      <details class="section section-collapsible" data-collapse="vt-acomodar">
+        <summary><span class="collapse-arrow">▾</span> 📌 Pendientes a acomodar <span class="badge" id="acomodar-meta"></span></summary>
+        <div style="font-size:12px;color:var(--muted);margin:6px 0 10px">Contratos con pendiente de liquidar entre 0 y 15 tn (ya liquidados o casi) y anulados. No entran en la tabla de análisis de arriba, pero acá están completos. Los negativos (liquidado de más) SÍ quedan arriba.</div>
+        <div class="tbl-wrap" style="max-height:420px">
+          <table id="tbl-acomodar">
+            <thead><tr id="tbl-acomodar-head"></tr></thead>
+            <tbody id="tbl-acomodar-body"></tbody>
+            <tfoot id="tbl-acomodar-foot"></tfoot>
+          </table>
+        </div>
+      </details>
     </div>
 
     <!-- ========== SUB: FINANCIERA ========== -->
@@ -2476,7 +2487,10 @@ function grainClass(p){
 
 function estadoChip(r){
   const e = (r.estadoanulacion||'').toLowerCase();
-  if(e.includes('anul')) return '<span class="chip err">Anulado</span>';
+  // OJO: el valor normal es "No Anulado", que tambien contiene "anul" — el chequeo viejo
+  // marcaba Anulado a TODOS los contratos activos (bug detectado 24/08, misma regla que
+  // ya usaba la version de compra en linea ~4300).
+  if(e.includes('anul') && !e.includes('no anul')) return '<span class="chip err">Anulado</span>';
   // sin anulación: ver cumplimiento entrega (sobre cantidad ajustada = max)
   const aj = r.cantidadmax||0, ent = r.cantidadentregada||0;
   if(aj<=0) return '<span class="chip neutral">—</span>';
@@ -2836,6 +2850,13 @@ const TABLE_COLS = [
   {k:'_pdteEntrega',                lbl:'Tn Pdte Entrega', num:true, sum:true},
   {k:'cantidadliquidada',           lbl:'Tn Liquidadas',   num:true, sum:true},
   {k:'_pdteLiquidar',               lbl:'Tn Pdte Liquidar',num:true, sum:true},
+  // Cruce con las liquidaciones YA emitidas por la cerealera pero sin pasar al ERP
+  // (snapshot exportado de Finnegans, data/liq_pdte_pasar.json). Total por
+  // CEREALERA + GRANO: se repite en cada contrato del grupo, por eso NO suma al pie.
+  {k:'_pdtePasar',                  lbl:'Liq. s/Pasar',    num:true, sum:false,
+   tip:'Liquidaciones ya emitidas por la cerealera que faltan pasar al ERP. Total por cerealera+grano (se repite en cada contrato del grupo). Snapshot Finnegans.'},
+  {k:'_difLiq',                     lbl:'Dif. s/Cerealera',num:true, sum:false,
+   tip:'Pdte de Liquidar del ERP (todos los contratos de esa cerealera+grano en el filtro actual) MENOS las liq. sin pasar: lo que de verdad falta que la cerealera liquide.'},
   {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
   {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
@@ -2926,15 +2947,6 @@ document.getElementById('btn-clear').addEventListener('click', () => {
   document.getElementById('f-q').value = '';
   applyFilters();
 });
-// Toggle "ocultar pdte. liq. 0-15 tn y anulados" — recuerda la eleccion en este navegador
-{
-  const fp15 = document.getElementById('f-pliq15');
-  fp15.checked = localStorage.getItem('tablero-vt-pliq15') !== '0';
-  fp15.addEventListener('change', () => {
-    localStorage.setItem('tablero-vt-pliq15', fp15.checked ? '1' : '0');
-    render();
-  });
-}
 
 function applyFilters(){
   // actualizar conteos en TODOS los selects (encadenados)
@@ -3030,11 +3042,28 @@ function render(){
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:8,font:{size:11}}}, tooltip:{callbacks:{label:c=>c.label+': '+fmt.num(c.parsed)+' tn'}}}}
   });
 
+  // LIQ. SIN PASAR: mapa cerealera+grano -> tn (del snapshot) y el pdte de liquidar
+  // del ERP agrupado igual (sobre lo filtrado) para la columna de diferencia
+  const PP_SNAP = PAYLOAD.liq_pdte_pasar || null;
+  const _norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().trim();
+  const _espProd = p => _norm(p).replace(/^GRANO\s+/,'');
+  let PP_MAP = null, PL_GRP = null;
+  if(PP_SNAP && PP_SNAP.grupos){
+    PP_MAP = {};
+    PP_SNAP.grupos.forEach(g => { PP_MAP[_norm(g.org)+'|'+_norm(g.especie)] = g.tn; });
+    PL_GRP = {};
+    filtered.forEach(r => {
+      const k = _norm(r.organizacion)+'|'+_espProd(r.producto);
+      PL_GRP[k] = (PL_GRP[k]||0) + ((r.cantidadentregada||0)-(r.cantidadliquidada||0));
+    });
+  }
+
   // tabla
   const head = TABLE_COLS.map(c => {
     const ar = (sortKey===c.k) ? (sortDir>0?'▲':'▼') : '';
     const cls = (sortKey===c.k) ? (sortDir>0?'sort-asc':'sort-desc') : '';
-    return `<th class="${cls}" data-k="${c.k}" data-num="${c.num?1:0}">${c.lbl}<span class="arrow">${ar||'⇅'}</span></th>`;
+    const tip = c.tip ? ` title="${escapeHtml(c.tip + (c.k==='_pdtePasar' && PP_SNAP ? ' ('+(PP_SNAP.snapshot||'')+')' : ''))}"` : '';
+    return `<th class="${cls}" data-k="${c.k}" data-num="${c.num?1:0}"${tip}>${c.lbl}<span class="arrow">${ar||'⇅'}</span></th>`;
   }).join('');
   document.getElementById('tbl-head').innerHTML = head;
   document.querySelectorAll('thead th').forEach(th => {
@@ -3051,31 +3080,43 @@ function render(){
     if(k==='_estado') return r.estadoanulacion||'';
     if(k==='_pdteEntrega') return (r.cantidadmax||0) - (r.cantidadentregada||0);
     if(k==='_pdteLiquidar') return (r.cantidadentregada||0) - (r.cantidadliquidada||0);
+    if(k==='_pdtePasar'){
+      if(!PP_MAP) return null;
+      const v = PP_MAP[_norm(r.organizacion)+'|'+_espProd(r.producto)];
+      return v === undefined ? null : v;
+    }
+    if(k==='_difLiq'){
+      if(!PP_MAP) return null;
+      const kk = _norm(r.organizacion)+'|'+_espProd(r.producto);
+      const pp = PP_MAP[kk];
+      if(pp === undefined) return null;
+      return (PL_GRP[kk]||0) - pp;
+    }
     return r[k];
   };
 
-  let rows = filtered;
-  // Filtro de análisis (regla usuario 24/08): para mirar el pendiente de liquidar de lo
-  // entregado, esconder el ruido — contratos con pdte. liq. entre 0 y <15 tn (ya liquidados
-  // o casi) y los ANULADOS. Los negativos (liquidado > entregado) SIEMPRE quedan visibles.
-  // Solo afecta la tabla y sus totales; los KPIs y gráficos de arriba siguen completos.
-  const fp15 = document.getElementById('f-pliq15');
-  if(fp15 && fp15.checked){
-    rows = rows.filter(r => {
-      if(String(r.estadoanulacion||'').trim().toLowerCase() === 'anulado') return false;
-      const pl = (r.cantidadentregada||0) - (r.cantidadliquidada||0);
-      return !(pl >= 0 && pl < 15);
-    });
-  }
+  // Split "a acomodar" (regla usuario 24/08): los contratos con pdte. de liquidar entre
+  // 0 y 15 tn (ya liquidados o casi) y los ANULADOS no suman al análisis y generan
+  // discusión — pero NO se ocultan: van completos a la sección "Pendientes a acomodar"
+  // de abajo. Los NEGATIVOS (liquidado > entregado) siempre quedan en la tabla principal.
+  const esAcomodar = r => {
+    if(String(r.estadoanulacion||'').trim().toLowerCase() === 'anulado') return true;
+    const pl = (r.cantidadentregada||0) - (r.cantidadliquidada||0);
+    return pl >= 0 && pl < 15;
+  };
+  let rows = filtered.filter(r => !esAcomodar(r));
+  let rowsAcomodar = filtered.filter(esAcomodar);
   if(sortKey){
     const col = TABLE_COLS.find(c=>c.k===sortKey);
-    rows = rows.slice().sort((a,b)=>{
+    const cmp = (a,b)=>{
       let va = getVal(a, sortKey);
       let vb = getVal(b, sortKey);
       if(col && col.num){ va = va||0; vb = vb||0; return (va-vb)*sortDir; }
       va = (va==null?'':String(va)); vb = (vb==null?'':String(vb));
       return va.localeCompare(vb,'es',{numeric:true})*sortDir;
-    });
+    };
+    rows = rows.slice().sort(cmp);
+    rowsAcomodar = rowsAcomodar.slice().sort(cmp);
   }
 
   const MAX = 400;   // proteccion DOM
@@ -3089,6 +3130,14 @@ function render(){
       if(c.k==='organizacion'){
         const full = v==null ? '' : String(v);
         return `<td style="font-weight:600" title="${escapeHtml(full)}">${full?escapeHtml(orgCorta(full)):'<span class=muted>—</span>'}</td>`;
+      }
+      if(c.k==='_pdtePasar'){
+        return `<td class="num" style="color:#6d28d9" title="total de la cerealera para este grano — se repite en cada contrato del grupo">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
+      }
+      if(c.k==='_difLiq'){
+        if(v==null) return '<td class="num"><span class=muted>—</span></td>';
+        const cSty = v > 15 ? 'color:#b45309;font-weight:700' : (v < -15 ? 'color:#b91c1c;font-weight:700' : 'color:#0f766e;font-weight:600');
+        return `<td class="num" style="${cSty}" title="pdte liquidar ERP del grupo − liq. sin pasar${v<-15?' · NEGATIVO: la cerealera emitió más de lo que el ERP tiene pendiente, revisar':''}">${fmt.num(v)}</td>`;
       }
       if(c.num) return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
       return `<td>${v==null?'<span class=muted>—</span>':String(v)}</td>`;
@@ -3117,10 +3166,51 @@ function render(){
   });
 
   document.getElementById('row-count').textContent =
-    `${rows.length.toLocaleString('es-AR')} / ${DATA.length.toLocaleString('es-AR')} contratos` +
+    `${rows.length.toLocaleString('es-AR')} para análisis + ${rowsAcomodar.length.toLocaleString('es-AR')} a acomodar / ${DATA.length.toLocaleString('es-AR')} contratos` +
     (rows.length>MAX ? ` (mostrando ${MAX})` : '');
 
   renderFootPos(rows);
+  renderAcomodar(rowsAcomodar, getVal);
+}
+
+// Sección "Pendientes a acomodar": contratos con pdte. de liquidar 0–15 tn y anulados.
+// A la vista (nunca ocultos), con sus totales, pero afuera de la tabla de análisis.
+function renderAcomodar(rowsA, getVal){
+  const anulados = rowsA.filter(r => String(r.estadoanulacion||'').trim().toLowerCase()==='anulado').length;
+  const tPliq = rowsA.reduce((s,r)=>s+((r.cantidadentregada||0)-(r.cantidadliquidada||0)),0);
+  document.getElementById('acomodar-meta').textContent =
+    `${rowsA.length.toLocaleString('es-AR')} contratos (${anulados} anulados) · pdte. liq. ${fmt.num(tPliq)} tn`;
+  document.getElementById('tbl-acomodar-head').innerHTML =
+    TABLE_COLS.map(c=>`<th>${c.lbl}</th>`).join('') + '<th>Motivo</th>';
+  const MAXA = 400;
+  document.getElementById('tbl-acomodar-body').innerHTML = rowsA.slice(0,MAXA).map(r=>{
+    const anul = String(r.estadoanulacion||'').trim().toLowerCase()==='anulado';
+    const motivo = anul ? '<span style="color:#b91c1c;font-weight:600">ANULADO</span>' : 'pdte. liq. 0–15 tn';
+    return '<tr style="color:#6b7280">'+TABLE_COLS.map(c=>{
+      const v = getVal(r, c.k);
+      if(c.k==='organizacion'){
+        const full = v==null?'':String(v);
+        return `<td title="${escapeHtml(full)}">${full?escapeHtml(orgCorta(full)):'—'}</td>`;
+      }
+      if(c.num) return `<td class="num">${v==null?'—':fmt.num(v)}</td>`;
+      return `<td>${v==null?'—':escapeHtml(String(v))}</td>`;
+    }).join('')+`<td>${motivo}</td></tr>`;
+  }).join('') || '<tr><td colspan="99" style="padding:16px;text-align:center;color:var(--muted)">Nada para acomodar</td></tr>';
+  const foot = TABLE_COLS.map((c,idx)=>{
+    if(idx===0) return `<td class="lbl">TOTAL (${rowsA.length.toLocaleString('es-AR')})</td>`;
+    if(c.sum===true){
+      const t = rowsA.reduce((acc,r)=>{
+        let v;
+        if(c.k==='_pdteEntrega') v=(r.cantidadmax||0)-(r.cantidadentregada||0);
+        else if(c.k==='_pdteLiquidar') v=(r.cantidadentregada||0)-(r.cantidadliquidada||0);
+        else v=Number(r[c.k]);
+        return acc+(Number(v)||0);
+      },0);
+      return `<td class="num">${fmt.num(t)}</td>`;
+    }
+    return '<td></td>';
+  }).join('');
+  document.getElementById('tbl-acomodar-foot').innerHTML = `<tr>${foot}<td></td></tr>`;
 }
 
 function renderFootPos(rows){
@@ -13891,6 +13981,17 @@ def main() -> int:
         except Exception as _e:
             print(f"    [!] tarifas_venta.json: {_e}")
 
+        # Liquidaciones de venta PENDIENTES DE PASAR al ERP (snapshot exportado de
+        # Finnegans; se cruza en Venta·Posicion General contra el Pdte Liquidar del ERP)
+        _liq_pdte_pasar = None
+        try:
+            _pp = Path(__file__).resolve().parent / "data" / "liq_pdte_pasar.json"
+            if _pp.exists():
+                _liq_pdte_pasar = json.loads(_pp.read_text(encoding="utf-8"))
+                print(f"[+] Liq. pendientes de pasar: {len(_liq_pdte_pasar.get('grupos', []))} grupos (snapshot {_liq_pdte_pasar.get('snapshot')})")
+        except Exception as _e:
+            print(f"    [!] liq_pdte_pasar.json: {_e}")
+
         finales = balanza_finales.fetch_finales()
         from collections import Counter as _C
         _est = _C(r["estado"] for r in finales)
@@ -14021,6 +14122,7 @@ def main() -> int:
         "prestamo_cp": prestamo_cp,
         "finales": finales,
         "tarifas_venta": _tarifas_venta,
+        "liq_pdte_pasar": _liq_pdte_pasar,
         "cargill_ctg_gastos": cargill_ctg_gastos,
         "canje_clientes": canje_clientes,
         "negocio_comisiones": negocio_comisiones,

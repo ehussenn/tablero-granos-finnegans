@@ -1,0 +1,818 @@
+{
+ "snapshot": "2026-08-24",
+ "fuente": "Finnegans - liquidaciones de venta pendientes de pasar (export PDF)",
+ "grupos": [
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "MAIZ",
+   "tn": 26.4,
+   "n": 1
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "SIN ESPECIE",
+   "tn": 395.7,
+   "n": 9
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "tn": 317.1,
+   "n": 10
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "MAIZ",
+   "tn": 5.1,
+   "n": 1
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "SOJA",
+   "tn": 1000.0,
+   "n": 3
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "tn": 64.5,
+   "n": 9
+  },
+  {
+   "org": "ARGENTRADING S.A.",
+   "especie": "MAIZ",
+   "tn": 300.0,
+   "n": 2
+  },
+  {
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "especie": "MAIZ",
+   "tn": 826.0,
+   "n": 4
+  },
+  {
+   "org": "CEREALIA S.A",
+   "especie": "MAIZ",
+   "tn": 117.8,
+   "n": 2
+  },
+  {
+   "org": "COOP AGROP DE LA VIOLETA LTDA",
+   "especie": "MAIZ",
+   "tn": 49.2,
+   "n": 2
+  },
+  {
+   "org": "COOP DEFENSA DE AGRICULTORES LTDA",
+   "especie": "SOJA",
+   "tn": 0.0,
+   "n": 1
+  },
+  {
+   "org": "FERIAS DEL NORTE S.A.C.I.A",
+   "especie": "MAIZ",
+   "tn": 149.7,
+   "n": 1
+  },
+  {
+   "org": "FERTILIZANTES FULLTEC SRL",
+   "especie": "MAIZ",
+   "tn": 117.1,
+   "n": 1
+  },
+  {
+   "org": "LA BRAGADENSE SA",
+   "especie": "MAIZ",
+   "tn": 298.7,
+   "n": 4
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "MAIZ",
+   "tn": 1267.9,
+   "n": 3
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "SOJA",
+   "tn": 35.6,
+   "n": 1
+  },
+  {
+   "org": "MARIA INES MAGUIRE",
+   "especie": "SOJA",
+   "tn": 67.3,
+   "n": 1
+  },
+  {
+   "org": "SILVEYRA JUAN BAUTISTA",
+   "especie": "MAIZ",
+   "tn": 489.4,
+   "n": 1
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "tn": 1627.1,
+   "n": 12
+  },
+  {
+   "org": "YARA ARGENTINA SA",
+   "especie": "SOJA",
+   "tn": 276.8,
+   "n": 1
+  }
+ ],
+ "detalle": [
+  {
+   "org": "COOP AGROP DE LA VIOLETA LTDA",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 44339.0,
+   "importe": 11409652.1,
+   "coe": "330232264263",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 26406.0,
+   "importe": 7190353.8,
+   "coe": "331009381935",
+   "tipo": "Venta Secundaria",
+   "obs": ""
+  },
+  {
+   "org": "LA BRAGADENSE SA",
+   "especie": "MAIZ",
+   "fecha": "18-08-2026",
+   "kg": 26084.0,
+   "importe": 7539427.83,
+   "coe": "330232219273",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "SILVEYRA JUAN BAUTISTA",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 489350.0,
+   "importe": 107945692.03,
+   "coe": "330132234875",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "MARIA INES MAGUIRE",
+   "especie": "SOJA",
+   "fecha": "14-08-2026",
+   "kg": 67282.0,
+   "importe": 37693731.27,
+   "coe": "330132211917",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 34671.0,
+   "importe": 11232305.62,
+   "coe": "330132227520",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "LA BRAGADENSE SA",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 108725.0,
+   "importe": 29900466.56,
+   "coe": "330232234808",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 30397.0,
+   "importe": 9847665.03,
+   "coe": "330132227518",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "SOJA",
+   "fecha": "10-08-2026",
+   "kg": 500000.0,
+   "importe": 253500000.0,
+   "coe": "331009350769",
+   "tipo": "Venta Secundaria",
+   "obs": ""
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "MAIZ",
+   "fecha": "18-08-2026",
+   "kg": 240167.0,
+   "importe": 66339104.79,
+   "coe": "330132218593",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "FERIAS DEL NORTE S.A.C.I.A",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 149707.0,
+   "importe": 42264258.94,
+   "coe": "330232237413",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "14-08-2026",
+   "kg": 34376.0,
+   "importe": 9827971.18,
+   "coe": "330232210999",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 32114.0,
+   "importe": 10403918.63,
+   "coe": "330132227521",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "LA BRAGADENSE SA",
+   "especie": "MAIZ",
+   "fecha": "18-08-2026",
+   "kg": 156734.0,
+   "importe": 43238871.59,
+   "coe": "330232219279",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CEREALIA S.A",
+   "especie": "MAIZ",
+   "fecha": "14-08-2026",
+   "kg": 53171.0,
+   "importe": 15754748.08,
+   "coe": "330132211217",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "COOP DEFENSA DE AGRICULTORES LTDA",
+   "especie": "SOJA",
+   "fecha": "18-08-2026",
+   "kg": 17.0,
+   "importe": 6662.31,
+   "coe": "330232221430",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 48097.0,
+   "importe": 39582854.0,
+   "coe": "330132191347",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 28769.0,
+   "importe": 24628103.15,
+   "coe": "330132191362",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENTRADING S.A.",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 142548.0,
+   "importe": 40544494.79,
+   "coe": "330232227880",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENTRADING S.A.",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 157452.0,
+   "importe": 44783594.26,
+   "coe": "330232227890",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "SOJA",
+   "fecha": "11-08-2026",
+   "kg": 471000.0,
+   "importe": 257900760.0,
+   "coe": "330232177862",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "12-08-2026",
+   "kg": 10670.0,
+   "importe": 9520295.44,
+   "coe": "330132189946",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "FERTILIZANTES FULLTEC SRL",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 117139.0,
+   "importe": 33650932.86,
+   "coe": "330132230620",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "LA BRAGADENSE SA",
+   "especie": "MAIZ",
+   "fecha": "19-08-2026",
+   "kg": 7179.0,
+   "importe": 2043369.04,
+   "coe": "330232234799",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "11-08-2026",
+   "kg": 364138.0,
+   "importe": 106586168.41,
+   "coe": "330232175197",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 10636.0,
+   "importe": 9518764.92,
+   "coe": "330132173163",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "14-08-2026",
+   "kg": 195497.0,
+   "importe": 58823725.19,
+   "coe": "330232205501",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "11-08-2026",
+   "kg": 98080.0,
+   "importe": 27006288.51,
+   "coe": "330232175199",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 4195.0,
+   "importe": 3756870.28,
+   "coe": "330132173038",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "especie": "MAIZ",
+   "fecha": "12-08-2026",
+   "kg": 475602.0,
+   "importe": 108669358.2,
+   "coe": "330132183481",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "13-08-2026",
+   "kg": 340530.0,
+   "importe": 96244692.42,
+   "coe": "330232193137",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "MAIZ",
+   "fecha": "12-08-2026",
+   "kg": 371859.0,
+   "importe": 98838270.34,
+   "coe": "330132189283",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 8781.0,
+   "importe": 7656148.86,
+   "coe": "330132172794",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 2094.0,
+   "importe": 1862067.72,
+   "coe": "330132172785",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "14-08-2026",
+   "kg": 26127.0,
+   "importe": 7384327.6,
+   "coe": "330232205511",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 27428.0,
+   "importe": 23352797.61,
+   "coe": "330132191355",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 10877.0,
+   "importe": 9518952.99,
+   "coe": "330132172931",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 6562.0,
+   "importe": 5762063.77,
+   "coe": "330132173028",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CEREALIA S.A",
+   "especie": "MAIZ",
+   "fecha": "11-08-2026",
+   "kg": 64582.0,
+   "importe": 19181028.37,
+   "coe": "330132176678",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "14-08-2026",
+   "kg": 346384.0,
+   "importe": 98996515.35,
+   "coe": "330232207794",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 59678.0,
+   "importe": 46998665.91,
+   "coe": "330132191361",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "especie": "MAIZ",
+   "fecha": "13-08-2026",
+   "kg": 99369.0,
+   "importe": 23372407.21,
+   "coe": "330132192164",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "13-08-2026",
+   "kg": 983.0,
+   "importe": 295627.35,
+   "coe": "330232193134",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "14-08-2026",
+   "kg": 55605.0,
+   "importe": 42369292.17,
+   "coe": "330132202917",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 27478.0,
+   "importe": 22223069.42,
+   "coe": "330132191357",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "SOJA",
+   "fecha": "11-08-2026",
+   "kg": 29000.0,
+   "importe": 15879240.0,
+   "coe": "330232177931",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 61209.0,
+   "importe": 51014203.7,
+   "coe": "330132191364",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 230.0,
+   "importe": 205770.95,
+   "coe": "330132173394",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "12-08-2026",
+   "kg": 28792.0,
+   "importe": 8579717.72,
+   "coe": "330232189493",
+   "tipo": "Ajuste-COE:330232119325",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "13-08-2026",
+   "kg": 158487.0,
+   "importe": 47848634.71,
+   "coe": "330232193056",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ARGENSUN SOCIEDAD ANONIMA",
+   "especie": "GIRASOL",
+   "fecha": "11-08-2026",
+   "kg": 10409.0,
+   "importe": 9312477.3,
+   "coe": "330132173385",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 26517.0,
+   "importe": 21697903.68,
+   "coe": "330132191359",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "YARA ARGENTINA SA",
+   "especie": "SOJA",
+   "fecha": "13-08-2026",
+   "kg": 276751.0,
+   "importe": 121298668.11,
+   "coe": "330132199408",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ACEITERA GENERAL DEHEZA S A",
+   "especie": "NO ENCONTRADO EN ERP",
+   "fecha": "13-08-2026",
+   "kg": 60898.0,
+   "importe": 50032559.72,
+   "coe": "330132191351",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "especie": "MAIZ",
+   "fecha": "12-08-2026",
+   "kg": 2807.0,
+   "importe": 641281.75,
+   "coe": "330132182203",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+   "especie": "MAIZ",
+   "fecha": "13-08-2026",
+   "kg": 248229.0,
+   "importe": 56749483.7,
+   "coe": "330132194172",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "COOP AGROP DE LA VIOLETA LTDA",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 4866.0,
+   "importe": 1326787.64,
+   "coe": "330232264131",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "24-08-2026",
+   "kg": 33994.0,
+   "importe": 11042466.32,
+   "coe": "330132282596",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "24-08-2026",
+   "kg": 30546.0,
+   "importe": 9922432.66,
+   "coe": "330132282607",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "24-08-2026",
+   "kg": 36040.0,
+   "importe": 11707080.25,
+   "coe": "330132280370",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "SOJA",
+   "fecha": "21-08-2026",
+   "kg": 35570.0,
+   "importe": 20067349.05,
+   "coe": "330132261763",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 30310.0,
+   "importe": 9832642.35,
+   "coe": "330132265800",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 29625.0,
+   "importe": 9610426.58,
+   "coe": "330132265884",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 29739.0,
+   "importe": 9647408.47,
+   "coe": "330132267343",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "ALLARIA AGRONEGOCIOS S.A.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 5106.0,
+   "importe": 1407515.87,
+   "coe": "330232265044",
+   "tipo": "Ajuste-COE:330231551282",
+   "obs": ""
+  },
+  {
+   "org": "LDC ARGENTINA S.A.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 655870.0,
+   "importe": 191916468.72,
+   "coe": "330132266185",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "AGRO BAYER S. R. L.",
+   "especie": "MAIZ",
+   "fecha": "21-08-2026",
+   "kg": 29633.0,
+   "importe": 9613021.8,
+   "coe": "330132267346",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "24-08-2026",
+   "kg": 10687.0,
+   "importe": 3328705.95,
+   "coe": "330232274397",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  },
+  {
+   "org": "TOMAS HNOS Y CIA SA",
+   "especie": "MAIZ",
+   "fecha": "24-08-2026",
+   "kg": 22977.0,
+   "importe": 6732598.74,
+   "coe": "330232274403",
+   "tipo": "Venta Primaria",
+   "obs": ""
+  }
+ ]
+}
