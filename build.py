@@ -352,6 +352,29 @@ def fetch_produccion() -> tuple[dict, dict]:
                 print(f"    -> 26/27 (Planif. Económica extranet, snapshot {_e.get('snapshot')}) {p}: {tn:,.1f} tn")
     except Exception as e:
         print(f"    [!] prod 26/27 planif. económica: {e}")
+    # PENDIENTE DE COSECHA 25/26: override desde el Seguimiento de Cosecha de la extranet
+    # (pedido del usuario 25/08: el estimado del portal viejo quedó desactualizado).
+    # Solo pisa los productos listados en data/pendcos_2526_seguimiento.json (tn AGNSJ).
+    try:
+        _sc = Path(__file__).resolve().parent / "data" / "pendcos_2526_seguimiento.json"
+        if _sc.exists():
+            _s = json.loads(_sc.read_text(encoding="utf-8"))
+            c25 = out.setdefault("CAMPAÑA 25-26", {})
+            d25 = det.setdefault("CAMPAÑA 25-26", {})
+            for p, v in (_s.get("productos") or {}).items():
+                tn = v.get("pendcos", 0)
+                ant = (c25.get(p) or {}).get("pendcos")
+                c25.setdefault(p, {})["pendcos"] = tn
+                d25.setdefault(p, {"cosechado": [], "pendcos": []})
+                d25[p]["pendcos"] = [{
+                    "campo": f"SEGUIMIENTO DE COSECHA extranet — {d.get('etiqueta','')}",
+                    "lote": "", "cultivo": p.replace("Grano ", "").upper(),
+                    "tn": d.get("tn", 0), "rinde": d.get("rinde", 0),
+                } for d in v.get("detalle", [])]
+                print(f"    -> pendcos 25/26 (Seguimiento de Cosecha extranet, snapshot {_s.get('snapshot')}) {p}: {tn:,.1f} tn"
+                      + (f" (portal decía {ant:,.1f})" if ant is not None else ""))
+    except Exception as e:
+        print(f"    [!] pendcos 25/26 seguimiento: {e}")
     return out, det
 
 
@@ -2876,7 +2899,7 @@ const TABLE_COLS = [
   {k:'_pdtePasar',                  lbl:'Liq. s/Pasar',    num:true, sum:false,
    tip:'Liquidaciones ya emitidas por la cerealera que faltan pasar al ERP. Total por cerealera+grano (se repite en cada contrato del grupo). Snapshot Finnegans.'},
   {k:'_difLiq',                     lbl:'Dif. s/Cerealera',num:true, sum:false,
-   tip:'Pdte de Liquidar del ERP (todos los contratos de esa cerealera+grano en el filtro actual) MENOS las liq. sin pasar: lo que de verdad falta que la cerealera liquide.'},
+   tip:'Tn Pdte Liquidar de esta fila MENOS Liq. s/Pasar de la cerealera (regla 25/08): lo que falta que la cerealera liquide, descontando lo ya emitido sin pasar.'},
   {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
   {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
@@ -3067,15 +3090,10 @@ function render(){
   const PP_SNAP = PAYLOAD.liq_pdte_pasar || null;
   const _norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().trim();
   const _espProd = p => _norm(p).replace(/^GRANO\s+/,'');
-  let PP_MAP = null, PL_GRP = null;
+  let PP_MAP = null;
   if(PP_SNAP && PP_SNAP.grupos){
     PP_MAP = {};
     PP_SNAP.grupos.forEach(g => { PP_MAP[_norm(g.org)+'|'+_norm(g.especie)] = g.tn; });
-    PL_GRP = {};
-    filtered.forEach(r => {
-      const k = _norm(r.organizacion)+'|'+_espProd(r.producto);
-      PL_GRP[k] = (PL_GRP[k]||0) + ((r.cantidadentregada||0)-(r.cantidadliquidada||0));
-    });
   }
 
   // tabla
@@ -3106,11 +3124,12 @@ function render(){
       return v === undefined ? null : v;
     }
     if(k==='_difLiq'){
+      // Regla usuario 25/08: la diferencia es lo Pdte de Liquidar DE ESTA FILA menos
+      // las liq. sin pasar de la cerealera — verificable a ojo con las dos columnas.
       if(!PP_MAP) return null;
-      const kk = _norm(r.organizacion)+'|'+_espProd(r.producto);
-      const pp = PP_MAP[kk];
+      const pp = PP_MAP[_norm(r.organizacion)+'|'+_espProd(r.producto)];
       if(pp === undefined) return null;
-      return (PL_GRP[kk]||0) - pp;
+      return ((r.cantidadentregada||0)-(r.cantidadliquidada||0)) - pp;
     }
     return r[k];
   };
@@ -8783,15 +8802,15 @@ function pnDrillHTML(type, prods){
   const tot = rows.reduce((s,c)=>s+val(c),0);
   const lblTn = cfg.field==='pend' ? (cp?'Pend. ingreso':'Pend. entrega') : cfg.field==='entr' ? 'Entregado' : 'Ajustada';
   let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} contrato(s) · ${fmt.num(tot)} tn</span></div>`;
-  t += `<table class="pn-drill-tbl"><thead><tr><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
+  t += `<table class="pn-drill-tbl"><thead><tr><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${cp?'<th>Comercial</th>':''}${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
   rows.forEach(c => {
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
     const ent = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
     const camp = (c.campana||'').replace('CAMPAÑA ','').replace('CAMPANA ','') || '—';
-    t += `<tr><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
+    t += `<tr><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(c.organizacion))||'—'}</td>`:''}${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
   });
-  const ncolTot = 5 + (esC?1:0);
+  const ncolTot = 5 + (esC?1:0) + (cp?1:0);
   t += `<tr class="pn-drill-tot"><td colspan="${ncolTot}">Total (${rows.length})</td><td class="num">${fmt.num(tot)}</td><td></td></tr>`;
   t += `</tbody></table></div>`;
   return t;
@@ -9311,6 +9330,20 @@ document.getElementById('kpi-row').addEventListener('click', (e) => {
   pnctDesdePosGeneral('venta', k.dataset.pnct, {tab:'venta', sub:'posicion'}, 'Venta · Posición General');
 });
 
+// Comercial del beneficiario (regla usuario 25/08): sale de la composición de
+// saldos (organización -> vendedor), la misma fuente que usa el Análisis de Canje.
+let PNCT_COM = null;
+function pnctComercial(org){
+  if(!PNCT_COM){
+    PNCT_COM = {};
+    (PAYLOAD.saldos||[]).forEach(s => {
+      const o = String(s.organizacion||'').trim().toUpperCase(), v = s.vendedor;
+      if(o && v && !PNCT_COM[o]) PNCT_COM[o] = v;
+    });
+  }
+  return PNCT_COM[String(org||'').trim().toUpperCase()] || '';
+}
+
 function pnctRender(){
   const tipo = PNCT.tipo, cp = (tipo === 'compra');
   const src = cp ? PN_LAST_COMPRAS : PN_LAST_VENTAS;   // ya filtrados por campaña/empresa
@@ -9395,7 +9428,7 @@ function pnctRender(){
   // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
   // Pend. Ingreso (compra) / Pend. Entrega (venta) = ajustada − entregada (regla usuario)
   document.getElementById('pnct-thead').innerHTML = `<tr>
-    <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th><th>Producto</th><th>Campaña</th>
+    <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th>${cp?'<th>Comercial</th>':''}<th>Producto</th><th>Campaña</th>
     <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
     <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
     <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
@@ -9427,6 +9460,7 @@ function pnctRender(){
     html += `<tr title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'}">
       <td class="pn-drill-nro">${nro}</td>
       <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}</td>
+      ${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(org))||'<span class=muted>—</span>'}</td>`:''}
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
       <td class="num">${fmt.num(ent+pen)}</td><td class="num">${fmt.num(ent)}</td><td class="num" style="font-weight:700">${fmt.num(pen)}</td>
@@ -9439,9 +9473,9 @@ function pnctRender(){
       <td class="num">${liqImp?fmt.num(liqImp):'—'}</td><td class="num">${penLiq?fmt.num(penLiq):'—'}</td>
       <td>${cta}</td></tr>`;
   });
-  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="19" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
+  document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="99" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
-    <td colspan="4">TOTAL (${rows.length} contratos)</td>
+    <td colspan="${cp?5:4}">TOTAL (${rows.length} contratos)</td>
     <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
     <td class="num">${fmt.num(tEntPliq)}</td>
     <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
