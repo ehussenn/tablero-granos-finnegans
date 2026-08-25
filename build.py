@@ -523,7 +523,10 @@ window.apiFetch = function(path, opts){
   .section h3 .badge{font-size:11px;font-weight:500;color:var(--muted)}
   /* Tablas con columnas redimensionables (drag desde borde derecho del th) */
   table.resizable-cols{table-layout:fixed}
-  table.resizable-cols th{position:relative}
+  /* sticky (no relative): position:relative pisaba el sticky global del thead y los
+     encabezados se iban al scrollear (reportado 24/08). El grip .col-resize sigue
+     anclando igual porque sticky tambien es "positioned". */
+  table.resizable-cols th{position:sticky;top:0;z-index:3}
   table.resizable-cols th .col-resize{position:absolute;top:0;right:0;bottom:0;width:6px;cursor:col-resize;user-select:none;z-index:2}
   table.resizable-cols th .col-resize:hover,table.resizable-cols th .col-resize.dragging{background:rgba(51,103,160,.4)}
   /* regla del usuario (19/08/2026): la organización se tiene que leer COMPLETA en todos
@@ -1831,7 +1834,10 @@ window.apiFetch = function(path, opts){
 
       <!-- DETALLE -->
       <div class="section">
-        <h3>Detalle de Contratos — Posición Física <span class="badge">Click en encabezado para ordenar</span></h3>
+        <h3>Detalle de Contratos — Posición Física <span class="badge">Click en encabezado para ordenar</span>
+          <label style="font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap" title="Para analizar el pendiente de liquidar: esconde los contratos con pdte. de liquidar entre 0 y 15 tn (ya liquidados o casi) y los anulados. Los negativos (liquidado de más) siempre quedan.">
+            <input type="checkbox" id="f-pliq15" checked style="vertical-align:-2px;accent-color:#B5740E"> Ocultar pdte. liq. 0–15 tn y anulados
+          </label></h3>
         <div class="tbl-wrap">
           <table id="tbl">
             <thead><tr id="tbl-head"></tr></thead>
@@ -2835,7 +2841,7 @@ const TABLE_COLS = [
   {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
   {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false},
   // Campaña / Corredor / Puerto: sacadas del detalle de VENTA (regla usuario 19/08 — no suman)
-  {k:'_estado',                     lbl:'Estado',          num:false, html:true},
+  // Estado: sacada (regla usuario 24/08) — los anulados se ocultan con el toggle de la tabla
 ];
 
 /* ----- filtros encadenados ----- */
@@ -2853,6 +2859,18 @@ const ALL_VALS = {};
 FILTERS.forEach(f => { ALL_VALS[f.col] = uniqSorted(DATA, f.col); });
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+// Nombre corto de la cerealera (regla usuario 24/08: "que se divise mas la cerealera"):
+// corta la forma legal (SOCIEDAD ANONIMA..., S.A., S.A.C.I., S.R.L., etc.) para que
+// "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL" se muestre "CARGILL".
+// El nombre COMPLETO queda siempre en el tooltip de la celda.
+function orgCorta(s){
+  if(!s) return s;
+  const t = String(s).trim()
+    .replace(/\s+(SOCIEDAD\s+AN[ÓO]NIMA[\s\S]*|SOCIEDAD\s+DE\s+RESPONSABILIDAD[\s\S]*|S\.?\s?A\.?\s?C\.?\s?I\.?\s?F?\.?( .*)?$|S\.?A\.?I\.?C\.?( .*)?$|S\.?R\.?L\.?( .*)?$|S\.?A\.?( .*)?$|SACIF?I?( .*)?$|SAIC( .*)?$|SRL( .*)?$|SA$)/i, '')
+    .trim();
+  return t || String(s).trim();
+}
 
 function rowPassesText(r, fQ){
   if(!fQ) return true;
@@ -2908,6 +2926,15 @@ document.getElementById('btn-clear').addEventListener('click', () => {
   document.getElementById('f-q').value = '';
   applyFilters();
 });
+// Toggle "ocultar pdte. liq. 0-15 tn y anulados" — recuerda la eleccion en este navegador
+{
+  const fp15 = document.getElementById('f-pliq15');
+  fp15.checked = localStorage.getItem('tablero-vt-pliq15') !== '0';
+  fp15.addEventListener('change', () => {
+    localStorage.setItem('tablero-vt-pliq15', fp15.checked ? '1' : '0');
+    render();
+  });
+}
 
 function applyFilters(){
   // actualizar conteos en TODOS los selects (encadenados)
@@ -3028,9 +3055,21 @@ function render(){
   };
 
   let rows = filtered;
+  // Filtro de análisis (regla usuario 24/08): para mirar el pendiente de liquidar de lo
+  // entregado, esconder el ruido — contratos con pdte. liq. entre 0 y <15 tn (ya liquidados
+  // o casi) y los ANULADOS. Los negativos (liquidado > entregado) SIEMPRE quedan visibles.
+  // Solo afecta la tabla y sus totales; los KPIs y gráficos de arriba siguen completos.
+  const fp15 = document.getElementById('f-pliq15');
+  if(fp15 && fp15.checked){
+    rows = rows.filter(r => {
+      if(String(r.estadoanulacion||'').trim().toLowerCase() === 'anulado') return false;
+      const pl = (r.cantidadentregada||0) - (r.cantidadliquidada||0);
+      return !(pl >= 0 && pl < 15);
+    });
+  }
   if(sortKey){
     const col = TABLE_COLS.find(c=>c.k===sortKey);
-    rows = filtered.slice().sort((a,b)=>{
+    rows = rows.slice().sort((a,b)=>{
       let va = getVal(a, sortKey);
       let vb = getVal(b, sortKey);
       if(col && col.num){ va = va||0; vb = vb||0; return (va-vb)*sortDir; }
@@ -3047,6 +3086,10 @@ function render(){
     return `<tr data-id="${id}" data-i="${i}"${selCls}>`+TABLE_COLS.map(c=>{
       if(c.k==='_estado') return '<td>'+estadoChip(r)+'</td>';
       const v = getVal(r, c.k);
+      if(c.k==='organizacion'){
+        const full = v==null ? '' : String(v);
+        return `<td style="font-weight:600" title="${escapeHtml(full)}">${full?escapeHtml(orgCorta(full)):'<span class=muted>—</span>'}</td>`;
+      }
       if(c.num) return `<td class="num">${v==null?'<span class=muted>—</span>':fmt.num(v)}</td>`;
       return `<td>${v==null?'<span class=muted>—</span>':String(v)}</td>`;
     }).join('')+'</tr>';
