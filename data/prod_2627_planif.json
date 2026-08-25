@@ -1,0 +1,10 @@
+{
+  "snapshot": "2026-08-25",
+  "fuente": "Extranet Agronasaja · Producción · Planificación y Desarrollo · Planificación Económica · Producción estimada por cultivo (columna PROD. AGRONASAJA TN)",
+  "nota": "Estimado GLOBAL sin desglose por lote (aviso del usuario 25/08). Trigo NO va acá: se alimenta de trigo_2627_potencial.json (Excel del usuario). Cebada y camelina estaban s/d en la planificación.",
+  "productos": {
+    "Grano Soja":    { "pendcos": 20900, "detalle_origen": "Soja primera 17.462 + Soja segunda 3.438" },
+    "Grano Maíz":    { "pendcos": 37407, "detalle_origen": "Maíz primera 12.595 + Maíz segunda 9.714 + Maíz tardío 15.098" },
+    "Grano Girasol": { "pendcos": 686,   "detalle_origen": "Girasol 686" }
+  }
+}

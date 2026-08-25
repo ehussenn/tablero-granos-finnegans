@@ -332,6 +332,26 @@ def fetch_produccion() -> tuple[dict, dict]:
                 print(f"    -> 26/27 (Excel del usuario) {p}: {v.get('pendcos', 0):,.1f} tn · {len(v.get('detalle', []))} lotes")
     except Exception as e:
         print(f"    [!] trigo 26/27 Excel: {e}")
+    # 26/27 RESTO DE CULTIVOS (soja/maíz/girasol): estimado GLOBAL de la Planificación
+    # Económica de la extranet (data/prod_2627_planif.json). Pedido del usuario 25/08:
+    # solo producción, sin desglose por lote, y el TRIGO no se toca (sigue del Excel).
+    try:
+        _pe = Path(__file__).resolve().parent / "data" / "prod_2627_planif.json"
+        if _pe.exists():
+            _e = json.loads(_pe.read_text(encoding="utf-8"))
+            c27 = out.setdefault("CAMPAÑA 26-27", {})
+            d27 = det.setdefault("CAMPAÑA 26-27", {})
+            for p, v in (_e.get("productos") or {}).items():
+                tn = v.get("pendcos", 0)
+                if tn <= 0 or "Trigo" in p:
+                    continue
+                c27[p] = {"pendcos": tn}
+                d27[p] = {"cosechado": [], "pendcos": [{
+                    "campo": "PLANIF. ECONÓMICA (estimado global, sin desglose)", "lote": "",
+                    "cultivo": p.replace("Grano ", "").upper(), "tn": tn, "rinde": 0}]}
+                print(f"    -> 26/27 (Planif. Económica extranet, snapshot {_e.get('snapshot')}) {p}: {tn:,.1f} tn")
+    except Exception as e:
+        print(f"    [!] prod 26/27 planif. económica: {e}")
     return out, det
 
 
