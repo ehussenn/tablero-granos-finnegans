@@ -1349,6 +1349,7 @@ window.apiFetch = function(path, opts){
         <div><label>ESTADO</label><select id="cj-estado"><option value="">Todos</option><option value="OK">Contrato OK</option><option value="PARCIAL">Con contrato parcial</option><option value="SIN">Sin contrato</option></select></div>
         <div><label>BUSCAR CLIENTE</label><input type="text" id="cj-q" placeholder="razón social…" style="min-width:240px" /></div>
         <button class="clear" id="cj-clear">Limpiar</button>
+        <button class="clear" id="cj-preset-2627" style="background:#0f766e;color:#fff;border-color:#0f766e" title="Preset: condiciones Canje Diciembre 2026 + Marzo/Mayo/Julio 2027, y campaña 26-27 para medir la cobertura de contratos">🎯 Dic 26 + 26/27</button>
         <div class="count" id="cj-count">0 / 0 clientes</div>
       </div>
 
@@ -5424,10 +5425,13 @@ function cjBuildRows(){
         if(g){ grano = g; break; }
       }
       if(!grano){
-        // inferir por mes
+        // inferir por mes del canje: nov-dic = TRIGO (cosecha fina), jun-oct = MAÍZ
+        // (tardío/segunda), ene-may = SOJA (gruesa). Ajuste 26/08: diciembre antes
+        // caía en maíz, pero el canje a diciembre se cierra contra el trigo nuevo.
         const meses = b.mesesParsed.map(x => x.mes);
-        const algunoTardio = meses.some(m => m >= 6);  // junio-diciembre
-        grano = algunoTardio ? 'maiz' : 'soja';
+        if(meses.some(m => m >= 11))     grano = 'trigo';
+        else if(meses.some(m => m >= 6)) grano = 'maiz';
+        else                             grano = 'soja';
       }
     }
 
@@ -5517,6 +5521,17 @@ document.getElementById('cj-clear').addEventListener('click', () => {
   document.getElementById('cj-q').value = '';
   // condiciones: restaurar las que tienen "2026"
   [...document.getElementById('cj-cond').options].forEach(o => o.selected = o.value.includes('2026'));
+  cjApply();
+});
+// Preset del usuario (26/08): canjes a cerrar contra la cosecha nueva —
+// Canje Diciembre 2026 (trigo) + Marzo/Mayo/Julio 2027 (gruesa 26/27),
+// con la campaña 26-27 como cobertura de contratos.
+document.getElementById('cj-preset-2627').addEventListener('click', () => {
+  const quiero = v => /diciembre\s+2026/i.test(v) || /(marzo|mayo|julio)\s+2027/i.test(v);
+  [...document.getElementById('cj-cond').options].forEach(o => o.selected = quiero(o.value));
+  const camp = document.getElementById('cj-camp');
+  if([...camp.options].some(o => o.value === 'CAMPAÑA 26-27')) camp.value = 'CAMPAÑA 26-27';
+  document.getElementById('cj-estado').value = '';
   cjApply();
 });
 
@@ -5734,20 +5749,29 @@ function cjRenderVendedores(rows){
 // Detalle de clientes por vendedor (poblado en cjRenderVendedores) para el botón Copiar
 let CJ_VEND_DETALLE = {};
 function cjCopyVend(btn){
+  // Texto para mandar al comercial (regla usuario 26/08): PRIMERO la deuda de cada
+  // cliente, DESPUÉS las tn que habría que fijar para cancelarla al precio cargado,
+  // y el estado del contrato de compra (sin/parcial/cubre).
   const v = btn.dataset.v;
   const rows = (CJ_VEND_DETALLE[v] || []).slice().sort((a,b) => (b.saldoUsd||0) - (a.saldoUsd||0));
   if(!rows.length){ return; }
-  const conds = [...new Set(rows.flatMap(r => [...(r.condiciones||[])]))].join(', ');
-  let tot = 0, totFalt = 0;
-  let txt = `Canjes ${conds} — ${v}\n\n`;
+  const conds = [...new Set(rows.map(r => r.meses).filter(x => x && x !== '—'))].join(' · ');
+  let tot = 0, totTn = 0, totFalt = 0;
+  let txt = `CANJES${conds ? ' (' + conds + ')' : ''} — ${v}\n\n`;
   rows.forEach(r => {
     tot += r.saldoUsd || 0; totFalt += r.usdFaltante || 0;
-    const vto = r.meses && r.meses.size ? ` · vto ${[...r.meses].join(', ')}` : '';
-    const falta = (r.usdFaltante||0) > 1 ? `  ⚠ FALTA CONTRATO USD ${fmt.num(r.usdFaltante)}` : '';
-    txt += `• ${r.cliente}: USD ${fmt.num(r.saldoUsd)}${vto}${falta}\n`;
+    txt += `• ${r.cliente}\n`;
+    txt += `   Deuda canje: USD ${fmt.num(r.saldoUsd)}${r.meses && r.meses !== '—' ? ' (vto ' + r.meses + ')' : ''}\n`;
+    if((r.tnCanje||0) > 0.5 && (r.precio||0) > 0){
+      totTn += r.tnCanje;
+      txt += `   A fijar p/cancelar: ${fmt.num(r.tnCanje)} tn de ${r.grano} a USD ${fmt.num(r.precio)}/tn\n`;
+    }
+    if(r._estado === 'SIN')      txt += `   ⚠ SIN contrato de compra cargado\n`;
+    else if(r._estado === 'OK')  txt += `   Contrato: ${fmt.num(r.tnContratadas)} tn (cubre)\n`;
+    else                         txt += `   Contrato: ${fmt.num(r.tnContratadas)} tn (PARCIAL — faltan ~${fmt.num(r.tnFaltante)} tn)\n`;
   });
-  txt += `\nTOTAL canje: USD ${fmt.num(tot)}`;
-  if(totFalt > 1) txt += `\nFalta cubrir con contrato de compra: USD ${fmt.num(totFalt)}`;
+  txt += `\nTOTAL ${v}: USD ${fmt.num(tot)} ≈ ${fmt.num(totTn)} tn a fijar`;
+  if(totFalt > 1) txt += `\nSin cubrir con contrato: USD ${fmt.num(totFalt)}`;
   navigator.clipboard.writeText(txt).then(() => {
     const o = btn.textContent; btn.textContent = '✓ Copiado'; setTimeout(() => btn.textContent = o, 1500);
   }).catch(() => alert(txt));
