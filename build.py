@@ -1353,6 +1353,13 @@ window.apiFetch = function(path, opts){
         <div class="count" id="cj-count">0 / 0 clientes</div>
       </div>
 
+      <!-- Saldos a FAVOR del cliente (les debemos): afuera del análisis de cobro,
+           pero a la vista acá (regla usuario 26/08: solo los que NOS deben) -->
+      <details class="section" id="cj-neg-sec" style="display:none">
+        <summary style="cursor:pointer;font-size:13px;font-weight:600">➖ Clientes con saldo a favor (les debemos) — excluidos del análisis <span class="badge" id="cj-neg-meta"></span></summary>
+        <div id="cj-neg-list" style="font-size:12.5px;margin-top:8px"></div>
+      </details>
+
       <!-- Resumen por Vendedor -->
       <div class="section">
         <h3>Resumen por Vendedor <span class="badge" id="cj-vend-meta"></span></h3>
@@ -5503,7 +5510,28 @@ function cjApply(){
   const estado = document.getElementById('cj-estado').value;
   const q = (document.getElementById('cj-q').value||'').toLowerCase().trim();
   const all = cjBuildRows();
-  cjFiltered = all.filter(r => {
+  // Regla usuario 26/08: el análisis es de COBRO — solo clientes que NOS deben
+  // (saldo positivo). Los saldos a favor del cliente van a la franja de abajo,
+  // a la vista pero afuera de tablas, totales y del texto de copia.
+  const negativos = all.filter(r => (r.saldoUsd||0) <= 0.5);
+  const positivos = all.filter(r => (r.saldoUsd||0) > 0.5);
+  const negSec = document.getElementById('cj-neg-sec');
+  if(negSec){
+    if(negativos.length){
+      negSec.style.display = '';
+      const totNeg = negativos.reduce((s,r)=>s+(r.saldoUsd||0),0);
+      document.getElementById('cj-neg-meta').textContent =
+        `${negativos.length} cliente(s) · USD ${fmt.num(totNeg)} a favor de ellos`;
+      document.getElementById('cj-neg-list').innerHTML = negativos
+        .slice().sort((a,b)=>(a.saldoUsd||0)-(b.saldoUsd||0))
+        .map(r => `<div style="padding:3px 0;border-bottom:1px solid var(--line)">
+          <b>${escapeHtml(r.cliente)}</b> — USD ${fmt.num(r.saldoUsd)}
+          <span style="color:var(--muted)">· vend. ${escapeHtml(r.vendedor||'—')}${r.meses && r.meses!=='—' ? ' · ' + escapeHtml(r.meses) : ''}</span></div>`).join('');
+    } else {
+      negSec.style.display = 'none';
+    }
+  }
+  cjFiltered = positivos.filter(r => {
     if(estado && r._estado !== estado) return false;
     if(q && !(r.cliente||'').toLowerCase().includes(q)) return false;
     return true;
