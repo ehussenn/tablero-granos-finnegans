@@ -5427,9 +5427,15 @@ function cjBuildRows(){
     //    tardía), enero-junio suele ser SOJA (campaña gruesa). Sin info, soja.
     let grano = granoSel === 'auto' ? null : granoSel;
     if(!grano){
-      for(const c of ctos){
-        const g = granoBCR(c.producto);
-        if(g){ grano = g; break; }
+      // El grano del contrato solo define el canje si hay CAMPAÑA seleccionada (los
+      // contratos ya vienen filtrados por esa campaña y son la cobertura real). Sin
+      // campaña, manda el MES del canje — bug reportado 26/08: "Canje Julio 2026"
+      // salía trigo por un contrato de trigo viejo ya entregado.
+      if(campSel){
+        for(const c of ctos){
+          const g = granoBCR(c.producto);
+          if(g){ grano = g; break; }
+        }
       }
       if(!grano){
         // inferir por mes del canje: nov-dic = TRIGO (cosecha fina), jun-oct = MAÍZ
