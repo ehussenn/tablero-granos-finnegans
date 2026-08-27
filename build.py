@@ -2049,7 +2049,7 @@ window.apiFetch = function(path, opts){
     <div class="subpanel" data-sub-panel="vt-extranets">
       <div class="kpis" id="ex-kpis"></div>
       <div class="filterbar">
-        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ALLARIA</option></select></div>
+        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>ALLARIA</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="ex-q" placeholder="contrato, comprobante…" /></div>
         <button class="clear" id="ex-clear">Limpiar</button>
         <div class="count" id="ex-meta"></div>
@@ -12205,6 +12205,7 @@ function ctRender(){
     const pasa = r => !q || JSON.stringify(r).toLowerCase().includes(q);
     const cg = EX.cargill || {movs:[],pagos:[]};
     const movs = (cg.movs||[]).filter(pasa), pagos = (cg.pagos||[]).filter(pasa), ldc = (EX.ldc||[]).filter(pasa);
+    const aca = (EX.aca||[]).filter(pasa);
     const liqC = movs.filter(m=>m.cod==='L#').reduce((s,m)=>s+m.imp,0);
     const facC = movs.filter(m=>m.cod==='RI').reduce((s,m)=>s+m.imp,0);
     const retC = movs.filter(m=>String(m.cod||'').startsWith('$')).reduce((s,m)=>s+m.imp,0);
@@ -12215,16 +12216,17 @@ function ctRender(){
       <div class="kpi"><div class="lbl">CARGILL · LIQUIDACIONES</div><div class="val">$ ${n0(liqC)}</div><div class="hint">${movs.filter(m=>m.cod==='L#').length} liq desde jul-25 · dato al ${esc(fr.cargill||'—')}</div></div>
       <div class="kpi green"><div class="lbl">CARGILL · PAGOS</div><div class="val">$ ${n0(pagC)}</div><div class="hint">${pagos.length} pagos/cobros</div></div>
       <div class="kpi orange"><div class="lbl">CARGILL · RETENCIONES DESCONTADAS</div><div class="val">$ ${n0(Math.abs(retC))}</div><div class="hint">IIBB + IVA + Ganancias + SUSS</div></div>
-      <div class="kpi"><div class="lbl">LDC · LIQUIDACIONES</div><div class="val">USD ${n0(ldcTU)}</div><div class="hint">${ldcU.length} en USD · en $: ${n0(ldcTP)} (${ldcP.length}) · gastos ${n0(ldcG)} · dato al ${esc(fr.ldc||'—')}</div></div>`;
+      <div class="kpi"><div class="lbl">LDC · LIQUIDACIONES</div><div class="val">USD ${n0(ldcTU)}</div><div class="hint">${ldcU.length} en USD · en $: ${n0(ldcTP)} (${ldcP.length}) · gastos ${n0(ldcG)} · dato al ${esc(fr.ldc||'—')}</div></div>
+      <div class="kpi red"><div class="lbl">ACA · PEND. LIQUIDAR (s/su cuenta)</div><div class="val">${n0(aca.reduce((s,a)=>s+a.pend,0))} tn</div><div class="hint">entregado − liquidado en acabase · dato al ${esc(fr.aca||'—')}</div></div>`;
     // cruce con área granaria
     const match = document.getElementById('ex-match');
-    const alias = {CARGILL:'CARGILL', LDC:'LDC', ALLARIA:'ALLARIA'};
+    const alias = {CARGILL:'CARGILL', LDC:'LDC', ALLARIA:'ALLARIA', ACA:'ASOC DE COOPERATIVAS'};
     let mh = '';
     Object.entries(EX.pend_finnegans||{}).sort((a,b)=>{
       const sum = o => Object.values(o[1]).reduce((s,v)=>s+v,0); return sum(b)-sum(a);
     }).forEach(([org, prods]) => {
       const U = org.toUpperCase();
-      const es = Object.keys(alias).find(k => U.includes(k));
+      const es = Object.keys(alias).find(k => U.includes(alias[k]) || U.includes(k));
       if(portal && (!es || es !== portal)) return;
       if(!portal && !es) return;   // sin filtro: solo las 3 con extranet conectado
       const tot = Object.values(prods).reduce((s,v)=>s+v,0);
@@ -12249,6 +12251,11 @@ function ctRender(){
     if(!portal || portal==='LDC'){
       sh += tbl('🏦 LDC · liquidaciones',['Fecha pago','Contrato','Documento','Tipo','Mon.','Precio','Subtotal','Gastos','Total'],
         ldc.sort((a,b)=>String(b.f).localeCompare(String(a.f))).map(l=>[esc(l.f),esc(l.cto),esc(l.nro),esc(l.tipo),esc(l.mon),n2(l.precio),n2(l.sub),n2(l.gastos),n2(l.total)]));
+    }
+    if(!portal || portal==='ACA'){
+      sh += tbl('🏦 ACA · cuenta granaria por zona (acabase)',
+        ['Cuenta','Zona','Grano','Cosecha','Pactadas tn','Entregadas tn','Certificadas tn','Liquidadas tn','PEND. LIQUIDAR tn'],
+        aca.sort((a,b)=>b.pend-a.pend).map(a=>[esc(a.cta),esc(a.zona),esc(a.grano),esc(a.cos),n2(a.pact),n2(a.ent),n2(a.cert),n2(a.liq),`<b style="color:${a.pend>0?'var(--red)':'var(--green)'}">${n2(a.pend)}</b>`]));
     }
     if(!portal || portal==='ALLARIA'){
       const cc = (EX.allaria||{}).saldos || {};
@@ -14348,6 +14355,29 @@ def main() -> int:
                     "gastos": _xf(s.get("Fees")), "total": _xf(s.get("Total"))})
         extranet_cta["allaria"]["saldos"] = allaria_cuenta_corriente or {}
         extranet_cta["allaria"]["mercaderias"] = allaria_mercaderias or []
+        # ACA: cuenta granaria por zona (acabase) — grano x cosecha con pactado/entregado/liquidado
+        _aca_fp = Path(__file__).resolve().parent / "data" / "aca" / "cuenta_corriente.json"
+        extranet_cta["aca"] = []
+        if _aca_fp.exists():
+            _aca = json.loads(_aca_fp.read_text(encoding="utf-8"))
+            import urllib.parse as _up
+            for _cta, _tablas in (_aca.get("cuentas") or {}).items():
+                for _t in _tablas:
+                    _zona = ""
+                    _m = re.search(r"xnomzona=([^&]+)", str(_t.get("frame") or ""))
+                    if _m: _zona = _up.unquote(_m.group(1)).replace("%20", " ")
+                    _rows = _t.get("rows") or []
+                    if not _rows or "Grano" not in str(_rows[0]): continue
+                    for _r in _rows[1:]:
+                        if len(_r) < 8: continue
+                        def _an(s):
+                            try: return float(str(s).replace(",", "") or 0)
+                            except Exception: return 0.0
+                        _ent, _liq = _an(_r[3]), _an(_r[7])
+                        extranet_cta["aca"].append({"cta": _cta, "zona": _zona, "grano": _r[0], "cos": _r[1],
+                            "pact": _an(_r[2]), "ent": _ent, "cert": _an(_r[5]), "liq": _liq,
+                            "pend": round(max(0.0, _ent - _liq), 1)})
+            extranet_cta["frescura"]["aca"] = str(_aca.get("actualizado") or "")[:10]
         for _nom, _fp in [("cargill", "cargill/invoices.json"), ("ldc", "ldc/settlements.json"), ("allaria", "allaria/cuenta_corriente.json")]:
             _p = Path(__file__).resolve().parent / "data" / _fp
             if _p.exists():
