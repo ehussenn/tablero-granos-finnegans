@@ -2049,7 +2049,7 @@ window.apiFetch = function(path, opts){
     <div class="subpanel" data-sub-panel="vt-extranets">
       <div class="kpis" id="ex-kpis"></div>
       <div class="filterbar">
-        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>ALLARIA</option></select></div>
+        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>INTAGRO</option><option>ALLARIA</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="ex-q" placeholder="contrato, comprobante…" /></div>
         <button class="clear" id="ex-clear">Limpiar</button>
         <div class="count" id="ex-meta"></div>
@@ -12217,7 +12217,8 @@ function ctRender(){
       <div class="kpi green"><div class="lbl">CARGILL · PAGOS</div><div class="val">$ ${n0(pagC)}</div><div class="hint">${pagos.length} pagos/cobros</div></div>
       <div class="kpi orange"><div class="lbl">CARGILL · RETENCIONES DESCONTADAS</div><div class="val">$ ${n0(Math.abs(retC))}</div><div class="hint">IIBB + IVA + Ganancias + SUSS</div></div>
       <div class="kpi"><div class="lbl">LDC · LIQUIDACIONES</div><div class="val">USD ${n0(ldcTU)}</div><div class="hint">${ldcU.length} en USD · en $: ${n0(ldcTP)} (${ldcP.length}) · gastos ${n0(ldcG)} · dato al ${esc(fr.ldc||'—')}</div></div>
-      <div class="kpi red"><div class="lbl">ACA · PEND. LIQUIDAR (s/su cuenta)</div><div class="val">${n0(aca.reduce((s,a)=>s+a.pend,0))} tn</div><div class="hint">entregado − liquidado en acabase · dato al ${esc(fr.aca||'—')}</div></div>`;
+      <div class="kpi red"><div class="lbl">ACA · PEND. LIQUIDAR (s/su cuenta)</div><div class="val">${n0(aca.reduce((s,a)=>s+a.pend,0))} tn</div><div class="hint">entregado − liquidado en acabase · dato al ${esc(fr.aca||'—')}</div></div>
+      <div class="kpi green"><div class="lbl">INTAGRO · SALDO CTA CTE</div><div class="val">${esc(((EX.intagro||{}).saldos||[])[2]||((EX.intagro||{}).saldos||[])[0]||'—')}</div><div class="hint">dato al ${esc(fr.intagro||'—')}</div></div>`;
     // cruce con área granaria
     const match = document.getElementById('ex-match');
     const alias = {CARGILL:'CARGILL', LDC:'LDC', ALLARIA:'ALLARIA', ACA:'ASOC DE COOPERATIVAS'};
@@ -12256,6 +12257,15 @@ function ctRender(){
       sh += tbl('🏦 ACA · cuenta granaria por zona (acabase)',
         ['Cuenta','Zona','Grano','Cosecha','Pactadas tn','Entregadas tn','Certificadas tn','Liquidadas tn','PEND. LIQUIDAR tn'],
         aca.sort((a,b)=>b.pend-a.pend).map(a=>[esc(a.cta),esc(a.zona),esc(a.grano),esc(a.cos),n2(a.pact),n2(a.ent),n2(a.cert),n2(a.liq),`<b style="color:${a.pend>0?'var(--red)':'var(--green)'}">${n2(a.pend)}</b>`]));
+    }
+    if(!portal || portal==='INTAGRO'){
+      const pgs = (EX.intagro||{}).paginas || {};
+      Object.entries(pgs).forEach(([nombre, rows]) => {
+        if(!rows || rows.length < 2) return;
+        const filas = rows.slice(1).filter(pasa);
+        if(!filas.length) return;
+        sh += tbl(`🏦 INTAGRO · ${esc(nombre)}`, rows[0].map(esc), filas.map(r => r.map(esc)));
+      });
     }
     if(!portal || portal==='ALLARIA'){
       const cc = (EX.allaria||{}).saldos || {};
@@ -14378,6 +14388,17 @@ def main() -> int:
                             "pact": _an(_r[2]), "ent": _ent, "cert": _an(_r[5]), "liq": _liq,
                             "pend": round(max(0.0, _ent - _liq), 1)})
             extranet_cta["frescura"]["aca"] = str(_aca.get("actualizado") or "")[:10]
+        # INTAGRO: cta cte (saldos + movimientos), contratos, entregas CTG, facturación
+        _int_fp = Path(__file__).resolve().parent / "data" / "intagro" / "cuenta_corriente_raw.json"
+        extranet_cta["intagro"] = {"saldos": [], "paginas": {}}
+        if _int_fp.exists():
+            _int = json.loads(_int_fp.read_text(encoding="utf-8"))
+            for _pag, _v in (_int.get("paginas") or {}).items():
+                if _v.get("saldos"): extranet_cta["intagro"]["saldos"] = _v["saldos"]
+                _ts = _v.get("tablas") or []
+                if _ts and len(_ts[0]) > 1:
+                    extranet_cta["intagro"]["paginas"][_pag] = _ts[0][:400]
+            extranet_cta["frescura"]["intagro"] = str(_int.get("actualizado") or "")[:10]
         for _nom, _fp in [("cargill", "cargill/invoices.json"), ("ldc", "ldc/settlements.json"), ("allaria", "allaria/cuenta_corriente.json")]:
             _p = Path(__file__).resolve().parent / "data" / _fp
             if _p.exists():
