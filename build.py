@@ -969,6 +969,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="vt-extranets" data-title="Venta · Cta Cte Extranets">🏦 Cta Cte Extranets</a>
         </div>
       </div>
       <div class="nav-section" data-section="posicion">
@@ -1844,6 +1845,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab active" data-sub="posicion">Posición General</button>
       <button class="subtab" data-sub="financiera">Financiera</button>
       <button class="subtab" data-sub="vt-precios">💰 Precios por Contrato</button>
+      <button class="subtab" data-sub="vt-extranets">🏦 Cta Cte Extranets</button>
     </div>
 
     <!-- ========== SUB: POSICIÓN ========== -->
@@ -2041,6 +2043,25 @@ window.apiFetch = function(path, opts){
         💡 <strong>Cómo se lee</strong>: cada fila es un contrato de venta con su <b>precio fijado</b> (cerrado con la cerealera). Los cards arriba muestran el <b>precio promedio ponderado</b> por toneladas para cada cerealera — comparás qué te paga cada uno. Click en cualquier columna del header para ordenar.
       </div>
 
+    </div>
+
+    <!-- ========== SUB: CTA CTE EXTRANETS ========== -->
+    <div class="subpanel" data-sub-panel="vt-extranets">
+      <div class="kpis" id="ex-kpis"></div>
+      <div class="filterbar">
+        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ALLARIA</option></select></div>
+        <div><label>BUSCAR</label><input type="text" id="ex-q" placeholder="contrato, comprobante…" /></div>
+        <button class="clear" id="ex-clear">Limpiar</button>
+        <div class="count" id="ex-meta"></div>
+      </div>
+      <div class="section">
+        <h3>Cruce con el área granaria <span class="badge">pendiente de liquidar según Finnegans (stock por organización, partida 25-26) por cerealera</span></h3>
+        <div class="grain-grid" id="ex-match"></div>
+      </div>
+      <div class="section" id="ex-secciones"></div>
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:10px;border:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.55">
+        💡 <strong>Fuente</strong>: cuenta corriente scrapeada de cada extranet (Cargill GPS: facturas, liquidaciones, retenciones y pagos · LDC: liquidaciones con gastos · Allaria: saldos por cuenta y mercaderías) — solo operaciones de granos. Se actualiza corriendo los scrapers locales; la fecha de cada bloque indica hasta cuándo llega el dato. El cruce de arriba compara contra lo que Finnegans dice que cada cerealera te debe liquidar.
+      </div>
     </div>
 
   </div>
@@ -12169,6 +12190,86 @@ function ctRender(){
 })();
 
 /* ============================================================
+   ====  CTA CTE EXTRANETS (Cargill / LDC / Allaria, solo granos)  ====
+   ============================================================ */
+(function exInit(){
+  const EX = PAYLOAD.extranet_cta || {};
+  const kpis = document.getElementById('ex-kpis'); if(!kpis) return;
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n0 = v => (Number(v)||0).toLocaleString('es-AR',{maximumFractionDigits:0});
+  const n2 = v => (Number(v)||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fr = EX.frescura || {};
+  function render(){
+    const portal = (document.getElementById('ex-portal')||{value:''}).value;
+    const q = ((document.getElementById('ex-q')||{value:''}).value||'').toLowerCase();
+    const pasa = r => !q || JSON.stringify(r).toLowerCase().includes(q);
+    const cg = EX.cargill || {movs:[],pagos:[]};
+    const movs = (cg.movs||[]).filter(pasa), pagos = (cg.pagos||[]).filter(pasa), ldc = (EX.ldc||[]).filter(pasa);
+    const liqC = movs.filter(m=>m.cod==='L#').reduce((s,m)=>s+m.imp,0);
+    const facC = movs.filter(m=>m.cod==='RI').reduce((s,m)=>s+m.imp,0);
+    const retC = movs.filter(m=>String(m.cod||'').startsWith('$')).reduce((s,m)=>s+m.imp,0);
+    const pagC = pagos.reduce((s,p)=>s+p.imp,0);
+    const ldcU = ldc.filter(l=>String(l.mon).toUpperCase().includes('US')), ldcP = ldc.filter(l=>!String(l.mon).toUpperCase().includes('US'));
+    const ldcTU = ldcU.reduce((s,l)=>s+l.total,0), ldcTP = ldcP.reduce((s,l)=>s+l.total,0), ldcG = ldc.reduce((s,l)=>s+l.gastos,0);
+    kpis.innerHTML = `
+      <div class="kpi"><div class="lbl">CARGILL · LIQUIDACIONES</div><div class="val">$ ${n0(liqC)}</div><div class="hint">${movs.filter(m=>m.cod==='L#').length} liq desde jul-25 · dato al ${esc(fr.cargill||'—')}</div></div>
+      <div class="kpi green"><div class="lbl">CARGILL · PAGOS</div><div class="val">$ ${n0(pagC)}</div><div class="hint">${pagos.length} pagos/cobros</div></div>
+      <div class="kpi orange"><div class="lbl">CARGILL · RETENCIONES DESCONTADAS</div><div class="val">$ ${n0(Math.abs(retC))}</div><div class="hint">IIBB + IVA + Ganancias + SUSS</div></div>
+      <div class="kpi"><div class="lbl">LDC · LIQUIDACIONES</div><div class="val">USD ${n0(ldcTU)}</div><div class="hint">${ldcU.length} en USD · en $: ${n0(ldcTP)} (${ldcP.length}) · gastos ${n0(ldcG)} · dato al ${esc(fr.ldc||'—')}</div></div>`;
+    // cruce con área granaria
+    const match = document.getElementById('ex-match');
+    const alias = {CARGILL:'CARGILL', LDC:'LDC', ALLARIA:'ALLARIA'};
+    let mh = '';
+    Object.entries(EX.pend_finnegans||{}).sort((a,b)=>{
+      const sum = o => Object.values(o[1]).reduce((s,v)=>s+v,0); return sum(b)-sum(a);
+    }).forEach(([org, prods]) => {
+      const U = org.toUpperCase();
+      const es = Object.keys(alias).find(k => U.includes(k));
+      if(portal && (!es || es !== portal)) return;
+      if(!portal && !es) return;   // sin filtro: solo las 3 con extranet conectado
+      const tot = Object.values(prods).reduce((s,v)=>s+v,0);
+      mh += `<div class="grain-card"><div class="name"><span>${esc(org.length>30?org.slice(0,30)+'…':org)}</span><span class="cnt">${esc(es||'')}</span></div>
+        <div class="row"><span class="k">Pend. liquidar s/Finnegans</span><span style="color:${tot>0?'var(--red)':'var(--green)'}"><b>${n0(tot)} tn</b></span></div>
+        ${Object.entries(prods).map(([p,t])=>`<div class="row"><span class="k">${esc(p.replace('Grano ',''))}</span><span>${n0(t)} tn</span></div>`).join('')}</div>`;
+    });
+    match.innerHTML = mh || '<div style="color:var(--muted);padding:10px">Sin pendientes para el filtro.</div>';
+    // secciones con tablas
+    const sec = document.getElementById('ex-secciones');
+    const tbl = (tit, heads, rows) => rows.length ? `<div class="section"><h3>${tit} <span class="badge">${rows.length} filas</span></h3>
+      <div class="tbl-wrap" style="max-height:420px"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td style="text-align:${i<heads.length-((tit.includes('LDC'))?4:1)?'left':'right'}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>` : '';
+    let sh = '';
+    if(!portal || portal==='CARGILL'){
+      sh += tbl('🏦 CARGILL · movimientos de cta cte (granos, desde jul-25)',
+        ['Fecha','Tipo','Contrato','Comprobante','Importe $'],
+        movs.sort((a,b)=>b.f.localeCompare(a.f)).map(m=>[esc(m.f),esc(m.tipo),esc(m.cto),esc(m.nro),n0(m.imp)]));
+      sh += tbl('🏦 CARGILL · pagos',['Fecha','Comprobante','Contrato','Estado','Importe $'],
+        pagos.sort((a,b)=>b.f.localeCompare(a.f)).map(p=>[esc(p.f),esc(p.nro),esc(p.cto),esc(p.estado),n0(p.imp)]));
+    }
+    if(!portal || portal==='LDC'){
+      sh += tbl('🏦 LDC · liquidaciones',['Fecha pago','Contrato','Documento','Tipo','Mon.','Precio','Subtotal','Gastos','Total'],
+        ldc.sort((a,b)=>String(b.f).localeCompare(String(a.f))).map(l=>[esc(l.f),esc(l.cto),esc(l.nro),esc(l.tipo),esc(l.mon),n2(l.precio),n2(l.sub),n2(l.gastos),n2(l.total)]));
+    }
+    if(!portal || portal==='ALLARIA'){
+      const cc = (EX.allaria||{}).saldos || {};
+      let ah = '';
+      Object.entries(cc).forEach(([cta, d]) => {
+        (d.saldos||[]).slice(0,1).forEach(s => { ah += `<tr><td style="text-align:left">${esc(cta)}</td><td style="text-align:left">${esc(s.descripcion)}</td><td style="text-align:right">$ ${esc(s.dolares)}</td><td style="text-align:right">USD ${esc(s.saldo)}</td></tr>`; });
+      });
+      if(ah) sh += `<div class="section"><h3>🏦 ALLARIA · saldos por cuenta <span class="badge">dato al ${esc(fr.allaria||'—')}</span></h3>
+        <div class="tbl-wrap"><table><thead><tr><th>Cuenta</th><th>Saldo</th><th>En pesos</th><th>En USD</th></tr></thead><tbody>${ah}</tbody></table></div></div>`;
+    }
+    sec.innerHTML = sh || '<div style="color:var(--muted);padding:14px">Sin datos para el filtro.</div>';
+    const meta = document.getElementById('ex-meta');
+    if(meta) meta.textContent = `${movs.length + pagos.length + ldc.length} movimientos`;
+  }
+  ['ex-portal','ex-q'].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener(id==='ex-q'?'input':'change', render); });
+  const cl = document.getElementById('ex-clear');
+  if(cl) cl.addEventListener('click', () => { document.getElementById('ex-portal').value=''; document.getElementById('ex-q').value=''; render(); });
+  render();
+})();
+
+/* ============================================================
    ====  FINALES PENDIENTES · cola de trabajo con semáforo  ===
    Compra de granos: entregado - liquidado = final a hacer.
    Estado: hecha(liquidada) / enviada(manual, localStorage) / pendiente.
@@ -14208,6 +14309,87 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] unificación maní producción: {e}")
 
+    # ---- CTA CTE EXTRANETS (regla usuario 25/08/2026): cuenta corriente de granos de
+    # cada extranet (Cargill GPS / LDC / Allaria) + cruce con el área granaria (pendiente
+    # de liquidar por organización según el stock por organización del DW, partida 25-26).
+    extranet_cta = {"cargill": {"movs": [], "pagos": []}, "ldc": [], "allaria": {"saldos": {}, "mercaderias": []},
+                    "pend_finnegans": {}, "frescura": {}}
+    try:
+        def _xf(v):
+            try: return float(str(v).replace(",", "") or 0)
+            except Exception: return 0.0
+        def _xdt(s):
+            p = str(s or "").split("/")
+            return f"{p[2]}-{p[1]}-{p[0]}" if len(p) == 3 else str(s or "")
+        for i in cargill_invoices:
+            f = _xdt(i.get("documentCreationDate"))
+            if f < "2025-07-01": continue
+            extranet_cta["cargill"]["movs"].append({
+                "f": f, "tipo": str(i.get("invoiceType") or ""), "cod": str(i.get("invoiceTypeCode") or ""),
+                "cto": str(i.get("contractNumber") or "").strip(),
+                "nro": str(i.get("invoiceNumber") or i.get("externalDocumentReference") or ""),
+                "imp": _xf(i.get("amountLocalCurrency")), "mon": str(i.get("localCurrencyCode") or "")})
+        for pr in cargill_payments:
+            f = _xdt(pr.get("paymentDate"))
+            if f < "2025-07-01": continue
+            extranet_cta["cargill"]["pagos"].append({
+                "f": f, "nro": str(pr.get("documentNumber") or ""), "cto": str(pr.get("contractNumber") or "").strip(),
+                "imp": _xf(pr.get("amountLocalCurrency")), "estado": str(pr.get("status") or "")})
+        _ldc_fp = Path(__file__).resolve().parent / "data" / "ldc" / "settlements.json"
+        if _ldc_fp.exists():
+            _ldc = json.loads(_ldc_fp.read_text(encoding="utf-8"))
+            for s in (_ldc.get("List") or []):
+                fp8 = str(s.get("PayDate") or "")
+                extranet_cta["ldc"].append({
+                    "f": f"{fp8[:4]}-{fp8[4:6]}-{fp8[6:8]}" if len(fp8) == 8 else fp8,
+                    "cto": str(s.get("ContractNumber") or ""), "nro": str(s.get("DocumentNumber") or ""),
+                    "tipo": str(s.get("DocumentType") or ""), "mon": str(s.get("SettlementCurrencySymbol") or ""),
+                    "precio": _xf(s.get("Price")), "sub": _xf(s.get("SubTotal")),
+                    "gastos": _xf(s.get("Fees")), "total": _xf(s.get("Total"))})
+        extranet_cta["allaria"]["saldos"] = allaria_cuenta_corriente or {}
+        extranet_cta["allaria"]["mercaderias"] = allaria_mercaderias or []
+        for _nom, _fp in [("cargill", "cargill/invoices.json"), ("ldc", "ldc/settlements.json"), ("allaria", "allaria/cuenta_corriente.json")]:
+            _p = Path(__file__).resolve().parent / "data" / _fp
+            if _p.exists():
+                extranet_cta["frescura"][_nom] = datetime.fromtimestamp(_p.stat().st_mtime).strftime("%d/%m/%Y")
+        print(f"[+] Cta Cte Extranets: cargill {len(extranet_cta['cargill']['movs'])} movs + {len(extranet_cta['cargill']['pagos'])} pagos · "
+              f"ldc {len(extranet_cta['ldc'])} liq · allaria {len(extranet_cta['allaria']['saldos'])} cuentas")
+    except Exception as e:
+        print(f"    [!] extranet_cta: {e}")
+    # cruce con el área granaria: pendiente de liquidar por organización (DW stock x org)
+    try:
+        if USE_DW:
+            import psycopg2 as _pg
+            _cn = _pg.connect(host=os.environ["FNN_DW_HOST"], dbname="finnegansbi", user=os.environ["FNN_DW_USER"],
+                              password=os.environ["FNN_DW_PASS"], port=5432, sslmode="require", connect_timeout=20)
+            _cu = _cn.cursor()
+            # nivel CARTA DE PORTE (igual que el Excel de stock x organización): pendiente =
+            # ingresos por traslado cuyo egreso de liquidación no llegó (o llegó parcial)
+            _cu.execute("""select organizacionoperacion, producto, clasevo, numerodocumento, descripcionitem,
+                                  nullif(nullif(trim(cantidad),''),'NULL')::numeric
+                           from agronasajasrl_detalle_de_ingresos_y_egresos_por_deposito
+                           where partida = 'CAMPAÑA 25-26' and fecha >= '2025-01-01'
+                             and organizacionoperacion is not null and organizacionoperacion <> ''
+                             and conceptoproducto = 'Granos' and deposito not ilike 'DEP COSECHA%%'""")
+            _ing, _egr = {}, {}
+            for _o, _p, _cl, _nd, _it, _kg in _cu.fetchall():
+                _kg = float(_kg or 0); _b = (_o.strip(), _p)
+                if _kg >= 0 and str(_cl) == "TrasladoGranosVO":
+                    _cp = str(_nd or "").strip()
+                    if _cp: _ing.setdefault(_b, {})[_cp] = _ing.get(_b, {}).get(_cp, 0) + _kg
+                elif _kg < 0:
+                    _it = str(_it or "")
+                    _cp = _it.split("/")[1].strip() if "/" in _it else ""
+                    if _cp: _egr.setdefault(_b, {})[_cp] = _egr.get(_b, {}).get(_cp, 0) - _kg
+            for _b, _cps in _ing.items():
+                _tn = sum(max(0.0, _kg - _egr.get(_b, {}).get(_cp, 0.0)) for _cp, _kg in _cps.items()) / 1000
+                if _tn > 0.5:
+                    extranet_cta["pend_finnegans"].setdefault(_b[0], {})[_b[1]] = round(_tn, 1)
+            _cn.close()
+            print(f"[+] Cta Cte Extranets: pendiente Finnegans por organización: {len(extranet_cta['pend_finnegans'])} orgs")
+    except Exception as e:
+        print(f"    [!] extranet_cta pend_finnegans: {e}")
+
     # Finales auto-detectadas como HECHAS (regla usuario 20/08/2026): si Finnegans dice
     # que la final ya se efectuó (CANTIDADPENEFECTUARFINAL = 0 con entregado = liquidado),
     # el semáforo la marca 🟢 Hecha solo. NUNCA borra estados manuales — solo agrega.
@@ -14229,6 +14411,7 @@ def main() -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "counts": counts,
         "fp_auto_hechas": fp_auto_hechas,
+        "extranet_cta": extranet_cta,
         "produccion_camp": produccion_camp,
         "produccion_pend_det": produccion_pend_det,
         "prestamo_cp": prestamo_cp,
