@@ -2050,7 +2050,7 @@ window.apiFetch = function(path, opts){
     <div class="subpanel" data-sub-panel="vt-extranets">
       <div class="kpis" id="ex-kpis"></div>
       <div class="filterbar">
-        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>INTAGRO</option><option>ALLARIA</option></select></div>
+        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>INTAGRO</option><option>BUNGE</option><option>ALLARIA</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="ex-q" placeholder="contrato, comprobante…" /></div>
         <button class="clear" id="ex-clear">Limpiar</button>
         <div class="count" id="ex-meta"></div>
@@ -12376,6 +12376,15 @@ function ctRender(){
         sh += tbl(`🏦 INTAGRO · ${esc(nombre)}`, rows[0].map(esc), filas.map(r => r.map(esc)));
       });
     }
+    if(!portal || portal==='BUNGE'){
+      const pgsB = (EX.bunge||{});
+      Object.entries(pgsB).forEach(([nombre, rows]) => {
+        if(!rows || rows.length < 2) return;
+        const filas = rows.slice(1).filter(pasa);
+        if(!filas.length) return;
+        sh += tbl(`🏦 BUNGE · ${esc(nombre)} (dato al ${esc(fr.bunge||'—')})`, rows[0].map(esc), filas.map(r => r.map(esc)));
+      });
+    }
     if(!portal || portal==='ALLARIA'){
       const cc = (EX.allaria||{}).saldos || {};
       let ah = '';
@@ -14508,6 +14517,23 @@ def main() -> int:
                 if _ts and len(_ts[0]) > 1:
                     extranet_cta["intagro"]["paginas"][_pag] = _ts[0][:400]
             extranet_cta["frescura"]["intagro"] = str(_int.get("actualizado") or "")[:10]
+        # BUNGE: dos cuentas (granos 123879 / fertilizantes 165914) — tablas de su portal
+        _bun_fp = Path(__file__).resolve().parent / "data" / "bunge" / "cuenta_corriente_raw.json"
+        extranet_cta["bunge"] = {}
+        if _bun_fp.exists():
+            _bun = json.loads(_bun_fp.read_text(encoding="utf-8"))
+            for _cta, _dd in (_bun.get("cuentas") or {}).items():
+                _nom_cta = "GRANOS" if _cta == "123879" else "FERTILIZANTES"
+                for _pag, _ts in (_dd.get("paginas") or {}).items():
+                    # elegir la tabla con datos (más de 3 filas o más columnas que el banner)
+                    _best = None
+                    for _t in _ts or []:
+                        if _t and len(_t[0]) > 3 and len(_t) >= 2:
+                            if _best is None or len(_t) > len(_best): _best = _t
+                    if _best:
+                        extranet_cta["bunge"][f"{_nom_cta} · {_pag}"] = _best[:300]
+            extranet_cta["frescura"]["bunge"] = str(_bun.get("actualizado") or "")[:10]
+            print(f"[+] Cta Cte Extranets: bunge {len(extranet_cta['bunge'])} páginas con datos")
         for _nom, _fp in [("cargill", "cargill/invoices.json"), ("ldc", "ldc/settlements.json"), ("allaria", "allaria/cuenta_corriente.json")]:
             _p = Path(__file__).resolve().parent / "data" / _fp
             if _p.exists():
