@@ -2189,6 +2189,20 @@ window.apiFetch = function(path, opts){
       <!-- KPI totales -->
       <div class="kpis" id="fn-kpis"></div>
 
+      <!-- SEMENTERA: posición financiera valorizada (para el banco) -->
+      <div class="section" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac">
+        <h3>🌱 Sementera — posición valorizada a pizarra BCR <span class="badge" id="fn-sem-meta"></span></h3>
+        <div class="kpis" id="fn-sem-kpis" style="margin-top:8px"></div>
+        <div class="tbl-wrap" style="max-height:420px;margin-top:10px">
+          <table><thead id="fn-sem-head"></thead><tbody id="fn-sem-body"></tbody><tfoot id="fn-sem-foot"></tfoot></table>
+        </div>
+        <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">
+          Valorización: <b>stock físico propio</b> (planta + silo bolsa + bolsas) y <b>en pie</b> (pendiente de cosecha 25/26 + trigo 26/27 sembrado) a pizarra BCR del día ·
+          <b>a cobrar</b> = venta entregada pendiente de liquidar (lo fijado al precio del contrato, lo sin fijar a pizarra) ·
+          <b>a pagar</b> = compra recibida pendiente de liquidar (mismo criterio) · USD, y en $ al TC BCR del día. Respeta los filtros de campaña/empresa de arriba.
+        </p>
+      </div>
+
       <!-- 0. DETALLE POR PRODUCTO · PENDIENTE DE LIQUIDAR -->
       <div class="section">
         <h3>Análisis Financiero · Detalle por Producto
@@ -10135,6 +10149,86 @@ function fnRender(){
   const kv = document.getElementById('fn-kpi-vpliq');
   if(kv) kv.onclick = () => pnctGo({tipo:'venta', field:'pliq', volverA:'pn-financiera', origen:'Desde: Financiera · Venta pend. liquidar'});
   document.getElementById('fn-info').textContent = `Calculado al ${new Date().toLocaleString('es-AR')}`;
+
+  // ── SEMENTERA (posición valorizada para el banco) — regla usuario 28/08/2026
+  try{ fnSementera(camp, emp); }catch(e){ console.warn('sementera:', e); }
+}
+
+function fnSementera(camp, emp){
+  const cont = document.getElementById('fn-sem-kpis'); if(!cont) return;
+  const BCR = PAYLOAD.bcr || {granos:{}};
+  const TC_HOY = Number(BCR.tc_usd_ars) || null;
+  const famDe = p => { const u = String(p||'').toUpperCase();
+    if(u.includes('TRIGO')) return 'trigo'; if(u.includes('SOJA')) return 'soja';
+    if(u.includes('MAIZ') || u.includes('MAÍZ')) return 'maiz';
+    if(u.includes('GIRASOL')) return 'girasol'; if(u.includes('SORGO')) return 'sorgo'; return null; };
+  const pizUsd = f => Number(((BCR.granos||{})[f]||{}).usd) || 0;
+  const NOM = {trigo:'TRIGO', soja:'SOJA', maiz:'MAÍZ', girasol:'GIRASOL', sorgo:'SORGO'};
+  const S = {};   // familia -> {stock, pie, cxcTn, cxcUsd, cxpTn, cxpUsd}
+  const el = f => S[f] || (S[f] = {stock:0, pie:0, cxcTn:0, cxcUsd:0, cxpTn:0, cxpUsd:0});
+  // stock físico propio (solo GRANO comercial, no semillas procesadas)
+  ['stock_silo','stock_bolsas','stock_silobolsa'].forEach(k => Object.entries(PAYLOAD[k]||{}).forEach(([prod, tn]) => {
+    if(!String(prod||'').startsWith('Grano ')) return;
+    const f = famDe(prod); if(f) el(f).stock += Number(tn)||0;
+  }));
+  // en pie: pendiente cosecha 25-26 + potencial 26-27 (trigo del Excel del usuario)
+  ['CAMPAÑA 25-26','CAMPAÑA 26-27'].forEach(c => Object.entries((PAYLOAD.produccion_camp||{})[c]||{}).forEach(([prod, v]) => {
+    const f = famDe(prod); if(f && v && v.pendcos) el(f).pie += Number(v.pendcos)||0;
+  }));
+  // a cobrar / a pagar: pendiente de liquidar valorizado
+  const acum = (rows, lado) => (rows||[]).forEach(r => {
+    const c = String(r.campana || r.cosecha || '');
+    if(!FN_CAMP_OK.has(c)) return;
+    if(camp && c !== camp) return;
+    if(emp && (r.empresa || r.organizacion || '—') !== emp) return;
+    const f = famDe(r.producto); if(!f) return;
+    const ent = Number(r.cantidadentregada)||0, liq = Number(r.cantidadliquidada)||0;
+    const pdte = Math.max(0, ent - liq); if(pdte <= 0.01) return;
+    const fij = Number(r.cantidadfijada)||0, pxF = Number(r.preciopromediofijado)||0;
+    const fijP = Math.max(0, Math.min(pdte, fij - liq)), sinF = pdte - fijP;
+    let usd = 0;
+    if(pxF > 1.01) usd += fijP * (pxF < 5000 ? pxF : (TC_HOY ? pxF / TC_HOY : 0));
+    else usd += fijP * pizUsd(f);
+    usd += sinF * pizUsd(f);
+    const d = el(f);
+    if(lado === 'v'){ d.cxcTn += pdte; d.cxcUsd += usd; } else { d.cxpTn += pdte; d.cxpUsd += usd; }
+  });
+  acum(PAYLOAD.pilot, 'v'); acum(PAYLOAD.compra, 'c');
+  // tabla por cultivo
+  const head = document.getElementById('fn-sem-head'), body = document.getElementById('fn-sem-body'), foot = document.getElementById('fn-sem-foot');
+  head.innerHTML = `<tr><th style="text-align:left">Cultivo</th><th>Pizarra USD/tn</th>
+    <th>Stock físico tn</th><th>Stock USD</th><th>En pie tn</th><th>En pie USD</th>
+    <th>A cobrar tn</th><th>A cobrar USD</th><th>A pagar tn</th><th>A pagar USD</th><th>POSICIÓN USD</th></tr>`;
+  let T = {stock:0, stockU:0, pie:0, pieU:0, cxcTn:0, cxcUsd:0, cxpTn:0, cxpUsd:0, neto:0};
+  body.innerHTML = Object.entries(S).filter(([f,d]) => d.stock+d.pie+d.cxcTn+d.cxpTn > 0.5)
+    .sort((a,b) => (b[1].stock+b[1].pie) - (a[1].stock+a[1].pie)).map(([f, d]) => {
+    const pz = pizUsd(f);
+    const stockU = d.stock * pz, pieU = d.pie * pz;
+    const neto = stockU + pieU + d.cxcUsd - d.cxpUsd;
+    T.stock += d.stock; T.stockU += stockU; T.pie += d.pie; T.pieU += pieU;
+    T.cxcTn += d.cxcTn; T.cxcUsd += d.cxcUsd; T.cxpTn += d.cxpTn; T.cxpUsd += d.cxpUsd; T.neto += neto;
+    return `<tr><td style="text-align:left;font-weight:700">${NOM[f]||f}</td><td style="text-align:right">${pz ? fmt.num(pz,2) : '—'}</td>
+      <td style="text-align:right">${fmt.num(d.stock,1)}</td><td style="text-align:right">${fmt.num(stockU)}</td>
+      <td style="text-align:right">${fmt.num(d.pie,1)}</td><td style="text-align:right">${fmt.num(pieU)}</td>
+      <td style="text-align:right">${fmt.num(d.cxcTn,1)}</td><td style="text-align:right;color:var(--green)">${fmt.num(d.cxcUsd)}</td>
+      <td style="text-align:right">${fmt.num(d.cxpTn,1)}</td><td style="text-align:right;color:var(--red)">${fmt.num(d.cxpUsd)}</td>
+      <td style="text-align:right;font-weight:800;color:${neto>=0?'var(--green)':'var(--red)'}">${fmt.num(neto)}</td></tr>`;
+  }).join('');
+  foot.innerHTML = `<tr class="pn-total"><td style="text-align:left">TOTAL</td><td></td>
+    <td style="text-align:right">${fmt.num(T.stock,1)}</td><td style="text-align:right">${fmt.num(T.stockU)}</td>
+    <td style="text-align:right">${fmt.num(T.pie,1)}</td><td style="text-align:right">${fmt.num(T.pieU)}</td>
+    <td style="text-align:right">${fmt.num(T.cxcTn,1)}</td><td style="text-align:right">${fmt.num(T.cxcUsd)}</td>
+    <td style="text-align:right">${fmt.num(T.cxpTn,1)}</td><td style="text-align:right">${fmt.num(T.cxpUsd)}</td>
+    <td style="text-align:right;font-weight:800">${fmt.num(T.neto)}</td></tr>`;
+  const enPesos = v => TC_HOY ? ' · $ ' + fmt.num(v * TC_HOY) : '';
+  cont.innerHTML = `
+    <div class="kpi green"><div class="lbl">STOCK FÍSICO PROPIO</div><div class="val">USD ${fmt.num(T.stockU)}</div><div class="hint">${fmt.num(T.stock,1)} tn a pizarra${enPesos(T.stockU)}</div></div>
+    <div class="kpi green"><div class="lbl">EN PIE (SEMENTERA)</div><div class="val">USD ${fmt.num(T.pieU)}</div><div class="hint">${fmt.num(T.pie,1)} tn (pend. cosecha 25/26 + trigo 26/27)${enPesos(T.pieU)}</div></div>
+    <div class="kpi"><div class="lbl">A COBRAR (venta pend. liq.)</div><div class="val">USD ${fmt.num(T.cxcUsd)}</div><div class="hint">${fmt.num(T.cxcTn,1)} tn${enPesos(T.cxcUsd)}</div></div>
+    <div class="kpi red"><div class="lbl">A PAGAR (compra pend. liq.)</div><div class="val">USD ${fmt.num(T.cxpUsd)}</div><div class="hint">${fmt.num(T.cxpTn,1)} tn${enPesos(T.cxpUsd)}</div></div>
+    <div class="kpi orange"><div class="lbl">POSICIÓN NETA</div><div class="val">USD ${fmt.num(T.neto)}</div><div class="hint">stock + en pie + a cobrar − a pagar${enPesos(T.neto)}</div></div>`;
+  const meta = document.getElementById('fn-sem-meta');
+  if(meta) meta.textContent = `pizarra BCR ${BCR.fetched_at ? String(BCR.fetched_at).slice(0,10) : ''} · TC ${TC_HOY ? fmt.num(TC_HOY) : '—'}`;
 }
 
 // Botones ⇔/⇕ del cuadro financiero: achicar/agrandar todo de un click
