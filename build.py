@@ -3053,9 +3053,10 @@ function render(){
   const tnPdtLiq = tnEnt - tnLiq;
   const cumplimiento = tnAj>0 ? tnEnt/tnAj : null;
   // promedio ponderado de VENTA sobre lo liquidado (regla usuario 19/08), por moneda
+  // moneda por MAGNITUD del precio (labels de Finnegans mezclados) y sin simbólicos $1
   const pvU = {tn:0,imp:0}, pvA = {tn:0,imp:0};
   filtered.forEach(r => { const lq = r.cantidadliquidada||0, px = r.precioliquidado||0;
-    if(lq>0 && px>0){ const d = String(r.moneda||'').toUpperCase().includes('DOLAR') ? pvU : pvA; d.tn += lq; d.imp += lq*px; } });
+    if(lq>0 && px>1.01){ const d = (px < 5000) ? pvU : pvA; d.tn += lq; d.imp += lq*px; } });
 
   const kSty = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row').innerHTML = `
@@ -3393,6 +3394,7 @@ function vpRender(){
     const pr = Number(r.preciopromediofijado)||0;
     const im = Number(r.importefijado)||0;
     totTn += tn; totImp += im; totW += tn*pr;
+    if(pr <= 1.01) return;   // convenio simbólico $1: no ensucia el promedio
     const m = vpRealMoneda(pr, r.moneda);
     if(!byMon[m]) byMon[m] = {tn:0, w:0, imp:0};
     byMon[m].tn += tn; byMon[m].w += tn*pr; byMon[m].imp += im;
@@ -3416,10 +3418,11 @@ function vpRender(){
     if(!byGrano[g]) byGrano[g] = {cnt:0, tn:0, imp:0, byMon:{}, cerealeras:new Set()};
     const tn = Number(r.cantidadfijada)||0;
     const pr = Number(r.preciopromediofijado)||0;
-    const mo = vpRealMoneda(pr, r.moneda);
     byGrano[g].cnt++;
     byGrano[g].tn += tn;
     byGrano[g].imp += Number(r.importefijado)||0;
+    if(pr <= 1.01) { if(r.organizacion) byGrano[g].cerealeras.add(r.organizacion); return; }  // simbólico $1 fuera del promedio
+    const mo = vpRealMoneda(pr, r.moneda);
     if(!byGrano[g].byMon[mo]) byGrano[g].byMon[mo] = {tn:0, w:0, imp:0};
     byGrano[g].byMon[mo].tn += tn;
     byGrano[g].byMon[mo].w  += tn*pr;
@@ -3449,10 +3452,11 @@ function vpRender(){
     if(!byOrg[o]) byOrg[o] = {cnt:0, tn:0, imp:0, byMon:{}, productos:new Set()};
     const tn = Number(r.cantidadfijada)||0;
     const pr = Number(r.preciopromediofijado)||0;
-    const mo = vpRealMoneda(pr, r.moneda);
     byOrg[o].cnt++;
     byOrg[o].tn += tn;
     byOrg[o].imp += Number(r.importefijado)||0;
+    if(pr <= 1.01) { if(r.producto) byOrg[o].productos.add(r.producto); return; }  // simbólico $1 fuera del promedio
+    const mo = vpRealMoneda(pr, r.moneda);
     if(!byOrg[o].byMon[mo]) byOrg[o].byMon[mo] = {tn:0, w:0};
     byOrg[o].byMon[mo].tn += tn;
     byOrg[o].byMon[mo].w  += tn*pr;
@@ -3543,6 +3547,9 @@ function vpRender(){
 // Wire-up filtros
 (function vpInit(){
   vpInitFiltros();
+  // arrancar en la campaña vigente (regla usuario 28/08: los promedios no deben mezclar campañas)
+  const vpc = document.getElementById("vp-camp");
+  if(vpc && [...vpc.options].some(o => o.value === "CAMPAÑA 25-26")) vpc.value = "CAMPAÑA 25-26";
   const FIDS = ["vp-emp","vp-org","vp-corr","vp-prod","vp-mon","vp-camp","vp-q"];
   FIDS.forEach(id => {
     const el = document.getElementById(id);
@@ -4484,9 +4491,10 @@ function cpRender(){
   const tnPdtLiq = tnRec - tnLiq;   // entregado pero aun no liquidado
   const cumplimiento = tnAj>0 ? tnRec/tnAj : null;
   // promedio ponderado de COMPRA sobre lo liquidado (regla usuario 19/08), por moneda
+  // moneda por MAGNITUD del precio (labels de Finnegans mezclados) y sin simbólicos $1
   const pcU = {tn:0,imp:0}, pcA = {tn:0,imp:0};
   cpFiltered.forEach(r => { const lq = r.cantidadliquidada||0, px = r.precioliquidado||0;
-    if(lq>0 && px>0){ const d = String(r.moneda||'').toUpperCase().includes('DOLAR') ? pcU : pcA; d.tn += lq; d.imp += lq*px; } });
+    if(lq>0 && px>1.01){ const d = (px < 5000) ? pcU : pcA; d.tn += lq; d.imp += lq*px; } });
   const kStyC = 'cursor:pointer';   // los carteles abren el Detalle de Contratos filtrado
   document.getElementById('kpi-row-cp').innerHTML = `
     <div class="kpi" data-pnct="tot" style="${kStyC}" title="Click: abrir el detalle por contrato"><div class="lbl">Contratos</div><div class="val">${fmt.int(cnt)}</div><div class="hint">de ${fmt.int(DATA_CP.length)} totales</div></div>
@@ -9466,7 +9474,7 @@ function pnctRender(){
 
   // KPIs — clickeables: dinamizan el filtro MOSTRAR de la tabla de abajo
   let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tEntPliq=0, tAntic=0, tSinFij=0, tImpLiqU=0, tImpLiqA=0;
-  let tPxFijImp=0, tPxFijTn=0;   // para el precio promedio PONDERADO de lo fijado
+  let tPxFijImp=0, tPxFijTn=0, tPxFijImpU=0, tPxFijTnU=0;   // para el precio promedio PONDERADO de lo fijado ($ y USD)
   rows.forEach(c => {
     const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
@@ -9477,9 +9485,14 @@ function pnctRender(){
     if((c.moneda||'').toUpperCase() === 'DOLARES') tImpLiqU += Number(c.importeliquidado)||0;
     else tImpLiqA += Number(c.importeliquidado)||0;
     const pxF = Number(c.preciopromediofijado)||0;
-    if(pxF > 0 && fij > 0){ tPxFijImp += pxF * fij; tPxFijTn += fij; }
+    // moneda por magnitud (labels mezclados) y sin simbólicos $1
+    if(pxF > 1.01 && fij > 0){
+      if(pxF < 5000){ tPxFijImpU += pxF * fij; tPxFijTnU += fij; }
+      else { tPxFijImp += pxF * fij; tPxFijTn += fij; }
+    }
   });
-  const pxProm = tPxFijTn > 0 ? tPxFijImp / tPxFijTn : 0;   // $/tn ponderado por tn fijadas
+  const pxProm = tPxFijTn > 0 ? tPxFijImp / tPxFijTn : 0;    // $/tn ponderado por tn fijadas
+  const pxPromU = tPxFijTnU > 0 ? tPxFijImpU / tPxFijTnU : 0; // USD/tn ponderado
   const kAct = f => PNCT.field === f ? 'outline:2.5px solid #014074;border-radius:10px;' : '';
   document.getElementById('pnct-kpis').innerHTML = `
     <div class="kpi"><div class="lbl">Contratos</div><div class="val">${rows.length}</div></div>
@@ -9490,7 +9503,7 @@ function pnctRender(){
     <div class="kpi green" data-field="liq" style="cursor:pointer;${kAct('liq')}" title="Click: mostrar con liquidado"><div class="lbl">Liquidado</div><div class="val">${fmt.num(tLiq)} tn</div></div>
     <div class="kpi" data-field="antic" style="cursor:pointer;${kAct('antic')}" title="Click: mostrar liquidado anticipado"><div class="lbl">Liq. Anticipado</div><div class="val">${fmt.num(tAntic)}</div></div>
     <div class="kpi orange" data-field="nofij" style="cursor:pointer;${kAct('nofij')}" title="Click: mostrar con tn sin fijar"><div class="lbl">Sin Fijar</div><div class="val">${fmt.num(tSinFij)}</div></div>
-    <div class="kpi" title="Promedio de los precios fijados, ponderado por las tn fijadas de cada contrato (en $/tn)"><div class="lbl">Precio Prom. Fijado</div><div class="val">${pxProm ? '$ ' + fmt.num(pxProm) : '—'}</div><div class="hint">ponderado por tn fijadas</div></div>`;
+    <div class="kpi" title="Promedio de los precios fijados, ponderado por las tn fijadas de cada contrato — contratos en USD y en $ por separado (moneda por magnitud, sin simbólicos $1)"><div class="lbl">Precio Prom. Fijado</div><div class="val">${pxPromU ? 'USD ' + fmt.num(pxPromU, 2) : (pxProm ? '$ ' + fmt.num(pxProm) : '—')}</div><div class="hint">${pxPromU && pxProm ? 'en $: ' + fmt.num(pxProm) + ' · ' : ''}ponderado por tn fijadas</div></div>`;
   document.querySelectorAll('#pnct-kpis .kpi[data-field]').forEach(k => k.addEventListener('click', () => {
     PNCT.field = k.dataset.field;
     document.getElementById('pnct-field').value = PNCT.field;
@@ -10091,10 +10104,9 @@ function fnRender(){
       const fp = Math.max(0, Math.min(pdte, fij - liq));
       s.pdte += pdte; s.fijPdte += fp; s.sinFijPdte += pdte - fp;
       const pLiq = Number(r.precioliquidado)||0;
-      if(liq > 0 && pLiq > 0){
+      if(liq > 0 && pLiq > 1.01){   // moneda por magnitud (labels mezclados) · sin simbólicos $1
         s.liqTn += liq;
-        const es_usd = String(r.moneda||'').toUpperCase().includes('DOLAR');
-        const dest = es_usd ? s.pondU : s.pondA;
+        const dest = (pLiq < 5000) ? s.pondU : s.pondA;
         dest.tn += liq; dest.imp += liq * pLiq;
       }
       return;
