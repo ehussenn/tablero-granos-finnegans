@@ -1276,7 +1276,7 @@ window.apiFetch = function(path, opts){
     <!-- ========== SUB: CIERRE DE CLIENTES (cruce trigo 25/26 camion x camion) ========== -->
     <div class="subpanel" data-sub-panel="cp-cierre-cli">
       <div class="section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
-        <h3>🧾 Cierre de Clientes — Trigo 25/26 camión por camión <span class="badge" id="tc-meta"></span></h3>
+        <h3>🧾 Cierre de Clientes — Campaña 25/26 · todos los cultivos, camión por camión <span class="badge" id="tc-meta"></span></h3>
         <p style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">
           Cada camión de tus <b>contratos de compra</b> cruzado por CTG con su <b>venta</b>: precio en USD
           (TC BNA divisa vendedor del día de fijación), destino, comisión y sellado de las dos puntas.
@@ -1289,6 +1289,7 @@ window.apiFetch = function(path, opts){
         <button class="tc-tab" data-tc="X" style="padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer">CRUCE por CTG</button>
       </div>
       <div class="filterbar">
+        <div><label>CULTIVO</label><select id="tc-cult"><option value="">Todos</option></select></div>
         <div><label>CONTRATO</label><select id="tc-cto"><option value="">Todos</option></select></div>
         <div><label>PROV / COMPRADOR</label><select id="tc-prov"><option value="">Todos</option></select></div>
         <div><label>DESTINO</label><select id="tc-dest"><option value="">Todos</option></select></div>
@@ -6611,7 +6612,7 @@ const tcCtgs = new Set(TC.compra.map(c => c.ctg).filter(Boolean));
 const TCV = TC.venta.filter(v => tcCtgs.has(v.ctg));
 const TCX = TC.compra.filter(c => c.v && c.tn > 0).map(c => {
   const v = c.v, sh = v.tn ? c.tn / v.tn : 0;
-  return {ctg: c.ctg, cto: c.cto, prov: c.prov, ctov: v.cto, org: v.org, dest: v.dest, mes: c.mes,
+  return {ctg: c.ctg, cto: c.cto, prov: c.prov, cultivo: c.cultivo || v.cultivo || "", ctov: v.cto, org: v.org, dest: v.dest, mes: c.mes,
           ffij: c.ffij || c.fecha, tn: c.tn, tnv: v.tn, pc: c.pc, pc_usd: c.pc_usd, pv: v.pv,
           pv_usd: v.pv_usd, fu: v.fu, impC: c.tn * c.pc, impV: v.tn * v.pv,
           comC: c.com, selC: c.sel, gasC: c.com + c.sel,
@@ -6640,6 +6641,7 @@ function tcOpts(id, vals, lbl){
 function tcPasa(r){
   const g = id => (document.getElementById(id) || {value: ""}).value;
   const txt = g("tc-txt").toLowerCase();
+  if(g("tc-cult") && (r.cultivo || "") !== g("tc-cult")) return false;
   if(g("tc-cto") && r.cto !== g("tc-cto")) return false;
   if(g("tc-prov") && (tcTab === "V" ? r.org : r.prov) !== g("tc-prov")) return false;
   if(g("tc-dest")){ const d = tcTab === "C" ? (r.v ? r.v.dest : r.dest) : r.dest; if(d !== g("tc-dest")) return false; }
@@ -6668,6 +6670,7 @@ function tcRender(){
   const head = document.getElementById("tc-head"), foot = document.getElementById("tc-foot"), cards = document.getElementById("tc-cards");
   document.querySelectorAll(".tc-tab").forEach(b => b.style.fontWeight = b.dataset.tc === tcTab ? "800" : "400");
   const rowsBase = tcTab === "C" ? TC.compra : (tcTab === "V" ? TCV : TCX);
+  tcOpts("tc-cult", rowsBase.map(r => r.cultivo), "Todos");
   tcOpts("tc-cto", rowsBase.map(r => r.cto), "Todos");
   tcOpts("tc-prov", rowsBase.map(r => tcTab === "V" ? r.org : r.prov), "Todos");
   tcOpts("tc-dest", tcTab === "C" ? TC.compra.map(r => r.v ? r.v.dest : r.dest) : rowsBase.map(r => r.dest), "Todos");
@@ -6906,9 +6909,9 @@ document.addEventListener("click", ev => {
   if(gr){ const c = gr.dataset.cto; tcAbiertos.has(c) ? tcAbiertos.delete(c) : tcAbiertos.add(c); tcRender(); return; }
   if(ev.target.id === "tc-exp"){ (tcTab === "C" ? TC.compra : TCV).forEach(r => tcAbiertos.add(r.cto || "(sin contrato)")); tcRender(); return; }
   if(ev.target.id === "tc-col"){ tcAbiertos = new Set(); tcRender(); return; }
-  if(ev.target.id === "tc-clr"){ ["tc-cto","tc-prov","tc-dest","tc-mes","tc-fu","tc-txt"].forEach(i => { const el = document.getElementById(i); if(el) el.value = ""; }); tcRender(); return; }
+  if(ev.target.id === "tc-clr"){ ["tc-cult","tc-cto","tc-prov","tc-dest","tc-mes","tc-fu","tc-txt"].forEach(i => { const el = document.getElementById(i); if(el) el.value = ""; }); tcRender(); return; }
 });
-["tc-cto","tc-prov","tc-dest","tc-mes","tc-fu"].forEach(i => { const el = document.getElementById(i); if(el) el.addEventListener("change", tcRender); });
+["tc-cult","tc-cto","tc-prov","tc-dest","tc-mes","tc-fu"].forEach(i => { const el = document.getElementById(i); if(el) el.addEventListener("change", tcRender); });
 (() => { const el = document.getElementById("tc-txt"); if(el) el.addEventListener("input", tcRender); })();
 try{ tcRender(); }catch(e){ console.warn("cierre clientes:", e); }
 
