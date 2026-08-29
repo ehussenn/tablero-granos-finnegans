@@ -284,10 +284,10 @@
     "producto": "Maiz",
     "tipo": "CE",
     "moneda": "U$S",
-    "precio": "185,13",
-    "contratado": "2.243,78",
-    "entregado": "243,78",
-    "facturado": "243,78"
+    "precio": "184,86",
+    "contratado": "2.339,03",
+    "entregado": "339,03",
+    "facturado": "339,03"
   },
   {
     "cosecha": "25/26",
@@ -303,9 +303,19 @@
     "cosecha": "25/26",
     "producto": "Maiz",
     "tipo": "A.F.",
+    "moneda": "$",
+    "precio": "0,00",
+    "contratado": "373,68",
+    "entregado": "373,68",
+    "facturado": "373,68"
+  },
+  {
+    "cosecha": "25/26",
+    "producto": "Maiz",
+    "tipo": "A.F.",
     "moneda": "U$S",
     "precio": "0,00",
-    "contratado": "1.000,00",
+    "contratado": "904,76",
     "entregado": "0,00",
     "facturado": "0,00"
   },
@@ -335,9 +345,9 @@
     "tipo": "TOTAL",
     "moneda": null,
     "precio": null,
-    "contratado": "9.947,14",
-    "entregado": "1.846,25",
-    "facturado": "1.846,25"
+    "contratado": "10.320,82",
+    "entregado": "2.315,17",
+    "facturado": "2.315,17"
   },
   {
     "cosecha": "25/26",
@@ -392,12 +402,22 @@
   {
     "cosecha": "25/26",
     "producto": "Soja",
+    "tipo": "CG",
+    "moneda": "$",
+    "precio": "507.000,00",
+    "contratado": "1.000,00",
+    "entregado": "0,00",
+    "facturado": "1.000,00"
+  },
+  {
+    "cosecha": "25/26",
+    "producto": "Soja",
     "tipo": "TOTAL",
     "moneda": null,
     "precio": null,
-    "contratado": "5.220,33",
+    "contratado": "6.220,33",
     "entregado": "5.220,33",
-    "facturado": "5.220,33"
+    "facturado": "6.220,33"
   },
   {
     "cosecha": "25/26",
@@ -428,6 +448,76 @@
     "contratado": "4.693,92",
     "entregado": "4.549,19",
     "facturado": "4.549,19"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "CE",
+    "moneda": "U$S",
+    "precio": "197,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "A.F.",
+    "moneda": "$",
+    "precio": "0,00",
+    "contratado": "1.000,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "TOTAL",
+    "moneda": null,
+    "precio": null,
+    "contratado": "2.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "CE",
+    "moneda": "U$S",
+    "precio": "227,28",
+    "contratado": "460,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "A.F.",
+    "moneda": "U$S",
+    "precio": "0,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "CG",
+    "moneda": "$",
+    "precio": "320.000,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "1.500,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "TOTAL",
+    "moneda": null,
+    "precio": null,
+    "contratado": "3.460,00",
+    "entregado": "0,00",
+    "facturado": "1.500,00"
   },
   {
     "cosecha": "22/23",
@@ -714,10 +804,10 @@
     "producto": "Maiz",
     "tipo": "CE",
     "moneda": "U$S",
-    "precio": "185,13",
-    "contratado": "2.243,78",
-    "entregado": "243,78",
-    "facturado": "243,78"
+    "precio": "184,86",
+    "contratado": "2.339,03",
+    "entregado": "339,03",
+    "facturado": "339,03"
   },
   {
     "cosecha": "25/26",
@@ -733,9 +823,19 @@
     "cosecha": "25/26",
     "producto": "Maiz",
     "tipo": "A.F.",
+    "moneda": "$",
+    "precio": "0,00",
+    "contratado": "373,68",
+    "entregado": "373,68",
+    "facturado": "373,68"
+  },
+  {
+    "cosecha": "25/26",
+    "producto": "Maiz",
+    "tipo": "A.F.",
     "moneda": "U$S",
     "precio": "0,00",
-    "contratado": "1.000,00",
+    "contratado": "904,76",
     "entregado": "0,00",
     "facturado": "0,00"
   },
@@ -765,9 +865,9 @@
     "tipo": "TOTAL",
     "moneda": null,
     "precio": null,
-    "contratado": "9.947,14",
-    "entregado": "1.846,25",
-    "facturado": "1.846,25"
+    "contratado": "10.320,82",
+    "entregado": "2.315,17",
+    "facturado": "2.315,17"
   },
   {
     "cosecha": "25/26",
@@ -822,12 +922,22 @@
   {
     "cosecha": "25/26",
     "producto": "Soja",
+    "tipo": "CG",
+    "moneda": "$",
+    "precio": "507.000,00",
+    "contratado": "1.000,00",
+    "entregado": "0,00",
+    "facturado": "1.000,00"
+  },
+  {
+    "cosecha": "25/26",
+    "producto": "Soja",
     "tipo": "TOTAL",
     "moneda": null,
     "precio": null,
-    "contratado": "5.220,33",
+    "contratado": "6.220,33",
     "entregado": "5.220,33",
-    "facturado": "5.220,33"
+    "facturado": "6.220,33"
   },
   {
     "cosecha": "25/26",
@@ -858,5 +968,75 @@
     "contratado": "4.693,92",
     "entregado": "4.549,19",
     "facturado": "4.549,19"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "CE",
+    "moneda": "U$S",
+    "precio": "197,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "A.F.",
+    "moneda": "$",
+    "precio": "0,00",
+    "contratado": "1.000,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Maiz",
+    "tipo": "TOTAL",
+    "moneda": null,
+    "precio": null,
+    "contratado": "2.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "CE",
+    "moneda": "U$S",
+    "precio": "227,28",
+    "contratado": "460,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "A.F.",
+    "moneda": "U$S",
+    "precio": "0,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "0,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "CG",
+    "moneda": "$",
+    "precio": "320.000,00",
+    "contratado": "1.500,00",
+    "entregado": "0,00",
+    "facturado": "1.500,00"
+  },
+  {
+    "cosecha": "26/27",
+    "producto": "Trigo",
+    "tipo": "TOTAL",
+    "moneda": null,
+    "precio": null,
+    "contratado": "3.460,00",
+    "entregado": "0,00",
+    "facturado": "1.500,00"
   }
 ]

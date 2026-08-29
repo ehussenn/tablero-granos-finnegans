@@ -6,3 +6,33 @@
 Call log:
   - waiting for locator("input[type='text'], input[name='username']") to be visible
 
+[2026-08-27 11:21:17] ============================================================
+[2026-08-27 11:21:17] ALLARIA DAILY REFRESH START
+[2026-08-27 11:21:17] ============================================================
+[2026-08-27 11:21:18] [+] Login...
+[2026-08-27 11:21:51] [!] login err: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type='text'], input[name='username']") to be visible
+
+[2026-08-28 15:26:54] ============================================================
+[2026-08-28 15:26:54] ALLARIA DAILY REFRESH START
+[2026-08-28 15:26:54] ============================================================
+[2026-08-28 15:26:55] [+] Login...
+[2026-08-28 15:27:28] [!] login err: Page.wait_for_selector: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[type='text'], input[name='username']") to be visible
+
+[2026-08-29 17:10:24] ============================================================
+[2026-08-29 17:10:24] ALLARIA DAILY REFRESH START
+[2026-08-29 17:10:24] ============================================================
+[2026-08-29 17:10:25] [+] Login...
+[2026-08-29 17:10:54] [+] Login OK: https://clientes.allariaagro.com.ar/externa/interna_2019.asp
+[2026-08-29 17:10:54] [+] GET clientes_fis.asp
+[2026-08-29 17:11:01]     33551 bytes
+[2026-08-29 17:11:01] [+] GET clientes_cta.asp
+[2026-08-29 17:11:08]     9890 bytes
+[2026-08-29 17:11:08] [+] Parseando...
+[2026-08-29 17:11:09]     parse OK
+[2026-08-29 17:11:09] [+] Refresh CTGs Allaria del DW...
+[2026-08-29 17:11:13]     DW OK
+[2026-08-29 17:11:13] [OK] DONE

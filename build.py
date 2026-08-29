@@ -2050,7 +2050,7 @@ window.apiFetch = function(path, opts){
     <div class="subpanel" data-sub-panel="vt-extranets">
       <div class="kpis" id="ex-kpis"></div>
       <div class="filterbar">
-        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>INTAGRO</option><option>BUNGE</option><option>ALLARIA</option></select></div>
+        <div><label>EXTRANET</label><select id="ex-portal"><option value="">Todos</option><option>CARGILL</option><option>LDC</option><option>ACA</option><option>INTAGRO</option><option>BUNGE</option><option>AGRINTER</option><option>ALLARIA</option></select></div>
         <div><label>BUSCAR</label><input type="text" id="ex-q" placeholder="contrato, comprobante…" /></div>
         <button class="clear" id="ex-clear">Limpiar</button>
         <div class="count" id="ex-meta"></div>
@@ -12385,6 +12385,15 @@ function ctRender(){
         sh += tbl(`🏦 BUNGE · ${esc(nombre)} (dato al ${esc(fr.bunge||'—')})`, rows[0].map(esc), filas.map(r => r.map(esc)));
       });
     }
+    if(!portal || portal==='AGRINTER'){
+      const pgsA = (EX.agrinter||{});
+      Object.entries(pgsA).forEach(([nombre, rows]) => {
+        if(!rows || rows.length < 2) return;
+        const filas = rows.slice(1).filter(pasa);
+        if(!filas.length) return;
+        sh += tbl(`🏦 AGRINTER · ${esc(nombre)} (dato al ${esc(fr.agrinter||'—')})`, rows[0].map(esc), filas.map(r => r.map(esc)));
+      });
+    }
     if(!portal || portal==='ALLARIA'){
       const cc = (EX.allaria||{}).saldos || {};
       let ah = '';
@@ -14534,6 +14543,22 @@ def main() -> int:
                         extranet_cta["bunge"][f"{_nom_cta} · {_pag}"] = _best[:300]
             extranet_cta["frescura"]["bunge"] = str(_bun.get("actualizado") or "")[:10]
             print(f"[+] Cta Cte Extranets: bunge {len(extranet_cta['bunge'])} páginas con datos")
+        # AGRINTER: cta cte (resumen con debe/haber), saldos pendientes, contratos, entregas CTG
+        _agr_fp = Path(__file__).resolve().parent / "data" / "agrinter" / "cuenta_corriente_raw.json"
+        extranet_cta["agrinter"] = {}
+        if _agr_fp.exists():
+            _agr = json.loads(_agr_fp.read_text(encoding="utf-8"))
+            for _pag, _ts in (_agr.get("paginas") or {}).items():
+                _best = None
+                for _t in _ts or []:
+                    if _t and len(_t[0]) > 4 and len(_t) >= 2:
+                        if _best is None or len(_t) > len(_best): _best = _t
+                if _best:
+                    # sacar filas de filtro/basura (contienen 'Buscar Limpiar')
+                    _rows = [_r for _r in _best if not any("Buscar" in str(_c) for _c in _r)]
+                    if len(_rows) >= 2: extranet_cta["agrinter"][_pag] = _rows[:300]
+            extranet_cta["frescura"]["agrinter"] = str(_agr.get("actualizado") or "")[:10]
+            print(f"[+] Cta Cte Extranets: agrinter {len(extranet_cta['agrinter'])} páginas con datos")
         for _nom, _fp in [("cargill", "cargill/invoices.json"), ("ldc", "ldc/settlements.json"), ("allaria", "allaria/cuenta_corriente.json")]:
             _p = Path(__file__).resolve().parent / "data" / _fp
             if _p.exists():
