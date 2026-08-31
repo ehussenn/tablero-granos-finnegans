@@ -2137,6 +2137,7 @@ window.apiFetch = function(path, opts){
       <div class="filterbar">
         <div><label>TIPO</label><select id="pnct-tipo"><option value="venta">Venta</option><option value="compra">Compra</option></select></div>
         <div><label>CULTIVO</label><select id="pnct-fam"><option value="">Todos</option><option>SOJA</option><option>MAÍZ</option><option>TRIGO</option><option>OTROS</option></select></div>
+        <div><label>CLIENTE / COMPRADOR</label><select id="pnct-org"><option value="">Todos</option></select></div>
         <div><label>MOSTRAR</label><select id="pnct-field">
           <option value="tot">Todos los contratos</option>
           <option value="pend">Con pendiente de entrega</option>
@@ -9466,13 +9467,23 @@ function pnctRender(){
     }
   };
   const set = PNCT.prods ? new Set(PNCT.prods) : null;
-  let rows = src.filter(c => {
+  let rowsSinOrg = src.filter(c => {
     if(set && !set.has(c.producto)) return false;
     if(!set && PNCT.fam && pnFamilia(c.producto) !== PNCT.fam) return false;
     // la semilla DM va aparte (manual), pero los "SEMILLA X" son grano y SÍ se muestran
     if(PNCT.exclSem && !pnEsSemillaGrano(c.producto) && (c.producto||'').toLowerCase().includes('sem')) return false;
     return val(c) > 0.001;
   });
+  // filtro CLIENTE/COMPRADOR (regla usuario 31/08): ver los pendientes de cada uno
+  const orgSel = document.getElementById('pnct-org');
+  if(orgSel){
+    const orgActual = orgSel.value;
+    const orgs = [...new Set(rowsSinOrg.map(c => (c.organizacion||'').trim()).filter(Boolean))].sort();
+    orgSel.innerHTML = '<option value="">Todos</option>' + orgs.map(o => `<option${o===orgActual?' selected':''}>${escapeHtml(o)}</option>`).join('');
+    if(orgActual && !orgs.includes(orgActual)) orgSel.value = '';
+  }
+  const orgFiltro = orgSel ? orgSel.value : '';
+  let rows = orgFiltro ? rowsSinOrg.filter(c => (c.organizacion||'').trim() === orgFiltro) : rowsSinOrg;
   rows.sort((a,b) => val(b) - val(a));
 
   // chips de contexto
@@ -9641,7 +9652,7 @@ document.addEventListener('click', (e) => {
 });
 
 // filtros de la pestaña
-["pnct-tipo","pnct-fam","pnct-field"].forEach(id => document.getElementById(id).addEventListener('change', () => {
+["pnct-tipo","pnct-fam","pnct-field","pnct-org"].forEach(id => document.getElementById(id).addEventListener('change', () => {
   PNCT.tipo = document.getElementById('pnct-tipo').value;
   PNCT.fam = document.getElementById('pnct-fam').value;
   PNCT.field = document.getElementById('pnct-field').value;
