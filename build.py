@@ -1123,6 +1123,11 @@ window.apiFetch = function(path, opts){
       </div>
 
       <div class="section">
+        <h3>Precio Promedio Ponderado de COMPRA por Cultivo <span class="badge">liquidado real · USD/tn (el detalle en $ y las tn en el tooltip) · sin fijaciones ficticias $1 · respeta los filtros</span></h3>
+        <div class="chart-wrap"><canvas id="chart-pond-cp"></canvas></div>
+      </div>
+
+      <div class="section">
         <h3>Detalle de Contratos — Posición Física (Compra) <span class="badge">Click en encabezado para ordenar · click en filas para seleccionar</span></h3>
         <div class="tbl-wrap">
           <table id="tbl-cp">
@@ -1875,6 +1880,10 @@ window.apiFetch = function(path, opts){
       </details>
 
       <!-- DONUT + TOP -->
+      <div class="section">
+        <h3>Precio Promedio Ponderado de VENTA por Cultivo <span class="badge">liquidado real · USD/tn · sin fijaciones ficticias $1 · respeta los filtros</span></h3>
+        <div class="chart-wrap"><canvas id="chart-pond"></canvas></div>
+      </div>
       <div class="row2">
         <div class="section">
           <h3>Top 10 Cerealeras por Toneladas Ajustadas</h3>
@@ -3055,7 +3064,46 @@ function applyFilters(){
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 100)))(rebuildSelects);
 
 /* ----- KPIs + resumen grano + charts + tabla ----- */
-let chartTop=null, chartDonut=null;
+let chartTop=null, chartDonut=null, chartPond=null;
+
+// Ponderado LIQUIDADO por cultivo (USD por magnitud, sin ficticias $1) para los gráficos
+function pondCultivoDatos(rows){
+  const famDe = p => { const u = String(p||'').toUpperCase();
+    if(u.includes('TRIGO')) return 'TRIGO'; if(u.includes('SOJA')) return 'SOJA';
+    if(u.includes('MAIZ') || u.includes('MAÍZ')) return 'MAÍZ';
+    if(u.includes('GIRASOL')) return 'GIRASOL'; if(u.includes('SORGO')) return 'SORGO';
+    if(u.includes('ARVEJA')) return 'ARVEJA'; if(u.includes('CEBADA')) return 'CEBADA';
+    if(u.includes('MANI') || u.includes('MANÍ')) return 'MANÍ'; return 'OTROS'; };
+  const acc = {};
+  (rows||[]).forEach(r => {
+    const lq = Number(r.cantidadliquidada)||0, px = Number(r.precioliquidado)||0;
+    if(lq <= 0 || px <= 1.01) return;
+    const f = famDe(r.producto);
+    const d = acc[f] || (acc[f] = {tnU:0, wU:0, tnA:0, wA:0});
+    if(px < 5000){ d.tnU += lq; d.wU += lq*px; } else { d.tnA += lq; d.wA += lq*px; }
+  });
+  return Object.entries(acc)
+    .map(([f, d]) => ({f, usd: d.tnU ? d.wU/d.tnU : 0, ars: d.tnA ? d.wA/d.tnA : 0, tn: d.tnU + d.tnA}))
+    .filter(x => x.usd > 0 || x.ars > 0)
+    .sort((a,b) => b.usd - a.usd);
+}
+function pondChart(canvasId, chartAnt, rows, color){
+  const el = document.getElementById(canvasId);
+  if(!el) return chartAnt;
+  if(chartAnt) chartAnt.destroy();
+  const datos = pondCultivoDatos(rows);
+  return new Chart(el, {
+    type:'bar',
+    data:{labels: datos.map(x=>x.f),
+      datasets:[{label:'USD/tn (liquidado pond.)', data: datos.map(x=>Math.round(x.usd*100)/100), backgroundColor: color, borderRadius:4}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
+        const d = datos[c.dataIndex];
+        return ['USD ' + fmt.num(d.usd,2) + '/tn', 'en $: ' + fmt.num(d.ars) + '/tn', fmt.num(d.tn,1) + ' tn liquidadas'];
+      }}}},
+      scales:{x:{ticks:{callback:v=>'USD '+v.toLocaleString('es-AR')}}}}
+  });
+}
 
 function render(){
   // KPIs (posición física, "ajustada" = cantidadmax)
@@ -3121,6 +3169,9 @@ function render(){
     data:{labels: topOrg.map(x=>x[0].length>30?x[0].slice(0,30)+'…':x[0]), datasets:[{label:'Tn Ajustadas', data: topOrg.map(x=>x[1]), backgroundColor:'#3367A0', borderRadius:4}]},
     options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>fmt.num(c.parsed.x)+' tn'}}}, scales:{x:{ticks:{callback:v=>v.toLocaleString('es-AR')}}}}
   });
+
+  // ponderado liquidado por cultivo (regla usuario 31/08: gráfico en vez de la tarjeta sola)
+  chartPond = pondChart('chart-pond', chartPond, filtered, '#2E8B57');
 
   // donut por grano (Tn Ajustadas)
   if(chartDonut) chartDonut.destroy();
@@ -4494,7 +4545,7 @@ function cpApply(){
   cpRender();
 }
 
-let cpChartTop=null, cpChartDonut=null;
+let cpChartTop=null, cpChartDonut=null, cpChartPond=null;
 
 function cpRender(){
   let cnt=cpFiltered.length, tnAj=0, tnRec=0, tnLiq=0;
@@ -4557,6 +4608,9 @@ function cpRender(){
     data:{labels: topOrg.map(x=>x[0].length>30?x[0].slice(0,30)+'…':x[0]), datasets:[{label:'Tn Ajustadas', data: topOrg.map(x=>x[1]), backgroundColor:'#0891b2', borderRadius:4}]},
     options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>fmt.num(c.parsed.x)+' tn'}}}, scales:{x:{ticks:{callback:v=>v.toLocaleString('es-AR')}}}}
   });
+
+  // ponderado liquidado de compra por cultivo (regla usuario 31/08)
+  cpChartPond = pondChart('chart-pond-cp', cpChartPond, cpFiltered, '#3367A0');
 
   if(cpChartDonut) cpChartDonut.destroy();
   const palette = ['#2E8B57','#D68910','#a16207','#3367A0','#C0392B','#6366f1','#0891b2','#94a3b8','#ec4899','#2E8B57'];
