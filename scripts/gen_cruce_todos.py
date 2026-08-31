@@ -129,7 +129,8 @@ for f, pref in SERIES_C:
             cult = cultivo_de(pr.get("producto"))
             if not cult: continue
             cant = num(pr.get("cantidad")); precio = num(pr.get("precio"))
-            if cant == 0 or precio <= 0: continue
+            # regla usuario 31/08: fijaciones/liquidaciones a $1 son FICTICIAS — desestimar
+            if cant == 0 or precio <= 1.01: continue
             fij = str(pr.get("fijacion") or "").split(",")
             comp = fij[0].strip().upper().replace(" ", "") if len(fij) >= 3 else ""
             fecha_fij = fij[1].strip() if len(fij) >= 3 else ""
@@ -196,6 +197,7 @@ for f, pref in SERIES_V:
         for pr in granos:
             cult = cultivo_de(pr.get("producto"))
             cant = num(pr.get("cantidad")); precio = num(pr.get("precio"))
+            if precio <= 1.01: continue   # liq ficticia a $1 (regla usuario 31/08)
             imp = cant * precio
             doc = str(pr.get("traslado") or "").strip()
             m = mapa(doc, "venta") if doc else {"cto": "", "ctg": "", "org": "", "dest": ""}
