@@ -9784,11 +9784,31 @@ function fnGrainKey(prod){
   if(p.includes('sorgo')) return 'sorgo';
   return null;
 }
+// precio propio (fallback sin pizarra BCR): promedio fijado ponderado de los contratos
+// de venta 25/26 del cultivo, en USD (moneda por magnitud, sin simbólicos $1)
+const FN_PIZ_PROPIA = (() => {
+  const acc = {};
+  const tc = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 0;
+  (PAYLOAD.pilot || []).forEach(r => {
+    if(String(r.campana || r.cosecha || '') !== 'CAMPAÑA 25-26') return;
+    const k = fnGrainKey(r.producto); if(!k) return;
+    const tn = Number(r.cantidadfijada)||0, px = Number(r.preciopromediofijado)||0;
+    if(tn <= 0 || px <= 1.01) return;
+    const usd = px < 5000 ? px : (tc ? px / tc : 0);
+    if(!usd) return;
+    const d = acc[k] || (acc[k] = {tn:0, w:0});
+    d.tn += tn; d.w += tn * usd;
+  });
+  const out = {};
+  Object.entries(acc).forEach(([k, d]) => { if(d.tn > 0) out[k] = d.w / d.tn; });
+  return out;
+})();
 function fnPrice(prod){
   const k = fnGrainKey(prod);
   if(!k) return null;
   const g = (PAYLOAD.bcr && PAYLOAD.bcr.granos || {})[k];
-  return g && g.usd ? g.usd : null;
+  if(g && g.usd) return g.usd;
+  return FN_PIZ_PROPIA[k] || null;
 }
 const FN_TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 0;
 function fnFmtUsd(v){ return v==null ? '—' : (fmt.num2(v) + ' USD'); }
@@ -9859,18 +9879,28 @@ function fnRenderContratoTbl(tblId, metaId, rows){
 function fnRenderStock(campSel){
   const tbl = document.getElementById('fn-tbl-stk');
   const tbody = tbl.querySelector('tbody'); const tfoot = tbl.querySelector('tfoot');
+  // stock REAL: automático por depósito (payload) con el valor manual pisando si existe
+  // (regla usuario 31/08: la financiera tiene que valorizar TODO el stock físico, sin
+  // depender de carga manual)
   const agrupado = {};
-  Object.entries(PN_MANUAL || {}).forEach(([prod, vals]) => {
-    if(!vals) return;
+  const prodsStock = new Set([
+    ...Object.keys(PAYLOAD.stock_silo || {}), ...Object.keys(PAYLOAD.stock_bolsas || {}),
+    ...Object.keys(PAYLOAD.stock_silobolsa || {}), ...Object.keys(PN_MANUAL || {})]);
+  prodsStock.forEach(prod => {
+    const man = (PN_MANUAL || {})[prod] || {};
+    const silo      = Number(man.silo)      > 0 ? Number(man.silo)      : (Number((PAYLOAD.stock_silo || {})[prod]) || 0);
+    const bolsas    = Number(man.bolsas)    > 0 ? Number(man.bolsas)    : (Number((PAYLOAD.stock_bolsas || {})[prod]) || 0);
+    const silobolsa = Number(man.silobolsa) > 0 ? Number(man.silobolsa) : (Number((PAYLOAD.stock_silobolsa || {})[prod]) || 0);
+    if(!(silo || bolsas || silobolsa)) return;
     const familia = (typeof pnFamilia==='function') ? pnFamilia(prod) : prod;
     const sub = (typeof pnSubtipo==='function') ? pnSubtipo(prod) : '';
     const tipo = sub && sub !== 'Grano' ? `${familia} ${sub}` : familia;
     const camp = campSel || '—';
     const k = tipo + '||' + camp;
     if(!agrupado[k]) agrupado[k] = {tipo, campana:camp, silobolsa:0, silo:0, bolsas:0, prodSample:prod};
-    agrupado[k].silobolsa += Number(vals.silobolsa||0);
-    agrupado[k].silo += Number(vals.silo||0);
-    agrupado[k].bolsas += Number(vals.bolsas||0);
+    agrupado[k].silobolsa += silobolsa;
+    agrupado[k].silo += silo;
+    agrupado[k].bolsas += bolsas;
   });
   const rows = Object.values(agrupado).filter(r => r.silobolsa||r.silo||r.bolsas).sort((a,b)=>a.tipo.localeCompare(b.tipo));
   let totSb=0,totSi=0,totBo=0,totTot=0,totUsd=0,totArs=0;
