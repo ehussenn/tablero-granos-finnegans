@@ -2197,7 +2197,7 @@ window.apiFetch = function(path, opts){
           <table><thead id="fn-sem-head"></thead><tbody id="fn-sem-body"></tbody><tfoot id="fn-sem-foot"></tfoot></table>
         </div>
         <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">
-          Valorización: <b>stock físico propio</b> (planta + silo bolsa + bolsas) y <b>en pie</b> (pendiente de cosecha 25/26 + trigo 26/27 sembrado) a pizarra BCR del día ·
+          Valorización: <b>stock físico propio</b> (grano en planta + semilla procesada + silo bolsa, TODO) y <b>en pie</b> (pendiente de cosecha 25/26 + trigo 26/27 sembrado) a pizarra BCR del día — cultivos sin pizarra (*) al promedio fijado de tus contratos 25/26 ·
           <b>a cobrar</b> = venta entregada pendiente de liquidar (lo fijado al precio del contrato, lo sin fijar a pizarra) ·
           <b>a pagar</b> = compra recibida pendiente de liquidar (mismo criterio) · USD, y en $ al TC BCR del día. Respeta los filtros de campaña/empresa de arriba.
         </p>
@@ -10162,13 +10162,33 @@ function fnSementera(camp, emp){
     if(u.includes('TRIGO')) return 'trigo'; if(u.includes('SOJA')) return 'soja';
     if(u.includes('MAIZ') || u.includes('MAÍZ')) return 'maiz';
     if(u.includes('GIRASOL')) return 'girasol'; if(u.includes('SORGO')) return 'sorgo'; return null; };
-  const pizUsd = f => Number(((BCR.granos||{})[f]||{}).usd) || 0;
+  // pizarra: BCR; si la BCR no publica (ej. girasol), precio propio = promedio fijado
+  // ponderado de los contratos de venta 25/26 de ese cultivo (USD, sin simbólicos)
+  const pizPropia = {};
+  (PAYLOAD.pilot||[]).forEach(r => {
+    if(String(r.campana || r.cosecha || '') !== 'CAMPAÑA 25-26') return;
+    const f = famDe(r.producto); if(!f) return;
+    const tn = Number(r.cantidadfijada)||0, px = Number(r.preciopromediofijado)||0;
+    if(tn <= 0 || px <= 1.01) return;
+    const usd = px < 5000 ? px : (TC_HOY ? px / TC_HOY : 0);
+    if(!usd) return;
+    const d = pizPropia[f] || (pizPropia[f] = {tn:0, w:0});
+    d.tn += tn; d.w += tn * usd;
+  });
+  const esPropia = {};
+  const pizUsd = f => {
+    const bcr = Number(((BCR.granos||{})[f]||{}).usd) || 0;
+    if(bcr) return bcr;
+    const d = pizPropia[f];
+    if(d && d.tn > 0){ esPropia[f] = true; return d.w / d.tn; }
+    return 0;
+  };
   const NOM = {trigo:'TRIGO', soja:'SOJA', maiz:'MAÍZ', girasol:'GIRASOL', sorgo:'SORGO'};
   const S = {};   // familia -> {stock, pie, cxcTn, cxcUsd, cxpTn, cxpUsd}
   const el = f => S[f] || (S[f] = {stock:0, pie:0, cxcTn:0, cxcUsd:0, cxpTn:0, cxpUsd:0});
-  // stock físico propio (solo GRANO comercial, no semillas procesadas)
+  // stock físico propio COMPLETO: grano comercial + semilla procesada (SEM./SEMILLA) +
+  // silo bolsa (regla usuario 31/08: "valorizar TODO mi stock, lo físico")
   ['stock_silo','stock_bolsas','stock_silobolsa'].forEach(k => Object.entries(PAYLOAD[k]||{}).forEach(([prod, tn]) => {
-    if(!String(prod||'').startsWith('Grano ')) return;
     const f = famDe(prod); if(f) el(f).stock += Number(tn)||0;
   }));
   // en pie: pendiente cosecha 25-26 + potencial 26-27 (trigo del Excel del usuario)
@@ -10207,7 +10227,7 @@ function fnSementera(camp, emp){
     const neto = stockU + pieU + d.cxcUsd - d.cxpUsd;
     T.stock += d.stock; T.stockU += stockU; T.pie += d.pie; T.pieU += pieU;
     T.cxcTn += d.cxcTn; T.cxcUsd += d.cxcUsd; T.cxpTn += d.cxpTn; T.cxpUsd += d.cxpUsd; T.neto += neto;
-    return `<tr><td style="text-align:left;font-weight:700">${NOM[f]||f}</td><td style="text-align:right">${pz ? fmt.num(pz,2) : '—'}</td>
+    return `<tr><td style="text-align:left;font-weight:700">${NOM[f]||f}${esPropia[f]?' <span style="color:var(--muted);font-size:10px" title="sin pizarra BCR: promedio fijado de tus contratos 25/26">*</span>':''}</td><td style="text-align:right">${pz ? fmt.num(pz,2) : '—'}</td>
       <td style="text-align:right">${fmt.num(d.stock,1)}</td><td style="text-align:right">${fmt.num(stockU)}</td>
       <td style="text-align:right">${fmt.num(d.pie,1)}</td><td style="text-align:right">${fmt.num(pieU)}</td>
       <td style="text-align:right">${fmt.num(d.cxcTn,1)}</td><td style="text-align:right;color:var(--green)">${fmt.num(d.cxcUsd)}</td>
