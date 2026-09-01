@@ -8314,6 +8314,8 @@ function pnEsSemillaGrano(prod){
 function pnFamilia(prod){
   if(!prod) return "OTROS";
   const p = prod.toLowerCase();
+  // pisingallo es negocio APARTE del maíz (regla usuario 01/09): va en OTROS con su suma propia
+  if(p.includes("pisingallo")) return "OTROS";
   if(p.includes("soja")) return "SOJA";
   if(p.includes("maíz") || p.includes("maiz")) return "MAÍZ";
   if(p.includes("trigo")) return "TRIGO";
@@ -13452,6 +13454,7 @@ def main() -> int:
                    ("1123", "LINEUP"),        # venta de ALQUILER, no es venta de mercado (19/08)
                    ("1130", "EL GAUCHO")]     # venta de ALQUILER, no es venta de mercado (19/08)
     EXCL_COMPRA = [("1139", "CUMARINA")]
+    # Duggan Hermanos: el usuario pidió desestimarlo (01/09) y lo REVIRTIÓ el mismo día — se toma en cuenta.
     # Ajustes de PENDIENTE de entrega en venta (regla usuario 19/08): el pendiente real
     # de estos contratos difiere del sistema — se capea (cantidadmax = entregada + tope).
     #   YARA #922 soja: solo 60 tn reales de las 144 · ALLARIA #1217 y ACA #1064: descartar pendiente.
@@ -13468,7 +13471,7 @@ def main() -> int:
     def _excl(r, lista):
         n = str(r.get("numerointerno") or "").strip()
         o = (r.get("organizacion") or "").upper()
-        return any(n == num and org in o for num, org in lista)
+        return any((num == "*" or n == num) and org in o for num, org in lista)
     _ant_v, _ant_c = len(pilot_norm), len(compra_norm)
     pilot_norm  = [r for r in pilot_norm  if not _excl(r, EXCL_VENTA)]
     compra_norm = [r for r in compra_norm if not _excl(r, EXCL_COMPRA)]
@@ -13476,16 +13479,23 @@ def main() -> int:
         print(f"[+] Exclusiones manuales: venta -{_ant_v - len(pilot_norm)} · compra -{_ant_c - len(compra_norm)} (datos sucios, ver comentario)")
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
 
-    # Unificación de cultivo (regla usuario 19/08/2026): "Grano Maní en caja" se muestra
-    # DENTRO de "Grano Maní" — una sola fila con la posición total del maní.
-    def _unif_mani(p):
-        return "Grano Maní" if str(p or "").strip().lower() in ("grano maní en caja", "grano mani en caja") else p
-    _n_mani = 0
+    # Unificaciones de cultivo (reglas usuario): "Grano Maní en caja" DENTRO de "Grano Maní"
+    # (19/08) y "SEMILLA MAIZ" se toma como "Grano Maíz" (01/09) — una sola fila cada uno.
+    # regla 01/09: TODO lo que sea semilla de maíz (genérica o SEM. GRANEL) es Grano Maíz
+    def _unifica_producto(p):
+        s = str(p or "").strip()
+        low = s.lower()
+        if low in ("grano maní en caja", "grano mani en caja"): return "Grano Maní"
+        up = s.upper()
+        if ("MAIZ" in up or "MAÍZ" in up) and ("SEMILLA" in up or up.startswith("SEM")): return "Grano Maíz"
+        return s
+    _n_unif = 0
     for _r in pilot_norm + compra_norm:
-        if _r.get("producto") != _unif_mani(_r.get("producto")):
-            _r["producto"] = "Grano Maní"; _n_mani += 1
-    if _n_mani:
-        print(f"[+] Unificación maní: {_n_mani} contratos de 'Grano Maní en caja' -> 'Grano Maní'")
+        _dest = _unifica_producto(_r.get("producto"))
+        if _dest != str(_r.get("producto") or "").strip():
+            _r["producto"] = _dest; _n_unif += 1
+    if _n_unif:
+        print(f"[+] Unificaciones de producto (maní en caja, semilla de maíz -> grano): {_n_unif} contratos")
 
     # COMISION DE CORREDOR por contrato de compra (para la vista Resultados y el Cruce):
     # Agronasaja actua de corredor en muchas compras y RECUPERA comision + 1,25% sellado.
@@ -14562,25 +14572,36 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] split grano/semilla 25-26: {e}")
 
-    # Unificación maní también en cosechado y producción (una sola línea "Grano Maní")
+    # Unificaciones también en cosechado, producción y stock: maní en caja -> Grano Maní,
+    # y TODA la semilla de maíz -> Grano Maíz (regla usuario 01/09)
     try:
-        _CAJA, _MANI = "Grano Maní en caja", "Grano Maní"
-        if _CAJA in cosechado:
-            cosechado[_MANI] = round(cosechado.get(_MANI, 0) + cosechado.pop(_CAJA), 4)
+        def _es_sem_maiz(p):
+            up = str(p or "").upper()
+            return ("MAIZ" in up or "MAÍZ" in up) and ("SEMILLA" in up or up.startswith("SEM"))
+        def _unifica_dict_num(d):
+            for _k in [k for k in list(d.keys()) if k == "Grano Maní en caja" or _es_sem_maiz(k)]:
+                _dest = "Grano Maní" if _k == "Grano Maní en caja" else "Grano Maíz"
+                d[_dest] = round((d.get(_dest) or 0) + (d.pop(_k) or 0), 4)
+        _unifica_dict_num(cosechado)
+        for _dic in (stock_silo, stock_bolsas, stock_silobolsa):
+            try: _unifica_dict_num(_dic)
+            except Exception: pass
         for _camp, _prods in (produccion_camp or {}).items():
-            if _CAJA in _prods:
-                _dst = _prods.setdefault(_MANI, {"pendcos": 0})
-                _src = _prods.pop(_CAJA)
-                for _k in ("cosechado", "pendcos"):
-                    if _src.get(_k): _dst[_k] = round((_dst.get(_k) or 0) + _src[_k], 1)
+            for _k in [k for k in list(_prods.keys()) if k == "Grano Maní en caja" or _es_sem_maiz(k)]:
+                _dest = "Grano Maní" if _k == "Grano Maní en caja" else "Grano Maíz"
+                _dst = _prods.setdefault(_dest, {"pendcos": 0})
+                _src = _prods.pop(_k)
+                for _kk in ("cosechado", "pendcos"):
+                    if _src.get(_kk): _dst[_kk] = round((_dst.get(_kk) or 0) + _src[_kk], 1)
         for _camp, _prods in (produccion_pend_det or {}).items():
-            if _CAJA in _prods:
-                _dst = _prods.setdefault(_MANI, {"cosechado": [], "pendcos": []})
-                _src = _prods.pop(_CAJA)
-                for _k in ("cosechado", "pendcos"):
-                    _dst[_k] = (_dst.get(_k) or []) + (_src.get(_k) or [])
+            for _k in [k for k in list(_prods.keys()) if k == "Grano Maní en caja" or _es_sem_maiz(k)]:
+                _dest = "Grano Maní" if _k == "Grano Maní en caja" else "Grano Maíz"
+                _dst = _prods.setdefault(_dest, {"cosechado": [], "pendcos": []})
+                _src = _prods.pop(_k)
+                for _kk in ("cosechado", "pendcos"):
+                    _dst[_kk] = (_dst.get(_kk) or []) + (_src.get(_kk) or [])
     except Exception as e:
-        print(f"    [!] unificación maní producción: {e}")
+        print(f"    [!] unificaciones producción/stock: {e}")
 
     # ---- CTA CTE EXTRANETS (regla usuario 25/08/2026): cuenta corriente de granos de
     # cada extranet (Cargill GPS / LDC / Allaria) + cruce con el área granaria (pendiente
