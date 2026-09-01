@@ -8657,11 +8657,11 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
     ventaCtosAjust += ent + pen;   // ajustada = total venta
   });
 
-  // DEMANDA = total comprometido = semilla + contratos no-semilla.
-  // Pend Vincular (regla usuario 19/08/2026): kg/camiones cargados A MANO que faltan
-  // pasar al sistema — suman a la OFERTA del cultivo y entran al Pos Pendiente,
-  // NO a la demanda.
-  const demandaTot = vtaSem + ventaCtosAjust;
+  // DEMANDA = total comprometido = semilla + pend vincular + contratos no-semilla.
+  // Pend Vincular (regla usuario 01/09/2026, revierte la del 29/08): va del lado de
+  // VENTA (demanda) — mercadería entregada al comprador que falta asignar. NO suma
+  // a la oferta ni al Pos Pendiente.
+  const demandaTot = vtaSem + pendVincular + ventaCtosAjust;
 
   // PROD. SEMILLA + DEMANDA TOTAL PENDIENTE — del DEM-SUP Soja del extranet (solo semilla soja):
   //   Prod Pendiente = col S (pedidos de campo pendientes, siembra propia)
@@ -8680,8 +8680,8 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // Pos Pend = LOS PENDIENTES: pendiente de cosecha (producción) + pendiente de
   // ingreso (contratos compra) − pendiente de entrega (contratos venta).
   // Posición = LOS TOTALES: Oferta Tot − Demanda Tot. Ahí se ve el desvío.
-  const posPend = pendCos + compraPend + pendVincular - ventaCtos;
-  const ofertaTotFinal = ofertaTot + pendVincular;
+  const posPend = pendCos + compraPend - ventaCtos;
+  const ofertaTotFinal = ofertaTot;
   const posicion = ofertaTotFinal - demandaTot;
 
   // Producción VALORIZADA al precio estimado del usuario (por campaña y producto).
@@ -9094,8 +9094,8 @@ function pnRender(){
       r.compraPend -= dp; r.compraTot -= dp;
       r.plantaTot = r.silo + r.bolsas + r.silobolsa;
       r.pcTot = r.prodTot + r.compraTot;
-      r.ofertaTot = r.plantaTot + r.prodTot + r.compraTot + (r.pendVincular || 0);
-      r.posPend = r.pendCos + r.compraPend + (r.pendVincular || 0) - r.ventaCtos;
+      r.ofertaTot = r.plantaTot + r.prodTot + r.compraTot;
+      r.posPend = r.pendCos + r.compraPend - r.ventaCtos;
       r.posicion = r.ofertaTot - r.demandaTot;
     });
     const total = dCampo + dSem + dCompra;
