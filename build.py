@@ -17,6 +17,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+# La consola de Windows (cp1252) no puede imprimir algunos caracteres (p.ej. −, U+2212)
+# y un print que explota aborta el bloque de cálculo que lo contiene (pasó el 01/09 con
+# el split grano/semilla 25-26). Nunca dejar que un print tire el build.
+try:
+    sys.stdout.reconfigure(errors="replace")
+    sys.stderr.reconfigure(errors="replace")
+except Exception:
+    pass
+
 # cliente API de Finnegans
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 import finnegans_api as api
@@ -14560,7 +14569,7 @@ def main() -> int:
                 sem_tn = sem_propia.get(SEM_DE.get(gr, ""), 0.0)
                 neto = max(0.0, cosechado[gr] - sem_tn)
                 p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(neto, 1)
-                print(f"    -> {gr}: CPE {cosechado[gr]:,.1f} − a semilla {sem_tn:,.1f} = {neto:,.1f} tn"
+                print(f"    -> {gr}: CPE {cosechado[gr]:,.1f} - a semilla {sem_tn:,.1f} = {neto:,.1f} tn"
                       + (f" (portal decía {ant:,.1f})" if ant else ""))
         # cosechado propio POR VARIEDAD (regla del usuario 18/08: lo necesita abierto por
         # variedad para el neto final; la fila genérica SEMILLA X ya no lleva el agregado
