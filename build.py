@@ -13481,11 +13481,15 @@ def main() -> int:
 
     # Unificaciones de cultivo (reglas usuario): "Grano Maní en caja" DENTRO de "Grano Maní"
     # (19/08) y "SEMILLA MAIZ" se toma como "Grano Maíz" (01/09) — una sola fila cada uno.
-    # regla 01/09: TODO lo que sea semilla de maíz (genérica o SEM. GRANEL) es Grano Maíz
+    # regla 01/09: TODO lo que sea semilla de maíz (genérica o SEM. GRANEL) es Grano Maíz.
+    # regla 02/09: las SEMILLA SOJA y SEMILLA TRIGO GENÉRICAS (préstamo de CP) también son
+    # grano — pero las SEM. GRANEL (variedades) NO se tocan: son el negocio de semilla real.
     def _unifica_producto(p):
         s = str(p or "").strip()
         low = s.lower()
         if low in ("grano maní en caja", "grano mani en caja"): return "Grano Maní"
+        if low in ("semilla soja",): return "Grano Soja"
+        if low in ("semilla trigo",): return "Grano Trigo Pan"
         up = s.upper()
         if ("MAIZ" in up or "MAÍZ" in up) and ("SEMILLA" in up or up.startswith("SEM")): return "Grano Maíz"
         return s
@@ -14586,6 +14590,21 @@ def main() -> int:
         for _dic in (stock_silo, stock_bolsas, stock_silobolsa):
             try: _unifica_dict_num(_dic)
             except Exception: pass
+        # SEMILLA SOJA/TRIGO genéricas -> grano, SOLO en 25-26 (el potencial 26/27 mantiene
+        # el split grano/semilla que pidió el usuario para la sementera)
+        _GEN = {"SEMILLA SOJA": "Grano Soja", "SEMILLA TRIGO": "Grano Trigo Pan"}
+        for _d in (cosechado, stock_silo, stock_bolsas, stock_silobolsa):
+            try:
+                for _k, _dest in _GEN.items():
+                    if _k in _d: _d[_dest] = round((_d.get(_dest) or 0) + (_d.pop(_k) or 0), 4)
+            except Exception: pass
+        _p25u = (produccion_camp or {}).get("CAMPAÑA 25-26") or {}
+        for _k, _dest in _GEN.items():
+            if _k in _p25u:
+                _dst = _p25u.setdefault(_dest, {"pendcos": 0})
+                _src = _p25u.pop(_k)
+                for _kk in ("cosechado", "pendcos"):
+                    if _src.get(_kk): _dst[_kk] = round((_dst.get(_kk) or 0) + _src[_kk], 1)
         for _camp, _prods in (produccion_camp or {}).items():
             for _k in [k for k in list(_prods.keys()) if k == "Grano Maní en caja" or _es_sem_maiz(k)]:
                 _dest = "Grano Maní" if _k == "Grano Maní en caja" else "Grano Maíz"
