@@ -8415,6 +8415,14 @@ function pnInitFiltros(){
 //   Stock Clasificado (ex Bolsas) · Corte de Bolsa (nueva, informativa).
 // Las keys internas (silo/bolsas/silobolsa) se conservan para no romper
 // los valores manuales guardados ni los drill-downs.
+// Precio ESTIMADO de producción por campaña y producto (regla usuario 01/09/2026):
+// trigo 26/27 a USD 220/tn, grano y semilla de producción. Los demás cultivos se cargan
+// acá cuando el usuario los defina — la columna "Valorizada USD" solo muestra valor
+// donde hay precio cargado.
+const PN_PRECIO_EST = {
+  "CAMPAÑA 26-27": {"Grano Trigo Pan": 220, "SEMILLA TRIGO": 220}
+};
+
 const PN_COLS = [
   // PRODUCCIÓN va primero (pedido del gerente): Cosechado = "Kg por Beneficiario" (KG AGNSJ)
   // y Pend Cos = "Estimado por Cosechar (Agronasaja)" de la vista Información General del
@@ -8423,6 +8431,7 @@ const PN_COLS = [
     {k:"cosechado",    lbl:"Cosechado"},
     {k:"pendCos",      lbl:"Pend Cos",   calc:true},
     {k:"prodTot",      lbl:"Total",      calc:true, main:true},
+    {k:"prodValUsd",   lbl:"Valorizada USD", calc:true},
   ]},
   {grp:"PLANTA",     cls:"grp",        cols:[
     {k:"plantaTot",    lbl:"Total",      calc:true, main:true},
@@ -8673,9 +8682,14 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   const ofertaTotFinal = ofertaTot + pendVincular;
   const posicion = ofertaTotFinal - demandaTot;
 
+  // Producción VALORIZADA al precio estimado del usuario (por campaña y producto).
+  // Regla 01/09/2026: trigo 26/27 (grano y semilla de producción) a USD 220/tn.
+  const pxEst = (PN_PRECIO_EST[PN_SEL_CAMP] || {})[producto] || 0;
+  const prodValUsd = pxEst ? prodTot * pxEst : 0;
+
   return {
     silo, bolsas, silobolsa, plantaTot, corteBolsa,
-    pendCos, cosechado, campoEst, prodTot,
+    pendCos, cosechado, campoEst, prodTot, prodValUsd,
     pcTot,
     compraTot, compraPend, compraEntr,
     ofertaTot: ofertaTotFinal,
