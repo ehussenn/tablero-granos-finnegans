@@ -9613,6 +9613,14 @@ function pnctRender(){
     }
   };
   const set = PNCT.prods ? new Set(PNCT.prods) : null;
+  // el desplegable CULTIVO tiene que mostrar el recorte con el que se entró al zoom
+  // (antes decía "Todos" aunque la vista estuviera restringida a un solo cultivo)
+  const famSel = document.getElementById('pnct-fam');
+  if(famSel && set){
+    const fams = [...new Set(PNCT.prods.map(p => pnFamilia(p)).filter(Boolean))];
+    const opts = [...famSel.options].map(o => o.value);
+    famSel.value = (fams.length === 1 && opts.includes(fams[0])) ? fams[0] : '';
+  }
   let rowsSinOrg = src.filter(c => {
     if(set && !set.has(c.producto)) return false;
     if(!set && PNCT.fam && pnFamilia(c.producto) !== PNCT.fam) return false;
@@ -9798,11 +9806,14 @@ document.addEventListener('click', (e) => {
 });
 
 // filtros de la pestaña
+// Regla usuario 02/09: elegir CLIENTE/COMPRADOR (o cambiar MOSTRAR) NO tiene que abrir el
+// zoom a otros cultivos — el recorte de productos con el que se entró se mantiene. Solo
+// cambiar el filtro CULTIVO a mano pisa esa selección (es el usuario eligiendo otro cultivo).
 ["pnct-tipo","pnct-fam","pnct-field","pnct-org"].forEach(id => document.getElementById(id).addEventListener('change', () => {
   PNCT.tipo = document.getElementById('pnct-tipo').value;
   PNCT.fam = document.getElementById('pnct-fam').value;
   PNCT.field = document.getElementById('pnct-field').value;
-  PNCT.prods = null; PNCT.exclSem = false; PNCT.origen = '';   // filtro manual pisa la navegación
+  if(id === 'pnct-fam'){ PNCT.prods = null; PNCT.exclSem = false; PNCT.origen = ''; }
   pnctRender();
 }));
 document.getElementById('pnct-volver').addEventListener('click', () => {
