@@ -373,6 +373,11 @@ def fetch_produccion() -> tuple[dict, dict, dict | None]:
             for p, v in (_s.get("productos") or {}).items():
                 tn = v.get("pendcos", 0)
                 ant = (c25.get(p) or {}).get("pendcos")
+                # regla 02/09: el pendiente VIVO de Información General manda; el snapshot
+                # del 25/08 queda solo como respaldo si el vivo no trae el producto
+                if ant:
+                    print(f"    -> pendcos 25/26 {p}: vivo {ant:,.1f} tn manda (snapshot 25/08 decía {tn:,.1f}, ignorado)")
+                    continue
                 c25.setdefault(p, {})["pendcos"] = tn
                 d25.setdefault(p, {"cosechado": [], "pendcos": []})
                 d25[p]["pendcos"] = [{
@@ -1047,7 +1052,6 @@ window.apiFetch = function(path, opts){
         <div class="nav-items">
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
-          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-prod" data-title="Producción Agronasaja (según %)">🌽 Producción Agronasaja</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
@@ -2155,7 +2159,6 @@ window.apiFetch = function(path, opts){
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
       <button class="subtab" data-sub="pn-ctos">📑 Detalle Contratos</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
-      <button class="subtab" data-sub="pn-prod">🌽 Producción Agronasaja</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
@@ -2382,35 +2385,6 @@ window.apiFetch = function(path, opts){
 
     </div><!-- /subpanel pn-financiera -->
 
-    <!-- ===== SUBPANEL: Producción Agronasaja (según %) ===== -->
-    <div class="subpanel" data-sub-panel="pn-prod">
-      <div class="section" style="background:linear-gradient(135deg,#14532D 0%,#15803D 100%);color:#fff;border:none">
-        <h3 style="color:#fff;margin:0">🌽 Producción Agronasaja (según %) · Campaña Gruesa 25-26</h3>
-        <div style="font-size:12px;opacity:.9;margin-top:4px">Parte de Agronasaja por su % en cada convenio (Diego Alvarez = 100%) — misma fuente que Información General del Portal de Producción (extranet /vistas/produccion-info), se refresca con cada build.</div>
-      </div>
-
-      <!-- KPIs según % -->
-      <div class="section">
-        <div id="pnp-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px"></div>
-      </div>
-
-      <!-- Avance de cosecha (general) -->
-      <div class="section">
-        <h3>Avance de Cosecha <span class="badge">área total, todos los socios</span></h3>
-        <div id="pnp-avance" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start"></div>
-      </div>
-
-      <!-- Tabla producción según % -->
-      <div class="section">
-        <h3>Producción Agronasaja por cultivo (según %) <span class="badge" id="pnp-meta"></span></h3>
-        <div class="tbl-wrap"><table id="pnp-tabla" style="font-size:12.5px">
-          <thead></thead><tbody></tbody><tfoot></tfoot>
-        </table></div>
-        <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-          💡 <strong>Producción (tn)</strong>, <strong>hectáreas</strong> y <strong>rinde</strong> son la parte Agronasaja según el % de participación de cada convenio (Diego Alvarez computa 100%). Click en MAÍZ o SOJA despliega los subtipos (tardío / primera / segunda). El <strong>% AGNSJ</strong> compara la parte Agronasaja contra la producción total de todos los socios.
-        </div>
-      </div>
-    </div><!-- /subpanel pn-prod -->
 
     <!-- ===== SUBPANEL: Taqueo CTG ===== -->
     <div class="subpanel" data-sub-panel="pn-taqueo">
@@ -12403,142 +12377,6 @@ function ctRender(){
 })();
 
 /* ============================================================
-   ====  PRODUCCIÓN AGRONASAJA (según %) — pedido 02/09  ======
-   Réplica de la solapa 2 de Información General del Portal de
-   Producción (extranet /vistas/produccion-info): parte AGNSJ
-   por participación de convenio (Diego Alvarez = 100%), más el
-   panel Avance de Cosecha general y por cultivo.
-   ============================================================ */
-(() => {
-  const P = PAYLOAD.prod_agnsj_pct;
-  const MZ = ["MAIZ TARDÍO","MAIZ PRIMERA","MAIZ SEGUNDA"];
-  const SJ = ["SOJA PRIMERA","SOJA SEGUNDA","SOJA NO GMO PRIMERA","SOJA NO GMO SEGUNDA"];
-  const PRETTY = {"MAIZ TARDÍO":"Maíz Tardío","MAIZ PRIMERA":"Maíz Primera","MAIZ SEGUNDA":"Maíz Segunda",
-    "MAIZ PISINGALLO":"Maíz Pisingallo","SOJA PRIMERA":"Soja Primera","SOJA SEGUNDA":"Soja Segunda",
-    "SOJA NO GMO PRIMERA":"Soja No GMO Primera","SOJA NO GMO SEGUNDA":"Soja No GMO Segunda",
-    "GIRASOL":"Girasol","GIRASOL CONFITERO":"Girasol Confitero","SORGO":"Sorgo","MANI":"Maní"};
-  const pretty = c => PRETTY[(c||"").toUpperCase().trim()] ||
-    (c||"").toLowerCase().replace(/(^|\s)\S/g, m => m.toUpperCase());
-  const n0 = x => fmt.num(Math.round(x));
-  const chip = (lbl, col, big) => `<span style="display:inline-block;padding:${big?'4px 12px':'2px 10px'};border-radius:20px;background:${col}22;color:${col};font-weight:700;font-size:${big?'12px':'11px'};text-transform:uppercase;letter-spacing:.02em">${lbl}</span>`;
-
-  function kpis(){
-    const k = P.kpi, cont = document.getElementById("pnp-kpis");
-    const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px">
-      <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
-      <div style="font-size:24px;font-weight:800;margin-top:5px;color:${col||'var(--ink,#1c2733)'}">${val}</div>
-      <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${sub}</div></div>`;
-    cont.innerHTML =
-      card("HA Agronasaja", n0(k.ha_agn) + ' <span style="font-size:13px;font-weight:600">ha</span>', "cosechadas (según %)", "#15803D") +
-      card("Avance de cosecha", Math.round(k.av_a*100) + "%", "del área Agronasaja") +
-      card("HA por cosechar", n0(k.ha_pend_a) + ' <span style="font-size:13px;font-weight:600">ha</span>', "pendientes (según %)", "#B45309") +
-      card("Reparto por cultivo", `Maíz ${k.mix_maiz.toFixed(0)}% · Soja ${k.mix_soja.toFixed(0)}%`,
-           `resto ${Math.max(0, 100 - k.mix_maiz - k.mix_soja).toFixed(0)}%`);
-  }
-
-  function avance(){
-    const g = P.gen, cont = document.getElementById("pnp-avance");
-    const pct = Math.round(g.av*100);
-    const R = 52, C = 2*Math.PI*R;
-    const ring = `<div style="text-align:center;min-width:170px">
-      <svg width="130" height="130" viewBox="0 0 130 130">
-        <circle cx="65" cy="65" r="${R}" fill="none" stroke="#e8ede9" stroke-width="13"/>
-        <circle cx="65" cy="65" r="${R}" fill="none" stroke="#65C466" stroke-width="13" stroke-linecap="round"
-          stroke-dasharray="${(C*g.av).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 65 65)"/>
-        <text x="65" y="62" text-anchor="middle" font-size="26" font-weight="800" fill="#1c2733">${pct}%</text>
-        <text x="65" y="80" text-anchor="middle" font-size="9" fill="#68737f" letter-spacing="1">COSECHADO</text>
-      </svg>
-      <div style="font-size:11.5px;color:var(--muted)">${n0(g.ha_c)} de ${n0(g.ha_t)} ha</div>
-      <div style="margin-top:8px;background:#effaf1;border:1px solid #cdeed3;border-radius:8px;padding:7px 10px;font-size:11px;color:#14532D">
-        <b>Avance real (sin maíz seg./tard.)</b><br><span style="font-size:17px;font-weight:800">${Math.round(g.av_real*100)}%</span><br>${n0(g.ha_cr)} de ${n0(g.ha_tr)} ha</div>
-      <div style="margin-top:6px;background:#fdf7e7;border:1px solid #f3e3b3;border-radius:8px;padding:7px 10px;font-size:11px;color:#7a5c17">
-        <b>Maíz seg. + tardío</b><br><span style="font-size:17px;font-weight:800">${Math.round(g.av_mzp*100)}%</span><br>${n0(g.ha_cp)} de ${n0(g.ha_tp)} ha</div>
-    </div>`;
-    const rows = Object.entries(P.av_cult).sort((a,b) => b[1].ha - a[1].ha).map(([c, v]) => {
-      const p = v.ha > 0 ? v.cos/v.ha : 0;
-      return `<div style="margin-bottom:9px">
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px">
-          <span style="font-weight:700;color:#374151">${pretty(c)}</span>
-          <span style="font-weight:800;color:${p>=0.97?'#15803D':'#B45309'}">${Math.round(p*100)}%</span></div>
-        <div style="height:9px;background:#eef1ee;border-radius:5px;overflow:hidden">
-          <div style="width:${(p*100).toFixed(1)}%;height:100%;background:${p>=0.97?'#65C466':'#E5B93F'}"></div></div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${n0(v.cos)} / ${n0(v.ha)} ha</div>
-      </div>`;
-    }).join("");
-    cont.innerHTML = ring + `<div style="flex:1;min-width:260px;max-width:520px"><div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;margin-bottom:8px">POR CULTIVO</div>${rows}</div>`;
-  }
-
-  function tabla(){
-    const pa = P.cult_pct, pg = P.cult_gen;
-    const kg = (m, c) => (m[c] ? m[c].kg : 0), ha = (m, c) => (m[c] ? m[c].ha : 0);
-    const grp = [
-      {lbl:"MAÍZ", col:"#CA8A04", mem: MZ.filter(c => pa[c])},
-      {lbl:"SOJA", col:"#15803D", mem: SJ.filter(c => pa[c])},
-    ];
-    const usados = new Set(MZ.concat(SJ));
-    const sueltos = Object.keys(pa).filter(c => !usados.has(c) && kg(pa, c) > 0)
-      .sort((a,b) => kg(pa,b) - kg(pa,a));
-    const num = (v, cls) => `<td style="text-align:right;font-variant-numeric:tabular-nums;${cls||''}">${v}</td>`;
-    const fila = (nombre, col, kgA, haA, kgG, indent, gid, hijos) => {
-      const rinde = haA > 0 ? kgA/haA : 0;
-      const pAg = kgG > 0 ? kgA/kgG*100 : 0;
-      const arrow = hijos ? `<span data-pnp-arw="${gid}" style="color:${col};font-weight:800;padding-right:6px">▸</span>` : "";
-      return `<tr ${hijos?`onclick="window.__pnpTog('${gid}')" style="cursor:pointer;background:#f7faf6;border-left:3px solid ${col}"`:(indent?`class="${indent}" style="display:none;background:#fcfdfb"`:"")}>
-        <td style="padding-left:${indent?'34px':'10px'}">${arrow}${chip(nombre, col, !indent)}</td>
-        ${num(`<b style="font-size:${indent?'12.5px':'14px'}">${n0(kgA/1000)}</b>`)}
-        ${num(n0(haA))}
-        ${num(haA>0 ? `<span style="color:#15803D;font-weight:700">${n0(rinde)}</span>` : "—")}
-        ${num(`${pAg.toFixed(0)}%`, "color:#68737f")}
-      </tr>`;
-    };
-    let html = "";
-    let totKg = 0, totHa = 0, totKgG = 0;
-    grp.forEach((g, i) => {
-      if(!g.mem.length) return;
-      const kgA = g.mem.reduce((s,c) => s + kg(pa,c), 0), haA = g.mem.reduce((s,c) => s + ha(pa,c), 0);
-      const kgG = g.mem.reduce((s,c) => s + kg(pg,c), 0);
-      totKg += kgA; totHa += haA; totKgG += kgG;
-      const gid = "pnpg" + i;
-      html += fila(g.lbl, g.col, kgA, haA, kgG, "", gid, true);
-      g.mem.slice().sort((a,b) => kg(pa,b) - kg(pa,a)).forEach(c =>
-        html += fila(pretty(c), "#6B7280", kg(pa,c), ha(pa,c), kg(pg,c), gid));
-    });
-    sueltos.forEach(c => {
-      totKg += kg(pa,c); totHa += ha(pa,c); totKgG += kg(pg,c);
-      html += fila(pretty(c), "#6B7280", kg(pa,c), ha(pa,c), kg(pg,c));
-    });
-    const t = document.getElementById("pnp-tabla");
-    t.querySelector("thead").innerHTML = `<tr>
-      <th>CULTIVO</th><th style="text-align:right">PRODUCCIÓN (TN)</th><th style="text-align:right">HECTÁREAS</th>
-      <th style="text-align:right">RINDE (KG/HA)</th><th style="text-align:right">% AGNSJ</th></tr>`;
-    t.querySelector("tbody").innerHTML = html;
-    t.querySelector("tfoot").innerHTML = `<tr style="font-weight:800;background:#f3f6f3;border-top:2px solid var(--line)">
-      <td>TOTAL AGRONASAJA</td>${num(n0(totKg/1000))}${num(n0(totHa))}${num(totHa>0?n0(totKg/totHa):"—")}${num((totKgG>0?totKg/totKgG*100:0).toFixed(0)+"%")}</tr>`;
-    document.getElementById("pnp-meta").textContent = `${n0(totKg/1000)} tn · ${n0(totHa)} ha (parte AGNSJ)`;
-  }
-
-  window.__pnpTog = gid => {
-    const rows = document.querySelectorAll("." + gid);
-    if(!rows.length) return;
-    const show = rows[0].style.display === "none";
-    rows.forEach(r => r.style.display = show ? "" : "none");
-    const a = document.querySelector(`[data-pnp-arw="${gid}"]`);
-    if(a) a.textContent = show ? "▾" : "▸";
-  };
-
-  function render(){
-    if(!P){
-      const c = document.getElementById("pnp-kpis");
-      if(c) c.innerHTML = '<div style="color:var(--muted)">Sin datos del Portal de Producción en este build.</div>';
-      return;
-    }
-    kpis(); avance(); tabla();
-  }
-  document.querySelectorAll('[data-go-sub="pn-prod"], .subtab[data-sub="pn-prod"]')
-    .forEach(a => a.addEventListener("click", () => setTimeout(render, 50)));
-})();
-
-/* ============================================================
    ====  ANÁLISIS DE CANJE DE COMPRAS · pend. liquidar  =======
    Contratos de compra de GRANOS con entregado sin liquidar,
    agrupado por comercial, mostrando si tiene precio (fijación).
@@ -14800,6 +14638,33 @@ def main() -> int:
                 p25.setdefault(gr, {"pendcos": 0})["cosechado"] = round(neto, 1)
                 print(f"    -> {gr}: CPE {cosechado[gr]:,.1f} - a semilla {sem_tn:,.1f} = {neto:,.1f} tn"
                       + (f" (portal decía {ant:,.1f})" if ant else ""))
+        # ── REGLA 02/09: para la CAMPAÑA GRUESA el COSECHADO de grano sale de la solapa
+        # "2 · Producción Agronasaja (según %)" de Información General del Portal de
+        # Producción (parte AGNSJ por participación de convenio, Diego Alvarez = 100%),
+        # NO de los retiros CPE. Se le sigue restando lo que fue a semilla propia (las
+        # variedades van aparte, abajo). El TRIGO (fina) no está en ese dataset y
+        # mantiene la regla 18/08 (CPE − semilla).
+        if prod_agnsj_pct:
+            _cp = prod_agnsj_pct.get("cult_pct") or {}
+            _seg = lambda ks: sum((_cp.get(k) or {}).get("kg", 0) for k in ks) / 1000.0
+            SEG_PCT = {
+                "Grano Maíz":            _seg(["MAIZ TARDÍO", "MAIZ PRIMERA", "MAIZ SEGUNDA"]),
+                "Grano Soja":            _seg(["SOJA PRIMERA", "SOJA SEGUNDA", "SOJA NO GMO PRIMERA", "SOJA NO GMO SEGUNDA"]),
+                "Grano Maíz Pisingallo": _seg(["MAIZ PISINGALLO"]),
+                "Grano Girasol":         _seg(["GIRASOL", "GIRASOL CONFITERO"]),
+                "Grano Sorgo":           _seg(["SORGO"]),
+                "Grano Maní":            _seg(["MANI"]),
+            }
+            for gr, tn in SEG_PCT.items():
+                if tn <= 0.5:
+                    continue
+                ant = (p25.get(gr) or {}).get("cosechado")
+                sem_tn = sem_propia.get(SEM_DE.get(gr, ""), 0.0)
+                neto = round(max(0.0, tn - sem_tn), 1)
+                p25.setdefault(gr, {"pendcos": 0})["cosechado"] = neto
+                extra = f" - a semilla {sem_tn:,.1f}" if sem_tn > 0.5 else ""
+                antes = f" (antes {ant:,.1f})" if ant else ""
+                print(f"    -> {gr}: produccion segun % {tn:,.1f}{extra} = {neto:,.1f} tn{antes}")
         # cosechado propio POR VARIEDAD (regla del usuario 18/08: lo necesita abierto por
         # variedad para el neto final; la fila genérica SEMILLA X ya no lleva el agregado
         # porque duplicaría el total del cultivo)
