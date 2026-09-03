@@ -683,6 +683,12 @@ window.apiFetch = function(path, opts){
   /* Cruce CP ARCA: la tabla tiene muchas columnas -> encabezados en dos lineas
      y ancho al 100% para que no quede ninguna cortada (pedido usuario 03/09) */
   #arca-tabla{width:100%;table-layout:auto}
+  #arca-tabla td.arca-cop{cursor:copy;text-decoration:underline dotted rgba(1,64,116,.45);text-underline-offset:2px}
+  #arca-tabla td.arca-cop:hover{background:#e8f0fb}
+  #arca-toast{position:fixed;right:22px;bottom:22px;z-index:9800;background:#0f172a;color:#fff;
+              padding:9px 15px;border-radius:9px;font-size:12.5px;font-weight:600;
+              box-shadow:0 8px 22px rgba(15,23,42,.3);opacity:0;transition:opacity .18s;pointer-events:none}
+  #arca-toast.ver{opacity:1}
   #arca-tabla thead th{white-space:normal;line-height:1.15;vertical-align:bottom;padding:6px 7px;font-size:9.5px}
   #arca-tabla tbody td{padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
   #arca-tabla tbody td:first-child,#arca-tabla tbody td:nth-child(2){white-space:nowrap;max-width:none}
@@ -2472,6 +2478,7 @@ window.apiFetch = function(path, opts){
               style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
             <button class="clear" id="arca-limpiar">Limpiar</button>
             <button class="clear" id="arca-excel" title="Baja la tabla que estás viendo, con los filtros puestos">⬇ Exportar a Excel</button>
+            <button class="clear" id="arca-copiar-ctg" title="Copia al portapapeles los CTG de todas las filas que estás viendo, uno por línea">⧉ Copiar CTGs</button>
             <span style="margin-left:auto;color:var(--muted);font-size:12px" id="arca-info"></span>
           </div>
           <div class="tbl-wrap" style="max-height:660px">
@@ -10180,7 +10187,11 @@ document.addEventListener('click', (e) => {
         const d = Number(r.dif_kg) || 0;
         val = `<span style="color:${d < 0 ? '#b3372b' : '#1a7a3c'};font-weight:700">${n0(d)}</span>`;
       } else val = escapeHtml(String(val == null ? "-" : val));
-      return `<td${c[2] ? ' class="num"' : ""} title="${escapeHtml(String(r[c[0]] == null ? "" : r[c[0]]))}">${val}</td>`;
+      // CTG y carta de porte: un click copia el valor
+      const cop = (c[0] === "CTG" || c[0] === "CartaPorte");
+      const cls = [c[2] ? "num" : "", cop ? "arca-cop" : ""].filter(Boolean).join(" ");
+      const tit = cop ? "Click para copiar" : escapeHtml(String(r[c[0]] == null ? "" : r[c[0]]));
+      return `<td${cls ? ` class="${cls}"` : ""}${cop ? ` data-copiar="${escapeHtml(String(r[c[0]] == null ? "" : r[c[0]]))}"` : ""} title="${tit}">${val}</td>`;
     }).join("") + "</tr>").join("") ||
       '<tr><td colspan="99" style="padding:24px;text-align:center;color:var(--muted)">Sin filas para este filtro.</td></tr>';
     const tn = rs.reduce((a, r) => a + (Number(r.Kg) || 0), 0) / 1000;
@@ -10222,6 +10233,48 @@ document.addEventListener('click', (e) => {
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   }
 
+
+  // ── copiar al portapapeles (con respaldo para navegadores viejos) ────────
+  function aviso(txt){
+    let t = document.getElementById("arca-toast");
+    if(!t){ t = document.createElement("div"); t.id = "arca-toast"; document.body.appendChild(t); }
+    t.textContent = txt;
+    t.classList.add("ver");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("ver"), 1600);
+  }
+
+  function copiar(txt, msg){
+    const listo = () => aviso(msg);
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt).then(listo, () => copiarViejo(txt, listo));
+        return;
+      }
+    }catch(e){}
+    copiarViejo(txt, listo);
+  }
+
+  function copiarViejo(txt, listo){
+    const ta = document.createElement("textarea");
+    ta.value = txt;
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){}
+    ta.remove();
+    if(ok) listo(); else aviso("No pude copiar — seleccioná el texto a mano");
+  }
+
+  // click en la celda de CTG o de carta de porte: copia ese valor
+  document.addEventListener("click", (e) => {
+    const td = e.target.closest("#arca-tabla td.arca-cop");
+    if(!td) return;
+    const v = td.dataset.copiar || td.textContent.trim();
+    if(v && v !== "-") copiar(v, "Copiado: " + v);
+  });
+
   function cultivos(){
     const sel = document.getElementById("arca-cultivo"), prev = sel.value;
     const v = document.getElementById("arca-vista").value;
@@ -10250,6 +10303,13 @@ document.addEventListener('click', (e) => {
   if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
   const xl = document.getElementById("arca-excel");
   if(xl) xl.addEventListener("click", exportar);
+  const cc = document.getElementById("arca-copiar-ctg");
+  if(cc) cc.addEventListener("click", () => {
+    const rs = filas();
+    if(!rs.length){ aviso("No hay filas con estos filtros"); return; }
+    const ctgs = [...new Set(rs.map(r => String(r.CTG || "").trim()).filter(Boolean))];
+    copiar(ctgs.join("\n"), `${ctgs.length} CTG copiados`);
+  });
   const lm = document.getElementById("arca-limpiar");
   if(lm) lm.addEventListener("click", () => {
     estSel = new Set();
