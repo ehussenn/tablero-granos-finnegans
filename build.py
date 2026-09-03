@@ -10025,6 +10025,7 @@ document.addEventListener('click', (e) => {
   const ESTADOS_OK = new Set(["Confirmada","Activa","Activa con confirmacion de arribo",
                               "Activa con contingencia","Descargado en destino"]);
   let estSel = new Set();      // estados tildados (vacio = todos)
+  let origenSel = "";          // origen elegido con un click en el desglose
 
   const n0 = x => fmt.num(Math.round(x || 0));
   const n1 = x => fmt.num(x || 0, 1);
@@ -10041,8 +10042,10 @@ document.addEventListener('click', (e) => {
     return v ? Number(v.replace(/-/g, "")) : 0;
   };
 
-  // base: todo menos el filtro de Estado (para que los conteos de Estado sirvan)
-  function base(v){
+  // base: aplica los filtros; con "omitir" se saltea una dimension, para que cada
+  // desglose siga mostrando sus otras opciones (cruzado, como en Power BI)
+  function base(v, omitir){
+    omitir = omitir || {};
     let rs = (A[v] || []).slice();
     const d1 = limNum("arca-desde"), d2 = limNum("arca-hasta");
     if(d1 || d2) rs = rs.filter(r => {
@@ -10050,18 +10053,17 @@ document.addEventListener('click', (e) => {
       if(!f) return false;
       return (!d1 || f >= d1) && (!d2 || f <= d2);
     });
-    const cu = document.getElementById("arca-cultivo").value;
-    if(cu) rs = rs.filter(r => (r.Cultivo || "-") === cu);
     const q = (document.getElementById("arca-txt").value || "").trim().toLowerCase();
     if(q) rs = rs.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+    const cu = document.getElementById("arca-cultivo").value;
+    if(cu && !omitir.cultivo) rs = rs.filter(r => (r.Cultivo || "-") === cu);
+    if(origenSel && !omitir.origen) rs = rs.filter(r => (r.Origen || "-") === origenSel);
+    if(v === "faltan" && estSel.size && !omitir.estado) rs = rs.filter(r => estSel.has(r.Estado || "-"));
     return rs;
   }
 
   function filas(){
-    const v = document.getElementById("arca-vista").value;
-    let rs = base(v);
-    if(v === "faltan" && estSel.size) rs = rs.filter(r => estSel.has(r.Estado || "-"));
-    return rs;
+    return base(document.getElementById("arca-vista").value);
   }
 
   function agrupa(rows, campo){
@@ -10081,7 +10083,8 @@ document.addEventListener('click', (e) => {
     const ai = fl.filter(r => r.a_ingresar);
     const aiTn = ai.reduce((a, r) => a + (Number(r.Kg) || 0), 0) / 1000;
     const filtrando = !!(limNum("arca-desde") || limNum("arca-hasta")
-                         || document.getElementById("arca-cultivo").value
+                         || document.getElementById("arca-cultivo").value || origenSel
+                         || estSel.size
                          || (document.getElementById("arca-txt").value || "").trim());
     const suf = filtrando ? " (filtrado)" : "";
     const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
@@ -10103,7 +10106,7 @@ document.addEventListener('click', (e) => {
 
   function estados(){
     const c = document.getElementById("arca-estados");
-    const ent = Object.entries(agrupa(base("faltan"), "Estado"));
+    const ent = Object.entries(agrupa(base("faltan", {estado: true}), "Estado"));
     c.innerHTML = ent.map(([e, d]) => {
       const on = estSel.has(e), ok = ESTADOS_OK.has(e);
       return `<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;cursor:pointer;
@@ -10122,14 +10125,30 @@ document.addEventListener('click', (e) => {
     }));
   }
 
-  function desglose(id, dic, lbl){
+  // dim: "cultivo" | "origen". Click en una fila filtra la tabla; volver a clickear lo saca.
+  function desglose(id, dic, lbl, dim){
     const t = document.getElementById(id);
     const ent = Object.entries(dic || {});
+    const sel = dim === "cultivo" ? document.getElementById("arca-cultivo").value : origenSel;
     t.querySelector("thead").innerHTML =
       `<tr><th>${lbl}</th><th class="num">Camiones</th><th class="num">Tn</th></tr>`;
-    t.querySelector("tbody").innerHTML = ent.map(([k, d]) =>
-      `<tr><td>${escapeHtml(k)}</td><td class="num">${n0(d.camiones)}</td><td class="num">${n1(d.tn)}</td></tr>`
-    ).join("") || '<tr><td colspan="3" style="color:var(--muted)">sin datos</td></tr>';
+    t.querySelector("tbody").innerHTML = ent.map(([k, d]) => {
+      const on = sel === k;
+      return `<tr data-dim="${dim}" data-val="${escapeHtml(k)}" title="Click para filtrar las cartas de porte"
+        style="cursor:pointer;${on ? "background:#e8f0fb;font-weight:700" : ""}">
+        <td>${on ? "\u2713 " : ""}${escapeHtml(k)}</td>
+        <td class="num">${n0(d.camiones)}</td><td class="num">${n1(d.tn)}</td></tr>`;
+    }).join("") || '<tr><td colspan="3" style="color:var(--muted)">sin datos</td></tr>';
+    t.querySelectorAll("tbody tr[data-val]").forEach(tr => tr.addEventListener("click", () => {
+      const v = tr.dataset.val;
+      if(tr.dataset.dim === "cultivo"){
+        const sc = document.getElementById("arca-cultivo");
+        sc.value = (sc.value === v) ? "" : v;
+      } else {
+        origenSel = (origenSel === v) ? "" : v;
+      }
+      render();
+    }));
   }
 
   const COLS = {
@@ -10218,14 +10237,13 @@ document.addEventListener('click', (e) => {
       return;
     }
     kpis(); estados();
-    const fl = base("faltan");
-    desglose("arca-tbl-cultivo", agrupa(fl, "Cultivo"), "Cultivo");
-    desglose("arca-tbl-origen", agrupa(fl, "Origen"), "Origen");
+    desglose("arca-tbl-cultivo", agrupa(base("faltan", {cultivo: true}), "Cultivo"), "Cultivo", "cultivo");
+    desglose("arca-tbl-origen", agrupa(base("faltan", {origen: true}), "Origen"), "Origen", "origen");
     tabla();
   }
 
   ["arca-vista"].forEach(id => { const e = document.getElementById(id);
-    if(e) e.addEventListener("change", () => { cultivos(); tabla(); }); });
+    if(e) e.addEventListener("change", () => { origenSel = ""; cultivos(); render(); }); });
   ["arca-cultivo", "arca-desde", "arca-hasta"].forEach(id => { const e = document.getElementById(id);
     if(e) e.addEventListener("change", render); });
   const tx = document.getElementById("arca-txt");
@@ -10235,6 +10253,7 @@ document.addEventListener('click', (e) => {
   const lm = document.getElementById("arca-limpiar");
   if(lm) lm.addEventListener("click", () => {
     estSel = new Set();
+    origenSel = "";
     document.getElementById("arca-cultivo").value = "";
     document.getElementById("arca-txt").value = "";
     document.getElementById("arca-desde").value = "";
