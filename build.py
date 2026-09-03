@@ -861,6 +861,35 @@ window.apiFetch = function(path, opts){
   .pn-fij-par{color:#B5740E;font-weight:700}
   .pn-fij-no{color:#b91c1c;font-weight:700}
 
+  /* Sumador de seleccion (pedido usuario 02/09): tildar filas suma en una tarjeta */
+  th.sum-th,td.sum-td{width:30px;min-width:30px;text-align:center;padding-left:7px;padding-right:3px;cursor:pointer}
+  th.sum-th input,td.sum-td input{cursor:pointer;margin:0;vertical-align:middle;width:14px;height:14px}
+  #pnct-tabla tbody tr[data-sum]{cursor:pointer}
+  tr.sum-on td{background:#FEF3C7 !important}
+  tr.sum-on td.sum-td{background:#FDE68A !important}
+  #sum-card{position:fixed;right:20px;bottom:20px;z-index:9500;width:286px;background:#fff;border:1px solid #cbd5e1;
+            border-left:5px solid #014074;border-radius:12px;box-shadow:0 12px 34px rgba(15,23,42,.22);
+            padding:12px 14px 13px;font-size:12.5px;color:#1e293b}
+  #sum-card.min{width:auto;padding:8px 13px;border-radius:22px}
+  #sum-card .sc-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;
+                   letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  #sum-card .sc-hd b{color:#014074}
+  #sum-card .sc-btn{border:1px solid #dbe3ec;background:#f8fafc;color:#334155;border-radius:7px;cursor:pointer;
+                    font:inherit;font-size:11px;padding:2px 8px;line-height:1.5}
+  #sum-card .sc-btn:hover{background:#eef2f7}
+  #sum-card .sc-tot{font-size:26px;font-weight:800;color:#014074;font-variant-numeric:tabular-nums;line-height:1.15;margin-top:6px}
+  #sum-card .sc-lin{display:flex;justify-content:space-between;font-size:11.5px;color:#475569;margin-top:3px}
+  #sum-card .sc-lin b{font-variant-numeric:tabular-nums}
+  #sum-card .sc-in{display:flex;gap:5px;margin-top:9px}
+  #sum-card .sc-in input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:7px;padding:5px 8px;font:inherit;font-size:12px}
+  #sum-card .sc-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+  #sum-card .sc-chip{background:#eef2f7;border:1px solid #dbe3ec;border-radius:14px;padding:1px 5px 1px 8px;font-size:11px;
+                     font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px}
+  #sum-card .sc-chip.neg{background:#fef2f2;border-color:#fbd5d5;color:#b91c1c}
+  #sum-card .sc-chip x{cursor:pointer;color:#94a3b8;font-style:normal;font-weight:700;padding:0 3px}
+  #sum-card .sc-chip x:hover{color:#b91c1c}
+  #sum-card .sc-pie{font-size:10.5px;color:var(--muted);margin-top:8px;border-top:1px dashed #e2e8f0;padding-top:6px;line-height:1.4}
+
   /* Cards de cultivo posicion */
   .pn-card{padding:14px;border-radius:10px;border-top:4px solid #94a3b8;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   .pn-card.soja{border-top-color:#2E8B57}
@@ -9028,11 +9057,11 @@ function pnDrillHTML(type, prods){
     const conR = rows.filter(r=>r.rinde>0);
     const rProm = conR.length ? conR.reduce((s,r)=>s+r.rinde*r.tn,0) / conR.reduce((s,r)=>s+r.tn,0) : 0;
     let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} lote(s) · ${fmt.num(tot)} tn${rProm?` · rinde prom ${fmt.num(rProm)} kg/ha`:''}</span></div>`;
-    t += `<table class="pn-drill-tbl"><thead><tr><th>Campo</th><th>Lote</th><th>Cultivo</th><th class="num">Rinde (kg/ha)</th><th class="num">Tn Agronasaja</th></tr></thead><tbody>`;
+    t += `<table class="pn-drill-tbl" data-sum-key="drill-${cfg.field}" data-sum-label="${escapeHtml(cfg.field==='pendcos'?'Pend. cosecha · Producción':'Cosechado · Producción')}"><thead><tr><th class="sum-th" title="Tildar todo / nada — la tarjeta suma las tn"><input type="checkbox"></th><th>Campo</th><th>Lote</th><th>Cultivo</th><th class="num">Rinde (kg/ha)</th><th class="num">Tn Agronasaja</th></tr></thead><tbody>`;
     rows.forEach(r => {
-      t += `<tr><td>${escapeHtml(r.campo||'—')}</td><td>${escapeHtml(r.lote||'—')}</td><td>${escapeHtml(r.cultivo||r.p||'')}</td><td class="num">${r.rinde>0?fmt.num(r.rinde):'—'}</td><td class="num">${fmt.num(r.tn)}</td></tr>`;
+      t += `<tr data-sum="${r.tn}" title="tildá para sumar esta línea"><td class="sum-td"><input type="checkbox"></td><td>${escapeHtml(r.campo||'—')}</td><td>${escapeHtml(r.lote||'—')}</td><td>${escapeHtml(r.cultivo||r.p||'')}</td><td class="num">${r.rinde>0?fmt.num(r.rinde):'—'}</td><td class="num">${fmt.num(r.tn)}</td></tr>`;
     });
-    t += `<tr class="pn-drill-tot"><td colspan="3">Total (${rows.length} lotes)</td><td class="num">${rProm?fmt.num(rProm):'—'}</td><td class="num">${fmt.num(tot)}</td></tr>`;
+    t += `<tr class="pn-drill-tot"><td colspan="4">Total (${rows.length} lotes)</td><td class="num">${rProm?fmt.num(rProm):'—'}</td><td class="num">${fmt.num(tot)}</td></tr>`;
     t += `</tbody></table>`;
     t += `<div style="font-size:10.5px;color:var(--muted);margin-top:4px">Fuente: <strong>Portal de Producción — Información General</strong> (vista del Extranet Agronasaja): cosechado = "Kg por Beneficiario" (retiros AGNSJ, todos los convenios); pendiente = "Estimado por Cosechar (Agronasaja)". En el pendiente, el rinde es el estimado usado para proyectar las tn.</div>`;
     t += `</div>`;
@@ -9053,15 +9082,15 @@ function pnDrillHTML(type, prods){
   const tot = rows.reduce((s,c)=>s+val(c),0);
   const lblTn = cfg.field==='pend' ? (cp?'Pend. ingreso':'Pend. entrega') : cfg.field==='entr' ? 'Entregado' : 'Ajustada';
   let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} contrato(s) · ${fmt.num(tot)} tn</span></div>`;
-  t += `<table class="pn-drill-tbl"><thead><tr><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${cp?'<th>Comercial</th>':''}${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
+  t += `<table class="pn-drill-tbl" data-sum-key="drill-${cfg.kind}-${cfg.field}" data-sum-label="${escapeHtml(lblTn + ' · ' + (cp?'Compra':'Venta'))}"><thead><tr><th class="sum-th" title="Tildar todo / nada — la tarjeta suma las tn"><input type="checkbox"></th><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${cp?'<th>Comercial</th>':''}${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
   rows.forEach(c => {
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
     const ent = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
     const camp = (c.campana||'').replace('CAMPAÑA ','').replace('CAMPANA ','') || '—';
-    t += `<tr><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(c.organizacion))||'—'}</td>`:''}${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
+    t += `<tr data-sum="${val(c)}" title="tildá para sumar esta línea"><td class="sum-td"><input type="checkbox"></td><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(c.organizacion))||'—'}</td>`:''}${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
   });
-  const ncolTot = 5 + (esC?1:0) + (cp?1:0);
+  const ncolTot = 6 + (esC?1:0) + (cp?1:0);
   t += `<tr class="pn-drill-tot"><td colspan="${ncolTot}">Total (${rows.length})</td><td class="num">${fmt.num(tot)}</td><td></td></tr>`;
   t += `</tbody></table></div>`;
   return t;
@@ -9468,18 +9497,21 @@ function pnRender(){
       const nx = tr.nextElementSibling;
       // toggle: si ya está abierto ese mismo detalle, cerrarlo
       if(nx && nx.classList.contains("pn-drill-row") && nx.dataset.key === key){
-        nx.remove(); td.classList.remove("pn-drill-active"); return;
+        nx.remove(); td.classList.remove("pn-drill-active"); SUM_ACT = null; sumRender(); return;
       }
       // cerrar cualquier detalle abierto inmediatamente debajo (de otra celda de la misma fila)
       if(nx && nx.classList.contains("pn-drill-row")){
         tr.querySelectorAll(".pn-drill-active").forEach(x=>x.classList.remove("pn-drill-active"));
-        nx.remove();
+        nx.remove(); SUM_ACT = null; sumRender();
       }
       const nr = document.createElement("tr");
       nr.className = "pn-drill-row"; nr.dataset.key = key;
       nr.innerHTML = `<td colspan="${pnTotalCols()}" class="pn-drill-cell">${pnDrillHTML(type, prods)}</td>`;
       tr.after(nr);
       td.classList.add("pn-drill-active");
+      // sumador: cada detalle que se abre arranca limpio y queda como tabla activa
+      const dt = nr.querySelector("table.pn-drill-tbl[data-sum-key]");
+      if(dt) sumReset(dt); else { SUM_ACT = null; sumRender(); }
       nr.querySelector(".pn-drill-inner").scrollIntoView({behavior:"smooth", block:"nearest"});
     });
   });
@@ -9702,6 +9734,7 @@ function pnctRender(){
   // con Entreg. P/Liq (entregado − liquidado), Sin Fijar y Liq. Anticipado.
   // Pend. Ingreso (compra) / Pend. Entrega (venta) = ajustada − entregada (regla usuario)
   document.getElementById('pnct-thead').innerHTML = `<tr>
+    <th class="sum-th" title="Tildar todo / nada — la tarjeta suma la columna ${escapeHtml(FIELD_LBL[PNCT.field] || '')}"><input type="checkbox"></th>
     <th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente / Comprador'}</th>${cp?'<th>Comercial</th>':''}<th>Producto</th><th>Campaña</th>
     <th class="num">Ajustada</th><th class="num">Entregada</th><th class="num">${cp?'Pend. Ingreso':'Pend. Entrega'}</th><th class="num">Entreg. P/Liq</th>
     <th>¿A precio?</th><th class="num">Fijada (tn)</th><th class="num">Sin Fijar (tn)</th>
@@ -9731,7 +9764,8 @@ function pnctRender(){
         ? `<span class="pn-fij-par" title="saldo total de ${escapeHtml(org)} en cta cte">◑ saldo ${monS} ${fmt.num(Math.abs(s))}</span>`
         : `<span class="pn-fij-si" title="cta cte de ${escapeHtml(org)} sin saldo relevante">✓ al día</span>`;
     }
-    html += `<tr title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'}">
+    html += `<tr data-sum="${val(c)}" title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'} · click en la fila para sumarla">
+      <td class="sum-td"><input type="checkbox"></td>
       <td class="pn-drill-nro">${nro}</td>
       <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}</td>
       ${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(org))||'<span class=muted>—</span>'}</td>`:''}
@@ -9749,14 +9783,164 @@ function pnctRender(){
   });
   document.getElementById('pnct-tbody').innerHTML = html || `<tr><td colspan="99" style="padding:26px;text-align:center;color:var(--muted)">Sin contratos para este filtro.</td></tr>`;
   document.getElementById('pnct-tfoot').innerHTML = rows.length ? `<tr class="pn-total">
-    <td colspan="${cp?5:4}">TOTAL (${rows.length} contratos)</td>
+    <td colspan="${cp?6:5}">TOTAL (${rows.length} contratos)</td>
     <td class="num">${fmt.num(tAj)}</td><td class="num">${fmt.num(tEnt)}</td><td class="num">${fmt.num(tPen)}</td>
     <td class="num">${fmt.num(tEntPliq)}</td>
     <td></td><td class="num">${fmt.num(tFij)}</td><td class="num">${fmt.num(tSinFij)}</td>
     <td></td><td></td><td></td>
     <td class="num">${fmt.num(tLiq)}</td><td class="num">${fmt.num(tAntic)}</td>
     <td class="num">USD ${fmt.num(tImpLiqU)} · ARS ${fmt.num(tImpLiqA)}</td><td></td><td></td></tr>` : '';
+  // sumador: la tarjeta suma la columna del zoom (se limpia con cada cambio de filtro)
+  sumReset(document.getElementById('pnct-tabla'),
+           (FIELD_LBL[PNCT.field] || 'Cantidad ajustada') + ' · ' + (cp ? 'Compra' : 'Venta'));
 }
+
+/* ============================================================
+   ====  SUMADOR DE SELECCIÓN (tarjeta) — pedido 02/09  =======
+   En las tablas de pendientes (Detalle de Contratos de compra y
+   de venta, y los drill-down de Producción) se pueden ir tildando
+   filas y la tarjeta va sumando la columna del zoom. Además se
+   puede cargar un número a mano: positivo suma, negativo resta.
+   ============================================================ */
+const SUM_MAN = {};          // {claveTabla: [números cargados a mano]}
+let SUM_ACT = null;          // tabla activa (la última tocada)
+let SUM_MIN = false;         // tarjeta minimizada
+
+const sumKey = t => t.id || t.dataset.sumKey || 'tbl';
+function sumFilas(t){
+  return [...t.querySelectorAll('tbody tr[data-sum]')];
+}
+function sumSel(t){
+  let n = 0, s = 0;
+  sumFilas(t).forEach(tr => {
+    const chk = tr.querySelector('.sum-td input');
+    if(chk && chk.checked){ n++; s += Number(tr.dataset.sum) || 0; }
+  });
+  return {n, s};
+}
+function sumCardEl(){
+  let c = document.getElementById('sum-card');
+  if(!c){
+    c = document.createElement('div');
+    c.id = 'sum-card';
+    document.body.appendChild(c);
+    // eventos de la tarjeta (delegados, sobrevive a cada re-render)
+    c.addEventListener('click', (e) => {
+      const t = SUM_ACT; if(!t) return;
+      if(e.target.closest('[data-sc="min"]')){ SUM_MIN = !SUM_MIN; sumRender(); return; }
+      if(e.target.closest('[data-sc="add"]')){ sumAddManual(); return; }
+      if(e.target.closest('[data-sc="clear"]')){
+        sumFilas(t).forEach(tr => { const k = tr.querySelector('.sum-td input'); if(k) k.checked = false; tr.classList.remove('sum-on'); });
+        const th = t.querySelector('.sum-th input'); if(th) th.checked = false;
+        SUM_MAN[sumKey(t)] = [];
+        sumRender(); return;
+      }
+      const x = e.target.closest('.sc-chip x');
+      if(x){
+        const arr = SUM_MAN[sumKey(t)] || [];
+        arr.splice(Number(x.dataset.i), 1);
+        sumRender();
+      }
+    });
+    c.addEventListener('keydown', (e) => {
+      if(e.target.matches('[data-sc="man"]') && e.key === 'Enter'){ e.preventDefault(); sumAddManual(); }
+    });
+  }
+  return c;
+}
+function sumAddManual(){
+  const t = SUM_ACT; if(!t) return;
+  const inp = document.querySelector('#sum-card [data-sc="man"]');
+  if(!inp) return;
+  // acepta 1.234,5 (es-AR), 1234.5 y el signo − para restar
+  const raw = String(inp.value || '').trim().replace(/−/g, '-').replace(/\s/g, '');
+  if(!raw) return;
+  const limpio = raw.includes(',') ? raw.replace(/\./g, '').replace(',', '.') : raw;
+  const v = parseFloat(limpio);
+  if(isNaN(v) || v === 0){ inp.value = ''; return; }
+  (SUM_MAN[sumKey(t)] = SUM_MAN[sumKey(t)] || []).push(v);
+  inp.value = '';
+  sumRender(true);
+}
+function sumRender(foco){
+  const c = sumCardEl(), t = SUM_ACT;
+  // se esconde sola si la tabla dejó de existir, quedó sin filas o su panel no está a la vista
+  if(!t || !document.body.contains(t) || !t.offsetParent || !sumFilas(t).length){ c.style.display = 'none'; return; }
+  c.style.display = '';
+  const {n, s} = sumSel(t);
+  const man = SUM_MAN[sumKey(t)] || [];
+  const manTot = man.reduce((a, b) => a + b, 0);
+  const total = s + manTot;
+  const lbl = t.dataset.sumLabel || 'Selección';
+  c.classList.toggle('min', SUM_MIN);
+  if(SUM_MIN){
+    c.innerHTML = `<div class="sc-hd" style="gap:10px"><span>🧮 <b>${fmt.num(total, 1)}</b> tn · ${n} fila(s)</span>
+      <button class="sc-btn" data-sc="min" title="Abrir el sumador">▴</button></div>`;
+    return;
+  }
+  const chips = man.map((v, i) => `<span class="sc-chip${v < 0 ? ' neg' : ''}">${v > 0 ? '+' : '−'}${fmt.num(Math.abs(v), 1)}<x data-i="${i}" title="Quitar">✕</x></span>`).join('');
+  c.innerHTML = `
+    <div class="sc-hd"><span>🧮 Sumador · <b>${escapeHtml(lbl)}</b></span>
+      <button class="sc-btn" data-sc="min" title="Minimizar">▾</button></div>
+    <div class="sc-tot">${fmt.num(total, 1)} <span style="font-size:13px;font-weight:600;color:var(--muted)">tn</span></div>
+    <div class="sc-lin"><span>${n} fila(s) tildada(s)</span><b>${fmt.num(s, 1)}</b></div>
+    ${man.length ? `<div class="sc-lin"><span>cargado a mano (${man.length})</span><b style="color:${manTot < 0 ? '#b91c1c' : '#15803d'}">${manTot > 0 ? '+' : ''}${fmt.num(manTot, 1)}</b></div><div class="sc-chips">${chips}</div>` : ''}
+    <div class="sc-in">
+      <input data-sc="man" type="text" inputmode="decimal" placeholder="Sumar a mano (−100 resta)">
+      <button class="sc-btn" data-sc="add" title="Agregar (Enter)">＋</button>
+    </div>
+    <div class="sc-hd" style="margin-top:9px;justify-content:flex-end"><button class="sc-btn" data-sc="clear">Limpiar todo</button></div>
+    <div class="sc-pie">Tildá filas de la tabla para sumarlas. Un número negativo resta. Se limpia al cambiar de filtro.</div>`;
+  if(foco){ const i = c.querySelector('[data-sc="man"]'); if(i) i.focus(); }
+}
+// activa el sumador para una tabla (la marca como activa y limpia lo cargado a mano)
+function sumReset(t, label){
+  if(!t) return;
+  SUM_ACT = t;
+  if(label) t.dataset.sumLabel = label;
+  SUM_MAN[sumKey(t)] = [];
+  const th = t.querySelector('.sum-th input'); if(th) th.checked = false;
+  sumRender();
+}
+// tilda / destilda una fila
+function sumToggleFila(tr, on){
+  const chk = tr.querySelector('.sum-td input'); if(!chk) return;
+  chk.checked = (on === undefined) ? !chk.checked : !!on;
+  tr.classList.toggle('sum-on', chk.checked);
+}
+// clicks en checkboxes, en la fila (solo Detalle de Contratos) y en el "todos" del encabezado
+document.addEventListener('click', (e) => {
+  const th = e.target.closest('th.sum-th');
+  if(th){
+    const tabla = th.closest('table');
+    const chk = th.querySelector('input');
+    if(tabla && chk){
+      if(e.target !== chk) chk.checked = !chk.checked;
+      SUM_ACT = tabla;
+      sumFilas(tabla).forEach(tr => sumToggleFila(tr, chk.checked));
+      sumRender();
+    }
+    return;
+  }
+  const tr = e.target.closest('tr[data-sum]');
+  if(!tr) return;
+  const tabla = tr.closest('table'); if(!tabla) return;
+  const enCelda = !!e.target.closest('td.sum-td');
+  // en el Detalle de Contratos se puede tildar clickeando cualquier parte de la fila
+  if(!enCelda && tabla.id !== 'pnct-tabla') return;
+  if(e.target.tagName === 'A') return;
+  SUM_ACT = tabla;
+  if(e.target.tagName === 'INPUT') tr.classList.toggle('sum-on', e.target.checked);
+  else sumToggleFila(tr);
+  const todos = tabla.querySelector('.sum-th input');
+  if(todos){ const f = sumFilas(tabla); todos.checked = f.length > 0 && f.every(x => { const k = x.querySelector('.sum-td input'); return k && k.checked; }); }
+  sumRender();
+});
+
+// al cambiar de pestaña la tarjeta se esconde sola (la tabla activa deja de estar a la vista)
+document.addEventListener('click', (e) => {
+  if(e.target.closest('.tab, .subtab, .nav-item')) setTimeout(sumRender, 80);
+});
 
 /* ===== ORDEN POR ENCABEZADO en tablas de detalle =====
    Click en un encabezado de la pestaña Detalle Contratos o de cualquier tabla de
@@ -9765,6 +9949,7 @@ function pnctRender(){
 document.addEventListener('click', (e) => {
   const th = e.target.closest('th');
   if(!th) return;
+  if(th.classList.contains('sum-th')) return;   // la columna de tilde no ordena
   const tabla = th.closest('table');
   if(!tabla) return;
   if(!(tabla.id === 'pnct-tabla' || tabla.classList.contains('pn-drill-tbl'))) return;
