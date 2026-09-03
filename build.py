@@ -682,6 +682,32 @@ window.apiFetch = function(path, opts){
   .tbl-wrap{overflow:auto;max-height:620px;border:1px solid var(--line);border-radius:8px}
   /* Cruce CP ARCA: la tabla tiene muchas columnas -> encabezados en dos lineas
      y ancho al 100% para que no quede ninguna cortada (pedido usuario 03/09) */
+  /* Posicion Granaria: dos vistas (posicion / operaciones de cobertura) */
+  /* cabecera partida en dos: click en cada mitad cambia de vista */
+  .pg-hdr{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:12px;overflow:hidden;margin:0 0 14px}
+  .pg-hdr-half{padding:14px 18px;cursor:pointer;color:#fff;position:relative;transition:background .15s;
+               border-right:1px solid rgba(255,255,255,.16)}
+  .pg-hdr-half:last-child{border-right:0}
+  .pg-hdr-half h3{color:#fff;margin:0;font-size:15px}
+  .pg-hdr-half .sub{font-size:12px;opacity:.85;margin-top:4px;line-height:1.35}
+  .pg-hdr-half .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;min-height:22px}
+  .pg-hdr-half .chips span{background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;
+                           font-size:11.5px;font-weight:600}
+  .pg-hdr-half[data-pgv="posicion"]{background:linear-gradient(135deg,#0b2f52 0%,#1d4a78 100%)}
+  .pg-hdr-half[data-pgv="cobertura"]{background:linear-gradient(135deg,#3b1668 0%,#53259c 100%)}
+  .pg-hdr-half:not(.on){opacity:.5}
+  .pg-hdr-half:not(.on):hover{opacity:.75}
+  .pg-hdr-half.on[data-pgv="posicion"]{background:linear-gradient(135deg,#014074 0%,#3367A0 100%);
+      box-shadow:inset 0 -4px 0 #7dd3fc}
+  .pg-hdr-half.on[data-pgv="cobertura"]{background:linear-gradient(135deg,#4c1d95 0%,#6d28d9 100%);
+      box-shadow:inset 0 -4px 0 #c4b5fd}
+  @media (max-width:820px){ .pg-hdr{grid-template-columns:1fr} .pg-hdr-half{border-right:0} }
+  #cob-tabla td.cob-edit{cursor:pointer;background:#fffdf5;text-decoration:underline dotted rgba(181,116,14,.5);
+                         text-underline-offset:2px}
+  #cob-tabla td.cob-edit:hover{background:#fef3c7}
+  #cob-tabla td.cob-man{background:#f5f3ff;color:#5b21b6;font-weight:700}
+  #cob-tabla input.cob-in{width:100%;box-sizing:border-box;border:1px solid #B5740E;border-radius:5px;
+                          padding:2px 5px;font:inherit;font-size:11.5px;text-align:right}
   #arca-tabla{width:100%;table-layout:auto}
   #arca-tabla td.arca-cop{cursor:copy;text-decoration:underline dotted rgba(1,64,116,.45);text-underline-offset:2px}
   #arca-tabla td.arca-cop:hover{background:#e8f0fb}
@@ -2208,15 +2234,24 @@ window.apiFetch = function(path, opts){
     <!-- ========== SUB: GRANARIA ========== -->
     <div class="subpanel active" data-sub-panel="pn-granaria">
 
-    <!-- Header -->
-    <div class="section" style="background:linear-gradient(135deg,#014074 0%,#3367A0 100%);color:#fff;border:none">
-      <h3 style="color:#fff;margin:0">📊 Posición Granaria · Agronasaja</h3>
-      <div style="font-size:12px;opacity:.85;margin-top:4px">Análisis comercial · Compra · Venta · Cobertura — datos en vivo + carga manual de Planta y Producción</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-        <span id="pn-campana-chip" style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Campaña actual</span>
-        <span style="background:rgba(51,103,160,.3);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">Valores en Toneladas</span>
+    <!-- cabecera partida en dos: izquierda la posicion, derecha las coberturas (pedido 03/09) -->
+    <div class="pg-hdr">
+      <div class="pg-hdr-half on" data-pgv="posicion" title="Ver la posición granaria">
+        <h3>📊 Posición Granaria · Agronasaja</h3>
+        <div class="sub">Análisis comercial · Compra · Venta · Cobertura — datos en vivo + carga manual de Planta y Producción</div>
+        <div class="chips">
+          <span id="pn-campana-chip">Campaña actual</span>
+          <span>Valores en Toneladas</span>
+        </div>
+      </div>
+      <div class="pg-hdr-half" data-pgv="cobertura" title="Ver las operaciones de cobertura">
+        <h3>🛡 Operaciones de Cobertura</h3>
+        <div class="sub">Coberturas de precio — quedan <b>afuera de la posición</b>, con precio de entrada, de salida, comisiones y resultado neto</div>
+        <div class="chips" id="cob-chips"></div>
       </div>
     </div>
+
+    <div id="pgv-posicion">
 
     <!-- Filtros -->
     <div class="filterbar">
@@ -2251,6 +2286,29 @@ window.apiFetch = function(path, opts){
         <br/>🧮 <strong>Pos Pend y Posición son editables tipo Excel</strong> (por producto y en la fila TOTAL de cada cultivo): escribí un número fijo, o una fórmula que empiece con <code>=</code>, sumando y restando números o nombres de columnas — ej. <code>=5918+17151-20397</code> o <code>=pendcos + pendingreso - ctospe</code>. Enter (o click afuera) guarda, Esc cancela. Nombres disponibles: <code>cosechado, pendcos, totalprod, planta, granelcampo, semillero, clasificado, corte, totalpc, compra, pendingreso, entregado, oferta, vtasem, pendvincular, totventa, ctospe, ctosentr, prodpend, proddesp, totalprodsem, demanda, demandapend, pospend</code>. Lo que cargues queda guardado (violeta) y se recalcula solo con cada dato nuevo; <strong>borrá la celda para volver al cálculo automático</strong>: Pos Pend = Pend Cos + Pend Ing − Ctos P.E (los pendientes) y Posición = Oferta Tot − Demanda Tot (los totales).
       </div>
     </div>
+
+    </div><!-- /pgv-posicion -->
+
+    <!-- ===== VISTA: OPERACIONES DE COBERTURA ===== -->
+    <div id="pgv-cobertura" style="display:none">
+      <div class="section">
+        <div id="cob-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px"></div>
+      </div>
+
+      <div class="section">
+        <h3>Detalle de operaciones <span class="badge" id="cob-meta"></span></h3>
+        <div class="tbl-wrap"><table id="cob-tabla" style="font-size:11.5px">
+          <thead></thead><tbody></tbody><tfoot></tfoot>
+        </table></div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
+          💡 <b>Precio de entrada</b>: el precio fijado del contrato en Finnegans (en USD/tn).
+          <b>Precio de salida</b> y <b>comisiones</b>: los cargás vos con un click en la celda (violeta = cargado a mano).
+          <b>Total entrada</b> = tn × precio entrada · <b>Total salida</b> = tn × precio salida ·
+          <b>Resultado neto</b> = (salida − entrada) × tn − comisiones.
+          Para agregar o sacar operaciones se edita <code>data/coberturas.json</code>.
+        </div>
+      </div>
+    </div><!-- /pgv-cobertura -->
 
     </div><!-- /subpanel pn-granaria -->
 
@@ -10017,6 +10075,176 @@ document.addEventListener('click', (e) => {
 });
 
 
+
+/* ============================================================
+   ====  OPERACIONES DE COBERTURA (pedido usuario 03/09)  =====
+   Contratos marcados en data/coberturas.json: salen de la
+   Posicion Granaria (los saca el build) y se siguen aca con
+   precio de entrada (Finnegans), precio de salida y comisiones
+   (a mano, guardados en el navegador) y resultado neto.
+   ============================================================ */
+(() => {
+  const COB = PAYLOAD.coberturas || [];
+  const LS = "agn_cob_manual_v1";
+  const man = (() => { try { return JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e){ return {}; } })();
+  const guardar = () => { try { localStorage.setItem(LS, JSON.stringify(man)); } catch(e){} };
+
+  const n0 = x => fmt.num(Math.round(x || 0));
+  const n2 = x => fmt.num(x || 0, 2);
+  // moneda por magnitud: los precios de Finnegans vienen mezclados (regla del tablero)
+  const aUsd = px => {
+    const p = Number(px) || 0;
+    if(p <= 1.01) return 0;
+    const tc = Number(((PAYLOAD.bcr || {}).tc_usd_ars)) || 0;
+    return p < 5000 ? p : (tc ? p / tc : 0);
+  };
+  const clave = c => `${c.tipo}#${c.contrato}`;
+  const dato = (c, k) => {
+    const v = (man[clave(c)] || {})[k];
+    return (v === undefined || v === null || v === "") ? null : Number(v);
+  };
+
+  function calc(c){
+    const tn = Number(c.tn) || 0;
+    const pe = aUsd(c.px_entrada);
+    const ps = dato(c, "salida");
+    const com = dato(c, "comision") || 0;
+    const totE = tn * pe;
+    const totS = ps === null ? null : tn * ps;
+    // venta: gano si vendi caro y recompre barato -> (entrada - salida)
+    // compra: gano si compre barato y vendi caro -> (salida - entrada)
+    const dif = ps === null ? null : (c.tipo === "venta" ? (pe - ps) : (ps - pe));
+    const neto = dif === null ? null : dif * tn - com;
+    return {tn, pe, ps, com, totE, totS, dif, neto};
+  }
+
+  const COLS = [
+    ["organizacion", "Organización"],
+    ["contrato",     "Contrato"],
+    ["producto",     "Cultivo"],
+    ["campana",      "Campaña"],
+    ["tipo",         "Tipo"],
+    ["tn",           "TN", 1],
+    ["pe",           "Precio entrada USD/tn", 1],
+    ["ps",           "Precio salida USD/tn", 1, "salida"],
+    ["totE",         "Total entrada USD", 1],
+    ["totS",         "Total salida USD", 1],
+    ["com",          "Comisiones USD", 1, "comision"],
+    ["neto",         "Resultado neto USD", 1],
+  ];
+
+  function render(){
+    const t = document.getElementById("cob-tabla");
+    if(!t) return;
+    const chips = document.getElementById("cob-chips");
+    if(chips) chips.innerHTML = [`${COB.length} operación(es)`, "fuera de la posición"]
+      .map(x => `<span>${escapeHtml(x)}</span>`).join("");
+    t.querySelector("thead").innerHTML = "<tr>" +
+      COLS.map(c => `<th${c[2] ? ' class="num"' : ""}>${c[1]}</th>`).join("") + "</tr>";
+    if(!COB.length){
+      t.querySelector("tbody").innerHTML =
+        '<tr><td colspan="99" style="padding:24px;text-align:center;color:var(--muted)">Sin operaciones de cobertura cargadas. Se agregan en <code>data/coberturas.json</code>.</td></tr>';
+      t.querySelector("tfoot").innerHTML = "";
+      document.getElementById("cob-kpis").innerHTML = "";
+      document.getElementById("cob-meta").textContent = "";
+      return;
+    }
+    let sTn = 0, sE = 0, sS = 0, sC = 0, sN = 0, nCerradas = 0;
+    t.querySelector("tbody").innerHTML = COB.map((c, i) => {
+      const q = calc(c);
+      sTn += q.tn; sE += q.totE; sC += q.com;
+      if(q.ps !== null){ sS += q.totS; sN += q.neto; nCerradas++; }
+      const celda = (col) => {
+        const k = col[0], edit = col[3];
+        let v, cls = col[2] ? "num" : "", extra = "", txt;
+        if(k === "tn") v = q.tn;
+        else if(k === "pe") v = q.pe;
+        else if(k === "ps") v = q.ps;
+        else if(k === "totE") v = q.totE;
+        else if(k === "totS") v = q.totS;
+        else if(k === "com") v = q.com;
+        else if(k === "neto") v = q.neto;
+        else v = c[k];
+        if(edit){
+          cls += " cob-edit" + (dato(c, edit) !== null ? " cob-man" : "");
+          extra = ` data-cob="${i}" data-campo="${edit}"`;
+          txt = (v === null || v === 0) && dato(c, edit) === null ? "cargar" : n2(v);
+        } else if(col[2]){
+          txt = v === null ? "—" : (k === "tn" ? n0(v) : (k === "pe" || k === "ps" ? n2(v) : n0(v)));
+          if(k === "neto" && v !== null)
+            txt = `<span style="color:${v >= 0 ? "#1a7a3c" : "#b3372b"};font-weight:800">${n0(v)}</span>`;
+        } else {
+          txt = escapeHtml(String(v == null ? "—" : v));
+          if(k === "tipo") txt = `<span class="badge">${escapeHtml(String(v).toUpperCase())}</span>`;
+        }
+        return `<td${cls ? ` class="${cls}"` : ""}${extra} title="${escapeHtml(c.nota || "")}">${txt}</td>`;
+      };
+      return "<tr>" + COLS.map(celda).join("") + "</tr>";
+    }).join("");
+    t.querySelector("tfoot").innerHTML = `<tr class="pn-total">
+      <td colspan="5">TOTAL (${COB.length} operaciones · ${nCerradas} con salida cargada)</td>
+      <td class="num">${n0(sTn)}</td><td class="num"></td><td class="num"></td>
+      <td class="num">${n0(sE)}</td><td class="num">${nCerradas ? n0(sS) : "—"}</td>
+      <td class="num">${n0(sC)}</td>
+      <td class="num" style="color:${sN >= 0 ? "#7dd3a0" : "#fca5a5"}">${nCerradas ? n0(sN) : "—"}</td></tr>`;
+    const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
+        border-left:5px solid ${col};border-radius:11px;padding:12px 14px">
+      <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
+      <div style="font-size:24px;font-weight:800;color:${col};line-height:1.15;margin-top:4px">${val}</div>
+      <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
+    document.getElementById("cob-kpis").innerHTML =
+      card("Toneladas cubiertas", n0(sTn) + " tn", `${COB.length} operación(es)`, "#6d28d9") +
+      card("Total entrada", "USD " + n0(sE), sTn ? `${n2(sE / sTn)} USD/tn promedio` : "", "#2b5fb3") +
+      card("Comisiones", "USD " + n0(sC), "cargadas a mano", "#a97b12") +
+      card("Resultado neto", nCerradas ? "USD " + n0(sN) : "—",
+           nCerradas ? `${nCerradas} de ${COB.length} con precio de salida` : "falta cargar el precio de salida",
+           sN >= 0 ? "#1a7a3c" : "#b3372b");
+    document.getElementById("cob-meta").textContent =
+      `${n0(sTn)} tn · entrada USD ${n0(sE)}` + (nCerradas ? ` · neto USD ${n0(sN)}` : "");
+  }
+
+  // editar precio de salida / comisiones con un click
+  document.addEventListener("click", (e) => {
+    const td = e.target.closest("#cob-tabla td.cob-edit");
+    if(!td || td.querySelector("input")) return;
+    const i = Number(td.dataset.cob), campo = td.dataset.campo, c = COB[i];
+    const actual = dato(c, campo);
+    td.innerHTML = `<input class="cob-in" type="text" inputmode="decimal" value="${actual === null ? "" : actual}">`;
+    const inp = td.querySelector("input");
+    inp.focus(); inp.select();
+    const cerrar = (ok) => {
+      if(ok){
+        const raw = String(inp.value || "").trim().replace(/\u2212/g, "-").replace(/\s/g, "");
+        const k = clave(c);
+        if(!raw){ if(man[k]) delete man[k][campo]; }
+        else {
+          const v = parseFloat(raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw);
+          if(!isNaN(v)){ man[k] = man[k] || {}; man[k][campo] = v; }
+        }
+        guardar();
+      }
+      render();
+    };
+    inp.addEventListener("blur", () => cerrar(true));
+    inp.addEventListener("keydown", (ev) => {
+      if(ev.key === "Enter"){ ev.preventDefault(); inp.blur(); }
+      if(ev.key === "Escape"){ ev.preventDefault(); render(); }
+    });
+  });
+
+  // switch entre las dos vistas de la solapa
+  document.querySelectorAll(".pg-hdr-half").forEach(b => b.addEventListener("click", () => {
+    const v = b.dataset.pgv;
+    document.querySelectorAll(".pg-hdr-half").forEach(x => x.classList.toggle("on", x === b));
+    const pos = document.getElementById("pgv-posicion"), cob = document.getElementById("pgv-cobertura");
+    if(pos) pos.style.display = (v === "posicion") ? "" : "none";
+    if(cob) cob.style.display = (v === "cobertura") ? "" : "none";
+    if(v === "cobertura") render();
+    try{ sumRender(); }catch(e){}
+  }));
+  render();
+})();
+
 /* ============================================================
    ==== CRUCE CP - ARCA vs FINNEGANS (pedido usuario 03/09) ===
    Misma estructura que su Power BI "Cruce Cp": tarjetas de
@@ -14126,6 +14354,62 @@ def main() -> int:
         n = str(r.get("numerointerno") or "").strip()
         o = (r.get("organizacion") or "").upper()
         return any((num == "*" or n == num) and org in o for num, org in lista)
+
+    # OPERACIONES DE COBERTURA (regla usuario 03/09/2026): contratos que no son
+    # venta/compra fisica de grano sino cobertura de precio. Salen de la Posicion
+    # Granaria y se muestran aparte, con precio de entrada / salida y resultado.
+    coberturas = []
+    _cob_cfg = {"venta": [], "compra": []}
+    try:
+        _cf = Path(__file__).resolve().parent / "data" / "coberturas.json"
+        if _cf.exists():
+            for c in (json.loads(_cf.read_text(encoding="utf-8")).get("contratos") or []):
+                _cob_cfg.setdefault(c.get("tipo", "venta"), []).append(
+                    (str(c.get("numerointerno") or "").strip(),
+                     (c.get("organizacion") or "").upper(), c.get("nota", "")))
+    except Exception as e:
+        print(f"    [!] coberturas.json: {e}")
+
+    def _es_cob(r, lista):
+        n = str(r.get("numerointerno") or "").strip()
+        o = (r.get("organizacion") or "").upper()
+        return next((nota for num, org, nota in lista if n == num and org in o), None)
+
+    def _saca_coberturas(rows, tipo):
+        lista = _cob_cfg.get(tipo) or []
+        if not lista:
+            return rows
+        quedan = []
+        for r in rows:
+            nota = _es_cob(r, lista)
+            if nota is None:
+                quedan.append(r)
+                continue
+            def _n(k):
+                try: return float(r.get(k) or 0)
+                except Exception: return 0.0
+            tn = max(_n("cantidadmax"), _n("cantidadentregada") + _n("cantidadpendienteentrega"))
+            px = _n("preciopromediofijado")
+            coberturas.append({
+                "tipo": tipo,
+                "contrato": str(r.get("numerointerno") or ""),
+                "doc": r.get("numerodocumentoadicional") or r.get("numerodocumento") or "",
+                "organizacion": r.get("organizacion") or "",
+                "producto": r.get("producto") or "",
+                "campana": (r.get("campana") or r.get("cosecha") or "").replace("CAMPAÑA ", ""),
+                "fecha": r.get("fecha") or "",
+                "tn": round(tn, 2),
+                "tn_fijada": round(_n("cantidadfijada"), 2),
+                "px_entrada": round(px, 4),      # el JS lo pasa a USD por magnitud
+                "moneda": r.get("moneda") or "",
+                "nota": nota,
+            })
+            print(f"[+] Cobertura: {tipo} #{r.get('numerointerno')} {(r.get('organizacion') or '')[:26]} "
+                  f"{tn:,.0f} tn a {px:,.2f} -> fuera de la posicion")
+        return quedan
+
+    pilot_norm  = _saca_coberturas(pilot_norm, "venta")
+    compra_norm = _saca_coberturas(compra_norm, "compra")
     _ant_v, _ant_c = len(pilot_norm), len(compra_norm)
     pilot_norm  = [r for r in pilot_norm  if not _excl(r, EXCL_VENTA)]
     compra_norm = [r for r in compra_norm if not _excl(r, EXCL_COMPRA)]
@@ -15490,6 +15774,7 @@ def main() -> int:
         "fp_auto_hechas": fp_auto_hechas,
         "extranet_cta": extranet_cta,
         "arca_cruce":      arca_cruce,
+        "coberturas":      coberturas,
         "produccion_camp": produccion_camp,
         "prod_agnsj_pct": prod_agnsj_pct,
         "produccion_pend_det": produccion_pend_det,

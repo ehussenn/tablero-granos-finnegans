@@ -679,6 +679,9 @@ def consolidar_desde_cache() -> None:
             return False
         return any(vals)
     sol, par = [], []
+    # las ventanas pueden solaparse (corridas con distinto --dias): deduplico por
+    # CTG + criterio/rol para que los conteos no salgan inflados
+    vistos_s, vistos_p = set(), set()
     for f in sorted(CACHE.glob("*.json")):
         d = json.loads(f.read_text(encoding="utf-8"))
         filas = [x for x in d.get("filas", []) if limpio(x)]
@@ -687,12 +690,20 @@ def consolidar_desde_cache() -> None:
             crit = "Operador" if "_Operador_" in clave else "Productor"
             for x in filas:
                 x.setdefault("_criterio", crit)
-            sol += filas
+                k = (normaliza_ctg(x.get("CTG/CTDG")), crit)
+                if k[0] and k in vistos_s:
+                    continue
+                vistos_s.add(k)
+                sol.append(x)
         elif clave.startswith("part_"):
             rol = clave[5:].rsplit("_", 1)[0].replace("_", " ").strip()
             for x in filas:
                 x.setdefault("_rol", rol)
-            par += filas
+                k = (normaliza_ctg(x.get("CTG/CTDG")), rol)
+                if k[0] and k in vistos_p:
+                    continue
+                vistos_p.add(k)
+                par.append(x)
     guardar("solicitadas", sol)
     guardar("participantes", par)
     cons = {}

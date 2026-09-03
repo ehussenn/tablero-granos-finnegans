@@ -1,0 +1,11 @@
+{
+ "_nota": "Contratos que NO son venta/compra fisica de grano sino OPERACIONES DE COBERTURA de precio. Se sacan de la Posicion Granaria y se muestran en la vista 'Operaciones de Cobertura' con precio de entrada, precio de salida, comisiones y resultado neto. El precio de salida y las comisiones se cargan a mano en el tablero (quedan guardados en el navegador). Pedido del usuario 03/09/2026.",
+ "contratos": [
+  {
+   "tipo": "venta",
+   "numerointerno": "1419",
+   "organizacion": "ARGENTRADING",
+   "nota": "cobertura trigo 26/27 - 2.000 tn a 250 USD/tn (pedido usuario 03/09)"
+  }
+ ]
+}
