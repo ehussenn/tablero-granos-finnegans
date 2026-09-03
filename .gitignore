@@ -50,3 +50,8 @@ scripts/scraper/.allaria_profile/
 scripts/scraper/.fyo_profile/
 scripts/scraper/.intagro_profile/
 scripts/scraper/.cofco_profile/
+
+# Scripts de regeneracion RAIZ/cierre (rescatados del scratchpad 2026-08; NUNCA subir: repo publico)
+scripts/regeneradores-raiz/
+scripts/scraper/.arca_profile/
+data/arca/_dump/

@@ -1081,6 +1081,7 @@ window.apiFetch = function(path, opts){
         <div class="nav-items">
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
@@ -2188,6 +2189,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
       <button class="subtab" data-sub="pn-ctos">📑 Detalle Contratos</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
+      <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
@@ -2414,6 +2416,60 @@ window.apiFetch = function(path, opts){
 
     </div><!-- /subpanel pn-financiera -->
 
+
+
+    <!-- ===== SUBPANEL: Cruce CP - ARCA vs Finnegans ===== -->
+    <div class="subpanel" data-sub-panel="pn-arca">
+      <div class="section" style="background:linear-gradient(135deg,#1e3a5f 0%,#2b5fb3 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🚛 Cruce Cartas de Porte · ARCA vs Finnegans</h3>
+        <div style="font-size:12px;opacity:.9;margin-top:4px">
+          Cartas de porte electrónicas bajadas de ARCA (CPE Solicitadas · Productor y Operador/Planta, y CPE Participante en todos los roles)
+          cruzadas por CTG contra los traslados de grano de Finnegans. Un CTG figura como <b>no ingresado</b> solo si no aparece en ninguna punta de Finnegans.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="arca-chips"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start">
+        <!-- columna izquierda: tarjetas + filtro + desgloses (como el Power BI) -->
+        <div>
+          <div class="section" style="margin:0 0 12px">
+            <div id="arca-kpis" style="display:grid;gap:10px"></div>
+          </div>
+          <div class="section" style="margin:0 0 12px">
+            <h3 style="font-size:13px">Estado <span class="badge" id="arca-est-meta"></span></h3>
+            <div id="arca-estados" style="display:grid;gap:5px;max-height:210px;overflow:auto"></div>
+          </div>
+          <div class="section" style="margin:0 0 12px">
+            <h3 style="font-size:13px">No ingresados por Cultivo</h3>
+            <div class="tbl-wrap"><table id="arca-tbl-cultivo" style="font-size:12px"><thead></thead><tbody></tbody></table></div>
+          </div>
+          <div class="section" style="margin:0">
+            <h3 style="font-size:13px">No ingresados por Origen</h3>
+            <div class="tbl-wrap"><table id="arca-tbl-origen" style="font-size:12px"><thead></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- columna derecha: detalle -->
+        <div class="section" style="margin:0">
+          <div class="filterbar" style="margin:0 0 10px">
+            <div><label>VISTA</label><select id="arca-vista">
+              <option value="faltan">CP a ingresar en Finnegans</option>
+              <option value="sin_arca">Cargadas en Finnegans sin CPE en ARCA</option>
+              <option value="difs">Kg declarados (CPE) vs descargados (Finnegans)</option>
+            </select></div>
+            <div><label>CULTIVO</label><select id="arca-cultivo"><option value="">Todos</option></select></div>
+            <div><label>BUSCAR</label><input id="arca-txt" placeholder="CP / CTG / patente / CUIT"
+              style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <button class="clear" id="arca-limpiar">Limpiar</button>
+            <span style="margin-left:auto;color:var(--muted);font-size:12px" id="arca-info"></span>
+          </div>
+          <div class="tbl-wrap" style="max-height:660px">
+            <table id="arca-tabla" style="font-size:11.5px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+          </div>
+          <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="arca-nota"></div>
+        </div>
+      </div>
+    </div><!-- /subpanel pn-arca -->
 
     <!-- ===== SUBPANEL: Taqueo CTG ===== -->
     <div class="subpanel" data-sub-panel="pn-taqueo">
@@ -9942,6 +9998,169 @@ document.addEventListener('click', (e) => {
   if(e.target.closest('.tab, .subtab, .nav-item')) setTimeout(sumRender, 80);
 });
 
+
+/* ============================================================
+   ==== CRUCE CP - ARCA vs FINNEGANS (pedido usuario 03/09) ===
+   Misma estructura que su Power BI "Cruce Cp": tarjetas de
+   camiones y tn no ingresados, filtro por Estado, desgloses por
+   Cultivo y por Origen, y la tabla de detalle con
+   CartaPorte / CTG / Fecha / Cultivo / Kg / Estado / Origen /
+   Existe_en_Finnegans.
+   Fuente: data/arca_cruce.json (scripts/arca_cpe_scraper.py baja
+   ARCA y scripts/arca_ctg_cruce.py hace el cruce por CTG).
+   ============================================================ */
+(() => {
+  const A = PAYLOAD.arca_cruce;
+  const ESTADOS_OK = new Set(["Confirmada","Activa","Activa con confirmacion de arribo",
+                              "Activa con contingencia","Descargado en destino"]);
+  let estSel = new Set();      // estados tildados (vacio = todos)
+
+  const n0 = x => fmt.num(Math.round(x || 0));
+  const n1 = x => fmt.num(x || 0, 1);
+
+  function filas(){
+    const v = document.getElementById("arca-vista").value;
+    let rs = (A[v] || []).slice();
+    if(v === "faltan" && estSel.size) rs = rs.filter(r => estSel.has(r.Estado || "-"));
+    const cu = document.getElementById("arca-cultivo").value;
+    if(cu) rs = rs.filter(r => (r.Cultivo || "-") === cu);
+    const q = (document.getElementById("arca-txt").value || "").trim().toLowerCase();
+    if(q) rs = rs.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+    return rs;
+  }
+
+  function kpis(){
+    const k = A.kpi, c = document.getElementById("arca-kpis");
+    const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
+        border-left:5px solid ${col||'#94a3b8'};border-radius:11px;padding:12px 14px">
+      <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
+      <div style="font-size:26px;font-weight:800;color:${col||'var(--ink)'};line-height:1.15;margin-top:4px">${val}</div>
+      <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
+    c.innerHTML =
+      card("Camiones no ingresados", n0(k.no_ingresados), `${n1(k.no_ingresados_tn)} tn en total`, "#b3372b") +
+      card("A ingresar de verdad", n0(k.a_ingresar), `${n1(k.a_ingresar_tn)} tn \u00b7 solo estados activos/confirmados`, "#a97b12") +
+      card("En Finnegans sin CPE", n0(k.sin_arca), "referencial: la bajada de participantes filtra estado Confirmada", "#68737f") +
+      card("CTG cruzados OK", n0((k.arca_ctg || 0) - (k.no_ingresados || 0)), "están en ARCA y en Finnegans", "#1a7a3c");
+    document.getElementById("arca-chips").innerHTML =
+      [`ARCA: ${n0(k.arca_ctg)} CTG`, `Finnegans: ${n0(k.fnn_ctg)} CTG`,
+       `rango ${A.rango_arca[0] || "?"} a ${A.rango_arca[1] || "?"}`,
+       `actualizado ${(A.generado || "").replace("T", " ").slice(0, 16)}`]
+      .map(t => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(t)}</span>`).join("");
+  }
+
+  function estados(){
+    const c = document.getElementById("arca-estados");
+    const ent = Object.entries(A.por_estado || {});
+    c.innerHTML = ent.map(([e, d]) => {
+      const on = estSel.has(e), ok = ESTADOS_OK.has(e);
+      return `<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;cursor:pointer;
+              background:${on ? '#e8f0fb' : 'transparent'};border:1px solid ${on ? '#b8d0ee' : 'var(--line)'}">
+        <input type="checkbox" data-est="${escapeHtml(e)}" ${on ? "checked" : ""} style="cursor:pointer">
+        <span style="flex:1;font-size:12px;font-weight:${ok ? 700 : 400};color:${ok ? '#b3372b' : 'var(--muted)'}">${escapeHtml(e || "-")}</span>
+        <b style="font-size:12px;font-variant-numeric:tabular-nums">${n0(d.camiones)}</b>
+      </label>`;
+    }).join("") || '<div style="color:var(--muted);font-size:12px">sin datos</div>';
+    document.getElementById("arca-est-meta").textContent =
+      estSel.size ? `${estSel.size} filtrado(s)` : "todos";
+    c.querySelectorAll("input[data-est]").forEach(i => i.addEventListener("change", () => {
+      const e = i.dataset.est;
+      if(i.checked) estSel.add(e); else estSel.delete(e);
+      render();
+    }));
+  }
+
+  function desglose(id, dic, lbl){
+    const t = document.getElementById(id);
+    const ent = Object.entries(dic || {});
+    t.querySelector("thead").innerHTML =
+      `<tr><th>${lbl}</th><th class="num">Camiones</th><th class="num">Tn</th></tr>`;
+    t.querySelector("tbody").innerHTML = ent.map(([k, d]) =>
+      `<tr><td>${escapeHtml(k)}</td><td class="num">${n0(d.camiones)}</td><td class="num">${n1(d.tn)}</td></tr>`
+    ).join("") || '<tr><td colspan="3" style="color:var(--muted)">sin datos</td></tr>';
+  }
+
+  const COLS = {
+    faltan: [["CartaPorte","Carta de Porte"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Cultivo"],
+             ["Kg","Kg",1],["Estado","Estado"],["Origen","Origen"],["patente","Patente"],
+             ["cuit_solicitante","CUIT solicitante"],["Existe_en_Finnegans","En Finnegans"]],
+    sin_arca: [["CartaPorte","Comprobante"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Grano"],
+               ["Kg","Kg",1],["Flujo","Flujo"],["Organizacion","Contraparte"],["Estado","Estado CTG"]],
+    difs: [["CartaPorte","Carta de Porte"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Cultivo"],
+           ["Kg","Kg ARCA",1],["kg_fnn","Kg Finnegans",1],["dif_kg","Diferencia",1],
+           ["flujo_fnn","Flujo"],["Estado","Estado"]],
+  };
+
+  function tabla(){
+    const v = document.getElementById("arca-vista").value;
+    const cols = COLS[v], rs = filas();
+    const t = document.getElementById("arca-tabla");
+    t.querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
+      `<th${c[2] ? ' class="num"' : ""}>${c[1]}</th>`).join("") + "</tr>";
+    t.querySelector("tbody").innerHTML = rs.slice(0, 1500).map(r => "<tr>" + cols.map(c => {
+      let val = r[c[0]];
+      if(c[2]) val = n0(val);
+      else if(c[0] === "Estado") {
+        const ok = ESTADOS_OK.has(r.Estado);
+        val = `<span style="font-weight:${ok ? 700 : 400};color:${ok ? '#b3372b' : 'var(--muted)'}">${escapeHtml(String(val || "-"))}</span>`;
+      } else if(c[0] === "Existe_en_Finnegans") {
+        val = r[c[0]] === "No" ? '<span style="color:#b3372b;font-weight:700">No</span>' : '<span style="color:#1a7a3c">S\u00ed</span>';
+      } else if(c[0] === "dif_kg") {
+        const d = Number(r.dif_kg) || 0;
+        val = `<span style="color:${d < 0 ? '#b3372b' : '#1a7a3c'};font-weight:700">${n0(d)}</span>`;
+      } else val = escapeHtml(String(val == null ? "-" : val));
+      return `<td${c[2] ? ' class="num"' : ""} title="${escapeHtml(String(r[c[0]] == null ? "" : r[c[0]]))}">${val}</td>`;
+    }).join("") + "</tr>").join("") ||
+      '<tr><td colspan="99" style="padding:24px;text-align:center;color:var(--muted)">Sin filas para este filtro.</td></tr>';
+    const tn = rs.reduce((a, r) => a + (Number(r.Kg) || 0), 0) / 1000;
+    t.querySelector("tfoot").innerHTML = rs.length
+      ? `<tr class="pn-total"><td colspan="4">TOTAL (${n0(rs.length)} camiones)</td><td class="num">${n0(tn * 1000)}</td><td colspan="99"></td></tr>` : "";
+    document.getElementById("arca-info").textContent =
+      `${n0(rs.length)} camiones \u00b7 ${n1(tn)} tn` + (rs.length > 1500 ? " (muestro los primeros 1.500)" : "");
+    const notas = {
+      faltan: "Cartas de porte que est\u00e1n en ARCA y <b>no</b> aparecen en Finnegans (ni en venta ni en compra). Los estados en rojo son los que realmente hay que ingresar; anuladas, rechazadas y desactivadas no generan movimiento.",
+      sin_arca: "Traslados cargados en Finnegans cuyo CTG no aparece en lo bajado de ARCA, dentro del mismo rango de fechas. <b>Ojo</b>: depende de qué roles y estados se bajaron de ARCA; si falta algún rol, acá aparecen camiones que en realidad sí tienen CPE.",
+      difs: "CTG que est\u00e1n en las dos puntas pero con m\u00e1s de 50 kg de diferencia entre los kilos de la CPE y los de Finnegans.",
+    };
+    document.getElementById("arca-nota").innerHTML = "💡 " + notas[v];
+  }
+
+  function cultivos(){
+    const sel = document.getElementById("arca-cultivo"), prev = sel.value;
+    const v = document.getElementById("arca-vista").value;
+    const cs = [...new Set((A[v] || []).map(r => r.Cultivo || "-"))].sort();
+    sel.innerHTML = '<option value="">Todos</option>' +
+      cs.map(c => `<option${c === prev ? " selected" : ""}>${escapeHtml(c)}</option>`).join("");
+  }
+
+  function render(){
+    if(!A){
+      document.getElementById("arca-kpis").innerHTML =
+        '<div style="color:var(--muted)">Todav\u00eda no hay bajada de ARCA en este build. Corr\u00e9 <code>py scripts/arca_cpe_scraper.py</code> y despu\u00e9s <code>py scripts/arca_ctg_cruce.py --cruce</code>.</div>';
+      return;
+    }
+    kpis(); estados();
+    desglose("arca-tbl-cultivo", A.por_cultivo, "Cultivo");
+    desglose("arca-tbl-origen", A.por_origen, "Origen");
+    tabla();
+  }
+
+  ["arca-vista"].forEach(id => { const e = document.getElementById(id);
+    if(e) e.addEventListener("change", () => { cultivos(); tabla(); }); });
+  ["arca-cultivo"].forEach(id => { const e = document.getElementById(id);
+    if(e) e.addEventListener("change", tabla); });
+  const tx = document.getElementById("arca-txt");
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(tabla, 250); });
+  const lm = document.getElementById("arca-limpiar");
+  if(lm) lm.addEventListener("click", () => {
+    estSel = new Set();
+    document.getElementById("arca-cultivo").value = "";
+    document.getElementById("arca-txt").value = "";
+    render();
+  });
+  document.querySelectorAll('[data-go-sub="pn-arca"], .subtab[data-sub="pn-arca"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(() => { cultivos(); render(); }, 50)));
+})();
+
 /* ===== ORDEN POR ENCABEZADO en tablas de detalle =====
    Click en un encabezado de la pestaña Detalle Contratos o de cualquier tabla de
    drill-down ordena por esa columna (asc ▲ ⇄ desc ▼). Entiende números formato
@@ -14796,6 +15015,22 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] taqueo_liquidar.json: {e}")
 
+    # Cruce CP ARCA vs Finnegans (lo genera scripts/arca_ctg_cruce.py --cruce,
+    # que a su vez consume lo que baja scripts/arca_cpe_scraper.py de ARCA)
+    print(f"\n[+] Cargando cruce CP ARCA vs Finnegans (si existe)...", flush=True)
+    arca_cruce = None
+    _ac = Path(__file__).resolve().parent / "data" / "arca_cruce.json"
+    if _ac.exists():
+        try:
+            arca_cruce = json.loads(_ac.read_text(encoding="utf-8"))
+            _k = arca_cruce.get("kpi", {})
+            print(f"    -> ARCA {_k.get('arca_ctg')} CTG vs Finnegans {_k.get('fnn_ctg')} CTG · "
+                  f"no ingresados {_k.get('no_ingresados')} (a ingresar {_k.get('a_ingresar')})")
+        except Exception as e:
+            print(f"    [!] arca_cruce.json: {e}")
+    else:
+        print("    -> sin archivo todavia (corre scripts/arca_cpe_scraper.py y despues --cruce)")
+
     # Producción por campaña/cultivo desde el Portal de Producción de Agronasaja (app pública)
     print(f"\n[+] Bajando Producción (Portal de Producción Agronasaja)...", flush=True)
     produccion_camp, produccion_pend_det, prod_agnsj_pct = fetch_produccion()
@@ -15091,6 +15326,7 @@ def main() -> int:
         "counts": counts,
         "fp_auto_hechas": fp_auto_hechas,
         "extranet_cta": extranet_cta,
+        "arca_cruce":      arca_cruce,
         "produccion_camp": produccion_camp,
         "prod_agnsj_pct": prod_agnsj_pct,
         "produccion_pend_det": produccion_pend_det,
