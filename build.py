@@ -680,6 +680,12 @@ window.apiFetch = function(path, opts){
 
   /* tabla */
   .tbl-wrap{overflow:auto;max-height:620px;border:1px solid var(--line);border-radius:8px}
+  /* Cruce CP ARCA: la tabla tiene muchas columnas -> encabezados en dos lineas
+     y ancho al 100% para que no quede ninguna cortada (pedido usuario 03/09) */
+  #arca-tabla{width:100%;table-layout:auto}
+  #arca-tabla thead th{white-space:normal;line-height:1.15;vertical-align:bottom;padding:6px 7px;font-size:9.5px}
+  #arca-tabla tbody td{padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+  #arca-tabla tbody td:first-child,#arca-tabla tbody td:nth-child(2){white-space:nowrap;max-width:none}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
   thead th{background:var(--blue);color:#fff;text-align:left;padding:9px 10px;position:sticky;top:0;cursor:pointer;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none}
   thead th:hover{background:#172e6b}
@@ -2460,7 +2466,12 @@ window.apiFetch = function(path, opts){
             <div><label>CULTIVO</label><select id="arca-cultivo"><option value="">Todos</option></select></div>
             <div><label>BUSCAR</label><input id="arca-txt" placeholder="CP / CTG / patente / CUIT"
               style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <div><label>DESDE</label><input type="date" id="arca-desde"
+              style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <div><label>HASTA</label><input type="date" id="arca-hasta"
+              style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
             <button class="clear" id="arca-limpiar">Limpiar</button>
+            <button class="clear" id="arca-excel" title="Baja la tabla que estás viendo, con los filtros puestos">⬇ Exportar a Excel</button>
             <span style="margin-left:auto;color:var(--muted);font-size:12px" id="arca-info"></span>
           </div>
           <div class="tbl-wrap" style="max-height:660px">
@@ -10018,10 +10029,27 @@ document.addEventListener('click', (e) => {
   const n0 = x => fmt.num(Math.round(x || 0));
   const n1 = x => fmt.num(x || 0, 1);
 
-  function filas(){
-    const v = document.getElementById("arca-vista").value;
+  // las fechas vienen dd/mm/aaaa (ARCA) o dd-mm-aaaa (Finnegans) -> aaaammdd
+  function fnum(s){
+    const m = String(s || "").match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if(m) return Number(m[3] + m[2].padStart(2, "0") + m[1].padStart(2, "0"));
+    const i = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);   // aaaa-mm-dd
+    return i ? Number(i[1] + i[2] + i[3]) : 0;
+  }
+  const limNum = id => {
+    const v = (document.getElementById(id) || {}).value || "";
+    return v ? Number(v.replace(/-/g, "")) : 0;
+  };
+
+  // base: todo menos el filtro de Estado (para que los conteos de Estado sirvan)
+  function base(v){
     let rs = (A[v] || []).slice();
-    if(v === "faltan" && estSel.size) rs = rs.filter(r => estSel.has(r.Estado || "-"));
+    const d1 = limNum("arca-desde"), d2 = limNum("arca-hasta");
+    if(d1 || d2) rs = rs.filter(r => {
+      const f = fnum(r.Fecha);
+      if(!f) return false;
+      return (!d1 || f >= d1) && (!d2 || f <= d2);
+    });
     const cu = document.getElementById("arca-cultivo").value;
     if(cu) rs = rs.filter(r => (r.Cultivo || "-") === cu);
     const q = (document.getElementById("arca-txt").value || "").trim().toLowerCase();
@@ -10029,16 +10057,41 @@ document.addEventListener('click', (e) => {
     return rs;
   }
 
+  function filas(){
+    const v = document.getElementById("arca-vista").value;
+    let rs = base(v);
+    if(v === "faltan" && estSel.size) rs = rs.filter(r => estSel.has(r.Estado || "-"));
+    return rs;
+  }
+
+  function agrupa(rows, campo){
+    const m = {};
+    rows.forEach(r => {
+      const k = r[campo] || "-";
+      (m[k] = m[k] || {camiones: 0, tn: 0}).camiones++;
+      m[k].tn += (Number(r.Kg) || 0) / 1000;
+    });
+    return Object.fromEntries(Object.entries(m).sort((a, b) => b[1].camiones - a[1].camiones));
+  }
+
   function kpis(){
     const k = A.kpi, c = document.getElementById("arca-kpis");
+    const fl = base("faltan");                       // respeta fecha / cultivo / busqueda
+    const fTn = fl.reduce((a, r) => a + (Number(r.Kg) || 0), 0) / 1000;
+    const ai = fl.filter(r => r.a_ingresar);
+    const aiTn = ai.reduce((a, r) => a + (Number(r.Kg) || 0), 0) / 1000;
+    const filtrando = !!(limNum("arca-desde") || limNum("arca-hasta")
+                         || document.getElementById("arca-cultivo").value
+                         || (document.getElementById("arca-txt").value || "").trim());
+    const suf = filtrando ? " (filtrado)" : "";
     const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
         border-left:5px solid ${col||'#94a3b8'};border-radius:11px;padding:12px 14px">
       <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
       <div style="font-size:26px;font-weight:800;color:${col||'var(--ink)'};line-height:1.15;margin-top:4px">${val}</div>
       <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
     c.innerHTML =
-      card("Camiones no ingresados", n0(k.no_ingresados), `${n1(k.no_ingresados_tn)} tn en total`, "#b3372b") +
-      card("A ingresar de verdad", n0(k.a_ingresar), `${n1(k.a_ingresar_tn)} tn \u00b7 solo estados activos/confirmados`, "#a97b12") +
+      card("Camiones no ingresados" + suf, n0(fl.length), `${n1(fTn)} tn en total`, "#b3372b") +
+      card("A ingresar de verdad" + suf, n0(ai.length), `${n1(aiTn)} tn \u00b7 solo estados activos/confirmados`, "#a97b12") +
       card("En Finnegans sin CPE", n0(k.sin_arca), "referencial: la bajada de participantes filtra estado Confirmada", "#68737f") +
       card("CTG cruzados OK", n0((k.arca_ctg || 0) - (k.no_ingresados || 0)), "están en ARCA y en Finnegans", "#1a7a3c");
     document.getElementById("arca-chips").innerHTML =
@@ -10050,7 +10103,7 @@ document.addEventListener('click', (e) => {
 
   function estados(){
     const c = document.getElementById("arca-estados");
-    const ent = Object.entries(A.por_estado || {});
+    const ent = Object.entries(agrupa(base("faltan"), "Estado"));
     c.innerHTML = ent.map(([e, d]) => {
       const on = estSel.has(e), ok = ESTADOS_OK.has(e);
       return `<label style="display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;cursor:pointer;
@@ -10082,7 +10135,7 @@ document.addEventListener('click', (e) => {
   const COLS = {
     faltan: [["CartaPorte","Carta de Porte"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Cultivo"],
              ["Kg","Kg",1],["Estado","Estado"],["Origen","Origen"],["patente","Patente"],
-             ["cuit_solicitante","CUIT solicitante"],["Existe_en_Finnegans","En Finnegans"]],
+             ["cuit_solicitante","CUIT solic."],["Existe_en_Finnegans","En Finnegans"]],
     sin_arca: [["CartaPorte","Comprobante"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Grano"],
                ["Kg","Kg",1],["Flujo","Flujo"],["Organizacion","Contraparte"],["Estado","Estado CTG"]],
     difs: [["CartaPorte","Carta de Porte"],["CTG","CTG"],["Fecha","Fecha"],["Cultivo","Cultivo"],
@@ -10124,6 +10177,32 @@ document.addEventListener('click', (e) => {
     document.getElementById("arca-nota").innerHTML = "💡 " + notas[v];
   }
 
+
+  // Exporta a Excel lo que se esta viendo (respeta fecha, cultivo, estado y busqueda).
+  // CSV con BOM y ; como separador: Excel en castellano lo abre en columnas solo.
+  function exportar(){
+    const v = document.getElementById("arca-vista").value;
+    const cols = COLS[v], rs = filas();
+    if(!rs.length){ alert("No hay filas para exportar con estos filtros."); return; }
+    const esc = x => {
+      let t = String(x == null ? "" : x);
+      if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"';
+      return t;
+    };
+    const num = x => String(x == null ? "" : x).replace(".", ",");   // decimal es-AR
+    const lineas = [cols.map(c => esc(c[1])).join(";")];
+    rs.forEach(r => lineas.push(cols.map(c => esc(c[2] ? num(r[c[0]]) : r[c[0]])).join(";")));
+    const nom = {faltan: "CP-a-ingresar", sin_arca: "En-Finnegans-sin-CPE",
+                 difs: "Kg-declarados-vs-descargados"}[v] || v;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(["\ufeff" + lineas.join("\r\n")], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Cruce-CP-ARCA_${nom}_${hoy}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
   function cultivos(){
     const sel = document.getElementById("arca-cultivo"), prev = sel.value;
     const v = document.getElementById("arca-vista").value;
@@ -10139,22 +10218,27 @@ document.addEventListener('click', (e) => {
       return;
     }
     kpis(); estados();
-    desglose("arca-tbl-cultivo", A.por_cultivo, "Cultivo");
-    desglose("arca-tbl-origen", A.por_origen, "Origen");
+    const fl = base("faltan");
+    desglose("arca-tbl-cultivo", agrupa(fl, "Cultivo"), "Cultivo");
+    desglose("arca-tbl-origen", agrupa(fl, "Origen"), "Origen");
     tabla();
   }
 
   ["arca-vista"].forEach(id => { const e = document.getElementById(id);
     if(e) e.addEventListener("change", () => { cultivos(); tabla(); }); });
-  ["arca-cultivo"].forEach(id => { const e = document.getElementById(id);
-    if(e) e.addEventListener("change", tabla); });
+  ["arca-cultivo", "arca-desde", "arca-hasta"].forEach(id => { const e = document.getElementById(id);
+    if(e) e.addEventListener("change", render); });
   const tx = document.getElementById("arca-txt");
-  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(tabla, 250); });
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
+  const xl = document.getElementById("arca-excel");
+  if(xl) xl.addEventListener("click", exportar);
   const lm = document.getElementById("arca-limpiar");
   if(lm) lm.addEventListener("click", () => {
     estSel = new Set();
     document.getElementById("arca-cultivo").value = "";
     document.getElementById("arca-txt").value = "";
+    document.getElementById("arca-desde").value = "";
+    document.getElementById("arca-hasta").value = "";
     render();
   });
   document.querySelectorAll('[data-go-sub="pn-arca"], .subtab[data-sub="pn-arca"]')
