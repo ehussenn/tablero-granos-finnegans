@@ -1119,6 +1119,7 @@ window.apiFetch = function(path, opts){
         <div class="nav-items">
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arcaliq" data-title="Cruce Liquidaciones · ARCA vs Finnegans">🧾 Cruce Liquidaciones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
@@ -2227,6 +2228,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
       <button class="subtab" data-sub="pn-ctos">📑 Detalle Contratos</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
+      <button class="subtab" data-sub="pn-arcaliq">🧾 Cruce Liquidaciones</button>
       <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
@@ -2487,6 +2489,75 @@ window.apiFetch = function(path, opts){
     </div><!-- /subpanel pn-financiera -->
 
 
+
+
+    <!-- ===== SUBPANEL: Cruce LIQUIDACIONES - ARCA vs Finnegans ===== -->
+    <div class="subpanel" data-sub-panel="pn-arcaliq">
+      <div class="section" style="background:linear-gradient(135deg,#155e4b 0%,#0f766e 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🧾 Cruce Liquidaciones · ARCA vs Finnegans</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.45">
+          Liquidación <b>Primaria</b> y <b>Secundaria</b> de Granos bajadas de ARCA con la firma AGRONASAJA SRL
+          (emitidas y recibidas) y cruzadas por <b>COE</b> contra las liquidaciones de Finnegans.
+          Una liquidación figura como <b>falta ingresar</b> solo si su COE no aparece en ninguna punta de Finnegans.
+          Las <b>anuladas</b> no se cuentan como pendientes.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="aliq-chips"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start">
+        <!-- columna izquierda -->
+        <div>
+          <div class="section" style="margin:0 0 12px">
+            <div id="aliq-kpis" style="display:grid;gap:10px"></div>
+          </div>
+          <div class="section" style="margin:0 0 12px">
+            <h3 style="font-size:13px">Las cuatro solapas <span class="badge" id="aliq-sol-meta"></span></h3>
+            <div style="font-size:11px;color:var(--muted);margin:-4px 0 7px">Click para filtrar el detalle</div>
+            <div id="aliq-solapas" style="display:grid;gap:5px"></div>
+          </div>
+          <div class="section" style="margin:0 0 12px">
+            <h3 style="font-size:13px">Faltan por contraparte</h3>
+            <div class="tbl-wrap"><table id="aliq-tbl-org" style="font-size:12px"><thead></thead><tbody></tbody></table></div>
+          </div>
+          <div class="section" style="margin:0">
+            <h3 style="font-size:13px">Faltan por sistema de emisión</h3>
+            <div style="font-size:11px;color:var(--muted);margin:-4px 0 7px">WS = la emitió un sistema (Finnegans) · WEB = la cargaron a mano en ARCA</div>
+            <div class="tbl-wrap"><table id="aliq-tbl-sis" style="font-size:12px"><thead></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- columna derecha: detalle -->
+        <div class="section" style="margin:0">
+          <div class="filterbar" style="margin:0 0 10px">
+            <div><label>VISTA</label><select id="aliq-vista">
+              <option value="faltan">Liquidaciones a ingresar en Finnegans</option>
+              <option value="filas">Todas las de ARCA (con su estado de cruce)</option>
+              <option value="mal_tipeados">COE a revisar en Finnegans (mal tipeado / duplicado)</option>
+              <option value="sin_arca">Cargadas en Finnegans sin liquidación en ARCA</option>
+            </select></div>
+            <div><label>LADO</label><select id="aliq-lado">
+              <option value="">Compra y venta</option>
+              <option value="venta">Venta</option>
+              <option value="compra">Compra</option>
+            </select></div>
+            <div><label>BUSCAR</label><input id="aliq-txt" placeholder="COE / CUIT / razón social / documento"
+              style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <div><label>DESDE</label><input type="date" id="aliq-desde"
+              style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <div><label>HASTA</label><input type="date" id="aliq-hasta"
+              style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            <button class="clear" id="aliq-limpiar">Limpiar</button>
+            <button class="clear" id="aliq-excel" title="Baja la tabla que estás viendo, con los filtros puestos">⬇ Exportar a Excel</button>
+            <button class="clear" id="aliq-copiar" title="Copia los COE de todas las filas que estás viendo, uno por línea">⧉ Copiar COEs</button>
+            <span style="margin-left:auto;color:var(--muted);font-size:12px" id="aliq-info"></span>
+          </div>
+          <div class="tbl-wrap" style="max-height:660px">
+            <table id="aliq-tabla" style="font-size:11.5px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+          </div>
+          <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="aliq-nota"></div>
+        </div>
+      </div>
+    </div><!-- /subpanel pn-arcaliq -->
 
     <!-- ===== SUBPANEL: Cruce CP - ARCA vs Finnegans ===== -->
     <div class="subpanel" data-sub-panel="pn-arca">
@@ -10246,6 +10317,309 @@ document.addEventListener('click', (e) => {
 })();
 
 /* ============================================================
+   === CRUCE LIQUIDACIONES - ARCA vs FINNEGANS (pedido 04/09) ==
+   Las cuatro solapas del servicio "Liquidacion primaria de
+   granos" de ARCA con la firma AGRONASAJA SRL:
+       LPG recibidas / LSG emitidas      -> ventas
+       LPG emitidas  / LSG recibidas     -> compras
+   cruzadas por COE contra las liquidaciones de Finnegans
+   (7 series de la API de transacciones + el DW de venta).
+   Fuente: data/arca_liq_cruce.json
+     scripts/arca_lpg_scraper.py  baja ARCA
+     scripts/finn_liq_coes.py     junta los COE de Finnegans
+     scripts/arca_liq_cruce.py    hace el cruce
+   ============================================================ */
+(() => {
+  const L = PAYLOAD.arca_liq;
+  let solSel = "";        // solapa elegida con un click
+  let orgSel = "";        // contraparte elegida con un click
+  let sisSel = "";        // WS / WEB elegido con un click
+
+  const n0 = x => fmt.num(Math.round(x || 0));
+  const n1 = x => fmt.num(x || 0, 1);
+  const fdmy = s => {
+    const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : (s || "-");
+  };
+  const fnum = s => {
+    const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? Number(m[1] + m[2] + m[3]) : 0;
+  };
+  const limNum = id => {
+    const v = (document.getElementById(id) || {}).value || "";
+    return v ? Number(v.replace(/-/g, "")) : 0;
+  };
+  const anulada = e => /anulad/i.test(e || "");
+
+  // Columnas de cada vista: [campo, titulo, esNumero]
+  const COLS = {
+    faltan: [["fecha","Fecha",0],["coe","COE",0],["tipoTxt","Liquidación",0],["ladoTxt","Lado",0],
+             ["sistema","Sistema",0],["nombre","Contraparte",0],["cuit","CUIT",0],
+             ["operacion","Tipo de operación",0],["estado","Estado ARCA",0],["solapaTxt","Solapa",0]],
+    filas:  [["fecha","Fecha",0],["coe","COE",0],["tipoTxt","Liquidación",0],["ladoTxt","Lado",0],
+             ["sistema","Sistema",0],["nombre","Contraparte",0],["cuit","CUIT",0],
+             ["operacion","Tipo de operación",0],["estado","Estado ARCA",0],
+             ["cruceTxt","¿En Finnegans?",0],["doc_fnn","Documento Finnegans",0],["tn_fnn","Tn",1]],
+    sin_arca:[["fecha","Fecha",0],["coe","COE",0],["documento","Documento Finnegans",0],
+              ["lado","Lado",0],["organizacion","Organización",0],["grano","Grano",0],
+              ["estado","Estado",0],["tn","Tn",1]],
+    mal_tipeados:[["fecha","Fecha",0],["documento","Documento Finnegans",0],
+                  ["coe_fnn","COE cargado",0],["coe_arca","COE real en ARCA",0],
+                  ["motivo","Diferencia",0],["diagnostico","Qué pasó",0],
+                  ["organizacion","Organización",0],["lado","Lado",0]],
+  };
+
+  const SOLAPA_TXT = {};
+  (L && L.solapas || []).forEach(s => SOLAPA_TXT[s.clave] = s.etiqueta);
+
+  // enriquece una fila con los textos que se muestran
+  function deco(r, v){
+    const o = Object.assign({}, r);
+    if(v === "mal_tipeados"){
+      o.coe = r.coe_arca;                  // el COE que sirve para buscar en ARCA
+      o.nombre = r.organizacion || "";
+    }
+    if(v !== "sin_arca" && v !== "mal_tipeados"){
+      o.tipoTxt = r.tipo === "primaria" ? "Primaria (LPG)" : "Secundaria (LSG)";
+      o.ladoTxt = r.lado === "venta" ? "Venta" : (r.lado === "compra" ? "Compra" : "-");
+      o.solapaTxt = SOLAPA_TXT[r.consulta] || r.consulta;
+      o.cruceTxt = r.en_fnn ? "Sí" : (anulada(r.estado) ? "Anulada" : "NO — falta ingresar");
+    }
+    return o;
+  }
+
+  // base: aplica los filtros; "omitir" saltea una dimension para que cada desglose
+  // siga mostrando sus otras opciones (cruzado, como en su Power BI)
+  function base(v, omitir){
+    omitir = omitir || {};
+    let rs = (L && L[v] || []).map(r => deco(r, v));
+    const d1 = limNum("aliq-desde"), d2 = limNum("aliq-hasta");
+    if(d1 || d2) rs = rs.filter(r => { const f = fnum(r.fecha);
+      if(!f) return false; return (!d1 || f >= d1) && (!d2 || f <= d2); });
+    const lado = (document.getElementById("aliq-lado") || {}).value || "";
+    if(lado) rs = rs.filter(r => (r.lado || "") === lado);
+    const propias = (v !== "sin_arca" && v !== "mal_tipeados");
+    if(solSel && !omitir.solapa && propias) rs = rs.filter(r => r.consulta === solSel);
+    if(orgSel && !omitir.org) rs = rs.filter(r => (r.nombre || r.organizacion || "-") === orgSel);
+    if(sisSel && !omitir.sis && propias) rs = rs.filter(r => (r.sistema || "-") === sisSel);
+    const q = ((document.getElementById("aliq-txt") || {}).value || "").trim().toLowerCase();
+    if(q) rs = rs.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+    return rs;
+  }
+
+  const filas = () => base((document.getElementById("aliq-vista") || {}).value || "faltan");
+
+  function kpis(){
+    const k = L.kpi, c = document.getElementById("aliq-kpis");
+    const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
+        border-left:5px solid ${col||'#94a3b8'};border-radius:11px;padding:12px 14px">
+      <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
+      <div style="font-size:26px;font-weight:800;color:${col||'var(--ink)'};line-height:1.15;margin-top:4px">${val}</div>
+      <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
+    c.innerHTML =
+      card("Faltan ingresar", n0(k.faltan), "COE de ARCA que no est\u00e1n en Finnegans", "#b3372b") +
+      card("De venta", n0(k.faltan_venta), "liquidaciones que le emitieron \u2014 hay que pasarlas", "#a97b12") +
+      card("De compra", n0(k.faltan_compra), "liquidaciones que emiti\u00f3 Agronasaja", "#7c3aed") +
+      card("Cruzadas OK", n0(k.en_fnn), `de ${n0(k.activas)} liquidaciones activas en ARCA`, "#1a7f4b") +
+      card("COE a revisar", n0((k.mal_tipeados || 0) + (k.sin_arca || 0)),
+           `${n0(k.mal_tipeados || 0)} mal tipeados o duplicados \u00b7 ${n0(k.sin_arca || 0)} sin liquidaci\u00f3n en ARCA`, "#2b5fb3");
+    document.getElementById("aliq-chips").innerHTML =
+      [`ARCA: ${n0(k.arca_coes)} COE`, `Finnegans: ${n0(k.fnn_coes)} COE`,
+       `anuladas ${n0(k.anuladas)}`,
+       `rango ${fdmy((L.rango_arca||[])[0])} a ${fdmy((L.rango_arca||[])[1])}`,
+       `actualizado ${String(L.generado||"").replace("T"," ").slice(0,16)}`]
+      .map(t => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(t)}</span>`).join("");
+  }
+
+  // las cuatro solapas (mas las dos complementarias), clickeables
+  function solapas(){
+    const cont = document.getElementById("aliq-solapas");
+    const ss = (L.solapas || []);
+    cont.innerHTML = ss.map(s => {
+      const on = solSel === s.clave;
+      const col = s.faltan ? "#b3372b" : "#1a7f4b";
+      return `<div class="aliq-sol" data-sol="${s.clave}" title="${escapeHtml(s.ayuda||"")}"
+          style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;cursor:pointer;
+                 border:1px solid ${on ? "#0f766e" : "var(--line)"};background:${on ? "rgba(15,118,110,.10)" : "var(--bg2)"}">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(s.etiqueta)}</div>
+          <div style="font-size:10.5px;color:var(--muted)">${s.lado === "venta" ? "venta" : "compra"} \u00b7 ${n0(s.activas)} activas \u00b7 <b style="color:${s.pct >= 95 ? "#1a7f4b" : (s.pct >= 80 ? "#a97b12" : "#b3372b")}">${s.pct.toFixed(1).replace(".", ",")}% cruza</b></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:15px;font-weight:800;color:${col}">${n0(s.faltan)}</div>
+          <div style="font-size:10px;color:var(--muted)">faltan</div>
+        </div>
+      </div>`;
+    }).join("");
+    document.getElementById("aliq-sol-meta").textContent = solSel ? SOLAPA_TXT[solSel] : "todas";
+    cont.querySelectorAll(".aliq-sol").forEach(e => e.addEventListener("click", () => {
+      solSel = (solSel === e.dataset.sol) ? "" : e.dataset.sol;
+      render();
+    }));
+  }
+
+  function agrupa(rs, campo){
+    const m = {};
+    rs.forEach(r => {
+      const k = (r[campo] || "-") || "-";
+      const a = m[k] || (m[k] = {n: 0, tn: 0});
+      a.n++; a.tn += (r.tn_fnn || r.tn || 0);
+    });
+    return Object.entries(m).map(([k, v]) => ({k, n: v.n, tn: v.tn}))
+                 .sort((a, b) => b.n - a.n);
+  }
+
+  function desglose(id, datos, lbl, dim){
+    const t = document.getElementById(id);
+    if(!t) return;
+    const sel = dim === "org" ? orgSel : sisSel;
+    t.querySelector("thead").innerHTML =
+      `<tr><th style="text-align:left">${escapeHtml(lbl)}</th><th class="num">Faltan</th></tr>`;
+    t.querySelector("tbody").innerHTML = datos.slice(0, 14).map(d => {
+      const on = sel === d.k;
+      return `<tr class="aliq-dg" data-dim="${dim}" data-k="${escapeHtml(d.k)}"
+        style="cursor:pointer;${on ? "background:rgba(15,118,110,.12);font-weight:700" : ""}">
+        <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            title="${escapeHtml(d.k)}">${escapeHtml(d.k)}</td>
+        <td class="num">${n0(d.n)}</td></tr>`;
+    }).join("") || `<tr><td colspan="2" style="color:var(--muted)">sin datos</td></tr>`;
+    t.querySelectorAll(".aliq-dg").forEach(tr => tr.addEventListener("click", () => {
+      const k = tr.dataset.k;
+      if(tr.dataset.dim === "org") orgSel = (orgSel === k) ? "" : k;
+      else sisSel = (sisSel === k) ? "" : k;
+      render();
+    }));
+  }
+
+  function tabla(){
+    const v = (document.getElementById("aliq-vista") || {}).value || "faltan";
+    const cols = COLS[v], rs = filas(), t = document.getElementById("aliq-tabla");
+    t.querySelector("thead").innerHTML = "<tr>" + cols.map(c =>
+      `<th style="${c[2] ? "text-align:right" : "text-align:left"}">${escapeHtml(c[1])}</th>`).join("") + "</tr>";
+    t.querySelector("tbody").innerHTML = rs.slice(0, 1200).map(r => "<tr>" + cols.map(c => {
+      let val = r[c[0]];
+      if(c[0] === "fecha") val = fdmy(val);
+      if(c[2]) return `<td class="num">${val ? n1(val) : "-"}</td>`;
+      if(c[0] === "coe")
+        return `<td class="aliq-cop" data-copiar="${escapeHtml(val||"")}" title="Click para copiar el COE"
+                    style="font-family:ui-monospace,monospace;cursor:pointer;text-decoration:underline dotted">${escapeHtml(val || "-")}</td>`;
+      if(c[0] === "cruceTxt"){
+        const col = r.en_fnn ? "#1a7f4b" : (anulada(r.estado) ? "#68737f" : "#b3372b");
+        return `<td style="color:${col};font-weight:700">${escapeHtml(val || "-")}</td>`;
+      }
+      return `<td>${escapeHtml(val == null || val === "" ? "-" : String(val))}</td>`;
+    }).join("") + "</tr>").join("") ||
+      `<tr><td colspan="${cols.length}" style="color:var(--muted);padding:14px">Sin filas con estos filtros \u2014 si la vista es "a ingresar", quiere decir que est\u00e1 todo cargado.</td></tr>`;
+    const tn = rs.reduce((a, r) => a + (r.tn_fnn || r.tn || 0), 0);
+    t.querySelector("tfoot").innerHTML = rs.length
+      ? `<tr><td style="font-weight:800">TOTAL ${n0(rs.length)}</td>` +
+        cols.slice(1).map(c => c[2] ? `<td class="num" style="font-weight:800">${n1(tn)}</td>` : "<td></td>").join("") + "</tr>"
+      : "";
+    document.getElementById("aliq-info").textContent =
+      `${n0(rs.length)} fila(s)` + (rs.length > 1200 ? " \u2014 muestro las primeras 1.200" : "");
+    const nota = {
+      faltan: "Cada fila es una liquidaci\u00f3n que ARCA tiene y Finnegans no. El COE es la clave del cruce: si el mismo COE est\u00e1 cargado como venta primaria, secundaria o de intermediario, cuenta como ingresada. Las anuladas quedan afuera.",
+      filas: "Todas las liquidaciones bajadas de ARCA en las cuatro solapas, con el resultado del cruce fila por fila.",
+      mal_tipeados: "Liquidaciones cargadas en Finnegans con un COE que no existe en ARCA, pero que cambi\u00e1ndole un d\u00edgito da uno que s\u00ed existe y con la misma fecha. Si dice 'posible duplicado', el COE correcto ya est\u00e1 cargado en otro documento: hay que revisar si la liquidaci\u00f3n qued\u00f3 dos veces.",
+      sin_arca: "Control inverso: liquidaciones cargadas en Finnegans cuyo COE no apareci\u00f3 en ARCA dentro del rango bajado. Es referencial \u2014 puede ser una liquidaci\u00f3n de una punta que estas consultas no listan.",
+    }[v] || "";
+    document.getElementById("aliq-nota").textContent = nota;
+  }
+
+  // CSV con BOM y ; de separador: Excel en castellano lo abre en columnas solo
+  function exportar(){
+    const v = (document.getElementById("aliq-vista") || {}).value || "faltan";
+    const cols = COLS[v], rs = filas();
+    if(!rs.length){ alert("No hay filas para exportar con estos filtros."); return; }
+    const esc = x => { let t = String(x == null ? "" : x);
+      if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"'; return t; };
+    const num = x => String(x == null ? "" : x).replace(".", ",");
+    const lineas = [cols.map(c => esc(c[1])).join(";")];
+    rs.forEach(r => lineas.push(cols.map(c =>
+      esc(c[2] ? num(r[c[0]]) : (c[0] === "fecha" ? fdmy(r[c[0]]) : r[c[0]]))).join(";")));
+    const nom = {faltan: "Liquidaciones-a-ingresar", filas: "Liquidaciones-ARCA-todas",
+                 sin_arca: "En-Finnegans-sin-ARCA"}[v] || v;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(["\ufeff" + lineas.join("\r\n")], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Cruce-Liquidaciones_${nom}_${hoy}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  function aviso(txt){
+    let t = document.getElementById("arca-toast");
+    if(!t){ t = document.createElement("div"); t.id = "arca-toast"; document.body.appendChild(t); }
+    t.textContent = txt; t.classList.add("ver");
+    clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("ver"), 1600);
+  }
+  function copiar(txt, msg){
+    const listo = () => aviso(msg);
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt).then(listo, () => copiarViejo(txt, listo));
+        return;
+      }
+    }catch(e){}
+    copiarViejo(txt, listo);
+  }
+  function copiarViejo(txt, listo){
+    const ta = document.createElement("textarea");
+    ta.value = txt; ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){}
+    ta.remove();
+    if(ok) listo(); else aviso("No pude copiar \u2014 seleccion\u00e1 el texto a mano");
+  }
+  document.addEventListener("click", (e) => {
+    const td = e.target.closest("#aliq-tabla td.aliq-cop");
+    if(!td) return;
+    const v = td.dataset.copiar || td.textContent.trim();
+    if(v && v !== "-") copiar(v, "Copiado: " + v);
+  });
+
+  function render(){
+    if(!L){
+      const c = document.getElementById("aliq-kpis");
+      if(c) c.innerHTML = '<div style="color:var(--muted);font-size:12px">Todav\u00eda no hay bajada de liquidaciones de ARCA en este build. Corr\u00e9 <code>py scripts/arca_lpg_scraper.py</code>, despu\u00e9s <code>py scripts/finn_liq_coes.py</code> y <code>py scripts/arca_liq_cruce.py</code>.</div>';
+      return;
+    }
+    kpis(); solapas();
+    desglose("aliq-tbl-org", agrupa(base("faltan", {org: true}), "nombre"), "Contraparte", "org");
+    desglose("aliq-tbl-sis", agrupa(base("faltan", {sis: true}), "sistema"), "Sistema", "sis");
+    tabla();
+  }
+
+  ["aliq-vista"].forEach(id => { const e = document.getElementById(id);
+    if(e) e.addEventListener("change", () => { orgSel = ""; sisSel = ""; render(); }); });
+  ["aliq-lado", "aliq-desde", "aliq-hasta"].forEach(id => { const e = document.getElementById(id);
+    if(e) e.addEventListener("change", render); });
+  const tx = document.getElementById("aliq-txt");
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
+  const xl = document.getElementById("aliq-excel");
+  if(xl) xl.addEventListener("click", exportar);
+  const cc = document.getElementById("aliq-copiar");
+  if(cc) cc.addEventListener("click", () => {
+    const rs = filas();
+    if(!rs.length){ aviso("No hay filas con estos filtros"); return; }
+    const cs = [...new Set(rs.map(r => String(r.coe || "").trim()).filter(Boolean))];
+    copiar(cs.join("\n"), `${cs.length} COE copiados`);
+  });
+  const lm = document.getElementById("aliq-limpiar");
+  if(lm) lm.addEventListener("click", () => {
+    solSel = ""; orgSel = ""; sisSel = "";
+    ["aliq-lado","aliq-txt","aliq-desde","aliq-hasta"].forEach(id => {
+      const e = document.getElementById(id); if(e) e.value = ""; });
+    render();
+  });
+  document.querySelectorAll('[data-go-sub="pn-arcaliq"], .subtab[data-sub="pn-arcaliq"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(render, 50)));
+  render();
+})();
+
+/* ============================================================
    ==== CRUCE CP - ARCA vs FINNEGANS (pedido usuario 03/09) ===
    Misma estructura que su Power BI "Cruce Cp": tarjetas de
    camiones y tn no ingresados, filtro por Estado, desgloses por
@@ -15462,6 +15836,23 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] taqueo_liquidar.json: {e}")
 
+    # Cruce LIQUIDACIONES ARCA vs Finnegans (scripts/arca_lpg_scraper.py baja ARCA,
+    # scripts/finn_liq_coes.py junta los COE de Finnegans y scripts/arca_liq_cruce.py cruza)
+    print(f"\n[+] Cargando cruce LIQUIDACIONES ARCA vs Finnegans (si existe)...", flush=True)
+    arca_liq = None
+    _al = Path(__file__).resolve().parent / "data" / "arca_liq_cruce.json"
+    if _al.exists():
+        try:
+            arca_liq = json.loads(_al.read_text(encoding="utf-8"))
+            _k = arca_liq.get("kpi", {})
+            print(f"    -> ARCA {_k.get('arca_coes')} COE vs Finnegans {_k.get('fnn_coes')} COE - "
+                  f"faltan ingresar {_k.get('faltan')} "
+                  f"({_k.get('faltan_venta')} venta / {_k.get('faltan_compra')} compra)")
+        except Exception as e:
+            print(f"    [!] arca_liq_cruce.json: {e}")
+    else:
+        print("    -> sin archivo todavia (corre scripts/arca_lpg_scraper.py y despues el cruce)")
+
     # Cruce CP ARCA vs Finnegans (lo genera scripts/arca_ctg_cruce.py --cruce,
     # que a su vez consume lo que baja scripts/arca_cpe_scraper.py de ARCA)
     print(f"\n[+] Cargando cruce CP ARCA vs Finnegans (si existe)...", flush=True)
@@ -15774,6 +16165,7 @@ def main() -> int:
         "fp_auto_hechas": fp_auto_hechas,
         "extranet_cta": extranet_cta,
         "arca_cruce":      arca_cruce,
+        "arca_liq":        arca_liq,
         "coberturas":      coberturas,
         "produccion_camp": produccion_camp,
         "prod_agnsj_pct": prod_agnsj_pct,
