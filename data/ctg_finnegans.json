@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8153,
-  "con_ctg": 6893,
-  "sin_ctg": 1260,
-  "ctg_unicos": 5172,
+  "filas": 8158,
+  "con_ctg": 6895,
+  "sin_ctg": 1263,
+  "ctg_unicos": 5173,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1685,6 +1685,7 @@
    "10134823175": 2,
    "10134827124": 2,
    "10134839158": 2,
+   "332023643683": 2,
    "10124933760": 2,
    "10124935664": 2,
    "10124939190": 2,
@@ -1723,19 +1724,19 @@
     "tn": 131.114
    },
    "COMPRA": {
-    "n": 1675,
-    "tn": 53806.45799999999
+    "n": 1676,
+    "tn": 53844.45799999999
    },
    "VENTA": {
-    "n": 1675,
-    "tn": 53845.030999999995
+    "n": 1676,
+    "tn": 53883.030999999995
    },
    "PRODUCCIÓN (CPE propia)": {
     "n": 3418,
     "tn": 103809.64700000001
    }
   },
-  "tn_total": 213949.372
+  "tn_total": 214025.372
  },
  "rows": [
   {
@@ -59905,7 +59906,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "COMP264,COMP281",
+   "contrato": "COMP281,COMP264",
    "doc": "TRAS-CPRA-CV - 3890"
   },
   {
@@ -72447,6 +72448,36 @@
    "cancelado": false,
    "contrato": "COMP473",
    "doc": "TRAS-CPRA-CV - 4313"
+  },
+  {
+   "ctg": "332023643683",
+   "cp": "00000-00000001",
+   "fecha": "03-09-2026",
+   "fecha_partida": "03-09-2026",
+   "fecha_descarga": "03-09-2026",
+   "grano": "Grano Soja",
+   "kg": 38000.0,
+   "kg_sin_merma": 38000.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "",
+   "destino": "",
+   "org": "BLANCHARD JUAN JOSE",
+   "loc_origen": "GENERAL CONESA (SAN NICOLAS)",
+   "loc_destino": "SAN LORENZO (SAN LORENZO)",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Granos COMPRA CV",
+   "flujo": "COMPRA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "COMP493",
+   "doc": "TRAS-CPRA-CV - 4314"
   },
   {
    "ctg": "10124933760",
@@ -92099,6 +92130,96 @@
    "doc": "TRAS-CPRA-SEM - 2102"
   },
   {
+   "ctg": "",
+   "cp": "R-0000-00000150",
+   "fecha": "03-09-2026",
+   "fecha_partida": "03-09-2026",
+   "fecha_descarga": "03-09-2026",
+   "grano": "Grano Maíz",
+   "kg": 30000.0,
+   "kg_sin_merma": 30000.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "DELSEN S.R.L",
+   "loc_origen": "BERNARDO LARROUDE",
+   "loc_destino": "",
+   "prov_origen": "La Pampa",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "COMP452",
+   "doc": "TRAS-CPRA-SEM - 2103"
+  },
+  {
+   "ctg": "",
+   "cp": "R-0000-00000151",
+   "fecha": "03-09-2026",
+   "fecha_partida": "03-09-2026",
+   "fecha_descarga": "03-09-2026",
+   "grano": "Grano Maíz",
+   "kg": 29860.0,
+   "kg_sin_merma": 29950.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "DELSEN S.R.L",
+   "loc_origen": "BERNARDO LARROUDE",
+   "loc_destino": "",
+   "prov_origen": "La Pampa",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-CPRA-SEM - 2104"
+  },
+  {
+   "ctg": "",
+   "cp": "R-0000-00000152",
+   "fecha": "03-09-2026",
+   "fecha_partida": "03-09-2026",
+   "fecha_descarga": "03-09-2026",
+   "grano": "Grano Maíz",
+   "kg": 30000.0,
+   "kg_sin_merma": 30000.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "DELSEN S.R.L",
+   "loc_origen": "BERNARDO LARROUDE",
+   "loc_destino": "",
+   "prov_origen": "La Pampa",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "COMP452",
+   "doc": "TRAS-CPRA-SEM - 2105"
+  },
+  {
    "ctg": "10125041660",
    "cp": "00000-00000505",
    "fecha": "01-07-2025",
@@ -92905,7 +93026,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "1506,MAIZ SECU",
+   "contrato": "MAIZ SECU,1506",
    "doc": "TRAS-VTA-CV - 2900"
   },
   {
@@ -103285,7 +103406,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901448789sec,901449970",
+   "contrato": "901449970,901448789sec",
    "doc": "TRAS-VTA-CV - 3260"
   },
   {
@@ -103375,7 +103496,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "CAM MAIZ TARDIO secundario,1506",
+   "contrato": "1506,CAM MAIZ TARDIO secundario",
    "doc": "TRAS-VTA-CV - 3263"
   },
   {
@@ -103795,7 +103916,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "681894 Congignacion,68120201",
+   "contrato": "68120201,681894 Congignacion",
    "doc": "TRAS-VTA-CV - 3277"
   },
   {
@@ -105685,7 +105806,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "114767,114766",
+   "contrato": "114766,114767",
    "doc": "TRAS-VTA-CV - 3341"
   },
   {
@@ -107275,7 +107396,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "114766,115852",
+   "contrato": "115852,114766",
    "doc": "TRAS-VTA-CV - 3394"
   },
   {
@@ -109915,7 +110036,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "93676,93779",
+   "contrato": "93779,93676",
    "doc": "TRAS-VTA-CV - 3483"
   },
   {
@@ -116005,7 +116126,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "003CB001001131,003CB001001121",
+   "contrato": "003CB001001121,003CB001001131",
    "doc": "TRAS-VTA-CV - 3689"
   },
   {
@@ -119185,7 +119306,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115126,118444",
+   "contrato": "118444,115126",
    "doc": "TRAS-VTA-CV - 3797"
   },
   {
@@ -119785,7 +119906,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "99.1000524566,99.1000517173Consig",
+   "contrato": "99.1000517173Consig,99.1000524566",
    "doc": "TRAS-VTA-CV - 3817"
   },
   {
@@ -122365,7 +122486,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115272,229289",
+   "contrato": "229289,115272",
    "doc": "TRAS-VTA-CV - 3903"
   },
   {
@@ -126025,7 +126146,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118444,118485,118485",
+   "contrato": "118485,118444,118485",
    "doc": "TRAS-VTA-CV - 4026"
   },
   {
@@ -128935,7 +129056,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "7179,7087",
+   "contrato": "7087,7179",
    "doc": "TRAS-VTA-CV - 4124"
   },
   {
@@ -129445,7 +129566,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115220,115259",
+   "contrato": "115259,115220",
    "doc": "TRAS-VTA-CV - 4141"
   },
   {
@@ -129775,7 +129896,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "7179,7247",
+   "contrato": "7247,7179",
    "doc": "TRAS-VTA-CV - 4152"
   },
   {
@@ -130315,7 +130436,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115759,115259",
+   "contrato": "115259,115759",
    "doc": "TRAS-VTA-CV - 4170"
   },
   {
@@ -130525,7 +130646,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115261,115259",
+   "contrato": "115259,115261",
    "doc": "TRAS-VTA-CV - 4177"
   },
   {
@@ -135235,7 +135356,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "VEN181-003CB001001187,VEN198",
+   "contrato": "VEN198,VEN181-003CB001001187",
    "doc": "TRAS-VTA-CV - 4336"
   },
   {
@@ -142375,7 +142496,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0876082391",
    "doc": "TRAS-VTA-CV - 4578"
   },
   {
@@ -142405,7 +142526,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0876082391",
    "doc": "TRAS-VTA-CV - 4579"
   },
   {
@@ -142435,7 +142556,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0876082391",
    "doc": "TRAS-VTA-CV - 4580"
   },
   {
@@ -142454,7 +142575,7 @@
    "titular": "ALPINOS S.A. C",
    "destinatario": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
    "destino": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "org": "AGRINTER CEREALES   S R L",
+   "org": "CEREALIA S.A",
    "loc_origen": "VICUÑA MACKENNA",
    "loc_destino": "COLON",
    "prov_origen": "Cordoba",
@@ -142465,7 +142586,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN247",
    "doc": "TRAS-VTA-CV - 4581"
   },
   {
@@ -142514,7 +142635,7 @@
    "titular": "ALPINOS S.A. C",
    "destinatario": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
    "destino": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "org": "AGRINTER CEREALES   S R L",
+   "org": "CEREALIA S.A",
    "loc_origen": "VICUÑA MACKENNA",
    "loc_destino": "COLON",
    "prov_origen": "Cordoba",
@@ -142525,8 +142646,38 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN247",
    "doc": "TRAS-VTA-CV - 4583"
+  },
+  {
+   "ctg": "332023643683",
+   "cp": "00000-00000001",
+   "fecha": "03-09-2026",
+   "fecha_partida": "03-09-2026",
+   "fecha_descarga": "03-09-2026",
+   "grano": "Grano Soja",
+   "kg": 38000.0,
+   "kg_sin_merma": 38000.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "",
+   "destino": "",
+   "org": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
+   "loc_origen": "GENERAL CONESA (SAN NICOLAS)",
+   "loc_destino": "SAN LORENZO (SAN LORENZO)",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado de Granos VENTA CV",
+   "flujo": "VENTA",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "VEN272",
+   "doc": "TRAS-VTA-CV - 4584"
   },
   {
    "ctg": "10124944979",
@@ -144175,7 +144326,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "MAIZ AGOSTO,MAIZ JULIO PRIMARIA",
+   "contrato": "MAIZ JULIO PRIMARIA,MAIZ AGOSTO",
    "doc": "TRAS-VTA-GRANO-AS - 4679"
   },
   {
@@ -145255,7 +145406,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "111407 PROD. PROPIA,112087",
+   "contrato": "112087,111407 PROD. PROPIA",
    "doc": "TRAS-VTA-GRANO-AS - 4716"
   },
   {
@@ -148525,7 +148676,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "MAIZ JULIO PRIMARIA,MAIZ AGOSTO",
+   "contrato": "MAIZ AGOSTO,MAIZ JULIO PRIMARIA",
    "doc": "TRAS-VTA-GRANO-AS - 4826"
   },
   {
@@ -161515,7 +161666,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901455339A,901449970",
+   "contrato": "901449970,901455339A",
    "doc": "TRAS-VTA-GRANO-AS - 5282"
   },
   {
@@ -166645,7 +166796,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "213471Primario,213471P.Fecha",
+   "contrato": "213471P.Fecha,213471Primario",
    "doc": "TRAS-VTA-GRANO-AS - 5456"
   },
   {
@@ -167695,7 +167846,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "214510,214170",
+   "contrato": "214170,214510",
    "doc": "TRAS-VTA-GRANO-AS - 5491"
   },
   {
@@ -170365,7 +170516,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "003CB001001072,VEN076Primar",
+   "contrato": "VEN076Primar,003CB001001072",
    "doc": "TRAS-VTA-GRANO-AS - 5581"
   },
   {
@@ -172495,7 +172646,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115124Primario,115243Primario",
+   "contrato": "115243Primario,115124Primario",
    "doc": "TRAS-VTA-GRANO-AS - 5653"
   },
   {
@@ -172705,7 +172856,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115277P,115124Primario",
+   "contrato": "115124Primario,115277P",
    "doc": "TRAS-VTA-GRANO-AS - 5660"
   },
   {
@@ -175375,7 +175526,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "69708001Pri,70424401",
+   "contrato": "70424401,69708001Pri",
    "doc": "TRAS-VTA-GRANO-AS - 5752"
   },
   {
@@ -176545,7 +176696,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901482930A,Deposito",
+   "contrato": "Deposito,901482930A",
    "doc": "TRAS-VTA-GRANO-AS - 5791"
   },
   {
@@ -181885,7 +182036,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "70665001,70682601",
+   "contrato": "70682601,70665001",
    "doc": "TRAS-VTA-GRANO-AS - 5969"
   },
   {
@@ -186055,7 +186206,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901499325AA,901496487AC",
+   "contrato": "901496487AC,901499325AA",
    "doc": "TRAS-VTA-GRANO-AS - 6109"
   },
   {
@@ -186205,7 +186356,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901496488A,901496487A",
+   "contrato": "901496487A,901496488A",
    "doc": "TRAS-VTA-GRANO-AS - 6114"
   },
   {
@@ -189745,7 +189896,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "69477301,70604701Primario",
+   "contrato": "70604701Primario,69477301",
    "doc": "TRAS-VTA-GRANO-AS - 6234"
   },
   {
@@ -195835,7 +195986,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "200709577,200712787",
+   "contrato": "200712787,200709577",
    "doc": "TRAS-VTA-GRANO-AS - 6441"
   },
   {
@@ -199795,7 +199946,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "200709644,200709577",
+   "contrato": "200709577,200709644",
    "doc": "TRAS-VTA-GRANO-AS - 6576"
   },
   {
@@ -205525,7 +205676,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118649,118510B",
+   "contrato": "118510B,118649",
    "doc": "TRAS-VTA-GRANO-AS - 6771"
   },
   {
@@ -210625,7 +210776,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118510B,VEN175-118747",
+   "contrato": "VEN175-118747,118510B",
    "doc": "TRAS-VTA-GRANO-AS - 6944"
   },
   {
@@ -215935,7 +216086,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "711246/0/1,69477301",
+   "contrato": "69477301,711246/0/1",
    "doc": "TRAS-VTA-GRANO-AS - 7121"
   },
   {
@@ -216955,7 +217106,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "VEN187,VEN179",
+   "contrato": "VEN179,VEN187",
    "doc": "TRAS-VTA-GRANO-AS - 7157"
   },
   {
@@ -224935,7 +225086,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "VEN179,VEN187",
+   "contrato": "VEN187,VEN179",
    "doc": "TRAS-VTA-GRANO-AS - 7434"
   },
   {
@@ -235465,7 +235616,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "VEN253,70650701",
+   "contrato": "70650701,VEN253",
    "doc": "TRAS-VTA-GRANO-AS - 7791"
   },
   {
@@ -244424,7 +244575,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
    "destino": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "org": "AGRINTER CEREALES   S R L",
+   "org": "CEREALIA S.A",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL ALVEAR",
    "prov_origen": "Buenos Aires",
@@ -244435,7 +244586,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN248",
    "doc": "TRAS-VTA-GRANO-AS - 8096"
   },
   {
@@ -246025,7 +246176,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "70650701",
    "doc": "TRAS-VTA-GRANO-AS - 8149"
   },
   {
@@ -246055,7 +246206,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8150"
   },
   {
@@ -246085,7 +246236,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8151"
   },
   {
@@ -246115,7 +246266,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8152"
   },
   {
@@ -246145,7 +246296,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN248",
    "doc": "TRAS-VTA-GRANO-AS - 8153"
   },
   {
@@ -246175,7 +246326,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8154"
   },
   {
@@ -246205,7 +246356,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8155"
   },
   {
@@ -246235,7 +246386,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8156"
   },
   {
@@ -246265,7 +246416,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8157"
   },
   {
@@ -246295,7 +246446,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "117650",
    "doc": "TRAS-VTA-GRANO-AS - 8158"
   },
   {
