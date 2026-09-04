@@ -10336,7 +10336,9 @@ document.addEventListener('click', (e) => {
   let sisSel = "";        // WS / WEB elegido con un click
 
   const n0 = x => fmt.num(Math.round(x || 0));
-  const n1 = x => fmt.num(x || 0, 1);
+  // fmt.num redondea a entero: para las toneladas hace falta un decimal
+  const n1 = x => Number(x || 0).toLocaleString("es-AR",
+                    {minimumFractionDigits: 1, maximumFractionDigits: 1});
   const fdmy = s => {
     const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? `${m[3]}/${m[2]}/${m[1]}` : (s || "-");
@@ -10354,12 +10356,14 @@ document.addEventListener('click', (e) => {
   // Columnas de cada vista: [campo, titulo, esNumero]
   const COLS = {
     faltan: [["fecha","Fecha",0],["coe","COE",0],["tipoTxt","Liquidación",0],["ladoTxt","Lado",0],
+             ["granoTxt","Grano",0],["tn","Tn",1],["importe","Importe $",2],
              ["sistema","Sistema",0],["nombre","Contraparte",0],["cuit","CUIT",0],
              ["operacion","Tipo de operación",0],["estado","Estado ARCA",0],["solapaTxt","Solapa",0]],
     filas:  [["fecha","Fecha",0],["coe","COE",0],["tipoTxt","Liquidación",0],["ladoTxt","Lado",0],
+             ["granoTxt","Grano",0],["tn","Tn",1],["importe","Importe $",2],
              ["sistema","Sistema",0],["nombre","Contraparte",0],["cuit","CUIT",0],
              ["operacion","Tipo de operación",0],["estado","Estado ARCA",0],
-             ["cruceTxt","¿En Finnegans?",0],["doc_fnn","Documento Finnegans",0],["tn_fnn","Tn",1]],
+             ["cruceTxt","¿En Finnegans?",0],["doc_fnn","Documento Finnegans",0]],
     sin_arca:[["fecha","Fecha",0],["coe","COE",0],["documento","Documento Finnegans",0],
               ["lado","Lado",0],["organizacion","Organización",0],["grano","Grano",0],
               ["estado","Estado",0],["tn","Tn",1]],
@@ -10384,6 +10388,9 @@ document.addEventListener('click', (e) => {
       o.ladoTxt = r.lado === "venta" ? "Venta" : (r.lado === "compra" ? "Compra" : "-");
       o.solapaTxt = SOLAPA_TXT[r.consulta] || r.consulta;
       o.cruceTxt = r.en_fnn ? "Sí" : (anulada(r.estado) ? "Anulada" : "NO — falta ingresar");
+      // los ajustes de precio no traen tn nuevas: la cantidad del comprobante es 0
+      o.granoTxt = r.ajuste ? ((r.grano || "") + " (ajuste)").trim() : (r.grano || "");
+      if(!r.con_kg && !r.ajuste) o.granoTxt = "sin bajar";
     }
     return o;
   }
@@ -10416,13 +10423,26 @@ document.addEventListener('click', (e) => {
       <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
       <div style="font-size:26px;font-weight:800;color:${col||'var(--ink)'};line-height:1.15;margin-top:4px">${val}</div>
       <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
+    const pes = x => "$ " + fmt.num(Math.round(x || 0));
     c.innerHTML =
       card("Faltan ingresar", n0(k.faltan), "COE de ARCA que no est\u00e1n en Finnegans", "#b3372b") +
-      card("De venta", n0(k.faltan_venta), "liquidaciones que le emitieron \u2014 hay que pasarlas", "#a97b12") +
-      card("De compra", n0(k.faltan_compra), "liquidaciones que emiti\u00f3 Agronasaja", "#7c3aed") +
+      card("Toneladas pendientes", n1(k.faltan_tn || 0),
+           `primaria ${n1(k.faltan_tn_primaria || 0)} tn \u00b7 secundaria ${n1(k.faltan_tn_secundaria || 0)} tn`,
+           "#b3372b") +
+      card("Importe pendiente", pes(k.faltan_importe),
+           k.faltan_ajuste
+             ? `${n0(k.faltan_ajuste)} son ajustes de precio (0 tn) por ${pes(k.faltan_ajuste_importe)}`
+             : "total de los comprobantes de ARCA", "#0f766e") +
+      card("De venta", n0(k.faltan_venta),
+           `${n1(k.faltan_tn_venta || 0)} tn \u00b7 le emitieron y hay que pasarlas`, "#a97b12") +
+      card("De compra", n0(k.faltan_compra),
+           `${n1(k.faltan_tn_compra || 0)} tn \u00b7 las emiti\u00f3 Agronasaja`, "#7c3aed") +
       card("Cruzadas OK", n0(k.en_fnn), `de ${n0(k.activas)} liquidaciones activas en ARCA`, "#1a7f4b") +
       card("COE a revisar", n0((k.mal_tipeados || 0) + (k.sin_arca || 0)),
-           `${n0(k.mal_tipeados || 0)} mal tipeados o duplicados \u00b7 ${n0(k.sin_arca || 0)} sin liquidaci\u00f3n en ARCA`, "#2b5fb3");
+           `${n0(k.mal_tipeados || 0)} mal tipeados o duplicados \u00b7 ${n0(k.sin_arca || 0)} sin liquidaci\u00f3n en ARCA`, "#2b5fb3") +
+      (k.faltan_sin_kg
+        ? `<div style="font-size:11px;color:#a97b12;padding:2px 4px">\u26a0 ${n0(k.faltan_sin_kg)} sin kilos todav\u00eda \u2014 corr\u00e9 <code>py scripts/arca_liq_kg.py</code></div>`
+        : "");
     document.getElementById("aliq-chips").innerHTML =
       [`ARCA: ${n0(k.arca_coes)} COE`, `Finnegans: ${n0(k.fnn_coes)} COE`,
        `anuladas ${n0(k.anuladas)}`,
@@ -10448,6 +10468,7 @@ document.addEventListener('click', (e) => {
         <div style="text-align:right">
           <div style="font-size:15px;font-weight:800;color:${col}">${n0(s.faltan)}</div>
           <div style="font-size:10px;color:var(--muted)">faltan</div>
+          <div style="font-size:10px;color:var(--muted)">${n1(s.faltan_tn || 0)} tn</div>
         </div>
       </div>`;
     }).join("");
@@ -10463,7 +10484,7 @@ document.addEventListener('click', (e) => {
     rs.forEach(r => {
       const k = (r[campo] || "-") || "-";
       const a = m[k] || (m[k] = {n: 0, tn: 0});
-      a.n++; a.tn += (r.tn_fnn || r.tn || 0);
+      a.n++; a.tn += (r.tn || r.tn_fnn || 0);
     });
     return Object.entries(m).map(([k, v]) => ({k, n: v.n, tn: v.tn}))
                  .sort((a, b) => b.n - a.n);
@@ -10474,15 +10495,15 @@ document.addEventListener('click', (e) => {
     if(!t) return;
     const sel = dim === "org" ? orgSel : sisSel;
     t.querySelector("thead").innerHTML =
-      `<tr><th style="text-align:left">${escapeHtml(lbl)}</th><th class="num">Faltan</th></tr>`;
+      `<tr><th style="text-align:left">${escapeHtml(lbl)}</th><th class="num">Faltan</th><th class="num">Tn</th></tr>`;
     t.querySelector("tbody").innerHTML = datos.slice(0, 14).map(d => {
       const on = sel === d.k;
       return `<tr class="aliq-dg" data-dim="${dim}" data-k="${escapeHtml(d.k)}"
         style="cursor:pointer;${on ? "background:rgba(15,118,110,.12);font-weight:700" : ""}">
-        <td style="max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+        <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
             title="${escapeHtml(d.k)}">${escapeHtml(d.k)}</td>
-        <td class="num">${n0(d.n)}</td></tr>`;
-    }).join("") || `<tr><td colspan="2" style="color:var(--muted)">sin datos</td></tr>`;
+        <td class="num">${n0(d.n)}</td><td class="num">${n1(d.tn)}</td></tr>`;
+    }).join("") || `<tr><td colspan="3" style="color:var(--muted)">sin datos</td></tr>`;
     t.querySelectorAll(".aliq-dg").forEach(tr => tr.addEventListener("click", () => {
       const k = tr.dataset.k;
       if(tr.dataset.dim === "org") orgSel = (orgSel === k) ? "" : k;
@@ -10499,7 +10520,7 @@ document.addEventListener('click', (e) => {
     t.querySelector("tbody").innerHTML = rs.slice(0, 1200).map(r => "<tr>" + cols.map(c => {
       let val = r[c[0]];
       if(c[0] === "fecha") val = fdmy(val);
-      if(c[2]) return `<td class="num">${val ? n1(val) : "-"}</td>`;
+      if(c[2]) return `<td class="num">${val ? (c[2] === 2 ? n0(val) : n1(val)) : "-"}</td>`;
       if(c[0] === "coe")
         return `<td class="aliq-cop" data-copiar="${escapeHtml(val||"")}" title="Click para copiar el COE"
                     style="font-family:ui-monospace,monospace;cursor:pointer;text-decoration:underline dotted">${escapeHtml(val || "-")}</td>`;
@@ -10510,15 +10531,18 @@ document.addEventListener('click', (e) => {
       return `<td>${escapeHtml(val == null || val === "" ? "-" : String(val))}</td>`;
     }).join("") + "</tr>").join("") ||
       `<tr><td colspan="${cols.length}" style="color:var(--muted);padding:14px">Sin filas con estos filtros \u2014 si la vista es "a ingresar", quiere decir que est\u00e1 todo cargado.</td></tr>`;
-    const tn = rs.reduce((a, r) => a + (r.tn_fnn || r.tn || 0), 0);
     t.querySelector("tfoot").innerHTML = rs.length
       ? `<tr><td style="font-weight:800">TOTAL ${n0(rs.length)}</td>` +
-        cols.slice(1).map(c => c[2] ? `<td class="num" style="font-weight:800">${n1(tn)}</td>` : "<td></td>").join("") + "</tr>"
+        cols.slice(1).map(c => {
+          if(!c[2]) return "<td></td>";
+          const t = rs.reduce((a, r) => a + (r[c[0]] || 0), 0);
+          return `<td class="num" style="font-weight:800">${c[2] === 2 ? n0(t) : n1(t)}</td>`;
+        }).join("") + "</tr>"
       : "";
     document.getElementById("aliq-info").textContent =
       `${n0(rs.length)} fila(s)` + (rs.length > 1200 ? " \u2014 muestro las primeras 1.200" : "");
     const nota = {
-      faltan: "Cada fila es una liquidaci\u00f3n que ARCA tiene y Finnegans no. El COE es la clave del cruce: si el mismo COE est\u00e1 cargado como venta primaria, secundaria o de intermediario, cuenta como ingresada. Las anuladas quedan afuera.",
+      faltan: "Cada fila es una liquidaci\u00f3n que ARCA tiene y Finnegans no. El COE es la clave del cruce: si el mismo COE est\u00e1 cargado como venta primaria, secundaria o de intermediario, cuenta como ingresada. Las anuladas quedan afuera. Las toneladas y el importe salen del comprobante de ARCA (la grilla no los muestra: hay que bajar el PDF de cada liquidación). Las de 'Ajuste Unificado' van 0 tn porque ajustan el precio de grano ya entregado, pero sí tienen importe.",
       filas: "Todas las liquidaciones bajadas de ARCA en las cuatro solapas, con el resultado del cruce fila por fila.",
       mal_tipeados: "Liquidaciones cargadas en Finnegans con un COE que no existe en ARCA, pero que cambi\u00e1ndole un d\u00edgito da uno que s\u00ed existe y con la misma fecha. Si dice 'posible duplicado', el COE correcto ya est\u00e1 cargado en otro documento: hay que revisar si la liquidaci\u00f3n qued\u00f3 dos veces.",
       sin_arca: "Control inverso: liquidaciones cargadas en Finnegans cuyo COE no apareci\u00f3 en ARCA dentro del rango bajado. Es referencial \u2014 puede ser una liquidaci\u00f3n de una punta que estas consultas no listan.",

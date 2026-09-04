@@ -65,6 +65,16 @@ def anulada(estado: str) -> bool:
     return "anulad" in (estado or "").lower()
 
 
+def _contraparte(p: dict) -> str:
+    """Razon social de la otra parte, sacada del PDF: la que NO es Agronasaja.
+    Las consultas de emitidas no traen la denominacion en la grilla."""
+    for k in ("comprador", "vendedor"):
+        v = (p.get(k) or "").strip()
+        if v and "AGRONASAJA" not in v.upper():
+            return v
+    return ""
+
+
 def main():
     fa = DATA / "arca" / "lpg_liquidaciones.json"
     ff = DATA / "liq_coes_finnegans.json"
@@ -78,6 +88,16 @@ def main():
     FC: dict = fnn.get("coes") or {}
     log(f"[+] ARCA: {len(arca.get('filas') or [])} filas · Finnegans: {len(FC)} COE")
 
+    # kilos e importes de cada liquidacion, sacados del PDF de ARCA
+    # (scripts/arca_liq_kg.py). La grilla no los muestra.
+    fd = DATA / "arca" / "lpg_detalle.json"
+    DET: dict = {}
+    if fd.exists():
+        DET = (json.loads(fd.read_text(encoding="utf-8")).get("detalle") or {})
+        log(f"    kilos del PDF de ARCA: {len(DET)} liquidaciones")
+    else:
+        log("    (sin kilos todavia: corre scripts/arca_liq_kg.py)")
+
     # nombre por CUIT: ARCA lo trae en algunas consultas y sirve para las otras
     nombre_cuit: dict[str, str] = {}
     for r in arca["filas"]:
@@ -89,7 +109,23 @@ def main():
     for r in arca["filas"]:
         coe = r["coe"]
         f = FC.get(coe)
+        p = DET.get(coe) or {}
+        # En las LSG recibidas la grilla pone AGRONASAJA SRL en "Denominacion"
+        # (es el que recibe, no la contraparte): en ese caso vale el PDF.
+        _den = (r.get("denominacion") or "").strip()
+        if _den.upper().startswith("AGRONASAJA"):
+            _den = ""
         filas.append({
+            # kilos/importes que dice el comprobante de ARCA
+            "tn": p.get("tn", 0) or 0,
+            "kg": p.get("kg", 0) or 0,
+            "importe": p.get("importe", 0) or 0,
+            "neto": p.get("neto", 0) or 0,
+            "grano": p.get("grano", "") or "",
+            "precio_kg": p.get("precio_kg", 0) or 0,
+            "ajuste": bool(p.get("ajuste")),
+            "tn_merc": round((p.get("kg_mercaderia", 0) or 0) / 1000.0, 3),
+            "con_kg": bool(p),
             "coe": coe,
             "fecha": r.get("fecha") or "",
             "consulta": r.get("consulta") or "",
@@ -97,8 +133,9 @@ def main():
             "flujo": r.get("flujo") or "",
             "lado": r.get("lado") or "",
             "cuit": r.get("cuit") or "",
-            "nombre": (r.get("denominacion") or "").strip()
+            "nombre": _den
                       or nombre_cuit.get(r.get("cuit") or "", "")
+                      or _contraparte(p)
                       or (f or {}).get("organizacion", ""),
             "sistema": r.get("sistema") or "",
             "operacion": (r.get("operacion") or "").replace("?", "ó"),
@@ -195,23 +232,6 @@ def main():
             x["lado_fnn"] = m["lado"]
             x["tn_fnn"] = m["tn"]
 
-    # ── resumen por solapa ─────────────────────────────────────────────────────
-    solapas = []
-    for clave, etiqueta, lado, ayuda in SOLAPAS:
-        rs = [x for x in filas if x["consulta"] == clave]
-        act = [x for x in rs if not anulada(x["estado"])]
-        falt = [x for x in act if not x["en_fnn"]]
-        solapas.append({
-            "clave": clave, "etiqueta": etiqueta, "lado": lado, "ayuda": ayuda,
-            "n": len(rs), "activas": len(act), "anuladas": len(rs) - len(act),
-            "en_fnn": sum(1 for x in act if x["en_fnn"]), "faltan": len(falt),
-            "faltan_web": sum(1 for x in falt if x["sistema"].upper() == "WEB"),
-            # % cruzado: avisa de una si una solapa no cierra (LSG Recibidas cruza poco)
-            "pct": round(100.0 * sum(1 for x in act if x["en_fnn"]) / len(act), 1) if act else 0.0,
-        })
-        log(f"    {etiqueta:20s} {len(rs):5d} filas · {len(act):5d} activas · "
-            f"{sum(1 for x in act if x['en_fnn']):5d} en Finnegans · {len(falt):5d} faltan")
-
     # las cuatro solapas principales, sin duplicar por las consultas complementarias
     principales = {"lpg_recibidas", "lsg_emitidas", "lpg_emitidas", "lsg_recibidas"}
     act_todas = [x for x in filas if not anulada(x["estado"])]
@@ -225,6 +245,30 @@ def main():
             falt_unicas[x["coe"]] = x
     falt = sorted(falt_unicas.values(), key=lambda x: x["fecha"], reverse=True)
 
+    # ── resumen por solapa ─────────────────────────────────────────────────────
+    # los faltantes se cuentan desde la lista deduplicada, para que la tarjeta de
+    # cada solapa y el detalle de abajo den el mismo numero
+    solapas = []
+    for clave, etiqueta, lado, ayuda in SOLAPAS:
+        rs = [x for x in filas if x["consulta"] == clave]
+        act = [x for x in rs if not anulada(x["estado"])]
+        falt_s = [x for x in falt if x["consulta"] == clave]
+        solapas.append({
+            "clave": clave, "etiqueta": etiqueta, "lado": lado, "ayuda": ayuda,
+            "n": len(rs), "activas": len(act), "anuladas": len(rs) - len(act),
+            "en_fnn": sum(1 for x in act if x["en_fnn"]), "faltan": len(falt_s),
+            "faltan_web": sum(1 for x in falt_s if x["sistema"].upper() == "WEB"),
+            # % cruzado: avisa de una si una solapa no cierra (LSG Recibidas cruza poco)
+            "pct": round(100.0 * sum(1 for x in act if x["en_fnn"]) / len(act), 1) if act else 0.0,
+            "faltan_tn": round(sum(x["tn"] for x in falt_s), 1),
+            "faltan_importe": round(sum(x["importe"] for x in falt_s), 2),
+            "faltan_sin_kg": sum(1 for x in falt_s if not x["con_kg"]),
+            "faltan_ajuste": sum(1 for x in falt_s if x["ajuste"]),
+        })
+        log(f"    {etiqueta:20s} {len(rs):5d} filas · {len(act):5d} activas · "
+            f"{sum(1 for x in act if x['en_fnn']):5d} en Finnegans · {len(falt_s):5d} faltan "
+            f"· {sum(x['tn'] for x in falt_s):10,.1f} tn")
+
     kpi = {
         "arca_coes": len({x["coe"] for x in filas}),
         "fnn_coes": len(FC),
@@ -233,6 +277,17 @@ def main():
         "faltan": len(falt),
         "faltan_venta": sum(1 for x in falt if x["lado"] == "venta"),
         "faltan_compra": sum(1 for x in falt if x["lado"] == "compra"),
+        # kilos e importes de lo que falta pasar (del comprobante de ARCA)
+        "faltan_tn": round(sum(x["tn"] for x in falt), 1),
+        "faltan_tn_venta": round(sum(x["tn"] for x in falt if x["lado"] == "venta"), 1),
+        "faltan_tn_compra": round(sum(x["tn"] for x in falt if x["lado"] == "compra"), 1),
+        "faltan_tn_primaria": round(sum(x["tn"] for x in falt if x["tipo"] == "primaria"), 1),
+        "faltan_tn_secundaria": round(sum(x["tn"] for x in falt if x["tipo"] == "secundaria"), 1),
+        "faltan_importe": round(sum(x["importe"] for x in falt), 2),
+        "faltan_neto": round(sum(x["neto"] for x in falt), 2),
+        "faltan_sin_kg": sum(1 for x in falt if not x["con_kg"]),
+        "faltan_ajuste": sum(1 for x in falt if x["ajuste"]),
+        "faltan_ajuste_importe": round(sum(x["importe"] for x in falt if x["ajuste"]), 2),
         "sin_arca": len(sin_arca),
         "mal_tipeados": len(mal_tipeados),
         "anuladas": len({x["coe"] for x in filas if anulada(x["estado"])}),
@@ -240,6 +295,14 @@ def main():
     log(f"\n[=] COE de ARCA: {kpi['arca_coes']} ({kpi['activas']} activos) · "
         f"en Finnegans {kpi['en_fnn']} · FALTAN {kpi['faltan']} "
         f"({kpi['faltan_venta']} de venta, {kpi['faltan_compra']} de compra)")
+    log(f"[=] KILOS que faltan pasar: {kpi['faltan_tn']:,.1f} tn "
+        f"({kpi['faltan_tn_primaria']:,.1f} primaria + {kpi['faltan_tn_secundaria']:,.1f} secundaria) "
+        f"· $ {kpi['faltan_importe']:,.0f}")
+    if kpi["faltan_ajuste"]:
+        log(f"    de esas, {kpi['faltan_ajuste']} son ajustes de precio (0 tn nuevas) "
+            f"por $ {kpi['faltan_ajuste_importe']:,.0f}")
+    if kpi["faltan_sin_kg"]:
+        log(f"    [!] {kpi['faltan_sin_kg']} sin kilos todavia: corre scripts/arca_liq_kg.py")
     log(f"[=] cargados en Finnegans sin liquidacion en ARCA: {kpi['sin_arca']} (referencial)")
     if falt:
         log("\n    primeras que faltan ingresar:")

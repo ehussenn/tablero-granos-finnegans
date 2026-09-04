@@ -7,7 +7,8 @@ Hace todo de una:
   2. Refresca el lado Finnegans (traslados de grano con CTG).
   3. Cruza por CTG y dice, en criollo, QUE CAMIONES SE CARGARON.
   4. Baja de ARCA las liquidaciones primarias y secundarias (emitidas y recibidas).
-  5. Refresca los COE de Finnegans y cruza: QUE LIQUIDACIONES SE PASARON.
+  5. Refresca los COE de Finnegans, cruza, baja los KILOS de las que faltan
+     (del comprobante PDF de ARCA) y dice QUE LIQUIDACIONES SE PASARON.
   6. Regenera el tablero y lo publica (salvo --sin-publicar).
 
 Uso normal (doble click al .cmd del Escritorio) o:
@@ -171,7 +172,14 @@ def main() -> None:
             titulo("4/6  ARCA liquidaciones — salteado (--solo-cruce)")
         titulo("5/6  Finnegans — COE de liquidaciones y cruce")
         corre([py, "scripts/finn_liq_coes.py"], "COE Finnegans")
+        # primer cruce: define cuales faltan pasar
         corre([py, "scripts/arca_liq_cruce.py"], "cruce liquidaciones")
+        if not a.solo_cruce:
+            # los kilos no estan en la grilla de ARCA: hay que abrir el comprobante
+            # de cada una de las que faltan (queda cacheado en data/arca/_lpg_pdf)
+            corre([py, "scripts/arca_liq_kg.py"], "kilos de ARCA")
+            # segundo cruce: pega los kilos y los importes al resultado
+            corre([py, "scripts/arca_liq_cruce.py"], "cruce liquidaciones con kilos")
 
         ahora_liq = faltantes_liq()
         pasadas = [antes_liq[k] for k in antes_liq if k not in ahora_liq]
@@ -181,9 +189,10 @@ def main() -> None:
             log("Primera corrida de liquidaciones: no hay con que comparar todavia.")
         elif pasadas:
             log(f"[OK] PASASTE {len(pasadas)} liquidaciones desde la corrida anterior:")
+            log(f"     son {sum(r.get('tn', 0) for r in pasadas):,.1f} tn")
             for r in sorted(pasadas, key=lambda x: x.get("fecha", ""))[:20]:
                 log(f"       COE {r.get('coe')} · {r.get('fecha')} · {r.get('lado')} · "
-                    f"{(r.get('nombre') or r.get('cuit') or '')[:40]}")
+                    f"{r.get('tn', 0):,.3f} tn · {(r.get('nombre') or r.get('cuit') or '')[:36]}")
             if len(pasadas) > 20:
                 log(f"       ... y {len(pasadas) - 20} mas")
         else:
@@ -192,17 +201,21 @@ def main() -> None:
             log("")
             log(f"[+] APARECIERON {len(nuevas_liq)} liquidaciones nuevas sin pasar")
         log("")
-        log(f"AHORA FALTAN PASAR: {len(ahora_liq)} liquidaciones "
+        tn_liq = sum(r.get("tn", 0) for r in ahora_liq.values())
+        imp_liq = sum(r.get("importe", 0) for r in ahora_liq.values())
+        log(f"AHORA FALTAN PASAR: {len(ahora_liq)} liquidaciones · {tn_liq:,.1f} tn · $ {imp_liq:,.0f} "
             f"({sum(1 for r in ahora_liq.values() if r.get('lado') == 'venta')} de venta, "
             f"{sum(1 for r in ahora_liq.values() if r.get('lado') == 'compra')} de compra)")
+        log(f"   primaria {sum(r.get('tn', 0) for r in ahora_liq.values() if r.get('tipo') == 'primaria'):,.1f} tn"
+            f" · secundaria {sum(r.get('tn', 0) for r in ahora_liq.values() if r.get('tipo') == 'secundaria'):,.1f} tn")
         if ahora_liq:
             log("")
             log("Las que hay que pasar, primeras 25:")
-            log(f"   {'FECHA':11s} {'COE':14s} {'LIQ':11s} {'LADO':7s} {'SIST':5s} CONTRAPARTE")
-            for r in sorted(ahora_liq.values(), key=lambda x: x.get("fecha", ""), reverse=True)[:25]:
+            log(f"   {'FECHA':11s} {'COE':14s} {'LIQ':11s} {'LADO':7s} {'TN':>10s} {'IMPORTE $':>14s}  CONTRAPARTE")
+            for r in sorted(ahora_liq.values(), key=lambda x: x.get("tn", 0), reverse=True)[:25]:
                 log(f"   {str(r.get('fecha'))[:11]:11s} {str(r.get('coe'))[:14]:14s} "
                     f"{str(r.get('tipo'))[:11]:11s} {str(r.get('lado'))[:7]:7s} "
-                    f"{str(r.get('sistema'))[:5]:5s} "
+                    f"{r.get('tn', 0):>10,.3f} {r.get('importe', 0):>14,.0f}  "
                     f"{(r.get('nombre') or r.get('cuit') or '')[:38]}")
             if len(ahora_liq) > 25:
                 log(f"   ... y {len(ahora_liq) - 25} mas (estan todas en la solapa del tablero)")
@@ -216,7 +229,7 @@ def main() -> None:
                 (["git", "add", "data/arca_cruce.json", "data/ctg_finnegans.json",
                   "data/arca/cpe_solicitadas.json", "data/arca/cpe_participantes.json",
                   "data/arca_liq_cruce.json", "data/liq_coes_finnegans.json",
-                  "data/arca/lpg_liquidaciones.json"], "git add"),
+                  "data/arca/lpg_liquidaciones.json", "data/arca/lpg_detalle.json"], "git add"),
                 (["git", "commit", "-q", "-m",
                   f"Cruce CP y Liquidaciones ARCA vs Finnegans: datos al {date.today().isoformat()}"],
                  "git commit"),
