@@ -8950,8 +8950,10 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   // P+C
   const pcTot = prodTot + compraTot;
 
-  // OFERTA = PLANTA + PRODUCCION + COMPRA (lo total disponible)
-  const ofertaTot = plantaTot + prodTot + compraTot;
+  // OFERTA = PRODUCCION + COMPRA (regla usuario 07/09: la PLANTA queda AFUERA de la
+  // oferta — el stock físico ya está contenido en lo cosechado/comprado, sumarla
+  // duplicaba. El grupo Planta sigue visible como informativo.)
+  const ofertaTot = prodTot + compraTot;
 
   // VENTA
   // Vta Sem: MANUAL — el potencial de semilla lo carga el gerente comercial
@@ -9410,7 +9412,8 @@ function pnRender(){
       r.compraPend -= dp; r.compraTot -= dp;
       r.plantaTot = r.silo + r.bolsas + r.silobolsa;
       r.pcTot = r.prodTot + r.compraTot;
-      r.ofertaTot = r.plantaTot + r.prodTot + r.compraTot;
+      // regla 07/09: oferta sin planta (igual que pnCalcRow)
+      r.ofertaTot = r.prodTot + r.compraTot;
       r.posPend = r.pendCos + r.compraPend - r.ventaCtos;
       r.posicion = r.ofertaTot - r.demandaTot;
     });
