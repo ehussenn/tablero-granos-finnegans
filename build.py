@@ -374,9 +374,12 @@ def fetch_produccion() -> tuple[dict, dict, dict | None]:
                 tn = v.get("pendcos", 0)
                 ant = (c25.get(p) or {}).get("pendcos")
                 # regla 02/09: el pendiente VIVO de Información General manda; el snapshot
-                # del 25/08 queda solo como respaldo si el vivo no trae el producto
-                if ant:
-                    print(f"    -> pendcos 25/26 {p}: vivo {ant:,.1f} tn manda (snapshot 25/08 decía {tn:,.1f}, ignorado)")
+                # queda solo como respaldo si el vivo no trae el producto.
+                # EXCEPTO con "forzar": true (regla 07/09: el portal quedó desincronizado
+                # del Seguimiento de la extranet — lotes ya cosechados seguían pendientes —
+                # y el usuario pidió pisar con el número del Seguimiento).
+                if ant and not v.get("forzar"):
+                    print(f"    -> pendcos 25/26 {p}: vivo {ant:,.1f} tn manda (snapshot decía {tn:,.1f}, ignorado)")
                     continue
                 c25.setdefault(p, {})["pendcos"] = tn
                 d25.setdefault(p, {"cosechado": [], "pendcos": []})
@@ -2509,6 +2512,11 @@ window.apiFetch = function(path, opts){
         <div>
           <div class="section" style="margin:0 0 12px">
             <div id="aliq-kpis" style="display:grid;gap:10px"></div>
+          </div>
+          <div class="section" style="margin:0 0 12px">
+            <h3 style="font-size:13px">Emitidas y recibidas · en toneladas</h3>
+            <div style="font-size:11px;color:var(--muted);margin:-4px 0 7px">Cada COE contado una sola vez · click para filtrar</div>
+            <div class="tbl-wrap"><table id="aliq-tbl-cas" style="font-size:11.5px"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
           </div>
           <div class="section" style="margin:0 0 12px">
             <h3 style="font-size:13px">Las cuatro solapas <span class="badge" id="aliq-sol-meta"></span></h3>
@@ -10331,6 +10339,7 @@ document.addEventListener('click', (e) => {
    ============================================================ */
 (() => {
   const L = PAYLOAD.arca_liq;
+  let casSel = "";        // casillero elegido con un click ("primaria|emitida")
   let solSel = "";        // solapa elegida con un click
   let orgSel = "";        // contraparte elegida con un click
   let sisSel = "";        // WS / WEB elegido con un click
@@ -10406,6 +10415,8 @@ document.addEventListener('click', (e) => {
     const lado = (document.getElementById("aliq-lado") || {}).value || "";
     if(lado) rs = rs.filter(r => (r.lado || "") === lado);
     const propias = (v !== "sin_arca" && v !== "mal_tipeados");
+    if(casSel && !omitir.cas && propias)
+      rs = rs.filter(r => (r.tipo + "|" + r.flujo) === casSel);
     if(solSel && !omitir.solapa && propias) rs = rs.filter(r => r.consulta === solSel);
     if(orgSel && !omitir.org) rs = rs.filter(r => (r.nombre || r.organizacion || "-") === orgSel);
     if(sisSel && !omitir.sis && propias) rs = rs.filter(r => (r.sistema || "-") === sisSel);
@@ -10437,11 +10448,15 @@ document.addEventListener('click', (e) => {
            `${n1(k.faltan_tn_venta || 0)} tn \u00b7 le emitieron y hay que pasarlas`, "#a97b12") +
       card("De compra", n0(k.faltan_compra),
            `${n1(k.faltan_tn_compra || 0)} tn \u00b7 las emiti\u00f3 Agronasaja`, "#7c3aed") +
-      card("Cruzadas OK", n0(k.en_fnn), `de ${n0(k.activas)} liquidaciones activas en ARCA`, "#1a7f4b") +
+      card("Cruzadas OK", n0(k.en_fnn),
+           `${n1(k.tn_cruzado || 0)} tn \u00b7 de ${n0(k.activas)} liquidaciones activas en ARCA`, "#1a7f4b") +
+      card("Toneladas en ARCA", n1(k.tn_total || 0),
+           `todo el universo bajado \u00b7 ${n1(k.tn_cruzado || 0)} tn cruzadas + ${n1(k.faltan_tn || 0)} tn pendientes`,
+           "#68737f") +
       card("COE a revisar", n0((k.mal_tipeados || 0) + (k.sin_arca || 0)),
            `${n0(k.mal_tipeados || 0)} mal tipeados o duplicados \u00b7 ${n0(k.sin_arca || 0)} sin liquidaci\u00f3n en ARCA`, "#2b5fb3") +
-      (k.faltan_sin_kg
-        ? `<div style="font-size:11px;color:#a97b12;padding:2px 4px">\u26a0 ${n0(k.faltan_sin_kg)} sin kilos todav\u00eda \u2014 corr\u00e9 <code>py scripts/arca_liq_kg.py</code></div>`
+      ((k.sin_kg || k.faltan_sin_kg)
+        ? `<div style="font-size:11px;color:#a97b12;padding:2px 4px">\u26a0 ${n0(k.sin_kg || k.faltan_sin_kg)} liquidaciones sin toneladas todav\u00eda \u2014 corr\u00e9 <code>py scripts/arca_liq_kg.py</code></div>`
         : "");
     document.getElementById("aliq-chips").innerHTML =
       [`ARCA: ${n0(k.arca_coes)} COE`, `Finnegans: ${n0(k.fnn_coes)} COE`,
@@ -10449,6 +10464,37 @@ document.addEventListener('click', (e) => {
        `rango ${fdmy((L.rango_arca||[])[0])} a ${fdmy((L.rango_arca||[])[1])}`,
        `actualizado ${String(L.generado||"").replace("T"," ").slice(0,16)}`]
       .map(t => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(t)}</span>`).join("");
+  }
+
+  // los cuatro casilleros en toneladas: emitidas y recibidas, primaria y secundaria
+  function casilleros(){
+    const t = document.getElementById("aliq-tbl-cas");
+    if(!t) return;
+    const cs = L.casilleros || [];
+    t.querySelector("thead").innerHTML =
+      `<tr><th style="text-align:left">Casillero</th><th class="num">Tn total</th>
+           <th class="num">En Finnegans</th><th class="num">Faltan</th></tr>`;
+    t.querySelector("tbody").innerHTML = cs.map(c => {
+      const k = c.tipo + "|" + c.flujo, on = casSel === k;
+      return `<tr class="aliq-cas" data-k="${k}" title="${escapeHtml(c.ayuda || "")}"
+        style="cursor:pointer;${on ? "background:rgba(15,118,110,.12);font-weight:700" : ""}">
+        <td><div>${escapeHtml(c.etiqueta)}</div>
+            <div style="font-size:10px;color:var(--muted)">${escapeHtml(c.lado)} · ${n0(c.n)} liq.</div></td>
+        <td class="num">${n1(c.tn)}</td>
+        <td class="num" style="color:#1a7f4b">${n1(c.tn_cruzado)}</td>
+        <td class="num" style="color:${c.tn_faltan ? "#b3372b" : "var(--muted)"};font-weight:700">${n1(c.tn_faltan)}</td></tr>`;
+    }).join("") || `<tr><td colspan="4" style="color:var(--muted)">sin datos</td></tr>`;
+    const sum = f => cs.reduce((a, c) => a + (c[f] || 0), 0);
+    t.querySelector("tfoot").innerHTML = cs.length
+      ? `<tr><td style="font-weight:800">TOTAL</td>
+             <td class="num" style="font-weight:800">${n1(sum("tn"))}</td>
+             <td class="num" style="font-weight:800">${n1(sum("tn_cruzado"))}</td>
+             <td class="num" style="font-weight:800">${n1(sum("tn_faltan"))}</td></tr>` : "";
+    t.querySelectorAll(".aliq-cas").forEach(tr => tr.addEventListener("click", () => {
+      casSel = (casSel === tr.dataset.k) ? "" : tr.dataset.k;
+      solSel = "";
+      render();
+    }));
   }
 
   // las cuatro solapas (mas las dos complementarias), clickeables
@@ -10464,6 +10510,7 @@ document.addEventListener('click', (e) => {
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(s.etiqueta)}</div>
           <div style="font-size:10.5px;color:var(--muted)">${s.lado === "venta" ? "venta" : "compra"} \u00b7 ${n0(s.activas)} activas \u00b7 <b style="color:${s.pct >= 95 ? "#1a7f4b" : (s.pct >= 80 ? "#a97b12" : "#b3372b")}">${s.pct.toFixed(1).replace(".", ",")}% cruza</b></div>
+          <div style="font-size:10px;color:var(--muted)">${n1(s.tn_total || 0)} tn en total</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:15px;font-weight:800;color:${col}">${n0(s.faltan)}</div>
@@ -10610,7 +10657,7 @@ document.addEventListener('click', (e) => {
       if(c) c.innerHTML = '<div style="color:var(--muted);font-size:12px">Todav\u00eda no hay bajada de liquidaciones de ARCA en este build. Corr\u00e9 <code>py scripts/arca_lpg_scraper.py</code>, despu\u00e9s <code>py scripts/finn_liq_coes.py</code> y <code>py scripts/arca_liq_cruce.py</code>.</div>';
       return;
     }
-    kpis(); solapas();
+    kpis(); casilleros(); solapas();
     desglose("aliq-tbl-org", agrupa(base("faltan", {org: true}), "nombre"), "Contraparte", "org");
     desglose("aliq-tbl-sis", agrupa(base("faltan", {sis: true}), "sistema"), "Sistema", "sis");
     tabla();
@@ -10633,7 +10680,7 @@ document.addEventListener('click', (e) => {
   });
   const lm = document.getElementById("aliq-limpiar");
   if(lm) lm.addEventListener("click", () => {
-    solSel = ""; orgSel = ""; sisSel = "";
+    casSel = ""; solSel = ""; orgSel = ""; sisSel = "";
     ["aliq-lado","aliq-txt","aliq-desde","aliq-hasta"].forEach(id => {
       const e = document.getElementById(id); if(e) e.value = ""; });
     render();

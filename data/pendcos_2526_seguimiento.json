@@ -4,6 +4,7 @@
   "nota": "Override del pendiente de cosecha 25/26: el portal viejo (sanguine86.github.io/agronasaja-produccion) quedó desincronizado — aún lista como pendientes a Gargano Aquilano, San Bernardo y La Emilia L6 (ya cosechados según la extranet) y a Santa Rita con participación vieja (50% vs 100% real). Queda pendiente SOLO Santa Rita: 20 ha × 8,00 tn/ha = 162 tn AGNSJ (Curtis 2 terminado con 3 ha perdidas; La Sara soja terminada). Actualizar este archivo cuando avance la cosecha, o borrarlo si el portal se vuelve a sincronizar.",
   "productos": {
     "Grano Maíz": {
+      "forzar": true,
       "pendcos": 162,
       "detalle": [
         { "etiqueta": "MAÍZ TARDÍO — SANTA RITA LOTE ÚNICO (20 ha × 8,00 tn/ha)", "tn": 162, "rinde": 8000 }
