@@ -903,6 +903,45 @@ window.apiFetch = function(path, opts){
   .pn-fij-no{color:#b91c1c;font-weight:700}
 
   /* Sumador de seleccion (pedido usuario 02/09): tildar filas suma en una tarjeta */
+  /* ===== Por Organizacion: grilla tipo tabla dinamica ===== */
+  #org-tabla{border-collapse:separate;border-spacing:0}
+  /* Dos filas de encabezado, las dos pegadas arriba: la de grupo a top:0 y la de
+     columnas justo abajo (si las dos van a top:0 la segunda queda tapada).
+     El fondo azul y la letra blanca los pone la regla general de thead th. */
+  #org-tabla > thead > tr.org-grp > th{position:sticky;top:0;z-index:4;height:24px;
+       font-size:9.5px;letter-spacing:1.2px;text-align:center;padding:4px 8px;
+       border-bottom:1px solid rgba(255,255,255,.25)}
+  #org-tabla > thead > tr:not(.org-grp) > th{position:sticky;top:24px;z-index:3}
+  #org-tabla > thead > tr.org-grp > th.gc{background:#7a2a22}
+  #org-tabla > thead > tr.org-grp > th.gv{background:#125e38}
+  #org-tabla > thead > tr.org-grp > th:first-child{background:#0b1f4d}
+  /* la tabla de contratos que se abre adentro NO lleva encabezado pegado ni azul */
+  #org-tabla table.org-ctos thead th{position:static;top:auto;background:var(--bg2);
+       color:var(--muted);cursor:default;text-transform:uppercase}
+  #org-tabla th.sep,#org-tabla td.sep{border-left:2px solid var(--line)}
+  tr.org-row{cursor:pointer}
+  tr.org-row > td{border-bottom:1px solid var(--line);padding:9px 8px;background:#fff}
+  tr.org-row:hover > td{background:#f3f5f9}
+  tr.org-row.abierta > td{background:#eef2f9;font-weight:700}
+  tr.org-row .org-nom{font-weight:700;display:flex;align-items:center;gap:7px}
+  tr.org-row .org-fl{display:inline-block;width:12px;color:#64748b;flex:0 0 auto}
+  tr.org-row .org-cult{font-size:10.5px;color:var(--muted);font-weight:400;margin-top:2px;
+       display:block;max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td.org-c{color:#8f2b22} td.org-v{color:#146b3e}
+  tr.org-det > td{padding:0;background:#f8fafc;border-bottom:1px solid var(--line)}
+  .org-det-in{padding:10px 12px 14px}
+  .org-det-in h5{margin:8px 0 5px;font-size:11px;letter-spacing:1.1px;text-transform:uppercase;
+       color:var(--muted);display:flex;align-items:center;gap:7px}
+  .org-det-in h5 b{font-size:12px;letter-spacing:0}
+  .org-det-in h5 .pt{width:8px;height:8px;border-radius:50%}
+  table.org-ctos{width:100%;border-collapse:collapse;font-size:11.5px;background:#fff;
+       border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  table.org-ctos th{font-size:9.5px;letter-spacing:.9px;text-align:left;padding:6px 8px;
+       border-bottom:1px solid var(--line);white-space:nowrap}
+  table.org-ctos td{padding:6px 8px;border-bottom:1px solid #f1f2f3}
+  table.org-ctos tr:last-child td{border-bottom:0}
+  table.org-ctos tr.org-tot td{background:var(--bg2);font-weight:700;border-top:1px solid var(--line)}
+  table.org-ctos .num{text-align:right;font-variant-numeric:tabular-nums}
   /* contratos mal cargados en Finnegans: se ven, en rojo, y no suman */
   tr.pn-nocomp > td{color:#b3372b !important;background:#fff4f3 !important}
   tr.pn-nocomp .pn-nc{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.4px;
@@ -1136,6 +1175,7 @@ window.apiFetch = function(path, opts){
         <button class="nav-group" type="button" aria-expanded="true"><span class="nav-arrow">▾</span> Posición General</button>
         <div class="nav-items">
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-granaria" data-title="Posición Granaria">Posición Granaria</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-orgs" data-title="Contratos por Organización">🏢 Por Organización</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arcaliq" data-title="Cruce Liquidaciones · ARCA vs Finnegans">🧾 Cruce Liquidaciones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
@@ -2245,6 +2285,7 @@ window.apiFetch = function(path, opts){
     <div class="subtabs">
       <button class="subtab active" data-sub="pn-granaria">Posición Granaria</button>
       <button class="subtab" data-sub="pn-ctos">📑 Detalle Contratos</button>
+      <button class="subtab" data-sub="pn-orgs">🏢 Por Organización</button>
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
       <button class="subtab" data-sub="pn-arcaliq">🧾 Cruce Liquidaciones</button>
       <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
@@ -2508,6 +2549,56 @@ window.apiFetch = function(path, opts){
 
 
 
+
+
+    <!-- ===== SUBPANEL: Contratos por Organizacion (compra + venta juntos) ===== -->
+    <div class="subpanel" data-sub-panel="pn-orgs">
+      <div class="section" style="background:linear-gradient(135deg,#3b2b6b 0%,#5b4b9e 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🏢 Contratos por Organización</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.45">
+          Una línea por firma con sus contratos de <b>compra</b> y de <b>venta</b> juntos.
+          Click en la firma y se abren los contratos. Respeta la campaña y la empresa
+          elegidas arriba, en Posición Granaria.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="org-chips"></div>
+      </div>
+
+      <div class="section">
+        <div class="filterbar" style="margin:0 0 12px">
+          <div><label>MOSTRAR</label><select id="org-cuales">
+            <option value="multi">Firmas con más de un contrato</option>
+            <option value="ambas">Solo las que compran Y venden</option>
+            <option value="todas">Todas las firmas</option>
+          </select></div>
+          <div><label>PUNTA</label><select id="org-punta">
+            <option value="">Compra y venta</option>
+            <option value="compra">Solo compra</option>
+            <option value="venta">Solo venta</option>
+          </select></div>
+          <div><label>ORDENAR POR</label><select id="org-orden">
+            <option value="tn">Toneladas (mayor primero)</option>
+            <option value="pend">Pendiente (mayor primero)</option>
+            <option value="ctos">Cantidad de contratos</option>
+            <option value="nombre">Nombre de la firma</option>
+          </select></div>
+          <div><label>BUSCAR FIRMA</label><input id="org-txt" placeholder="nombre de la organización"
+            style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+          <button class="clear" id="org-abrir">⬍ Abrir todas</button>
+          <button class="clear" id="org-cerrar">⬏ Cerrar todas</button>
+          <button class="clear" id="org-excel">⬇ Exportar a Excel</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="org-info"></span>
+        </div>
+        <div class="tbl-wrap" style="max-height:700px">
+          <table id="org-tabla" style="font-size:12px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
+          💡 <b>Cómo se lee</b>: <b>Ajustada</b> = entregado + pendiente (la cantidad del contrato
+          en Finnegans). <b>Pend.</b> = lo que falta entregar (venta) o ingresar (compra).
+          <b>Pend. liq.</b> = entregado que todavía no se liquidó. Los contratos marcados
+          <span class="pn-nc" style="position:relative;top:-1px">no computa</span> se muestran pero no suman.
+        </div>
+      </div>
+    </div><!-- /subpanel pn-orgs -->
 
     <!-- ===== SUBPANEL: Cruce LIQUIDACIONES - ARCA vs Finnegans ===== -->
     <div class="subpanel" data-sub-panel="pn-arcaliq">
@@ -10443,6 +10534,219 @@ document.addEventListener('click', (e) => {
     try{ sumRender(); }catch(e){}
   }));
   render();
+})();
+
+/* ============================================================
+   ==== CONTRATOS POR ORGANIZACION (pedido usuario 08/09) =====
+   Grilla tipo tabla dinamica: una linea por firma con sus
+   contratos de COMPRA y de VENTA juntos, y el detalle de cada
+   contrato al abrirla. Sirve sobre todo para las firmas que
+   tienen mas de un contrato, que era lo que costaba leer.
+   Usa PN_LAST_COMPRAS / PN_LAST_VENTAS, ya filtrados por la
+   campana y la empresa elegidas en Posicion Granaria.
+   ============================================================ */
+(() => {
+  const abiertas = new Set();
+
+  const n1 = x => Number(x || 0).toLocaleString("es-AR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+  const n0 = x => fmt.num(Math.round(x || 0));
+  const nz = x => (Math.abs(x || 0) < 0.05 ? '<span style="color:var(--muted)">—</span>' : n1(x));
+  const cortoOrg = o => (o || "—").trim() || "—";
+
+  function fuentes(){
+    const c = (typeof PN_LAST_COMPRAS !== "undefined" && PN_LAST_COMPRAS && PN_LAST_COMPRAS.length)
+              ? PN_LAST_COMPRAS : (PAYLOAD.compra || []);
+    const v = (typeof PN_LAST_VENTAS !== "undefined" && PN_LAST_VENTAS && PN_LAST_VENTAS.length)
+              ? PN_LAST_VENTAS : (PAYLOAD.pilot || []);
+    return {c, v};
+  }
+
+  // una firma = {org, c:{...}, v:{...}} con sus contratos y sus totales
+  function armar(){
+    const {c, v} = fuentes();
+    const m = {};
+    const nuevo = () => ({n: 0, aj: 0, ent: 0, pen: 0, pliq: 0, cs: [], prods: new Set()});
+    const cargar = (rows, lado) => rows.forEach(x => {
+      const k = cortoOrg(x.organizacion);
+      const g = m[k] || (m[k] = {org: k, c: nuevo(), v: nuevo()});
+      const a = g[lado === "compra" ? "c" : "v"];
+      const ent = Number(x.cantidadentregada) || 0;
+      const pen = pnPendE(x), penC = pnPendC(x);
+      const liq = Number(x.cantidadliquidada) || 0;
+      a.n++; a.cs.push(x);
+      a.aj += ent + penC; a.ent += ent; a.pen += penC;
+      a.pliq += Math.max(0, ent - liq);
+      const pr = (x.producto || "").replace("Grano ", "");
+      if(pr) a.prods.add(pr);
+    });
+    cargar(c, "compra");
+    cargar(v, "venta");
+    return Object.values(m);
+  }
+
+  function filas(){
+    let gs = armar();
+    const cuales = (document.getElementById("org-cuales") || {}).value || "multi";
+    const punta  = (document.getElementById("org-punta")  || {}).value || "";
+    if(punta === "compra") gs = gs.filter(g => g.c.n > 0);
+    if(punta === "venta")  gs = gs.filter(g => g.v.n > 0);
+    if(cuales === "multi") gs = gs.filter(g => (g.c.n + g.v.n) > 1);
+    if(cuales === "ambas") gs = gs.filter(g => g.c.n > 0 && g.v.n > 0);
+    const q = ((document.getElementById("org-txt") || {}).value || "").trim().toLowerCase();
+    if(q) gs = gs.filter(g => g.org.toLowerCase().includes(q));
+    const orden = (document.getElementById("org-orden") || {}).value || "tn";
+    const tn   = g => g.c.aj + g.v.aj;
+    const pend = g => g.c.pen + g.v.pen;
+    const ctos = g => g.c.n + g.v.n;
+    gs.sort(orden === "nombre" ? (a, b) => a.org.localeCompare(b.org, "es")
+          : orden === "pend"   ? (a, b) => pend(b) - pend(a)
+          : orden === "ctos"   ? (a, b) => ctos(b) - ctos(a)
+          :                      (a, b) => tn(b) - tn(a));
+    return gs;
+  }
+
+  const CAB = `<tr class="org-grp">
+      <th></th>
+      <th class="gc sep" colspan="5">\u25be COMPRA</th>
+      <th class="gv sep" colspan="5">\u25b4 VENTA</th>
+    </tr><tr>
+      <th>Organizaci\u00f3n</th>
+      <th class="num sep">Ctos</th><th class="num">Ajustada</th><th class="num">Entregado</th><th class="num">Pend. ingreso</th><th class="num">Pend. liq.</th>
+      <th class="num sep">Ctos</th><th class="num">Ajustada</th><th class="num">Entregado</th><th class="num">Pend. entrega</th><th class="num">Pend. liq.</th>
+    </tr>`;
+
+  // tabla con los contratos de una punta
+  function tablaCtos(a, lado){
+    if(!a.n) return "";
+    const cp = lado === "compra";
+    const cs = a.cs.slice().sort((x, y) => (Number(y.cantidadentregada) || 0) + pnPendE(y)
+                                         - ((Number(x.cantidadentregada) || 0) + pnPendE(x)));
+    let t = `<h5><span class="pt" style="background:${cp ? "#b3372b" : "#1a7f4b"}"></span>`
+          + `${cp ? "Compra" : "Venta"} \u00b7 <b>${a.n} contrato(s)</b> \u00b7 ${n1(a.aj)} tn ajustadas</h5>`
+          + `<table class="org-ctos"><thead><tr><th>N\u00ba</th><th>Producto</th><th>Campa\u00f1a</th>`
+          + `<th>Entrega</th><th class="num">Ajustada</th><th class="num">Entregado</th>`
+          + `<th class="num">${cp ? "Pend. ingreso" : "Pend. entrega"}</th><th class="num">Pend. liq.</th>`
+          + `<th>\u00bfA precio?</th></tr></thead><tbody>`;
+    cs.forEach(x => {
+      const ent = Number(x.cantidadentregada) || 0, pen = pnPendE(x);
+      const liq = Number(x.cantidadliquidada) || 0;
+      const f = pnFij(x);
+      const nro = (x.numerointerno != null ? "#" + x.numerointerno : "—")
+                + (x.numerodocumentoadicional ? ` \u00b7 ${escapeHtml(String(x.numerodocumentoadicional))}` : "");
+      const fe = (x.fechaminentrega && x.fechamaxentrega)
+               ? `${pnFecha(x.fechaminentrega)}\u2013${pnFecha(x.fechamaxentrega)}`
+               : (pnFecha(x.fechaminentrega) || pnFecha(x.fechamaxentrega) || "—");
+      const nc = !!x.no_comp_pend;
+      t += `<tr${nc ? ' class="pn-nocomp" title="Contrato mal cargado en el sistema: este pendiente no suma"' : ""}>`
+         + `<td style="font-family:ui-monospace,monospace">${nro}</td>`
+         + `<td>${escapeHtml((x.producto || "").replace("Grano ", ""))}${nc ? '<span class="pn-nc">no computa</span>' : ""}</td>`
+         + `<td>${escapeHtml((x.campana || "").replace("CAMPAÑA ", "") || "—")}</td>`
+         + `<td>${fe}</td><td class="num">${nz(ent + pen)}</td><td class="num">${nz(ent)}</td>`
+         + `<td class="num" style="font-weight:700">${nz(pen)}</td>`
+         + `<td class="num">${nz(Math.max(0, ent - liq))}</td>`
+         + `<td class="${f.cls}">${f.t}</td></tr>`;
+    });
+    t += `<tr class="org-tot"><td colspan="4">Total ${a.n}</td><td class="num">${n1(a.aj)}</td>`
+       + `<td class="num">${n1(a.ent)}</td><td class="num">${n1(a.pen)}</td>`
+       + `<td class="num">${n1(a.pliq)}</td><td></td></tr></tbody></table>`;
+    return t;
+  }
+
+  function render(){
+    const gs = filas(), t = document.getElementById("org-tabla");
+    if(!t) return;
+    t.querySelector("thead").innerHTML = CAB;
+    let h = "";
+    gs.forEach((g, i) => {
+      const ab = abiertas.has(g.org);
+      const cult = [...new Set([...g.c.prods, ...g.v.prods])].sort().join(" \u00b7 ");
+      const cel = (a, cls, hay) => hay
+        ? `<td class="num ${cls} sep">${n0(a.n)}</td><td class="num ${cls}">${nz(a.aj)}</td>`
+          + `<td class="num ${cls}">${nz(a.ent)}</td><td class="num ${cls}" style="font-weight:700">${nz(a.pen)}</td>`
+          + `<td class="num ${cls}">${nz(a.pliq)}</td>`
+        : `<td class="sep" colspan="5" style="text-align:center;color:var(--line)">·</td>`;
+      h += `<tr class="org-row${ab ? " abierta" : ""}" data-org="${escapeHtml(g.org)}">`
+         + `<td><span class="org-nom"><span class="org-fl">${ab ? "\u25be" : "\u25b8"}</span>`
+         + `${escapeHtml(g.org)}</span><span class="org-cult" title="${escapeHtml(cult)}">${escapeHtml(cult)}</span></td>`
+         + cel(g.c, "org-c", g.c.n > 0) + cel(g.v, "org-v", g.v.n > 0) + `</tr>`;
+      if(ab){
+        h += `<tr class="org-det"><td colspan="11"><div class="org-det-in">`
+           + tablaCtos(g.c, "compra") + tablaCtos(g.v, "venta") + `</div></td></tr>`;
+      }
+    });
+    t.querySelector("tbody").innerHTML = h
+      || `<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Sin firmas con estos filtros.</td></tr>`;
+    const T = gs.reduce((a, g) => ({cn: a.cn + g.c.n, caj: a.caj + g.c.aj, cent: a.cent + g.c.ent,
+                                    cpen: a.cpen + g.c.pen, cpl: a.cpl + g.c.pliq,
+                                    vn: a.vn + g.v.n, vaj: a.vaj + g.v.aj, vent: a.vent + g.v.ent,
+                                    vpen: a.vpen + g.v.pen, vpl: a.vpl + g.v.pliq}),
+                        {cn:0,caj:0,cent:0,cpen:0,cpl:0,vn:0,vaj:0,vent:0,vpen:0,vpl:0});
+    t.querySelector("tfoot").innerHTML = gs.length ? `<tr class="pn-total">
+      <td>TOTAL \u00b7 ${n0(gs.length)} firma(s)</td>
+      <td class="num sep">${n0(T.cn)}</td><td class="num">${n1(T.caj)}</td><td class="num">${n1(T.cent)}</td><td class="num">${n1(T.cpen)}</td><td class="num">${n1(T.cpl)}</td>
+      <td class="num sep">${n0(T.vn)}</td><td class="num">${n1(T.vaj)}</td><td class="num">${n1(T.vent)}</td><td class="num">${n1(T.vpen)}</td><td class="num">${n1(T.vpl)}</td></tr>` : "";
+    document.getElementById("org-info").textContent =
+      `${n0(gs.length)} firma(s) \u00b7 ${n0(T.cn + T.vn)} contrato(s)`;
+    const ch = document.getElementById("org-chips");
+    if(ch){
+      const {c, v} = fuentes();
+      const camp = (document.getElementById("pn-campana") || {}).value || "todas";
+      ch.innerHTML = [`${n0(c.length)} contratos de compra`, `${n0(v.length)} de venta`,
+                      `campaña ${camp}`,
+                      `${n0(armar().filter(g => g.c.n > 0 && g.v.n > 0).length)} firmas compran y venden`]
+        .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(x)}</span>`).join("");
+    }
+  }
+
+  // CSV con BOM y ; de separador: Excel en castellano lo abre en columnas solo
+  function exportar(){
+    const gs = filas();
+    if(!gs.length){ alert("No hay firmas para exportar con estos filtros."); return; }
+    const esc = x => { let t = String(x == null ? "" : x);
+      if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"'; return t; };
+    const num = x => String(Math.round((x || 0) * 1000) / 1000).replace(".", ",");
+    const L = [["Organización", "Cultivos",
+                "Compra ctos", "Compra ajustada", "Compra entregado", "Compra pend ingreso", "Compra pend liq",
+                "Venta ctos", "Venta ajustada", "Venta entregado", "Venta pend entrega", "Venta pend liq"].join(";")];
+    gs.forEach(g => L.push([esc(g.org), esc([...new Set([...g.c.prods, ...g.v.prods])].sort().join(" · ")),
+      g.c.n, num(g.c.aj), num(g.c.ent), num(g.c.pen), num(g.c.pliq),
+      g.v.n, num(g.v.aj), num(g.v.ent), num(g.v.pen), num(g.v.pliq)].join(";")));
+    const hoy = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(["\ufeff" + L.join("\r\n")], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Contratos-por-organizacion_${hoy}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  document.addEventListener("click", (e) => {
+    const tr = e.target.closest("#org-tabla tr.org-row");
+    if(!tr) return;
+    const o = tr.dataset.org;
+    if(abiertas.has(o)) abiertas.delete(o); else abiertas.add(o);
+    render();
+  });
+  ["org-cuales", "org-punta", "org-orden"].forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.addEventListener("change", render);
+  });
+  const tx = document.getElementById("org-txt");
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
+  const ba = document.getElementById("org-abrir");
+  if(ba) ba.addEventListener("click", () => { filas().forEach(g => abiertas.add(g.org)); render(); });
+  const bc = document.getElementById("org-cerrar");
+  if(bc) bc.addEventListener("click", () => { abiertas.clear(); render(); });
+  const bx = document.getElementById("org-excel");
+  if(bx) bx.addEventListener("click", exportar);
+  // al entrar a la solapa (y al cambiar campana/empresa arriba) se vuelve a dibujar
+  document.querySelectorAll('[data-go-sub="pn-orgs"], .subtab[data-sub="pn-orgs"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(render, 60)));
+  ["pn-campana", "pn-empresa"].forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.addEventListener("change", () => setTimeout(render, 260));
+  });
+  setTimeout(render, 400);
 })();
 
 /* ============================================================
