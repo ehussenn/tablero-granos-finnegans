@@ -903,6 +903,21 @@ window.apiFetch = function(path, opts){
   .pn-fij-no{color:#b91c1c;font-weight:700}
 
   /* Sumador de seleccion (pedido usuario 02/09): tildar filas suma en una tarjeta */
+  /* contratos mal cargados en Finnegans: se ven, en rojo, y no suman */
+  tr.pn-nocomp > td{color:#b3372b !important;background:#fff4f3 !important}
+  tr.pn-nocomp .pn-nc{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.4px;
+       border:1px solid #b3372b;border-radius:4px;padding:0 4px;margin-left:6px;white-space:nowrap;
+       text-transform:uppercase;vertical-align:1px}
+  /* agrupado por firma (tipo tabla dinamica) */
+  tr.pn-grp{cursor:pointer;background:#e9eef5}
+  tr.pn-grp > td{font-weight:700;border-top:1px solid #cbd5e1}
+  tr.pn-grp:hover{background:#dde5ef}
+  tr.pn-grp .pn-fl{display:inline-block;width:13px;color:#64748b;font-weight:700}
+  tr.pn-grp.abierto .pn-fl{transform:none}
+  tr.pn-grp .pn-grp-n{font-size:10px;font-weight:600;color:#64748b;margin-left:6px}
+  tr.pn-grp .pn-nc{display:inline-block;font-size:9px;font-weight:800;border:1px solid #b3372b;
+       color:#b3372b;border-radius:4px;padding:0 4px;margin-left:6px;text-transform:uppercase}
+  tr.pn-sub > td:nth-child(2){padding-left:20px}
   th.sum-th,td.sum-td{width:30px;min-width:30px;text-align:center;padding-left:7px;padding-right:3px;cursor:pointer}
   th.sum-th input,td.sum-td input{cursor:pointer;margin:0;vertical-align:middle;width:14px;height:14px}
   #pnct-tabla tbody tr[data-sum]{cursor:pointer}
@@ -8831,6 +8846,13 @@ const PN_PROD_KEYS = new Set(["cosechado", "pendcos", "campoest"]);
 let PN_SEL_CAMP = "";   // campaña seleccionada (para elegir la producción correcta)
 // Pendiente de entrega: SIEMPRE cantidad ajustada - entregada (regla del usuario;
 // el campo crudo del reporte no refleja ampliaciones/reducciones — caso maiz).
+// Pendiente que COMPUTA en los totales. Los contratos marcados en build.py como
+// no_comp_pend estan mal cargados en Finnegans y el usuario no los puede borrar: su
+// pendiente se sigue MOSTRANDO (en rojo) pero no suma en ningun total. Lo entregado
+// de esos contratos si suma, porque esa mercaderia entro de verdad.
+function pnPendC(c){
+  return c.no_comp_pend ? 0 : pnPendE(c);
+}
 function pnPendE(c){
   // regla del usuario: pendiente de entrega = cantidad AJUSTADA - entregada, SIEMPRE,
   // para compra y venta de todos los cultivos y campañas.
@@ -8941,7 +8963,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
     if (esSemGranoCpra) { compraEntr += ent; return; }   // SEMILLA X (préstamo CP): se MUESTRA
     // lo entregado en la columna de compra (regla usuario 19/08) pero NO suma pendiente,
     // total ni oferta/posición — la mercadería ya salió por venta, la compra es facturación.
-    const pen = pnPendE(c);
+    const pen = pnPendC(c);
     compraEntr += ent;
     compraPend += pen;
     compraTot  += ent + pen;   // ajustada
@@ -8969,7 +8991,7 @@ function pnCalcRow(producto, opsCompra, opsVenta, incluyePlanta){
   opsVenta.forEach(c => {
     if(!esFilaSemillaPropia && (c.producto || "").toLowerCase().includes("sem")) return;  // semilla DM va aparte (manual)
     const ent = Number(c.cantidadentregada) || 0;
-    const pen = pnPendE(c);
+    const pen = pnPendC(c);
     ventaEntr      += ent;
     ventaCtos      += pen;         // pendiente de entrega (directo del contrato)
     ventaCtosAjust += ent + pen;   // ajustada = total venta
@@ -9287,21 +9309,58 @@ function pnDrillHTML(type, prods){
     const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     return cfg.field==='pend' ? pen : cfg.field==='entr' ? ent : ent+pen;
   };
+  // lo mismo, pero con el pendiente que COMPUTA: es lo que se suma en los totales
+  const valC = c => {
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendC(c);
+    return cfg.field==='pend' ? pen : cfg.field==='entr' ? ent : ent+pen;
+  };
   // venta: la semilla va aparte (manual), igual que en pnCalcRow → excluir de los contratos
   let rows = src.filter(c => set.has(c.producto) && !(cfg.kind==='venta' && (c.producto||'').toLowerCase().includes('sem')));
   rows = rows.filter(c => val(c) > 0.001);
   rows.sort((a,b)=>val(b)-val(a));
   if(!rows.length) return `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title}</div><div class="pn-drill-empty">Sin contratos.</div></div>`;
-  const tot = rows.reduce((s,c)=>s+val(c),0);
+  const tot = rows.reduce((s,c)=>s+valC(c),0);
+  const nNoComp = rows.filter(c=>c.no_comp_pend).length;
   const lblTn = cfg.field==='pend' ? (cp?'Pend. ingreso':'Pend. entrega') : cfg.field==='entr' ? 'Entregado' : 'Ajustada';
-  let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} contrato(s) · ${fmt.num(tot)} tn</span></div>`;
+  let t = `<div class="pn-drill-inner"><div class="pn-drill-head">${cfg.title} <span>· ${rows.length} contrato(s) · ${fmt.num(tot)} tn${nNoComp?` · <b style="color:#ffd7d2">${nNoComp} no computa(n)</b>`:''}</span></div>`;
   t += `<table class="pn-drill-tbl" data-sum-key="drill-${cfg.kind}-${cfg.field}" data-sum-label="${escapeHtml(lblTn + ' · ' + (cp?'Compra':'Venta'))}"><thead><tr><th class="sum-th" title="Tildar todo / nada — la tarjeta suma las tn"><input type="checkbox"></th><th>Nº</th><th>${cp?'Entregador / Vendedor':'Cliente'}</th>${cp?'<th>Comercial</th>':''}${esC?'<th>Producto</th>':''}<th>Campaña</th><th>Entrega</th><th class="num">${lblTn} (tn)</th><th>¿A precio?</th></tr></thead><tbody>`;
-  rows.forEach(c => {
+  // AGRUPADO POR ORGANIZACION (pedido usuario 08/09): una linea por firma con su
+  // total; si tiene mas de un contrato se abren con un click. Los contratos que no
+  // computan van en rojo y no suman ni en el grupo ni en el total.
+  const filaCto = (c, oculta) => {
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
     const ent = (c.fechaminentrega||'') && (c.fechamaxentrega||'') ? `${pnFecha(c.fechaminentrega)}–${pnFecha(c.fechamaxentrega)}` : (pnFecha(c.fechaminentrega)||pnFecha(c.fechamaxentrega)||'—');
     const camp = (c.campana||'').replace('CAMPAÑA ','').replace('CAMPANA ','') || '—';
-    t += `<tr data-sum="${val(c)}" title="tildá para sumar esta línea"><td class="sum-td"><input type="checkbox"></td><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}</td>${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(c.organizacion))||'—'}</td>`:''}${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
+    // "no computa" solo cuando lo que se esta mirando es el pendiente: en las vistas
+    // de entregado lo de este contrato es real y suma como cualquier otro
+    const nc = !!c.no_comp_pend && valC(c) !== val(c);
+    const attrs = nc
+      ? `class="pn-nocomp${oculta?' pn-sub':''}" title="Contrato mal cargado en el sistema: este pendiente NO suma en los totales (lo entregado sí)"`
+      : `data-sum="${val(c)}" class="${oculta?'pn-sub':''}" title="tildá para sumar esta línea"`;
+    return `<tr ${attrs}><td class="sum-td">${nc?'':'<input type="checkbox">'}</td><td class="pn-drill-nro">${nro||'—'}</td><td>${escapeHtml(c.organizacion||'—')}${nc?'<span class="pn-nc">no computa</span>':''}</td>${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(c.organizacion))||'—'}</td>`:''}${esC?`<td>${escapeHtml(c.producto||'')}</td>`:''}<td>${camp}</td><td class="pn-drill-fe">${ent}</td><td class="num">${fmt.num(val(c))}</td><td class="${f.cls}">${f.t}</td></tr>`;
+  };
+  const gmap = {};
+  rows.forEach(c => {
+    const k = (c.organizacion||'—').trim() || '—';
+    const g = gmap[k] || (gmap[k] = {org:k, cs:[], tn:0, nc:0});
+    g.cs.push(c);
+    g.tn += valC(c);
+    if(c.no_comp_pend && valC(c) !== val(c)) g.nc++;
+  });
+  const grupos = Object.values(gmap).sort((a,b)=>b.tn-a.tn);
+  const nMed = 4 + (cp?1:0) + (esC?1:0);      // columnas entre el tilde y las tn
+  grupos.forEach((g, gi) => {
+    if(g.cs.length === 1){ t += filaCto(g.cs[0], false); return; }
+    const gid = `g-${cfg.kind}-${cfg.field}-${gi}`;
+    t += `<tr class="pn-grp" data-grp="${gid}" title="click para abrir los ${g.cs.length} contratos de esta firma">`
+       + `<td class="sum-td"><input type="checkbox" title="tildar los ${g.cs.length} contratos"></td>`
+       + `<td colspan="${nMed}"><span class="pn-fl">▸</span>${escapeHtml(g.org)} <span class="pn-grp-n">${g.cs.length} contratos</span>`
+       + `${g.nc?`<span class="pn-nc">${g.nc} no computa</span>`:''}</td>`
+       + `<td class="num">${fmt.num(g.tn)}</td><td></td></tr>`;
+    g.cs.sort((a,b)=>val(b)-val(a)).forEach(c => {
+      t += filaCto(c, true).replace('<tr ', `<tr data-de="${gid}" hidden `);
+    });
   });
   const ncolTot = 6 + (esC?1:0) + (cp?1:0);
   t += `<tr class="pn-drill-tot"><td colspan="${ncolTot}">Total (${rows.length})</td><td class="num">${fmt.num(tot)}</td><td></td></tr>`;
@@ -9900,11 +9959,12 @@ function pnctRender(){
   document.getElementById('pnct-chips').innerHTML = chips.map(c =>
     `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(String(c))}</span>`).join('');
 
+  const rowsOrd = rows.slice();   // copia para reordenar por firma mas abajo
   // KPIs — clickeables: dinamizan el filtro MOSTRAR de la tabla de abajo
   let tAj=0, tEnt=0, tPen=0, tFij=0, tLiq=0, tEntPliq=0, tAntic=0, tSinFij=0, tImpLiqU=0, tImpLiqA=0;
   let tPxFijImp=0, tPxFijTn=0, tPxFijImpU=0, tPxFijTnU=0;   // para el precio promedio PONDERADO de lo fijado ($ y USD)
   rows.forEach(c => {
-    const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
+    const ent = Number(c.cantidadentregada)||0, pen = pnPendC(c);   // pendiente que computa
     const liq = Number(c.cantidadliquidada)||0, fij = Number(c.cantidadfijada)||0;
     tAj += ent + pen; tEnt += ent; tPen += pen; tFij += fij; tLiq += liq;
     tEntPliq += Math.max(0, ent - liq);
@@ -9955,8 +10015,40 @@ function pnctRender(){
     <th class="num">Precio Fijado</th><th class="num">Precio Liq.</th><th>Mon.</th>
     <th class="num">Liquidada (tn)</th><th class="num">Liq. Anticip. (tn)</th><th class="num">Imp. Liquidado</th><th class="num">Pend. Liquidar (tn)</th>
     <th>${cp?'Cta. Cte. (¿se pagó?)':'Cta. Cte. (¿se cobró?)'}</th></tr>`;
-  let html = '';
+  // AGRUPADO POR ORGANIZACION: las filas van ordenadas por firma y cada firma lleva
+  // arriba su linea de total, que se abre y se cierra con un click.
+  const gTot = {}, gN = {};
   rows.forEach(c => {
+    const k = (c.organizacion||'—').trim() || '—';
+    gN[k] = (gN[k]||0) + 1;
+    const e2 = Number(c.cantidadentregada)||0, p2 = pnPendC(c);   // pendiente que computa
+    const g = gTot[k] || (gTot[k] = {aj:0, ent:0, pen:0, v:0});
+    g.aj += e2 + p2; g.ent += e2; g.pen += p2;
+    g.v += (PNCT.field === 'pend' ? p2 : val(c));
+  });
+  const gOrden = Object.keys(gN).sort((a,b)=>((gTot[b]||{v:0}).v)-((gTot[a]||{v:0}).v));
+  rows = [];
+  gOrden.forEach(k => rowsOrd.filter(c => ((c.organizacion||'—').trim()||'—') === k)
+                             .sort((a,b)=>val(b)-val(a)).forEach(c => rows.push(c)));
+  const nColsPnct = document.querySelectorAll('#pnct-tabla thead th').length || 21;
+  let html = '', gPrev = null, gi = 0;
+  rows.forEach(c => {
+    const gk = (c.organizacion||'—').trim() || '—';
+    if(gk !== gPrev && gN[gk] > 1){
+      gi++;
+      const gid = `pnct-g${gi}`, gt = gTot[gk] || {aj:0, ent:0, pen:0};
+      const nIzq = cp ? 5 : 4;                       // Nº, Cliente, [Comercial], Producto, Campaña
+      const nDer = Math.max(0, nColsPnct - 1 - nIzq - 3);
+      html += `<tr class="pn-grp" data-grp="${gid}" title="click para abrir los ${gN[gk]} contratos de esta firma">`
+            + `<td class="sum-td"><input type="checkbox" title="tildar los ${gN[gk]} contratos"></td>`
+            + `<td colspan="${nIzq}"><span class="pn-fl">▸</span>${escapeHtml(gk)} <span class="pn-grp-n">${gN[gk]} contratos</span></td>`
+            + `<td class="num">${fmt.num(gt.aj)}</td><td class="num">${fmt.num(gt.ent)}</td>`
+            + `<td class="num" style="font-weight:700">${fmt.num(gt.pen)}</td>`
+            + `<td colspan="${nDer}"></td></tr>`;
+    }
+    const enGrupo = gN[gk] > 1;
+    const gidAct = `pnct-g${gi}`;
+    gPrev = gk;
     const ent = Number(c.cantidadentregada)||0, pen = pnPendE(c);
     const f = pnFij(c);
     const nro = (c.numerointerno!=null?('#'+c.numerointerno):'—') + (c.numerodocumentoadicional?` · ${escapeHtml(String(c.numerodocumentoadicional))}`:'');
@@ -9978,10 +10070,13 @@ function pnctRender(){
         ? `<span class="pn-fij-par" title="saldo total de ${escapeHtml(org)} en cta cte">◑ saldo ${monS} ${fmt.num(Math.abs(s))}</span>`
         : `<span class="pn-fij-si" title="cta cte de ${escapeHtml(org)} sin saldo relevante">✓ al día</span>`;
     }
-    html += `<tr data-sum="${val(c)}" title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'} · click en la fila para sumarla">
-      <td class="sum-td"><input type="checkbox"></td>
+    const nc = !!c.no_comp_pend;
+    html += `<tr ${enGrupo?`data-de="${gidAct}" hidden `:''}${nc
+        ? `class="pn-nocomp${enGrupo?' pn-sub':''}" title="Este contrato está mal cargado en el sistema: se muestra pero NO suma en los totales"`
+        : `data-sum="${val(c)}" ${enGrupo?'class="pn-sub" ':''}title="Fecha ${pnFecha(c.fecha)||'—'} · Campaña ${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')} · Entrega ${pnFecha(c.fechaminentrega)||'—'}–${pnFecha(c.fechamaxentrega)||'—'} · click en la fila para sumarla"`}>
+      <td class="sum-td">${nc?'':'<input type="checkbox">'}</td>
       <td class="pn-drill-nro">${nro}</td>
-      <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}</td>
+      <td title="${escapeHtml(org)}">${escapeHtml(org)||'—'}${nc?'<span class="pn-nc">no computa</span>':''}</td>
       ${cp?`<td style="color:#0e7490;font-weight:600">${escapeHtml(pnctComercial(org))||'<span class=muted>—</span>'}</td>`:''}
       <td title="${escapeHtml(c.producto||'')}">${escapeHtml((c.producto||'').replace('Grano ',''))}</td>
       <td>${escapeHtml((c.campana||'').replace('CAMPAÑA ','')||'—')}</td>
@@ -10122,6 +10217,29 @@ function sumToggleFila(tr, on){
   chk.checked = (on === undefined) ? !chk.checked : !!on;
   tr.classList.toggle('sum-on', chk.checked);
 }
+// AGRUPADO POR FIRMA: click en la linea del grupo abre/cierra sus contratos.
+// El tilde del grupo tilda o destilda los contratos de esa firma (los grupos no
+// tienen data-sum, asi que nunca suman dos veces).
+document.addEventListener('click', (e) => {
+  const g = e.target.closest('tr.pn-grp');
+  if(!g) return;
+  const tabla = g.closest('table'); if(!tabla) return;
+  const hijos = [...tabla.querySelectorAll(`tr[data-de="${g.dataset.grp}"]`)];
+  if(e.target.closest('td.sum-td')){
+    const chk = g.querySelector('input');
+    if(e.target !== chk) chk.checked = !chk.checked;
+    SUM_ACT = tabla;
+    hijos.filter(h => h.hasAttribute('data-sum')).forEach(h => sumToggleFila(h, chk.checked));
+    sumRender();
+    return;
+  }
+  const abrir = hijos.length ? hijos[0].hidden : false;
+  hijos.forEach(h => { h.hidden = !abrir; });
+  g.classList.toggle('abierto', abrir);
+  const fl = g.querySelector('.pn-fl');
+  if(fl) fl.textContent = abrir ? '▾' : '▸';
+}, true);
+
 // clicks en checkboxes, en la fila (solo Detalle de Contratos) y en el "todos" del encabezado
 document.addEventListener('click', (e) => {
   const th = e.target.closest('th.sum-th');
@@ -14861,6 +14979,29 @@ def main() -> int:
     _ant_v, _ant_c = len(pilot_norm), len(compra_norm)
     pilot_norm  = [r for r in pilot_norm  if not _excl(r, EXCL_VENTA)]
     compra_norm = [r for r in compra_norm if not _excl(r, EXCL_COMPRA)]
+
+    # CONTRATOS QUE NO COMPUTAN (pedido usuario 08/09/2026): estan mal cargados en
+    # Finnegans y el usuario no los puede borrar. A diferencia de EXCL_*, estos NO se
+    # sacan del tablero: se siguen viendo (en rojo) para tenerlos a la vista, pero no
+    # suman en ningun total ni en la posicion.
+    #   COMPRA #847 TAMBO NORTE soja 25-26: 149,742 tn de pendiente de ingreso que no
+    #   van a entrar (la ventana de entrega cerro en mayo/2026). Sus 156,110 tn ya
+    #   entregadas SI son reales, asi que lo que no computa es solo el PENDIENTE.
+    NO_COMP_COMPRA = [("847", "TAMBO NORTE")]
+    NO_COMP_VENTA  = []
+    for _rows, _lista, _lado in ((compra_norm, NO_COMP_COMPRA, "compra"),
+                                 (pilot_norm, NO_COMP_VENTA, "venta")):
+        for _r in _rows:
+            if _excl(_r, _lista):
+                _r["no_comp_pend"] = 1
+                try:
+                    _tn = float(_r.get("cantidadpendienteentrega") or 0)
+                except Exception:
+                    _tn = 0.0
+                print(f"[!] PENDIENTE QUE NO COMPUTA: {_lado} #{_r.get('numerointerno')} "
+                      f"{(_r.get('organizacion') or '')[:28]} {_r.get('producto')} "
+                      f"{_tn:,.3f} tn -> se muestra en rojo, no suma "
+                      f"(lo entregado si sigue contando)")
     if len(pilot_norm) < _ant_v or len(compra_norm) < _ant_c:
         print(f"[+] Exclusiones manuales: venta -{_ant_v - len(pilot_norm)} · compra -{_ant_c - len(compra_norm)} (datos sucios, ver comentario)")
     print(f"[+] Filtro Anulado: venta {_ant_pilot}->{len(pilot_norm)}  compra {_ant_compra}->{len(compra_norm)}")
