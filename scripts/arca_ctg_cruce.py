@@ -221,6 +221,24 @@ def cruzar(arca=None, fnn=None) -> dict:
         elif r["origen"] not in e["origenes"]:
             e["origenes"].append(r["origen"])
 
+    # CTG DESESTIMADOS del cruce (regla usuario 09/09/2026): cartas de porte que
+    # VOLVIERON A ORIGEN — el viaje no se concretó, nunca van a estar en Finnegans.
+    # Viven en data/arca_excluidos.json con su motivo; se informan aparte en el payload.
+    excluidos = []
+    try:
+        _fx = RAIZ / "data" / "arca_excluidos.json"
+        if _fx.exists():
+            _excl = {str(k): str(v) for k, v in
+                     (json.loads(_fx.read_text(encoding="utf-8")).get("ctgs") or {}).items()}
+            for _c in list(uniq):
+                if str(_c) in _excl:
+                    _r = uniq.pop(_c)
+                    excluidos.append({"CTG": _c, "CartaPorte": _r["cp"], "Fecha": _r["fecha"],
+                                      "Cultivo": _r["cultivo"], "Kg": _r["kg"],
+                                      "Motivo": _excl[str(_c)]})
+    except Exception as _e:
+        print(f"    [!] arca_excluidos.json: {_e}")
+
     filas, faltan = [], []
     for ctg, r in uniq.items():
         en_fnn = porctg.get(ctg) or []
@@ -291,6 +309,7 @@ def cruzar(arca=None, fnn=None) -> dict:
         "difs": sorted([r for r in filas if abs(r["dif_kg"]) > 50],
                        key=lambda r: -abs(r["dif_kg"]))[:400],
         "total_filas": len(filas),
+        "excluidos": sorted(excluidos, key=lambda r: r["Fecha"]),
     }
 
 

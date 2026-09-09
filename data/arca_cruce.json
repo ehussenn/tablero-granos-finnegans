@@ -1,16 +1,16 @@
 {
- "generado": "2026-09-09T10:39:44",
+ "generado": "2026-09-09T13:56:47",
  "rango_arca": [
   "2026-02-01",
   "2026-09-02"
  ],
  "kpi": {
-  "arca_ctg": 1185,
+  "arca_ctg": 1179,
   "fnn_ctg": 5192,
-  "no_ingresados": 99,
-  "no_ingresados_tn": 4651.9,
-  "a_ingresar": 63,
-  "a_ingresar_tn": 2988.5,
+  "no_ingresados": 93,
+  "no_ingresados_tn": 4375.1,
+  "a_ingresar": 57,
+  "a_ingresar_tn": 2711.7,
   "sin_arca": 2066,
   "dif_kg_n": 1086
  },
@@ -27,10 +27,6 @@
    "camiones": 9,
    "tn": 422.07
   },
-  "Trigo": {
-   "camiones": 6,
-   "tn": 276.8
-  },
   "Girasol": {
    "camiones": 1,
    "tn": 27.56
@@ -42,18 +38,18 @@
    "tn": 1985.25
   },
   "Participante": {
-   "camiones": 42,
-   "tn": 2018.56
+   "camiones": 41,
+   "tn": 1966.24
   },
   "Participante + Solicitada": {
-   "camiones": 14,
-   "tn": 648.1
+   "camiones": 9,
+   "tn": 423.62
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 56,
-   "tn": 2666.6600000000003
+   "camiones": 50,
+   "tn": 2389.8599999999997
   },
   "Anulada": {
    "camiones": 30,
@@ -520,74 +516,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00009132",
-   "CTG": "10129993908",
-   "Fecha": "09/03/2026",
-   "Cultivo": "Trigo",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "ATH174 - CHU525",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009042",
-   "CTG": "10129483681",
-   "Fecha": "12/02/2026",
-   "Cultivo": "Trigo",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "APX033 - NVD576",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009041",
-   "CTG": "10129483608",
-   "Fecha": "12/02/2026",
-   "Cultivo": "Trigo",
-   "Kg": 44600.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "HJB405 - AA943NN",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000209",
-   "CTG": "10129477761",
-   "Fecha": "12/02/2026",
-   "Cultivo": "Trigo",
-   "Kg": 52320.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Remitente Comercial Primario (G)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "OJN216 -AE636JA",
-   "cuit_solicitante": "30712852603",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00002223",
    "CTG": "10133593701",
    "Fecha": "13/07/2026",
@@ -635,23 +563,6 @@
    "kg_fnn": 0.0,
    "patente": "KTO995 -AB571DE",
    "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010241",
-   "CTG": "10232093810",
-   "Fecha": "14/05/2026",
-   "Cultivo": "Trigo",
-   "Kg": 44880.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "EMJ056 - KWS747",
-   "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -839,23 +750,6 @@
    "kg_fnn": 0.0,
    "patente": "AH323TF -AH422JE",
    "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010836",
-   "CTG": "10233878454",
-   "Fecha": "24/07/2026",
-   "Cultivo": "Trigo",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "WDJ273 - WJK387",
-   "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -29225,5 +29119,55 @@
    "dif_kg": -15600.0
   }
  ],
- "total_filas": 1185
+ "total_filas": 1179,
+ "excluidos": [
+  {
+   "CTG": "10129993908",
+   "CartaPorte": "00000-00009132",
+   "Fecha": "09/03/2026",
+   "Cultivo": "Trigo",
+   "Kg": 45000.0,
+   "Motivo": "volvió a origen (CP 00000-00009132, trigo 45.000 kg, 09/03/2026)"
+  },
+  {
+   "CTG": "10129483681",
+   "CartaPorte": "00000-00009042",
+   "Fecha": "12/02/2026",
+   "Cultivo": "Trigo",
+   "Kg": 45000.0,
+   "Motivo": "volvió a origen (CP 00000-00009042, trigo 45.000 kg, 12/02/2026)"
+  },
+  {
+   "CTG": "10129483608",
+   "CartaPorte": "00000-00009041",
+   "Fecha": "12/02/2026",
+   "Cultivo": "Trigo",
+   "Kg": 44600.0,
+   "Motivo": "volvió a origen (CP 00000-00009041, trigo 44.600 kg, 12/02/2026)"
+  },
+  {
+   "CTG": "10129477761",
+   "CartaPorte": "00000-00000209",
+   "Fecha": "12/02/2026",
+   "Cultivo": "Trigo",
+   "Kg": 52320.0,
+   "Motivo": "volvió a origen (CP 00000-00000209, trigo 52.320 kg, 12/02/2026)"
+  },
+  {
+   "CTG": "10232093810",
+   "CartaPorte": "00000-00010241",
+   "Fecha": "14/05/2026",
+   "Cultivo": "Trigo",
+   "Kg": 44880.0,
+   "Motivo": "volvió a origen (CP 00000-00010241, trigo 44.880 kg, 14/05/2026)"
+  },
+  {
+   "CTG": "10233878454",
+   "CartaPorte": "00000-00010836",
+   "Fecha": "24/07/2026",
+   "Cultivo": "Trigo",
+   "Kg": 45000.0,
+   "Motivo": "volvió a origen (CP 00000-00010836, trigo 45.000 kg, 24/07/2026)"
+  }
+ ]
 }
