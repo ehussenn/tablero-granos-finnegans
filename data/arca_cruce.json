@@ -1,5 +1,5 @@
 {
- "generado": "2026-09-09T15:56:31",
+ "generado": "2026-09-09T16:13:18",
  "rango_arca": [
   "2026-02-01",
   "2026-09-07"
@@ -23275,13 +23275,13 @@
    "Cultivo": "Maíz",
    "Kg": 28500.0,
    "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador",
    "Existe_en_Finnegans": "Si",
    "flujo_fnn": "PRODUCCIÓN (CPE propia)",
    "kg_fnn": 12081.0,
-   "patente": "AB012GS - AD544JY",
-   "cuit_solicitante": "",
+   "patente": "AB012GS -AD544JY",
+   "cuit_solicitante": "30710712758",
    "a_ingresar": false,
    "dif_kg": -16419.0
   },

@@ -1,5 +1,5 @@
 {
- "bajado": "2026-09-09T15:56:03",
+ "bajado": "2026-09-09T16:11:57",
  "ctg": {
   "10229682881": {
    "ctg": "10229682881",
@@ -16511,31 +16511,6 @@
    "Cuit Solicitante": "30710712758",
    "_rol": "Pagador Flete Pagador"
   },
-  "10134655666": {
-   "ctg": "10134655666",
-   "lados": [
-    "solicitadas",
-    "participantes"
-   ],
-   "Nro Carta Porte": "00000-00011459",
-   "CTG/CTDG": "10134655666",
-   "Fecha de emisión": "25/08/2026",
-   "Fecha de Vencimiento": "29/08/2026",
-   "Estado": "Confirmada",
-   "Cuit transportista": "30710691173",
-   "Cuit flete pagador": "30710712758",
-   "N. Patente": "AB012GS -AD544JY",
-   "Tipo Grano": "Maíz",
-   "Kilos": "28500",
-   "Cuit Destino": "30500120882",
-   "N° Planta destino": "21130",
-   "Localidad de destino": "11004",
-   "CUIT Destinatario": "30500120882",
-   "Cuit Chofer": "20280467929",
-   "_criterio": "Productor",
-   "Cuit Solicitante": "30710712758",
-   "_rol": "Pagador Flete Pagador"
-  },
   "10134604773": {
    "ctg": "10134604773",
    "lados": [
@@ -24816,6 +24791,29 @@
    "CUIT Destinatario": "30526712729",
    "_rol": "Pagador Flete Pagador"
   },
+  "10134675471": {
+   "ctg": "10134675471",
+   "lados": [
+    "participantes"
+   ],
+   "Nro Carta Porte": "00000-00011488",
+   "CTG/CTDG": "10134675471",
+   "Cuit Solicitante": "30710712758",
+   "Fecha de emisión": "25/08/2026",
+   "Fecha de Vencimiento": "29/08/2026",
+   "Estado": "Confirmada",
+   "Cuit transportista": "30717351149",
+   "Cuit flete pagador": "30710712758",
+   "N. Patente": "AH323TF -AH422JE",
+   "Tipo Grano": "Maíz",
+   "Kilos": "52500",
+   "Cuit Destino": "30526712729",
+   "N° Planta destino": "21030",
+   "Localidad de destino": "6381",
+   "CUIT Destinatario": "30526712729",
+   "CUIT Remitente Comercial": "30526712729",
+   "_rol": "Pagador Flete Pagador"
+  },
   "10134675444": {
    "ctg": "10134675444",
    "lados": [
@@ -25304,6 +25302,28 @@
    "CUIT Destinatario": "30547233774",
    "_rol": "Pagador Flete Pagador"
   },
+  "10134655666": {
+   "ctg": "10134655666",
+   "lados": [
+    "participantes"
+   ],
+   "Nro Carta Porte": "00000-00011459",
+   "CTG/CTDG": "10134655666",
+   "Cuit Solicitante": "30710712758",
+   "Fecha de emisión": "25/08/2026",
+   "Fecha de Vencimiento": "29/08/2026",
+   "Estado": "Confirmada",
+   "Cuit transportista": "30710691173",
+   "Cuit flete pagador": "30710712758",
+   "N. Patente": "AB012GS -AD544JY",
+   "Tipo Grano": "Maíz",
+   "Kilos": "28500",
+   "Cuit Destino": "30500120882",
+   "N° Planta destino": "21130",
+   "Localidad de destino": "11004",
+   "CUIT Destinatario": "30500120882",
+   "_rol": "Pagador Flete Pagador"
+  },
   "10134784758": {
    "ctg": "10134784758",
    "lados": [
@@ -25761,29 +25781,6 @@
    "N. Patente": "LEK995 -AC607KZ",
    "Tipo Grano": "Maíz",
    "Kilos": "45000",
-   "Cuit Destino": "30526712729",
-   "N° Planta destino": "21030",
-   "Localidad de destino": "6381",
-   "CUIT Destinatario": "30526712729",
-   "CUIT Remitente Comercial": "30526712729",
-   "_rol": "Pagador Flete Pagador"
-  },
-  "10134675471": {
-   "ctg": "10134675471",
-   "lados": [
-    "participantes"
-   ],
-   "Nro Carta Porte": "00000-00011488",
-   "CTG/CTDG": "10134675471",
-   "Cuit Solicitante": "30710712758",
-   "Fecha de emisión": "25/08/2026",
-   "Fecha de Vencimiento": "29/08/2026",
-   "Estado": "Confirmada",
-   "Cuit transportista": "30717351149",
-   "Cuit flete pagador": "30710712758",
-   "N. Patente": "AH323TF -AH422JE",
-   "Tipo Grano": "Maíz",
-   "Kilos": "52500",
    "Cuit Destino": "30526712729",
    "N° Planta destino": "21030",
    "Localidad de destino": "6381",
