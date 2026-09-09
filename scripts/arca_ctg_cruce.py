@@ -239,6 +239,20 @@ def cruzar(arca=None, fnn=None) -> dict:
     except Exception as _e:
         print(f"    [!] arca_excluidos.json: {_e}")
 
+    # Regla AUTOMÁTICA (usuario 09/09/2026): las CPE en estado Anulada / Desactivada /
+    # Rechazada en ARCA que NO están en Finnegans no son diferencia — se desestiman
+    # solas y quedan listadas en 'excluidos' con su motivo. Si una de esas SÍ está en
+    # Finnegans, se muestra igual (anulada en ARCA pero cargada en el sistema: revisar).
+    ESTADOS_NO_CUENTAN = {"anulada", "desactivada", "rechazada"}
+    for _c in list(uniq):
+        _r = uniq[_c]
+        if (str(_r.get("estado") or "").strip().lower() in ESTADOS_NO_CUENTAN
+                and not porctg.get(_c)):
+            uniq.pop(_c)
+            excluidos.append({"CTG": _c, "CartaPorte": _r["cp"], "Fecha": _r["fecha"],
+                              "Cultivo": _r["cultivo"], "Kg": _r["kg"],
+                              "Motivo": f"{_r['estado']} en ARCA — no está en Finnegans (regla automática)"})
+
     filas, faltan = [], []
     for ctg, r in uniq.items():
         en_fnn = porctg.get(ctg) or []

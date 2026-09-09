@@ -1,14 +1,14 @@
 {
- "generado": "2026-09-09T14:10:58",
+ "generado": "2026-09-09T14:23:25",
  "rango_arca": [
   "2026-02-01",
   "2026-09-02"
  ],
  "kpi": {
-  "arca_ctg": 1161,
+  "arca_ctg": 1125,
   "fnn_ctg": 5192,
-  "no_ingresados": 75,
-  "no_ingresados_tn": 3489.6,
+  "no_ingresados": 39,
+  "no_ingresados_tn": 1826.1,
   "a_ingresar": 39,
   "a_ingresar_tn": 1826.1,
   "sin_arca": 2066,
@@ -16,30 +16,18 @@
  },
  "por_cultivo": {
   "Maíz": {
-   "camiones": 64,
-   "tn": 2992.0900000000006
-  },
-  "Soja": {
-   "camiones": 8,
-   "tn": 381.46
-  },
-  "Arveja": {
-   "camiones": 2,
-   "tn": 88.44999999999999
-  },
-  "Girasol": {
-   "camiones": 1,
-   "tn": 27.56
+   "camiones": 39,
+   "tn": 1826.11
   }
  },
  "por_origen": {
-  "Solicitada": {
-   "camiones": 43,
-   "tn": 1985.25
-  },
   "Participante": {
    "camiones": 30,
    "tn": 1414.31
+  },
+  "Solicitada": {
+   "camiones": 7,
+   "tn": 321.8
   },
   "Participante + Solicitada": {
    "camiones": 2,
@@ -51,21 +39,9 @@
    "camiones": 32,
    "tn": 1504.31
   },
-  "Anulada": {
-   "camiones": 30,
-   "tn": 1411.49
-  },
   "Activa con confirmacion de arribo": {
    "camiones": 5,
    "tn": 225.0
-  },
-  "Desactivada": {
-   "camiones": 3,
-   "tn": 117.26
-  },
-  "Rechazada": {
-   "camiones": 3,
-   "tn": 134.7
   },
   "Activa": {
    "camiones": 2,
@@ -618,57 +594,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00011586",
-   "CTG": "10134835094",
-   "Fecha": "01/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Rechazada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AQM110 - FUW576",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011581",
-   "CTG": "10134830551",
-   "Fecha": "01/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44900.0,
-   "Estado": "Rechazada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "CBM200 - NMX270",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011580",
-   "CTG": "10134830305",
-   "Fecha": "01/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44800.0,
-   "Estado": "Rechazada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "JCG717 - EDW087",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00011611",
    "CTG": "10134864930",
    "Fecha": "02/09/2026",
@@ -737,23 +662,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00011605",
-   "CTG": "10134859718",
-   "Fecha": "02/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AQM110 - FUW576",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00011601",
    "CTG": "10134858403",
    "Fecha": "02/09/2026",
@@ -802,550 +710,6 @@
    "patente": "REL179 - AC470ET",
    "cuit_solicitante": "",
    "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010528",
-   "CTG": "10232770346",
-   "Fecha": "04/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 40050.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AA845QK - AA606CJ",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009414",
-   "CTG": "10130764933",
-   "Fecha": "06/04/2026",
-   "Cultivo": "Girasol",
-   "Kg": 27560.0,
-   "Estado": "Desactivada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "FNL756 - AF643UB",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010706",
-   "CTG": "10233477112",
-   "Fecha": "08/07/2026",
-   "Cultivo": "Arveja",
-   "Kg": 48400.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AA598LF - AE200ZA",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009139",
-   "CTG": "10130064637",
-   "Fecha": "11/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52620.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AE016KC - GLM822",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009098",
-   "CTG": "10129700574",
-   "Fecha": "25/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44700.0,
-   "Estado": "Desactivada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "UEQ009 - DFZ758",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010483",
-   "CTG": "10132522576",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GWZ458 - AE896YD",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010482",
-   "CTG": "10132522479",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AC219UQ - AE504UY",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010481",
-   "CTG": "10132509801",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NXI960 - NEX650",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010480",
-   "CTG": "10132509498",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GEY441 - KJE685",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010479",
-   "CTG": "10132509236",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GAT710 - AE054HV",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010478",
-   "CTG": "10132508818",
-   "Fecha": "26/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52500.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NXN480 - AF445YD",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009117",
-   "CTG": "10129764822",
-   "Fecha": "27/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "IIR680 - HXC144",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009116",
-   "CTG": "10129760562",
-   "Fecha": "27/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44600.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "TKR475 - DPV346",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010495",
-   "CTG": "10132557851",
-   "Fecha": "27/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GAT710 - AE054HV",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010862",
-   "CTG": "10133919690",
-   "Fecha": "27/07/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "UKT603 - FPP397",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010504",
-   "CTG": "10132608926",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NXI960 - NEX650",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010503",
-   "CTG": "10132608778",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GEY441 - KJE685",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010502",
-   "CTG": "10132608649",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 52500.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AC219UQ - AE504UY",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010501",
-   "CTG": "10132608552",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "FKG007 - IDZ911",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010500",
-   "CTG": "10132608424",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 52500.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GAT710 - AE054HV",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010499",
-   "CTG": "10132608135",
-   "Fecha": "29/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 52500.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NXN480 - AF445YD",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009774",
-   "CTG": "10131528385",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 43700.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "LPT693 - HMM248",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009767",
-   "CTG": "10131522008",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Desactivada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AB802WO - AB149ZG",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009759",
-   "CTG": "10131513364",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Soja",
-   "Kg": 44480.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GNF211 - GBS863",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009758",
-   "CTG": "10131512229",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "WAA784 - CXR811",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009757",
-   "CTG": "10131512154",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Soja",
-   "Kg": 44480.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GNF211 - GBS863",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009756",
-   "CTG": "10131511699",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44760.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AD453YV - AG234ZO",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009755",
-   "CTG": "10131511339",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "EOZ189 - BJD891",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009754",
-   "CTG": "10131509979",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "CKG404 - KTJ226",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009751",
-   "CTG": "10131502325",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44900.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "WAA784 - CXR811",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009404",
-   "CTG": "10130686684",
-   "Fecha": "31/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52500.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "KOG291 - AF997KL",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009395",
-   "CTG": "10130677055",
-   "Fecha": "31/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Anulada",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "CZE308 - GIA069",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
    "dif_kg": 0.0
   }
  ],
@@ -28813,8 +28177,40 @@
    "dif_kg": -15600.0
   }
  ],
- "total_filas": 1161,
+ "total_filas": 1125,
  "excluidos": [
+  {
+   "CTG": "10134835094",
+   "CartaPorte": "00000-00011586",
+   "Fecha": "01/09/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10134830551",
+   "CartaPorte": "00000-00011581",
+   "Fecha": "01/09/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44900.0,
+   "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10134830305",
+   "CartaPorte": "00000-00011580",
+   "Fecha": "01/09/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44800.0,
+   "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10134859718",
+   "CartaPorte": "00000-00011605",
+   "Fecha": "02/09/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
   {
    "CTG": "10232771948",
    "CartaPorte": "00000-00010529",
@@ -28822,6 +28218,22 @@
    "Cultivo": "Arveja",
    "Kg": 49000.0,
    "Motivo": "volvió a origen (CP 00000-00010529, arveja 49.000 kg, 04/06/2026)"
+  },
+  {
+   "CTG": "10232770346",
+   "CartaPorte": "00000-00010528",
+   "Fecha": "04/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 40050.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010528, arveja 40.050 kg, 04/06/2026)"
+  },
+  {
+   "CTG": "10130764933",
+   "CartaPorte": "00000-00009414",
+   "Fecha": "06/04/2026",
+   "Cultivo": "Girasol",
+   "Kg": 27560.0,
+   "Motivo": "desactivada en ARCA (CP 00000-00009414, girasol 27.560 kg, 06/04/2026)"
   },
   {
    "CTG": "10232793593",
@@ -28864,12 +28276,28 @@
    "Motivo": "volvió a origen (CP 00000-00010533, arveja 46.740 kg, 08/06/2026)"
   },
   {
+   "CTG": "10233477112",
+   "CartaPorte": "00000-00010706",
+   "Fecha": "08/07/2026",
+   "Cultivo": "Arveja",
+   "Kg": 48400.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010706, arveja 48.400 kg, 08/07/2026)"
+  },
+  {
    "CTG": "10129993908",
    "CartaPorte": "00000-00009132",
    "Fecha": "09/03/2026",
    "Cultivo": "Trigo",
    "Kg": 45000.0,
    "Motivo": "volvió a origen (CP 00000-00009132, trigo 45.000 kg, 09/03/2026)"
+  },
+  {
+   "CTG": "10130064637",
+   "CartaPorte": "00000-00009139",
+   "Fecha": "11/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52620.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
   },
   {
    "CTG": "10129483681",
@@ -28976,6 +28404,14 @@
    "Motivo": "volvió a origen (CP 00000-00010836, trigo 45.000 kg, 24/07/2026)"
   },
   {
+   "CTG": "10129700574",
+   "CartaPorte": "00000-00009098",
+   "Fecha": "25/02/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44700.0,
+   "Motivo": "Desactivada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
    "CTG": "10233132674",
    "CartaPorte": "00000-00010590",
    "Fecha": "25/06/2026",
@@ -28992,6 +28428,134 @@
    "Motivo": "volvió a origen (CP 00000-00010585, arveja 44.130 kg, 25/06/2026)"
   },
   {
+   "CTG": "10132522576",
+   "CartaPorte": "00000-00010483",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132522479",
+   "CartaPorte": "00000-00010482",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132509801",
+   "CartaPorte": "00000-00010481",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132509498",
+   "CartaPorte": "00000-00010480",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132509236",
+   "CartaPorte": "00000-00010479",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132508818",
+   "CartaPorte": "00000-00010478",
+   "Fecha": "26/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10129764822",
+   "CartaPorte": "00000-00009117",
+   "Fecha": "27/02/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10129760562",
+   "CartaPorte": "00000-00009116",
+   "Fecha": "27/02/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44600.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132557851",
+   "CartaPorte": "00000-00010495",
+   "Fecha": "27/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10133919690",
+   "CartaPorte": "00000-00010862",
+   "Fecha": "27/07/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10132608926",
+   "CartaPorte": "00000-00010504",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010504, soja 45.000 kg, 29/05/2026)"
+  },
+  {
+   "CTG": "10132608778",
+   "CartaPorte": "00000-00010503",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010503, soja 45.000 kg, 29/05/2026)"
+  },
+  {
+   "CTG": "10132608649",
+   "CartaPorte": "00000-00010502",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010502, soja 52.500 kg, 29/05/2026)"
+  },
+  {
+   "CTG": "10132608552",
+   "CartaPorte": "00000-00010501",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010501, soja 45.000 kg, 29/05/2026)"
+  },
+  {
+   "CTG": "10132608424",
+   "CartaPorte": "00000-00010500",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010500, soja 52.500 kg, 29/05/2026)"
+  },
+  {
+   "CTG": "10132608135",
+   "CartaPorte": "00000-00010499",
+   "Fecha": "29/05/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Motivo": "anulada en ARCA (CP 00000-00010499, soja 52.500 kg, 29/05/2026)"
+  },
+  {
    "CTG": "10233223529",
    "CartaPorte": "00000-00010619",
    "Fecha": "29/06/2026",
@@ -29006,6 +28570,94 @@
    "Cultivo": "Arveja",
    "Kg": 52000.0,
    "Motivo": "volvió a origen (CP 00000-00010618, arveja 52.000 kg, 29/06/2026)"
+  },
+  {
+   "CTG": "10131513364",
+   "CartaPorte": "00000-00009759",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Soja",
+   "Kg": 44480.0,
+   "Motivo": "anulada en ARCA (CP 00000-00009759, soja 44.480 kg, 30/04/2026)"
+  },
+  {
+   "CTG": "10131512154",
+   "CartaPorte": "00000-00009757",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Soja",
+   "Kg": 44480.0,
+   "Motivo": "anulada en ARCA (CP 00000-00009757, soja 44.480 kg, 30/04/2026)"
+  },
+  {
+   "CTG": "10131528385",
+   "CartaPorte": "00000-00009774",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 43700.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131522008",
+   "CartaPorte": "00000-00009767",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Desactivada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131512229",
+   "CartaPorte": "00000-00009758",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131511699",
+   "CartaPorte": "00000-00009756",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44760.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131511339",
+   "CartaPorte": "00000-00009755",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131509979",
+   "CartaPorte": "00000-00009754",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10131502325",
+   "CartaPorte": "00000-00009751",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44900.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10130686684",
+   "CartaPorte": "00000-00009404",
+   "Fecha": "31/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10130677055",
+   "CartaPorte": "00000-00009395",
+   "Fecha": "31/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
   }
  ]
 }
