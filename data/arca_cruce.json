@@ -1,16 +1,16 @@
 {
- "generado": "2026-09-09T13:56:47",
+ "generado": "2026-09-09T13:59:06",
  "rango_arca": [
   "2026-02-01",
   "2026-09-02"
  ],
  "kpi": {
-  "arca_ctg": 1179,
+  "arca_ctg": 1172,
   "fnn_ctg": 5192,
-  "no_ingresados": 93,
-  "no_ingresados_tn": 4375.1,
-  "a_ingresar": 57,
-  "a_ingresar_tn": 2711.7,
+  "no_ingresados": 86,
+  "no_ingresados_tn": 4041.5,
+  "a_ingresar": 50,
+  "a_ingresar_tn": 2378.0,
   "sin_arca": 2066,
   "dif_kg_n": 1086
  },
@@ -24,8 +24,8 @@
    "tn": 933.3900000000001
   },
   "Arveja": {
-   "camiones": 9,
-   "tn": 422.07
+   "camiones": 2,
+   "tn": 88.44999999999999
   },
   "Girasol": {
    "camiones": 1,
@@ -42,14 +42,14 @@
    "tn": 1966.24
   },
   "Participante + Solicitada": {
-   "camiones": 9,
-   "tn": 423.62
+   "camiones": 2,
+   "tn": 90.0
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 50,
-   "tn": 2389.8599999999997
+   "camiones": 43,
+   "tn": 2056.24
   },
   "Anulada": {
    "camiones": 30,
@@ -363,23 +363,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00010529",
-   "CTG": "10232771948",
-   "Fecha": "04/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 49000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AA523HD - AH480JU",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00000938",
    "CTG": "10129344629",
    "Fecha": "05/02/2026",
@@ -410,23 +393,6 @@
    "kg_fnn": 0.0,
    "patente": "AH193LW -AH487OF",
    "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010531",
-   "CTG": "10232793593",
-   "Fecha": "06/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 44830.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AB120LN - OKJ696",
-   "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -495,23 +461,6 @@
    "kg_fnn": 0.0,
    "patente": "AH193LW -AH487OF",
    "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010533",
-   "CTG": "10232816072",
-   "Fecha": "08/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 46740.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AE869ZD - AF076WW",
-   "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -754,40 +703,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00010590",
-   "CTG": "10233132674",
-   "Fecha": "25/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 44800.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AB120LN - OKJ696",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010585",
-   "CTG": "10233125846",
-   "Fecha": "25/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 44130.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AC388AS - LGM686",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00000232",
    "CTG": "10134762728",
    "Fecha": "28/08/2026",
@@ -835,40 +750,6 @@
    "kg_fnn": 0.0,
    "patente": "FMQ344 -VOK924",
    "cuit_solicitante": "20317538759",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010619",
-   "CTG": "10233223529",
-   "Fecha": "29/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 52120.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AF402ZG - AE696IG",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010618",
-   "CTG": "10233215929",
-   "Fecha": "29/06/2026",
-   "Cultivo": "Arveja",
-   "Kg": 52000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "HJP193 - AE696IC",
-   "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -29119,8 +29000,32 @@
    "dif_kg": -15600.0
   }
  ],
- "total_filas": 1179,
+ "total_filas": 1172,
  "excluidos": [
+  {
+   "CTG": "10232771948",
+   "CartaPorte": "00000-00010529",
+   "Fecha": "04/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 49000.0,
+   "Motivo": "volvió a origen (CP 00000-00010529, arveja 49.000 kg, 04/06/2026)"
+  },
+  {
+   "CTG": "10232793593",
+   "CartaPorte": "00000-00010531",
+   "Fecha": "06/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 44830.0,
+   "Motivo": "volvió a origen (CP 00000-00010531, arveja 44.830 kg, 06/06/2026)"
+  },
+  {
+   "CTG": "10232816072",
+   "CartaPorte": "00000-00010533",
+   "Fecha": "08/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 46740.0,
+   "Motivo": "volvió a origen (CP 00000-00010533, arveja 46.740 kg, 08/06/2026)"
+  },
   {
    "CTG": "10129993908",
    "CartaPorte": "00000-00009132",
@@ -29168,6 +29073,38 @@
    "Cultivo": "Trigo",
    "Kg": 45000.0,
    "Motivo": "volvió a origen (CP 00000-00010836, trigo 45.000 kg, 24/07/2026)"
+  },
+  {
+   "CTG": "10233132674",
+   "CartaPorte": "00000-00010590",
+   "Fecha": "25/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 44800.0,
+   "Motivo": "volvió a origen (CP 00000-00010590, arveja 44.800 kg, 25/06/2026)"
+  },
+  {
+   "CTG": "10233125846",
+   "CartaPorte": "00000-00010585",
+   "Fecha": "25/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 44130.0,
+   "Motivo": "volvió a origen (CP 00000-00010585, arveja 44.130 kg, 25/06/2026)"
+  },
+  {
+   "CTG": "10233223529",
+   "CartaPorte": "00000-00010619",
+   "Fecha": "29/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 52120.0,
+   "Motivo": "volvió a origen (CP 00000-00010619, arveja 52.120 kg, 29/06/2026)"
+  },
+  {
+   "CTG": "10233215929",
+   "CartaPorte": "00000-00010618",
+   "Fecha": "29/06/2026",
+   "Cultivo": "Arveja",
+   "Kg": 52000.0,
+   "Motivo": "volvió a origen (CP 00000-00010618, arveja 52.000 kg, 29/06/2026)"
   }
  ]
 }
