@@ -1,44 +1,32 @@
 {
- "generado": "2026-09-09T14:42:50",
+ "generado": "2026-09-09T15:22:50",
  "rango_arca": [
   "2026-02-01",
   "2026-09-02"
  ],
  "kpi": {
-  "arca_ctg": 1109,
+  "arca_ctg": 1093,
   "fnn_ctg": 5192,
-  "no_ingresados": 23,
-  "no_ingresados_tn": 1094.3,
-  "a_ingresar": 23,
-  "a_ingresar_tn": 1094.3,
+  "no_ingresados": 7,
+  "no_ingresados_tn": 321.8,
+  "a_ingresar": 7,
+  "a_ingresar_tn": 321.8,
   "sin_arca": 2066,
   "dif_kg_n": 1086
  },
  "por_cultivo": {
   "Maíz": {
-   "camiones": 23,
-   "tn": 1094.31
+   "camiones": 7,
+   "tn": 321.8
   }
  },
  "por_origen": {
-  "Participante": {
-   "camiones": 14,
-   "tn": 682.51
-  },
   "Solicitada": {
    "camiones": 7,
    "tn": 321.8
-  },
-  "Participante + Solicitada": {
-   "camiones": 2,
-   "tn": 90.0
   }
  },
  "por_estado": {
-  "Confirmada": {
-   "camiones": 16,
-   "tn": 772.51
-  },
   "Activa con confirmacion de arribo": {
    "camiones": 5,
    "tn": 225.0
@@ -49,278 +37,6 @@
   }
  },
  "faltan": [
-  {
-   "CartaPorte": "00007-00020310",
-   "CTG": "10234084153",
-   "Fecha": "03/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52440.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH193LW -AH487OF",
-   "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000938",
-   "CTG": "10129344629",
-   "Fecha": "05/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52430.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Remitente Comercial Primario (G)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AE786WT -AE543LO",
-   "cuit_solicitante": "30632870082",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00007-00020385",
-   "CTG": "10234141085",
-   "Fecha": "05/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52500.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH193LW -AH487OF",
-   "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00007-00020437",
-   "CTG": "10234185050",
-   "Fecha": "07/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52500.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH193LW -AH487OF",
-   "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000364",
-   "CTG": "10133703794",
-   "Fecha": "16/07/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44900.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Remitente Comercial Primario (G)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "BFD958 -GNF088",
-   "cuit_solicitante": "30708474998",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000158",
-   "CTG": "10130300910",
-   "Fecha": "18/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52500.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH279BM -AH265GR",
-   "cuit_solicitante": "27099923410",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000155",
-   "CTG": "10130299770",
-   "Fecha": "18/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GFL674 -OBK219",
-   "cuit_solicitante": "27099923410",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000156",
-   "CTG": "10130300458",
-   "Fecha": "19/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GTJ315 -JIO568",
-   "cuit_solicitante": "27099923410",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00010432",
-   "CTG": "10132350606",
-   "Fecha": "21/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44880.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "EMF291 -EVV623",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00007-00020013",
-   "CTG": "10233825497",
-   "Fecha": "22/07/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52480.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH323TF -AH422JE",
-   "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000232",
-   "CTG": "10134762728",
-   "Fecha": "28/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "CZG482 -OWP592",
-   "cuit_solicitante": "20317538759",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000231",
-   "CTG": "10134762457",
-   "Fecha": "28/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "FAS825 -FKH059",
-   "cuit_solicitante": "20317538759",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000230",
-   "CTG": "10134760997",
-   "Fecha": "28/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "FMQ344 -VOK924",
-   "cuit_solicitante": "20317538759",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009772",
-   "CTG": "10131525806",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AB716NV - ORR798",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00009769",
-   "CTG": "10131523799",
-   "Fecha": "30/04/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Pagador Flete Pagador (G/DG); Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "FBZ614 - DNA231",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00000551",
-   "CTG": "10234790856",
-   "Fecha": "31/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52880.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AE016KC -GLM822",
-   "cuit_solicitante": "30593247739",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
   {
    "CartaPorte": "00000-00011611",
    "CTG": "10134864930",
@@ -27905,7 +27621,7 @@
    "dif_kg": -15600.0
   }
  ],
- "total_filas": 1109,
+ "total_filas": 1093,
  "excluidos": [
   {
    "CTG": "10134836674",
@@ -28068,6 +27784,14 @@
    "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
   },
   {
+   "CTG": "10234084153",
+   "CartaPorte": "00007-00020310",
+   "Fecha": "03/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52440.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00007-00020310, maíz 52.440 kg, 03/08/2026, solic. 30547233774)"
+  },
+  {
    "CTG": "10232771948",
    "CartaPorte": "00000-00010529",
    "Fecha": "04/06/2026",
@@ -28082,6 +27806,22 @@
    "Cultivo": "Arveja",
    "Kg": 40050.0,
    "Motivo": "anulada en ARCA (CP 00000-00010528, arveja 40.050 kg, 04/06/2026)"
+  },
+  {
+   "CTG": "10129344629",
+   "CartaPorte": "00000-00000938",
+   "Fecha": "05/02/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52430.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000938, maíz 52.430 kg, 05/02/2026, solic. 30632870082)"
+  },
+  {
+   "CTG": "10234141085",
+   "CartaPorte": "00007-00020385",
+   "Fecha": "05/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00007-00020385, maíz 52.500 kg, 05/08/2026, solic. 30547233774)"
   },
   {
    "CTG": "10130764933",
@@ -28122,6 +27862,14 @@
    "Cultivo": "Soja",
    "Kg": 49960.0,
    "Motivo": "volvió a origen (CP 00000-00002218, soja 49.960 kg, 06/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10234185050",
+   "CartaPorte": "00007-00020437",
+   "Fecha": "07/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00007-00020437, maíz 52.500 kg, 07/08/2026, solic. 30547233774)"
   },
   {
    "CTG": "10232816072",
@@ -28236,6 +27984,38 @@
    "Motivo": "volvió a origen (CP 00000-00002224, soja 49.280 kg, 15/07/2026, solic. tercero 30707726322)"
   },
   {
+   "CTG": "10133703794",
+   "CartaPorte": "00000-00000364",
+   "Fecha": "16/07/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44900.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000364, maíz 44.900 kg, 16/07/2026, solic. 30708474998)"
+  },
+  {
+   "CTG": "10130300910",
+   "CartaPorte": "00000-00000158",
+   "Fecha": "18/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000158, maíz 52.500 kg, 18/03/2026, solic. 27099923410)"
+  },
+  {
+   "CTG": "10130299770",
+   "CartaPorte": "00000-00000155",
+   "Fecha": "18/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000155, maíz 45.000 kg, 18/03/2026, solic. 27099923410)"
+  },
+  {
+   "CTG": "10130300458",
+   "CartaPorte": "00000-00000156",
+   "Fecha": "19/03/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000156, maíz 45.000 kg, 19/03/2026, solic. 27099923410)"
+  },
+  {
    "CTG": "10233786303",
    "CartaPorte": "00007-00019980",
    "Fecha": "20/07/2026",
@@ -28250,6 +28030,22 @@
    "Cultivo": "Soja",
    "Kg": 52500.0,
    "Motivo": "volvió a origen (CP 00007-00019978, soja 52.500 kg, 20/07/2026, solic. tercero 30547233774)"
+  },
+  {
+   "CTG": "10132350606",
+   "CartaPorte": "00000-00010432",
+   "Fecha": "21/05/2026",
+   "Cultivo": "Maíz",
+   "Kg": 44880.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00010432, maíz 44.880 kg, 21/05/2026, solic. 30710712758)"
+  },
+  {
+   "CTG": "10233825497",
+   "CartaPorte": "00007-00020013",
+   "Fecha": "22/07/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52480.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00007-00020013, maíz 52.480 kg, 22/07/2026, solic. 30547233774)"
   },
   {
    "CTG": "10233878454",
@@ -28364,6 +28160,30 @@
    "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
   },
   {
+   "CTG": "10134762728",
+   "CartaPorte": "00000-00000232",
+   "Fecha": "28/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000232, maíz 45.000 kg, 28/08/2026, solic. 20317538759)"
+  },
+  {
+   "CTG": "10134762457",
+   "CartaPorte": "00000-00000231",
+   "Fecha": "28/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000231, maíz 45.000 kg, 28/08/2026, solic. 20317538759)"
+  },
+  {
+   "CTG": "10134760997",
+   "CartaPorte": "00000-00000230",
+   "Fecha": "28/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000230, maíz 45.000 kg, 28/08/2026, solic. 20317538759)"
+  },
+  {
    "CTG": "10132608926",
    "CartaPorte": "00000-00010504",
    "Fecha": "29/05/2026",
@@ -28426,6 +28246,22 @@
    "Cultivo": "Arveja",
    "Kg": 52000.0,
    "Motivo": "volvió a origen (CP 00000-00010618, arveja 52.000 kg, 29/06/2026)"
+  },
+  {
+   "CTG": "10131525806",
+   "CartaPorte": "00000-00009772",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00009772, maíz 45.000 kg, 30/04/2026)"
+  },
+  {
+   "CTG": "10131523799",
+   "CartaPorte": "00000-00009769",
+   "Fecha": "30/04/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00009769, maíz 45.000 kg, 30/04/2026)"
   },
   {
    "CTG": "10131513364",
@@ -28514,6 +28350,14 @@
    "Cultivo": "Maíz",
    "Kg": 45000.0,
    "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10234790856",
+   "CartaPorte": "00000-00000551",
+   "Fecha": "31/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52880.0,
+   "Motivo": "desestimada por el usuario 09/09/2026 — no corresponde ingresar (CP 00000-00000551, maíz 52.880 kg, 31/08/2026, solic. 30593247739)"
   }
  ]
 }
