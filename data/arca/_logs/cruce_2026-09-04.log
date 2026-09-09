@@ -1,0 +1,342 @@
+ACTUALIZAR CRUCE CP  Â·  04/09/2026 07:10
+Antes de esta corrida faltaban 105 camiones (68 de ellos para ingresar de verdad)
+
+==========================================================================
+  1/4  ARCA â€” bajando cartas de porte
+==========================================================================
+$ scripts/arca_cpe_scraper.py --desde 2026-07-21 --solo solicitadas --forzar
+[+] ARCA CPE Â· 2026-07-21 -> 2026-09-04 Â· 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 21/07/2026: pagina 1 Â· +30 filas (total 30)
+    solicitadas Productor 21/07/2026: pagina 2 Â· +13 filas (total 43)
+    solicitadas Productor 21/07/2026: no hay mas paginas
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 20/08/2026: pagina 1 Â· +30 filas (total 30)
+    solicitadas Productor 20/08/2026: pagina 2 Â· +7 filas (total 37)
+    solicitadas Productor 20/08/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 21/07/2026: pagina 1 Â· +30 filas (total 30)
+    solicitadas Operador 21/07/2026: pagina 2 Â· +5 filas (total 35)
+    solicitadas Operador 21/07/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 20/08/2026: pagina 1 Â· +5 filas (total 5)
+    solicitadas Operador 20/08/2026: no hay mas paginas
+    -> cpe_solicitadas.json: 120 filas
+[+] consolidado: 120 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+$ scripts/arca_cpe_scraper.py --desde 2026-07-21 --solo participantes --roles Destinatario (G/DG);Remitente Comercial Primario (G);Remitente Comercial Secundario (G);Remitente Comercial Productor (G);Transportista (G/DG);Representante Recibidor (G);Pagador Flete Pagador (G/DG) --forzar
+[+] ARCA CPE Â· 2026-07-21 -> 2026-09-04 Â· 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    filas por pagina -> 50
+    part Destinatario (G/DG 21/07/2026: pagina 1 Â· +1 filas (total 1)
+    part Destinatario (G/DG 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Destinatario (G/DG 20/08/2026: pagina 1 Â· +7 filas (total 7)
+    part Destinatario (G/DG 20/08/2026: no hay mas paginas
+    ROL Destinatario (G/DG): 8 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 21/07/2026: pagina 1 Â· +50 filas (total 50)
+    part Remitente Comercia 21/07/2026: pagina 2 Â· +6 filas (total 56)
+    part Remitente Comercia 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 20/08/2026: pagina 1 Â· +50 filas (total 50)
+    part Remitente Comercia 20/08/2026: pagina 2 Â· +36 filas (total 86)
+    part Remitente Comercia 20/08/2026: no hay mas paginas
+    ROL Remitente Comercial Primario (G): 142 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 21/07/2026: pagina 1 Â· +1 filas (total 1)
+    part Remitente Comercia 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 20/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 20/08/2026: no hay mas paginas
+    ROL Remitente Comercial Secundario (G): 1 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 21/07/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 20/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 20/08/2026: no hay mas paginas
+    ROL Remitente Comercial Productor (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Transportista (G/D 21/07/2026: pagina 1 Â· +4 filas (total 4)
+    part Transportista (G/D 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Transportista (G/D 20/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Transportista (G/D 20/08/2026: no hay mas paginas
+    ROL Transportista (G/DG): 4 filas en todo el rango
+    filas por pagina -> 50
+    part Representante Reci 21/07/2026: pagina 1 Â· +0 filas (total 0)
+    part Representante Reci 21/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Representante Reci 20/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Representante Reci 20/08/2026: no hay mas paginas
+    ROL Representante Recibidor (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Pagador Flete Paga 21/07/2026: pagina 1 Â· +50 filas (total 50)
+    part Pagador Flete Paga 21/07/2026: la grilla no cambio al pasar de pagina â€” corto aca
+    filas por pagina -> 50
+    part Pagador Flete Paga 20/08/2026: pagina 1 Â· +50 filas (total 50)
+    part Pagador Flete Paga 20/08/2026: pagina 2 Â· +45 filas (total 95)
+    part Pagador Flete Paga 20/08/2026: no hay mas paginas
+    ROL Pagador Flete Pagador (G/DG): 145 filas en todo el rango
+    -> cpe_participantes.json: 300 filas
+[+] consolidado: 294 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+$ scripts/arca_cpe_scraper.py --consolidar
+    -> cpe_solicitadas.json: 537 filas
+    -> cpe_participantes.json: 1225 filas
+[+] consolidado desde cache: 537 solicitadas + 1225 participantes -> 1337 CTG unicos
+
+==========================================================================
+  2/4  Finnegans â€” traslados de grano con CTG
+==========================================================================
+$ scripts/arca_ctg_cruce.py
+[+] Finnegans: 8158 traslados Â· 6895 con CTG (5173 CTG unicos) Â· 1263 sin CTG
+    214,025.4 tn con CTG
+        3418 camiones Â·   103,809.6 tn  PRODUCCIÃ“N (CPE propia)
+        1676 camiones Â·    53,883.0 tn  VENTA
+        1676 camiones Â·    53,844.5 tn  COMPRA
+         112 camiones Â·     2,104.7 tn  COMPRA SEMILLA
+           9 camiones Â·       252.4 tn  SEMILLA PROPIA
+           4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1702 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+
+==========================================================================
+  3/4  Cruce por CTG
+==========================================================================
+$ scripts/arca_ctg_cruce.py --cruce
+[+] ARCA 1337 CTG - Finnegans 5173 CTG (rango ARCA 2026-02-01 a 2026-09-03)
+    NO ingresados en Finnegans: 113 camiones - 5,254.2 tn
+    de esos, A INGRESAR (estado activo/confirmado): 73 - 3,423.6 tn
+    en Finnegans sin CPE en ARCA: 1923
+    con diferencia de kilos > 50: 1224
+
+    por estado:
+         60 camiones -   2,826.8 tn  Confirmada
+         34 camiones -   1,578.6 tn  Anulada
+          8 camiones -     366.7 tn  Activa con confirmacion de arribo
+          5 camiones -     230.1 tn  Activa
+          3 camiones -     117.3 tn  Desactivada
+          3 camiones -     134.7 tn  Rechazada
+
+    por cultivo:
+         74 camiones -   3,431.5 tn  MaÃ­z
+         23 camiones -   1,096.3 tn  Soja
+          9 camiones -     422.1 tn  Arveja
+          6 camiones -     276.8 tn  Trigo
+          1 camiones -      27.6 tn  Girasol
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+
+==========================================================================
+  RESULTADO
+==========================================================================
+[--] NO se cargo ninguno de los camiones que faltaban.
+
+[+] APARECIERON 8 cartas de porte nuevas sin cargar (345.7 tn)
+
+AHORA FALTAN: 113 camiones en total Â· 73 para ingresar de verdad (3,423.6 tn)
+
+Los que hay que cargar (confirmadas / activas), primeros 25:
+   CARTA DE PORTE     CTG           FECHA       CULTIVO           KG  ESTADO
+   00000-00000252     10134836674   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000251     10134835521   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000250     10134832146   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000249     10134830280   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000248     10134825722   01/09/2026  MaÃ­z          51,800  Confirmada
+   00000-00000247     10134824002   01/09/2026  MaÃ­z          43,000  Confirmada
+   00000-00000246     10134822786   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000245     10134822132   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000244     10134822013   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000243     10134818714   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000242     10134818635   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000241     10134818547   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000240     10134818464   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00000239     10134818321   01/09/2026  MaÃ­z          52,500  Confirmada
+   00000-00000238     10134818187   01/09/2026  MaÃ­z          45,000  Confirmada
+   00000-00011607     10134862428   02/09/2026  MaÃ­z          33,270  Confirmada
+   00000-00000254     10134840637   02/09/2026  MaÃ­z          44,500  Confirmada
+   00000-00000526     10134864654   02/09/2026  MaÃ­z          52,500  Confirmada
+   00000-00011593     10234852427   02/09/2026  Soja          43,600  Activa
+   00000-00011611     10134864930   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011610     10134864565   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011609     10134863883   02/09/2026  MaÃ­z          51,800  Activa
+   00000-00011606     10134860992   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011603     10134858926   02/09/2026  MaÃ­z          44,900  Activa
+   00000-00011602     10134858720   02/09/2026  MaÃ­z          44,800  Activa
+   ... y 48 mas (estan todos en la solapa del tablero)
+
+==========================================================================
+  4/4  Tablero â€” regenerando y publicando
+==========================================================================
+$ build.py
+[+] DW Postgres disponible (FNN_DW_HOST seteado)
+[+] Autenticando contra API de Finnegans ...
+[+] Token OK
+[+] Contratos COMPRA/VENTA: usando reporte REST de Finnegans (no DW)
+[+] Fallback API REST para contratos faltantes...
+  [compra  ] Resumen Contrato Compra Granos              -> GET /reports/ResumenContratoCompraGranos
+    -> 1378 filas (descarté 7 anulados de 1385)
+  [venta   ] Resumen Contratos Venta Granos              -> GET /reports/resumenContratosVentaGranos
+    -> 1160 filas (descarté 29 anulados de 1189)
+  [posicion] Composicion Saldos (Email c/Vendedor)       -> GET /reports/USR_ComposicionSaldosResumenParaEmail_API
+    -> 4570 filas (descarté 0 anulados de 4570)
+[+] Pendiente capeado: venta #922 YARA ARGENTINA SA -> pend 60 tn (regla usuario)
+[+] Pendiente capeado: venta #1064 ASOC DE COOPERATIVAS ARGEN -> pend 0 tn (regla usuario)
+[+] Pendiente capeado: venta #1217 ALLARIA AGRONEGOCIOS S.A. -> pend 0 tn (regla usuario)
+[+] Cobertura: venta #1419 ARGENTRADING S.A. 2,000 tn a 250.00 -> fuera de la posicion
+[+] Exclusiones manuales: venta -1 · compra -1 (datos sucios, ver comentario)
+[+] Filtro Anulado: venta 1160->1158  compra 1378->1377
+[+] Unificaciones de producto (maní en caja, semilla de maíz -> grano): 91 contratos
+[+] Comision de corredor (DW): 382 contratos de compra con % cargado
+[+] Libro mayor: recupero real compra 478,701,538 $ (456 grupos) · comisiones venta 363,432,395 $ (109 grupos)
+[+] % reales del mayor aplicados: 178 contratos de compra · 347 de venta
+[+] Canje: 195 clientes con facturas de insumos en canje · $ 552,588,143 facturados
+
+[+] Bajando Composicion Saldo Cliente (snapshot actual via API REST)...
+    -> 5323 filas
+    -> 5323 filas de saldos, 661 con condicion 'Canje'
+
+[+] Bajando Traslados de Granos (desde jul-2025) para cruce Cliente x Comprador...
+    -> 6434 traslados totales, 2548 de COMPRA CV / VENTA CV
+    -> datos RAIZ adjuntos: 890 camiones con ambas liquidaciones reales
+    -> 1273 CTGs unicos, 1273 con cliente+comprador completos
+
+[+] Bajando Trazabilidad desde datawarehouse...
+    -> 10405 filas raw tabla CRUCE
+    -> 7381 filas raw tabla traslado_de_granos (enriquecimiento)
+    -> 10405 filas fusionadas (CRUCE primaria + traslado_de_granos enrich)
+    -> 7680 CTGs unicos: 2598 con ambos contratos, 5016 sin compra, 328 sin venta
+
+[+] Bajando precios pizarra BCR...
+    -> TC USD/ARS: 1502.0
+       soja: ARS 564000.0 / USD 375.5 (estim=False)
+       maiz: ARS 285380.0 / USD 190.0 (estim=False)
+       trigo: ARS 356700.0 / USD 237.48 (estim=False)
+       girasol: ARS None / USD None (estim=False)
+       sorgo: ARS 272600.0 / USD 181.49 (estim=False)
+
+[+] Cargando data Cargill GPS (si existe)...
+    -> movements.json: 3202 entradas
+    -> invoices.json: 5070 entradas
+    -> payments.json: 901 entradas
+    -> movements_detail.json: 3191 entradas
+
+[+] Calculando gastos a descontar por contrato (Cargill services)...
+    -> 516 contratos con CTG en traza · 149 con gastos de Cargill
+    -> comision real Cargill por CTG para Resultados: 2182 camiones
+
+[+] Cargando data LDC (si existe)...
+    -> settlements.json: 161 entradas
+    -> fixations.json: 19 entradas
+    -> ldc_ctgs.json: 929 entradas
+
+[+] Cargando data ACA (si existe)...
+    -> aca_ctgs.json: 133 entradas
+
+[+] Cargando data FYO (si existe)...
+    -> fyo_ctgs.json: 72 entradas
+
+[+] Cargando data Intagro (si existe)...
+    -> intagro_ctgs.json: 247 entradas
+
+[+] Cargando data Bunge (si existe)...
+    -> bunge_ctgs.json: 196 entradas
+
+[+] Cargando data COFCO (si existe)...
+    -> cofco_ctgs.json: 194 entradas
+
+[+] Cargando data Allaria (si existe)...
+    -> allaria_ctgs.json: 418 entradas
+    -> mercaderias.json: 104 entradas
+    -> cuenta_corriente.json: 4 entradas
+
+[+] Cargados 159 pagos iniciales desde proyectado_pagos.json
+[+] Cruce trigo 25/26: 1081 camiones compra · 3084 venta
+
+[+] Calculando COSECHADO desde traslados (solo Traslado CPE Agronasaja, 25-26)...
+    -> 11 productos con cosechado
+          41,887.49 tn  Grano Maíz
+          20,575.83 tn  Grano Soja
+          17,598.16 tn  Grano Trigo Pan
+           1,150.74 tn  Grano Arveja
+             900.24 tn  Grano Girasol
+             448.87 tn  Grano Maní en caja
+    -> PRÉSTAMO CP: 400 cartas de porte prestadas · 20,133.9 tn · 58 filas (todas las campañas)
+
+[+] Bajando Liquidaciones VENTA desde DW...
+    -> 413 liquidaciones venta con COE
+    -> 6 liquidaciones secundarias con importes
+
+[+] Bajando Stock por Deposito (DW primero)...
+    -> 7634 filas desde DW
+    -> SILO:      16 productos
+    -> SILOBOLSA: 9 productos
+    -> BOLSAS:    172 productos
+    -> DESCARTE:  3 productos
+
+[+] Bajando DEM-SUP Soja (fuente Extranet Agronasaja / DW)...
+    -> granel en campo (silo bolsa): 1,465.7 tn · en semillero: 3,168.7 tn · clasificado: 2,775.6 tn · venta pendiente: 3,806.9 tn
+
+[+] Bajando DEM-SUP Trigo (fuente Extranet Agronasaja)...
+    -> campo 432.2 tn · semillero 0.0 · clasificado 6,274.7 · corte 414.1 · venta desp 5,175.4
+
+[+] Bajando Finales de Compra (balanza) + calculando factor...
+[+] Tarifas de venta por entregador: 24 cargadas
+[+] Liq. pendientes de pasar: 20 grupos (snapshot 2026-08-24)
+    -> 2154 liquidaciones · estados: {'sin_factor': 1459, 'calc_only': 550, 'solo_cereal': 92, 'ok': 39, 'revisar': 14}
+
+[+] Calculando Taqueo CTG (seguimiento fino + pendiente liquidar)...
+    -> pendiente liquidar: 29219.3 tn · duplicados/falta-vincular calculados
+
+[+] Cargando Taqueo entregado-sin-liquidar (si existe)...
+    -> taqueo_liquidar.json: 122 contratos · 827 CTG · 24846.2 tn
+
+[+] Cargando cruce CP ARCA vs Finnegans (si existe)...
+    -> ARCA 1337 CTG vs Finnegans 5173 CTG · no ingresados 113 (a ingresar 73)
+
+[+] Bajando Producción (Portal de Producción Agronasaja)...
+    -> cosecha 25/26 (KG AGNSJ, 4040 retiros): 6 cultivos · cosechado 70124 tn · pend AGNSJ 2262 tn
+    -> siembra 26/27: 315 lotes leídos pero EXCLUIDA del tablero (sin producción real, pedido del usuario)
+    -> 26/27 (Excel del usuario) Grano Trigo Pan: 3,083.8 tn · 22 lotes
+    -> 26/27 (Excel del usuario) SEMILLA TRIGO: 4,721.2 tn · 45 lotes
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Soja: 20,900.0 tn
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Maíz: 37,407.0 tn
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Girasol: 686.0 tn
+    -> Producción AGNSJ según %: 12,313 ha cosechadas · 59,053 tn · avance 96% · pend 492 ha
+    -> Grano Soja: CPE 20,575.8 - a semilla 3,056.8 = 17,519.0 tn (portal decía 24,736.2)
+    -> Grano Trigo Pan: CPE 17,598.2 - a semilla 3,713.5 = 13,884.7 tn
+    -> Grano Maíz: CPE 41,887.5 - a semilla 0.0 = 41,887.5 tn (portal decía 43,631.5)
+    -> Grano Girasol: CPE 900.2 - a semilla 0.0 = 900.2 tn (portal decía 895.8)
+    -> Grano Maíz: produccion segun % 37,044.8 = 37,044.8 tn (antes 41,887.5)
+    -> Grano Soja: produccion segun % 20,407.7 - a semilla 3,056.8 = 17,350.9 tn (antes 17,519.0)
+    -> Grano Maíz Pisingallo: produccion segun % 353.4 = 353.4 tn (antes 227.8)
+    -> Grano Girasol: produccion segun % 642.7 = 642.7 tn (antes 900.2)
+    -> Grano Sorgo: produccion segun % 230.5 = 230.5 tn (antes 246.9)
+    -> Grano Maní: produccion segun % 373.8 = 373.8 tn (antes 386.1)
+    -> cosechado propio por variedad: 21 variedades · 7,424.9 tn (soja 3,056.8 · trigo 3,713.5)
+[+] Cta Cte Extranets: bunge 8 páginas con datos
+[+] Cta Cte Extranets: agrinter 4 páginas con datos
+[+] Cta Cte Extranets: cargill 1367 movs + 260 pagos · ldc 161 liq · allaria 4 cuentas
+[+] Cta Cte Extranets: pendiente Finnegans por organización: 59 orgs
+[+] Finales auto-hechas (Finnegans: pen. efectuar final = 0): 197 contratos
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\index.html  (47,626.0 KB)
+$ add data/arca_cruce.json data/ctg_finnegans.json data/arca/cpe_solicitadas.json data/arca/cpe_participantes.json
+$ commit -q -m Cruce CP ARCA vs Finnegans: datos al 2026-09-04
+$ push -q origin main
+El tablero se regenera en GitHub y en unos 10 minutos esta en la pagina.
+
+Listo en 14 min 16 seg.

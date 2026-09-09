@@ -1,0 +1,88 @@
+ACTUALIZAR CRUCE CP  ·  08/09/2026 08:20
+Antes de esta corrida faltaban 116 camiones (73 de ellos para ingresar de verdad)
+Y faltaban pasar 131 liquidaciones
+
+==========================================================================
+  1/6  ARCA — bajando cartas de porte
+==========================================================================
+$ scripts/arca_cpe_scraper.py --desde 2026-07-25 --solo solicitadas --forzar
+[+] ARCA CPE · 2026-07-25 -> 2026-09-08 · 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 25/07/2026: pagina 1 · +30 filas (total 30)
+    solicitadas Productor 25/07/2026: pagina 2 · +30 filas (total 60)
+    solicitadas Productor 25/07/2026: no hay mas paginas
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 24/08/2026: pagina 1 · +30 filas (total 30)
+    solicitadas Productor 24/08/2026: pagina 2 · +8 filas (total 38)
+    solicitadas Productor 24/08/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 25/07/2026: pagina 1 · +21 filas (total 21)
+    solicitadas Operador 25/07/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 24/08/2026: pagina 1 · +5 filas (total 5)
+    solicitadas Operador 24/08/2026: no hay mas paginas
+    -> cpe_solicitadas.json: 124 filas
+[+] consolidado: 124 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+$ scripts/arca_cpe_scraper.py --desde 2026-07-25 --solo participantes --roles Destinatario (G/DG);Remitente Comercial Primario (G);Remitente Comercial Secundario (G);Remitente Comercial Productor (G);Transportista (G/DG);Representante Recibidor (G);Pagador Flete Pagador (G/DG) --forzar
+[+] ARCA CPE · 2026-07-25 -> 2026-09-08 · 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    filas por pagina -> 50
+    part Destinatario (G/DG 25/07/2026: pagina 1 · +1 filas (total 1)
+    part Destinatario (G/DG 25/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Destinatario (G/DG 24/08/2026: pagina 1 · +7 filas (total 7)
+    part Destinatario (G/DG 24/08/2026: no hay mas paginas
+    ROL Destinatario (G/DG): 8 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 25/07/2026: pagina 1 · +50 filas (total 50)
+    part Remitente Comercia 25/07/2026: pagina 2 · +16 filas (total 66)
+    part Remitente Comercia 25/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 24/08/2026: pagina 1 · +50 filas (total 50)
+    part Remitente Comercia 24/08/2026: pagina 2 · +23 filas (total 73)
+    part Remitente Comercia 24/08/2026: no hay mas paginas
+    ROL Remitente Comercial Primario (G): 139 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 25/07/2026: pagina 1 · +1 filas (total 1)
+    part Remitente Comercia 25/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 24/08/2026: pagina 1 · +0 filas (total 0)
+    part Remitente Comercia 24/08/2026: no hay mas paginas
+    ROL Remitente Comercial Secundario (G): 1 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 25/07/2026: pagina 1 · +0 filas (total 0)
+    part Remitente Comercia 25/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 24/08/2026: pagina 1 · +0 filas (total 0)
+    part Remitente Comercia 24/08/2026: no hay mas paginas
+    ROL Remitente Comercial Productor (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Transportista (G/D 25/07/2026: pagina 1 · +3 filas (total 3)
+    part Transportista (G/D 25/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Transportista (G/D 24/08/2026: pagina 1 · +0 filas (total 0)
+    part Transportista (G/D 24/08/2026: no hay mas paginas
+    ROL Transportista (G/DG): 3 filas en todo el rango
+    filas por pagina -> 50
+    part Representante Reci 25/07/2026: pagina 1 · +0 filas (total 0)
+    part Representante Reci 25/07/2026: no hay mas paginas
+    [!] fallo part_Representante Recibido_24-08-2026: Error Page.evaluate_handle: Target crashed  - sigo con la siguiente
+    ROL Representante Recibidor (G): 0 filas en todo el rango
+    [!] fallo part_Pagador Flete Pagador _25-07-2026: Error Page.query_selector: Target crashed  - sigo con la siguiente
+    [!] fallo part_Pagador Flete Pagador _24-08-2026: Error Page.query_selector: Target crashed  - sigo con la siguiente
+    ROL Pagador Flete Pagador (G/DG): 0 filas en todo el rango
+    -> cpe_participantes.json: 151 filas
+[+] consolidado: 151 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
