@@ -1,16 +1,16 @@
 {
- "generado": "2026-09-09T13:59:06",
+ "generado": "2026-09-09T14:10:58",
  "rango_arca": [
   "2026-02-01",
   "2026-09-02"
  ],
  "kpi": {
-  "arca_ctg": 1172,
+  "arca_ctg": 1161,
   "fnn_ctg": 5192,
-  "no_ingresados": 86,
-  "no_ingresados_tn": 4041.5,
-  "a_ingresar": 50,
-  "a_ingresar_tn": 2378.0,
+  "no_ingresados": 75,
+  "no_ingresados_tn": 3489.6,
+  "a_ingresar": 39,
+  "a_ingresar_tn": 1826.1,
   "sin_arca": 2066,
   "dif_kg_n": 1086
  },
@@ -20,8 +20,8 @@
    "tn": 2992.0900000000006
   },
   "Soja": {
-   "camiones": 19,
-   "tn": 933.3900000000001
+   "camiones": 8,
+   "tn": 381.46
   },
   "Arveja": {
    "camiones": 2,
@@ -38,8 +38,8 @@
    "tn": 1985.25
   },
   "Participante": {
-   "camiones": 41,
-   "tn": 1966.24
+   "camiones": 30,
+   "tn": 1414.31
   },
   "Participante + Solicitada": {
    "camiones": 2,
@@ -48,8 +48,8 @@
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 43,
-   "tn": 2056.24
+   "camiones": 32,
+   "tn": 1504.31
   },
   "Anulada": {
    "camiones": 30,
@@ -397,57 +397,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00002220",
-   "CTG": "10133403452",
-   "Fecha": "06/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 48360.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NEX631 -PMD280",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002219",
-   "CTG": "10133403385",
-   "Fecha": "06/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 49580.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "KAQ917 -AB102BT",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002218",
-   "CTG": "10133403274",
-   "Fecha": "06/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 49960.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "KTO995 -AB571DE",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00007-00020437",
    "CTG": "10234185050",
    "Fecha": "07/08/2026",
@@ -461,108 +410,6 @@
    "kg_fnn": 0.0,
    "patente": "AH193LW -AH487OF",
    "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002223",
-   "CTG": "10133593701",
-   "Fecha": "13/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 52140.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "MEC465 -LED191",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002222",
-   "CTG": "10133593538",
-   "Fecha": "13/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 53940.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NEX631 -PMD280",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002221",
-   "CTG": "10133593354",
-   "Fecha": "13/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 52680.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "KTO995 -AB571DE",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002226",
-   "CTG": "10133648337",
-   "Fecha": "15/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 40470.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "MEC465 -LED191",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002225",
-   "CTG": "10133648304",
-   "Fecha": "15/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 50940.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "NEX631 -PMD280",
-   "cuit_solicitante": "30707726322",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00002224",
-   "CTG": "10133648265",
-   "Fecha": "15/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 49280.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "KTO995 -AB571DE",
-   "cuit_solicitante": "30707726322",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -631,40 +478,6 @@
    "kg_fnn": 0.0,
    "patente": "GTJ315 -JIO568",
    "cuit_solicitante": "27099923410",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00007-00019980",
-   "CTG": "10233786303",
-   "Fecha": "20/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 52080.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH323TF -AH422JE",
-   "cuit_solicitante": "30547233774",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00007-00019978",
-   "CTG": "10233785555",
-   "Fecha": "20/07/2026",
-   "Cultivo": "Soja",
-   "Kg": 52500.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Transportista (G/DG)",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AH193LW -AH487OF",
-   "cuit_solicitante": "30547233774",
    "a_ingresar": true,
    "dif_kg": 0.0
   },
@@ -29000,7 +28813,7 @@
    "dif_kg": -15600.0
   }
  ],
- "total_filas": 1172,
+ "total_filas": 1161,
  "excluidos": [
   {
    "CTG": "10232771948",
@@ -29017,6 +28830,30 @@
    "Cultivo": "Arveja",
    "Kg": 44830.0,
    "Motivo": "volvió a origen (CP 00000-00010531, arveja 44.830 kg, 06/06/2026)"
+  },
+  {
+   "CTG": "10133403452",
+   "CartaPorte": "00000-00002220",
+   "Fecha": "06/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 48360.0,
+   "Motivo": "volvió a origen (CP 00000-00002220, soja 48.360 kg, 06/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133403385",
+   "CartaPorte": "00000-00002219",
+   "Fecha": "06/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 49580.0,
+   "Motivo": "volvió a origen (CP 00000-00002219, soja 49.580 kg, 06/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133403274",
+   "CartaPorte": "00000-00002218",
+   "Fecha": "06/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 49960.0,
+   "Motivo": "volvió a origen (CP 00000-00002218, soja 49.960 kg, 06/07/2026, solic. tercero 30707726322)"
   },
   {
    "CTG": "10232816072",
@@ -29059,12 +28896,76 @@
    "Motivo": "volvió a origen (CP 00000-00000209, trigo 52.320 kg, 12/02/2026)"
   },
   {
+   "CTG": "10133593701",
+   "CartaPorte": "00000-00002223",
+   "Fecha": "13/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 52140.0,
+   "Motivo": "volvió a origen (CP 00000-00002223, soja 52.140 kg, 13/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133593538",
+   "CartaPorte": "00000-00002222",
+   "Fecha": "13/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 53940.0,
+   "Motivo": "volvió a origen (CP 00000-00002222, soja 53.940 kg, 13/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133593354",
+   "CartaPorte": "00000-00002221",
+   "Fecha": "13/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 52680.0,
+   "Motivo": "volvió a origen (CP 00000-00002221, soja 52.680 kg, 13/07/2026, solic. tercero 30707726322)"
+  },
+  {
    "CTG": "10232093810",
    "CartaPorte": "00000-00010241",
    "Fecha": "14/05/2026",
    "Cultivo": "Trigo",
    "Kg": 44880.0,
    "Motivo": "volvió a origen (CP 00000-00010241, trigo 44.880 kg, 14/05/2026)"
+  },
+  {
+   "CTG": "10133648337",
+   "CartaPorte": "00000-00002226",
+   "Fecha": "15/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 40470.0,
+   "Motivo": "volvió a origen (CP 00000-00002226, soja 40.470 kg, 15/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133648304",
+   "CartaPorte": "00000-00002225",
+   "Fecha": "15/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 50940.0,
+   "Motivo": "volvió a origen (CP 00000-00002225, soja 50.940 kg, 15/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10133648265",
+   "CartaPorte": "00000-00002224",
+   "Fecha": "15/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 49280.0,
+   "Motivo": "volvió a origen (CP 00000-00002224, soja 49.280 kg, 15/07/2026, solic. tercero 30707726322)"
+  },
+  {
+   "CTG": "10233786303",
+   "CartaPorte": "00007-00019980",
+   "Fecha": "20/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 52080.0,
+   "Motivo": "volvió a origen (CP 00007-00019980, soja 52.080 kg, 20/07/2026, solic. tercero 30547233774)"
+  },
+  {
+   "CTG": "10233785555",
+   "CartaPorte": "00007-00019978",
+   "Fecha": "20/07/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Motivo": "volvió a origen (CP 00007-00019978, soja 52.500 kg, 20/07/2026, solic. tercero 30547233774)"
   },
   {
    "CTG": "10233878454",
