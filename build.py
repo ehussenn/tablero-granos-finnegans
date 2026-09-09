@@ -683,6 +683,9 @@ window.apiFetch = function(path, opts){
 
   /* tabla */
   .tbl-wrap{overflow:auto;max-height:620px;border:1px solid var(--line);border-radius:8px}
+  /* Cruce Liquidaciones: en pantallas angostas la columna de KPIs pasa arriba
+     (sino la tabla queda demasiado apretada) */
+  @media (max-width:1280px){ #aliq-grid{grid-template-columns:1fr !important} }
   /* Cruce CP ARCA: la tabla tiene muchas columnas -> encabezados en dos lineas
      y ancho al 100% para que no quede ninguna cortada (pedido usuario 03/09) */
   /* Posicion Granaria: dos vistas (posicion / operaciones de cobertura) */
@@ -2613,7 +2616,9 @@ window.apiFetch = function(path, opts){
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="aliq-chips"></div>
       </div>
 
-      <div style="display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start">
+      <!-- minmax(0,1fr): sin esto la tabla (nowrap) empujaba la columna más allá de la
+           pantalla y la página se veía cortada (reporte usuario 09/09) -->
+      <div id="aliq-grid" style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:14px;align-items:start">
         <!-- columna izquierda -->
         <div>
           <div class="section" style="margin:0 0 12px">
@@ -2654,6 +2659,7 @@ window.apiFetch = function(path, opts){
               <option value="venta">Venta</option>
               <option value="compra">Compra</option>
             </select></div>
+            <div><label>GRANO</label><select id="aliq-grano"><option value="">Todos</option></select></div>
             <div><label>BUSCAR</label><input id="aliq-txt" placeholder="COE / CUIT / razón social / documento"
               style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
             <div><label>DESDE</label><input type="date" id="aliq-desde"
@@ -10829,6 +10835,14 @@ document.addEventListener('click', (e) => {
     return o;
   }
 
+  // grano "base" de una fila: sin sufijo de ajuste y con el nombre unificado entre
+  // ARCA ("MAIZ") y Finnegans ("Grano Maíz") — mayúsculas y sin acentos
+  function aliqGranoBase(r){
+    let g = String((r.granoTxt || r.grano || "sin bajar")).replace(" (ajuste)", "").trim();
+    if(!g || g === "sin bajar") return "sin bajar";
+    return g.replace(/^Grano\s+/i, "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().trim();
+  }
+
   // base: aplica los filtros; "omitir" saltea una dimension para que cada desglose
   // siga mostrando sus otras opciones (cruzado, como en su Power BI)
   function base(v, omitir){
@@ -10839,6 +10853,9 @@ document.addEventListener('click', (e) => {
       if(!f) return false; return (!d1 || f >= d1) && (!d2 || f <= d2); });
     const lado = (document.getElementById("aliq-lado") || {}).value || "";
     if(lado) rs = rs.filter(r => (r.lado || "") === lado);
+    // filtro por GRANO (pedido usuario 09/09) — sobre el grano "base" (sin " (ajuste)")
+    const gr = (document.getElementById("aliq-grano") || {}).value || "";
+    if(gr) rs = rs.filter(r => aliqGranoBase(r) === gr);
     const propias = (v !== "sin_arca" && v !== "mal_tipeados");
     if(casSel && !omitir.cas && propias)
       rs = rs.filter(r => (r.tipo + "|" + r.flujo) === casSel);
@@ -11090,8 +11107,18 @@ document.addEventListener('click', (e) => {
 
   ["aliq-vista"].forEach(id => { const e = document.getElementById(id);
     if(e) e.addEventListener("change", () => { orgSel = ""; sisSel = ""; render(); }); });
-  ["aliq-lado", "aliq-desde", "aliq-hasta"].forEach(id => { const e = document.getElementById(id);
+  ["aliq-lado", "aliq-grano", "aliq-desde", "aliq-hasta"].forEach(id => { const e = document.getElementById(id);
     if(e) e.addEventListener("change", render); });
+  // poblar el filtro de GRANO con los granos de todas las vistas (base, sin "(ajuste)")
+  (() => {
+    const sel = document.getElementById("aliq-grano");
+    if(!sel) return;
+    const gs = new Set();
+    ["filas", "faltan", "sin_arca", "mal_tipeados"].forEach(v =>
+      (L && L[v] || []).forEach(r => gs.add(aliqGranoBase(deco(r, v)))));
+    sel.innerHTML = '<option value="">Todos</option>' +
+      [...gs].filter(Boolean).sort().map(g => `<option>${escapeHtml(g)}</option>`).join("");
+  })();
   const tx = document.getElementById("aliq-txt");
   if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
   const xl = document.getElementById("aliq-excel");
@@ -11106,7 +11133,7 @@ document.addEventListener('click', (e) => {
   const lm = document.getElementById("aliq-limpiar");
   if(lm) lm.addEventListener("click", () => {
     casSel = ""; solSel = ""; orgSel = ""; sisSel = "";
-    ["aliq-lado","aliq-txt","aliq-desde","aliq-hasta"].forEach(id => {
+    ["aliq-lado","aliq-grano","aliq-txt","aliq-desde","aliq-hasta"].forEach(id => {
       const e = document.getElementById(id); if(e) e.value = ""; });
     render();
   });
@@ -11422,23 +11449,32 @@ document.addEventListener('click', (e) => {
     .forEach(a => a.addEventListener("click", () => setTimeout(() => { cultivos(); render(); }, 50)));
 })();
 
-/* ===== ORDEN POR ENCABEZADO en tablas de detalle =====
-   Click en un encabezado de la pestaña Detalle Contratos o de cualquier tabla de
-   drill-down ordena por esa columna (asc ▲ ⇄ desc ▼). Entiende números formato
-   es-AR (1.234,5), fechas dd/mm/aa y texto. La fila Total queda siempre abajo. */
+/* ===== ORDEN POR ENCABEZADO — GLOBAL (regla usuario 09/09) =====
+   Click en CUALQUIER encabezado de tabla de la página ordena por esa columna
+   (asc ▲ ⇄ desc ▼). Entiende números es-AR (1.234,5), fechas dd/mm/aa e ISO
+   yyyy-mm-dd, y texto. Las filas TOTAL quedan siempre abajo.
+   Se salen: (a) tablas con orden propio (encabezados con data-k / data-sort-*,
+   que ya re-renderizan ordenado) — esas quedan como están; (b) tablas con
+   estructura no reordenable: calendarios, matriz de cruce, la Posición Granaria
+   (agrupada por familias) y listas con filas de detalle desplegables. */
+const SORT_NOSORT = new Set(['cx-matrix', 'cal-tbl', 'cal-cp-tbl', 'pl-tbl', 'pn-tabla', 'tz-tbl', 'fl-tbl']);
 document.addEventListener('click', (e) => {
   const th = e.target.closest('th');
   if(!th) return;
   if(th.classList.contains('sum-th')) return;   // la columna de tilde no ordena
+  if(e.target.closest('.col-resize')) return;   // el grip de ancho no ordena
+  if(!th.closest('thead')) return;              // solo encabezados reales
+  if(th.dataset.k || th.hasAttribute('data-sort-vp') || th.dataset.sort) return;  // orden propio
   const tabla = th.closest('table');
   if(!tabla) return;
-  if(!(tabla.id === 'pnct-tabla' || tabla.classList.contains('pn-drill-tbl'))) return;
+  if(SORT_NOSORT.has(tabla.id)) return;
   const trh = th.parentElement;
   const idx = [...trh.children].indexOf(th);
   const tbody = tabla.querySelector('tbody');
   if(!tbody) return;
   const rows = [...tbody.querySelectorAll('tr')];
-  const tot = rows.filter(r => r.classList.contains('pn-drill-tot') || r.classList.contains('pn-total'));
+  const tot = rows.filter(r => r.classList.contains('pn-drill-tot') || r.classList.contains('pn-total')
+    || /^(TOTAL|🟨)/i.test((r.children[0] && r.children[0].textContent || '').trim()));
   const data = rows.filter(r => !tot.includes(r) && r.children.length > idx);
   if(data.length < 2) return;
   const dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
@@ -11450,6 +11486,8 @@ document.addEventListener('click', (e) => {
     if(!s || s === '—') return {num: null, str: ''};
     const mF = s.match(/^(\d{2})\/(\d{2})\/(\d{2,4})$/);       // fecha dd/mm/aa
     if(mF){ const y = mF[3].length === 2 ? '20' + mF[3] : mF[3]; return {num: Number(y + mF[2] + mF[1]), str: s}; }
+    const mI = s.match(/^(\d{4})-(\d{2})-(\d{2})/);            // fecha ISO yyyy-mm-dd
+    if(mI) return {num: Number(mI[1] + mI[2] + mI[3]), str: s};
     const limpio = s.replace(/[^0-9,.\-]/g, '');
     if(/\d/.test(limpio)){
       const v = parseFloat(limpio.replace(/\./g, '').replace(',', '.'));
