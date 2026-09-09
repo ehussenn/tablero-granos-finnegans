@@ -1,4 +1,17 @@
 [
+ "Chofer/Conductor primer tramo (G/DG)",
+ "Comisionista (DG)",
+ "Conductor Segundo Tramo (G/DG)",
+ "Corredor (DG)",
+ "Corredor Venta Primaria (G)",
+ "Corredor Venta Secundaria (G)",
+ "Intermediario Flete (G/DG)",
+ "Mercado a término (G/DG)",
+ "Remitente Comercial (DG)",
  "Remitente Comercial Productor (G)",
- "Representante Recibidor (G)"
+ "Remitente Comercial Secundario (G)",
+ "Remitente comercial venta secundaria 2 (G)",
+ "Representante Entregador (G)",
+ "Representante Recibidor (G)",
+ "Transportista segundo tramo (G/DG)"
 ]

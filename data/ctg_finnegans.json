@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8197,
-  "con_ctg": 6920,
-  "sin_ctg": 1277,
-  "ctg_unicos": 5192,
+  "filas": 8202,
+  "con_ctg": 6922,
+  "sin_ctg": 1280,
+  "ctg_unicos": 5194,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1720,8 +1720,8 @@
     "tn": 252.4
    },
    "COMPRA SEMILLA": {
-    "n": 113,
-    "tn": 2109.208
+    "n": 114,
+    "tn": 2113.248
    },
    "COMPENSACIÓN": {
     "n": 4,
@@ -1736,11 +1736,11 @@
     "tn": 54042.43199999999
    },
    "PRODUCCIÓN (CPE propia)": {
-    "n": 3432,
-    "tn": 104188.52500000002
+    "n": 3433,
+    "tn": 104217.68300000002
    }
   },
-  "tn_total": 214704.314
+  "tn_total": 214737.512
  },
  "rows": [
   {
@@ -13172,6 +13172,36 @@
    "cancelado": false,
    "contrato": "",
    "doc": "REC-SEM-TERC - 249"
+  },
+  {
+   "ctg": "003300002180",
+   "cp": "",
+   "fecha": "09-09-2026",
+   "fecha_partida": "09-09-2026",
+   "fecha_descarga": "09-09-2026",
+   "grano": "SEM. GRANEL CEBADILLA BARENO (kilos)",
+   "kg": 4040.0,
+   "kg_sin_merma": 4040.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "PALAVERSICH Y CIA SA",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla TERCEROS",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-TERC - 250"
   },
   {
    "ctg": "",
@@ -92822,6 +92852,96 @@
    "cancelado": false,
    "contrato": "50e22-alpino",
    "doc": "TRAS-CPRA-SEM - 2117"
+  },
+  {
+   "ctg": "",
+   "cp": "R-0001-00009244",
+   "fecha": "09-09-2026",
+   "fecha_partida": "09-09-2026",
+   "fecha_descarga": "09-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 50E22 SE PRIMU",
+   "kg": 34819.0,
+   "kg_sin_merma": 35160.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "ALPINOS S.A. C",
+   "loc_origen": "WASHINGTON",
+   "loc_destino": "",
+   "prov_origen": "Cordoba",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "50e22-alpino",
+   "doc": "TRAS-CPRA-SEM - 2118"
+  },
+  {
+   "ctg": "",
+   "cp": "R-0001-00009243",
+   "fecha": "09-09-2026",
+   "fecha_partida": "09-09-2026",
+   "fecha_descarga": "09-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 50E22 SE PRIMU",
+   "kg": 33967.0,
+   "kg_sin_merma": 34380.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "ALPINOS S.A. C",
+   "loc_origen": "WASHINGTON",
+   "loc_destino": "",
+   "prov_origen": "Cordoba",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "50e22-alpino",
+   "doc": "TRAS-CPRA-SEM - 2119"
+  },
+  {
+   "ctg": "",
+   "cp": "R-0001-00009246",
+   "fecha": "09-09-2026",
+   "fecha_partida": "09-09-2026",
+   "fecha_descarga": "09-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 50E22 SE PRIMU",
+   "kg": 33298.0,
+   "kg_sin_merma": 33700.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "ALPINOS S.A. C",
+   "loc_origen": "WASHINGTON",
+   "loc_destino": "",
+   "prov_origen": "Cordoba",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla COMPRA",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "50e22-alpino",
+   "doc": "TRAS-CPRA-SEM - 2120"
   },
   {
    "ctg": "10125041660",
@@ -191070,7 +191190,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118128Primario",
+   "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 6248"
   },
   {
@@ -191100,7 +191220,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118128Primario",
+   "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 6249"
   },
   {
@@ -191130,7 +191250,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118128Primario",
+   "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 6250"
   },
   {
@@ -191610,7 +191730,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118128Primario",
+   "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 6266"
   },
   {
@@ -191640,7 +191760,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118128Primario",
+   "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 6267"
   },
   {
@@ -237559,7 +237679,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "ACOPIOS DEL SUR SA",
+   "org": "FERTILIZANTES FULLTEC SRL",
    "loc_origen": "DE LA SERNA",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Cordoba",
@@ -237570,7 +237690,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 7833"
   },
   {
@@ -247500,7 +247620,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN246",
    "doc": "TRAS-VTA-GRANO-AS - 8169"
   },
   {
@@ -247530,7 +247650,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN246",
    "doc": "TRAS-VTA-GRANO-AS - 8170"
   },
   {
@@ -247560,7 +247680,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN246",
    "doc": "TRAS-VTA-GRANO-AS - 8171"
   },
   {
@@ -247590,7 +247710,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8172"
   },
   {
@@ -247620,7 +247740,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8173"
   },
   {
@@ -247650,8 +247770,38 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8174"
+  },
+  {
+   "ctg": "10234949830",
+   "cp": "00000-00011630",
+   "fecha": "09-09-2026",
+   "fecha_partida": "07-09-2026",
+   "fecha_descarga": "09-09-2026",
+   "grano": "Grano Soja",
+   "kg": 29158.0,
+   "kg_sin_merma": 29158.0,
+   "kg_afip": 0.0,
+   "patente": "TUM480",
+   "chofer": "MERCADO SEBASTIAN ALEXIS",
+   "transportista": "MERCADO SEBASTIAN ALEXIS",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "BUNGE ARGENTINA S.A.",
+   "destino": "RENOVA SA",
+   "org": "YARA ARGENTINA SA",
+   "loc_origen": "BENGOLEA",
+   "loc_destino": "TIMBUES JOSE MARIA",
+   "prov_origen": "Cordoba",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8175"
   }
  ]
 }
