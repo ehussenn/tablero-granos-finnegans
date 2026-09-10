@@ -15476,7 +15476,7 @@ def dw_query(table_name: str, date_cols: set | None = None) -> list[dict] | None
 # vienen SIEMPRE vacias (verificado sobre 331 camiones de maiz), asi que el
 # certificado NO se puede leer de ahi: hay que cruzar contra el 1116A del DW por
 # carta de porte (el campo "traslados" del certificado trae la lista de CP).
-TRACKEO_DESDE = "2025-07-01"
+TRACKEO_DESDE = "2026-01-01"    # pedido usuario 10/09/2026: desde el 01/01/2026
 
 
 def fetch_trackeo(desde: str = TRACKEO_DESDE):
