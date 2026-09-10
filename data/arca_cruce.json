@@ -1,29 +1,29 @@
 {
- "generado": "2026-09-09T16:13:18",
+ "generado": "2026-09-10T08:32:25",
  "rango_arca": [
   "2026-02-01",
   "2026-09-07"
  ],
  "kpi": {
-  "arca_ctg": 1386,
-  "fnn_ctg": 5194,
-  "no_ingresados": 22,
-  "no_ingresados_tn": 1023.4,
-  "a_ingresar": 22,
-  "a_ingresar_tn": 1023.4,
-  "sin_arca": 1803,
-  "dif_kg_n": 1364
+  "arca_ctg": 1416,
+  "fnn_ctg": 5199,
+  "no_ingresados": 19,
+  "no_ingresados_tn": 888.4,
+  "a_ingresar": 19,
+  "a_ingresar_tn": 888.4,
+  "sin_arca": 1775,
+  "dif_kg_n": 1397
  },
  "por_cultivo": {
   "Maíz": {
-   "camiones": 22,
-   "tn": 1023.4
+   "camiones": 19,
+   "tn": 888.4
   }
  },
  "por_origen": {
   "Participante + Solicitada": {
-   "camiones": 11,
-   "tn": 508.6
+   "camiones": 8,
+   "tn": 373.6
   },
   "Solicitada": {
    "camiones": 6,
@@ -36,16 +36,16 @@
  },
  "por_estado": {
   "Activa": {
-   "camiones": 8,
-   "tn": 381.8
-  },
-  "Confirmada": {
-   "camiones": 8,
-   "tn": 364.8
+   "camiones": 7,
+   "tn": 336.8
   },
   "Activa con confirmacion de arribo": {
    "camiones": 6,
    "tn": 276.8
+  },
+  "Confirmada": {
+   "camiones": 6,
+   "tn": 274.8
   }
  },
  "faltan": [
@@ -62,40 +62,6 @@
    "flujo_fnn": "",
    "kg_fnn": 0.0,
    "patente": "AH193LW - AH487OF",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011632",
-   "CTG": "10134951503",
-   "Fecha": "07/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AA616OC - MWF467",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011626",
-   "CTG": "10134941994",
-   "Fecha": "07/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "JOE804 - CNJ734",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -402,23 +368,6 @@
    "flujo_fnn": "",
    "kg_fnn": 0.0,
    "patente": "AC219UQ - AE504UY",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011628",
-   "CTG": "10134945409",
-   "Fecha": "07/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Activa",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "AA262NT - MPD517",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -15566,286 +15515,6 @@
    "Estado": "CN"
   },
   {
-   "CTG": "10134632646",
-   "CartaPorte": "00000-00011443",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 34740.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LA BRAGADENSE SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134632473",
-   "CartaPorte": "00000-00011441",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29020.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LA BRAGADENSE SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134626095",
-   "CartaPorte": "00000-00011431",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28964.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134626000",
-   "CartaPorte": "00000-00011430",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 35585.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134626492",
-   "CartaPorte": "00000-00011433",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29680.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639104",
-   "CartaPorte": "00000-00011453",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30360.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134628911",
-   "CartaPorte": "00000-00011438",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 38280.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134627931",
-   "CartaPorte": "00000-00011436",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30210.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134627153",
-   "CartaPorte": "00000-00011435",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29281.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134626283",
-   "CartaPorte": "00000-00011432",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28596.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639433",
-   "CartaPorte": "00000-00011455",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 27926.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639458",
-   "CartaPorte": "00000-00011456",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29176.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639986",
-   "CartaPorte": "00000-00011458",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30525.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134638241",
-   "CartaPorte": "00000-00011449",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28124.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "PUERTO ARROYO SECO SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134628836",
-   "CartaPorte": "00000-00011437",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29687.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "PUERTO ARROYO SECO SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134634841",
-   "CartaPorte": "00000-00011444",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 35465.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "PUERTO ARROYO SECO SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134637136",
-   "CartaPorte": "00000-00011447",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28258.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LA BRAGADENSE SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639367",
-   "CartaPorte": "00000-00011454",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29933.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LA BRAGADENSE SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134631486",
-   "CartaPorte": "00000-00011439",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 36012.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134631832",
-   "CartaPorte": "00000-00011440",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30666.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134635711",
-   "CartaPorte": "00000-00011445",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28766.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134636214",
-   "CartaPorte": "00000-00011446",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29618.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134637332",
-   "CartaPorte": "00000-00011448",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29425.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134638931",
-   "CartaPorte": "00000-00011451",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28805.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639007",
-   "CartaPorte": "00000-00011452",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30315.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134639725",
-   "CartaPorte": "00000-00011457",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 32578.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "RUCAMALEN SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134638403",
-   "CartaPorte": "00000-00011450",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30359.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134626798",
-   "CartaPorte": "00000-00011434",
-   "Fecha": "24-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29580.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LDC ARGENTINA S.A.",
-   "Estado": "CN"
-  },
-  {
    "CTG": "10130453665",
    "CartaPorte": "00000-00009256",
    "Fecha": "25-03-2026",
@@ -19903,6 +19572,23 @@
    "dif_kg": -17810.0
   },
   {
+   "CartaPorte": "00000-00011443",
+   "CTG": "10134632646",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 34740.0,
+   "patente": "AG257ZX - AF581TA",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -17760.0
+  },
+  {
    "CartaPorte": "00000-00010924",
    "CTG": "10134068960",
    "Fecha": "02/08/2026",
@@ -21263,6 +20949,23 @@
    "dif_kg": -17074.0
   },
   {
+   "CartaPorte": "00000-00011455",
+   "CTG": "10134639433",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 27926.0,
+   "patente": "HDS053 - HFH539",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -17074.0
+  },
+  {
    "CartaPorte": "00000-00011276",
    "CTG": "10134464786",
    "Fecha": "18/08/2026",
@@ -21431,6 +21134,23 @@
    "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -17040.0
+  },
+  {
+   "CartaPorte": "00000-00011444",
+   "CTG": "10134634841",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 35465.0,
+   "patente": "AH279BM - AH265GR",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -17035.0
   },
   {
    "CartaPorte": "00000-00010851",
@@ -21637,6 +21357,23 @@
    "dif_kg": -16920.0
   },
   {
+   "CartaPorte": "00000-00011430",
+   "CTG": "10134626000",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 35585.0,
+   "patente": "NXN480 - AF445YD",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16915.0
+  },
+  {
    "CartaPorte": "00000-00010920",
    "CTG": "10134067521",
    "Fecha": "02/08/2026",
@@ -21771,6 +21508,23 @@
    "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -16880.0
+  },
+  {
+   "CartaPorte": "00000-00011449",
+   "CTG": "10134638241",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28124.0,
+   "patente": "UIP806 - CZR341",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16876.0
   },
   {
    "CartaPorte": "00000-00000211",
@@ -22196,6 +21950,23 @@
    "cuit_solicitante": "20317418222",
    "a_ingresar": false,
    "dif_kg": -16745.0
+  },
+  {
+   "CartaPorte": "00000-00011447",
+   "CTG": "10134637136",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28258.0,
+   "patente": "ASP530 - SPK384",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16742.0
   },
   {
    "CartaPorte": "00000-00000704",
@@ -22980,6 +22751,23 @@
    "dif_kg": -16490.0
   },
   {
+   "CartaPorte": "00000-00011439",
+   "CTG": "10134631486",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 36012.0,
+   "patente": "AE626WN - AF365ZK",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16488.0
+  },
+  {
    "CartaPorte": "00000-00011339",
    "CTG": "10134533401",
    "Fecha": "20/08/2026",
@@ -23054,13 +22842,13 @@
    "Cultivo": "Maíz",
    "Kg": 45000.0,
    "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "Si",
    "flujo_fnn": "PRODUCCIÓN (CPE propia)",
    "kg_fnn": 28529.0,
-   "patente": "FGZ767 -AA960PK",
-   "cuit_solicitante": "30710712758",
+   "patente": "FGZ767 - AA960PK",
+   "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -16471.0
   },
@@ -23275,13 +23063,13 @@
    "Cultivo": "Maíz",
    "Kg": 28500.0,
    "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "Si",
    "flujo_fnn": "PRODUCCIÓN (CPE propia)",
    "kg_fnn": 12081.0,
-   "patente": "AB012GS -AD544JY",
-   "cuit_solicitante": "30710712758",
+   "patente": "AB012GS - AD544JY",
+   "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -16419.0
   },
@@ -23335,6 +23123,23 @@
    "cuit_solicitante": "30714131571",
    "a_ingresar": false,
    "dif_kg": -16410.0
+  },
+  {
+   "CartaPorte": "00000-00011432",
+   "CTG": "10134626283",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28596.0,
+   "patente": "LEK995 - AC607KZ",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16404.0
   },
   {
    "CartaPorte": "00000-00009079",
@@ -24119,6 +23924,23 @@
    "dif_kg": -16236.0
   },
   {
+   "CartaPorte": "00000-00011445",
+   "CTG": "10134635711",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28766.0,
+   "patente": "RAK901 - AA876UN",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16234.0
+  },
+  {
    "CartaPorte": "00000-00000616",
    "CTG": "10129702096",
    "Fecha": "25/02/2026",
@@ -24306,6 +24128,23 @@
    "dif_kg": -16198.0
   },
   {
+   "CartaPorte": "00000-00011451",
+   "CTG": "10134638931",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28805.0,
+   "patente": "FGZ767 - AA960PK",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16195.0
+  },
+  {
    "CartaPorte": "00000-00011364",
    "CTG": "10134568495",
    "Fecha": "21/08/2026",
@@ -24431,13 +24270,13 @@
    "Cultivo": "Maíz",
    "Kg": 45000.0,
    "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "Si",
    "flujo_fnn": "PRODUCCIÓN (CPE propia)",
    "kg_fnn": 28828.0,
-   "patente": "OGA473 -GJZ068",
-   "cuit_solicitante": "30710712758",
+   "patente": "OGA473 - GJZ068",
+   "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -16172.0
   },
@@ -24901,6 +24740,23 @@
    "dif_kg": -16045.0
   },
   {
+   "CartaPorte": "00000-00011431",
+   "CTG": "10134626095",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28964.0,
+   "patente": "AG533ER - AA943NN",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16036.0
+  },
+  {
    "CartaPorte": "00000-00002071",
    "CTG": "10130566466",
    "Fecha": "27/03/2026",
@@ -25069,196 +24925,9 @@
    "cuit_solicitante": "30710712758",
    "a_ingresar": false,
    "dif_kg": -16002.0
-  },
-  {
-   "CartaPorte": "00000-00010601",
-   "CTG": "10133140181",
-   "Fecha": "25/06/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44360.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 28360.0,
-   "patente": "HDS053 - HFH539",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -16000.0
-  },
-  {
-   "CartaPorte": "00000-00010170",
-   "CTG": "10132006610",
-   "Fecha": "12/05/2026",
-   "Cultivo": "Soja",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG)",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 29000.0,
-   "patente": "ATH174 -CHU525",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": false,
-   "dif_kg": -16000.0
-  },
-  {
-   "CartaPorte": "00000-00009330",
-   "CTG": "10130566235",
-   "Fecha": "27/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Destinatario (G/DG); Participante - Representante Recibido",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 29000.0,
-   "patente": "DWU767 -EWM056",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": false,
-   "dif_kg": -16000.0
-  },
-  {
-   "CartaPorte": "00000-00010440",
-   "CTG": "10132391098",
-   "Fecha": "22/05/2026",
-   "Cultivo": "Maíz",
-   "Kg": 51360.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 35360.0,
-   "patente": "AB894NB -AG688PQ",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": false,
-   "dif_kg": -16000.0
-  },
-  {
-   "CartaPorte": "00000-00009380",
-   "CTG": "10130647540",
-   "Fecha": "30/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 29009.0,
-   "patente": "APX033 - NVD576",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15991.0
-  },
-  {
-   "CartaPorte": "00000-00011508",
-   "CTG": "10134702800",
-   "Fecha": "26/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44840.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 28855.0,
-   "patente": "WCX279 - CAY456",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15985.0
-  },
-  {
-   "CartaPorte": "00000-00011234",
-   "CTG": "10134427583",
-   "Fecha": "17/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 29019.0,
-   "patente": "LEK995 - AC607KZ",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15981.0
-  },
-  {
-   "CartaPorte": "00000-00009044",
-   "CTG": "10229496043",
-   "Fecha": "13/02/2026",
-   "Cultivo": "Trigo",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 29020.0,
-   "patente": "APX033 - NVD576",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15980.0
-  },
-  {
-   "CartaPorte": "00000-00009377",
-   "CTG": "10130646762",
-   "Fecha": "30/03/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44800.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 28820.0,
-   "patente": "WDJ273 - WJK387",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15980.0
-  },
-  {
-   "CartaPorte": "00000-00009090",
-   "CTG": "10129685597",
-   "Fecha": "25/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 51880.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 35900.0,
-   "patente": "NLP001 -AG880BF",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": false,
-   "dif_kg": -15980.0
-  },
-  {
-   "CartaPorte": "00000-00009058",
-   "CTG": "10129602299",
-   "Fecha": "22/02/2026",
-   "Cultivo": "Maíz",
-   "Kg": 52010.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 36040.0,
-   "patente": "NLP001 - AG880BF",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -15970.0
   }
  ],
- "total_filas": 1386,
+ "total_filas": 1416,
  "excluidos": [
   {
    "CTG": "10134836674",
@@ -25386,22 +25055,6 @@
    "Fecha": "01/09/2026",
    "Cultivo": "Maíz",
    "Kg": 45000.0,
-   "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
-  },
-  {
-   "CTG": "10134830551",
-   "CartaPorte": "00000-00011581",
-   "Fecha": "01/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44900.0,
-   "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
-  },
-  {
-   "CTG": "10134830305",
-   "CartaPorte": "00000-00011580",
-   "Fecha": "01/09/2026",
-   "Cultivo": "Maíz",
-   "Kg": 44800.0,
    "Motivo": "Rechazada en ARCA — no está en Finnegans (regla automática)"
   },
   {
@@ -25778,6 +25431,14 @@
    "Fecha": "24/08/2026",
    "Cultivo": "Maíz",
    "Kg": 52500.0,
+   "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10134632557",
+   "CartaPorte": "00000-00011442",
+   "Fecha": "24/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 45000.0,
    "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
   },
   {
