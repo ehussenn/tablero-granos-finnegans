@@ -906,6 +906,22 @@ window.apiFetch = function(path, opts){
   .pn-fij-no{color:#b91c1c;font-weight:700}
 
   /* Sumador de seleccion (pedido usuario 02/09): tildar filas suma en una tarjeta */
+  /* ===== Trackeo de camiones ===== */
+  tr.tk-grp{cursor:pointer;background:#e9eef5}
+  tr.tk-grp > td{font-weight:700;border-top:1px solid #cbd5e1;padding:9px 8px}
+  tr.tk-grp:hover{background:#dde5ef}
+  tr.tk-grp .tk-fl{display:inline-block;width:13px;color:#64748b}
+  tr.tk-grp .tk-org{font-size:10.5px;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+  tr.tk-sub > td{background:#f8fafc;font-size:11.5px}
+  tr.tk-sub > td:nth-child(2){padding-left:22px}
+  .tk-si{color:#1a7f4b;font-weight:700}
+  .tk-no{color:#b3372b;font-weight:700}
+  .tk-alerta{background:#fff4f3 !important}
+  .tk-ojo{background:#fdf9ef !important}
+  .tk-pill{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.4px;padding:1px 5px;
+       border-radius:4px;text-transform:uppercase;white-space:nowrap;margin-left:5px}
+  .tk-pill.c{border:1px solid #b3372b;color:#b3372b}
+  .tk-pill.m{border:1px solid #a97b12;color:#a97b12}
   /* ===== Por Organizacion: grilla tipo tabla dinamica ===== */
   #org-tabla{border-collapse:separate;border-spacing:0}
   /* Dos filas de encabezado, las dos pegadas arriba: la de grupo a top:0 y la de
@@ -1182,6 +1198,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-financiera" data-title="Posición Financiera">Posición Financiera</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arcaliq" data-title="Cruce Liquidaciones · ARCA vs Finnegans">🧾 Cruce Liquidaciones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-trackeo" data-title="Trackeo de Camiones · certificados y mermas">🎯 Trackeo Camiones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
@@ -2292,6 +2309,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="pn-financiera">Posición Financiera</button>
       <button class="subtab" data-sub="pn-arcaliq">🧾 Cruce Liquidaciones</button>
       <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
+      <button class="subtab" data-sub="pn-trackeo">🎯 Trackeo Camiones</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
@@ -2553,6 +2571,58 @@ window.apiFetch = function(path, opts){
 
 
 
+
+
+    <!-- ===== SUBPANEL: Trackeo de camiones (certificados 1116A + mermas) ===== -->
+    <div class="subpanel" data-sub-panel="pn-trackeo">
+      <div class="section" style="background:linear-gradient(135deg,#0b3b3c 0%,#0f766e 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🎯 Trackeo de Camiones · certificados de depósito y mermas</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.45">
+          Camión por camión: los que <b>entregamos en las cerealeras</b> (venta) y los que
+          <b>vienen de campo</b> (compra), cruzados por carta de porte contra los
+          <b>certificados 1116A</b> de Finnegans. Muestra qué camión no tiene certificado y
+          cuánta merma se aplicó, agrupado por contrato.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="tk-chips"></div>
+      </div>
+
+      <div class="section">
+        <div id="tk-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 14px"></div>
+
+        <div class="filterbar" style="margin:0 0 12px">
+          <div><label>VISTA</label><select id="tk-vista">
+            <option value="cto">Por contrato</option>
+            <option value="cam">Camión por camión</option>
+          </select></div>
+          <div><label>PUNTA</label><select id="tk-lado">
+            <option value="">Compra y venta</option>
+            <option value="venta">Venta (a cerealeras)</option>
+            <option value="compra">Compra (de campo)</option>
+          </select></div>
+          <div><label>CULTIVO</label><select id="tk-prod"><option value="">Todos</option></select></div>
+          <div><label>SOLO</label><select id="tk-filtro">
+            <option value="">Todos los camiones</option>
+            <option value="sincert">Sin certificado 1116A</option>
+            <option value="sinmerma">Sin merma aplicada</option>
+            <option value="ambos">Sin certificado Y sin merma</option>
+            <option value="concert">Con certificado</option>
+          </select></div>
+          <div><label>DESDE</label><input type="date" id="tk-desde"
+            style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+          <div><label>HASTA</label><input type="date" id="tk-hasta"
+            style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+          <div><label>BUSCAR</label><input id="tk-txt" placeholder="contrato / firma / CP / CTG / patente"
+            style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+          <button class="clear" id="tk-limpiar">Limpiar</button>
+          <button class="clear" id="tk-excel">⬇ Exportar a Excel</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="tk-info"></span>
+        </div>
+        <div class="tbl-wrap" style="max-height:680px">
+          <table id="tk-tabla" style="font-size:12px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="tk-nota"></div>
+      </div>
+    </div><!-- /subpanel pn-trackeo -->
 
     <!-- ===== SUBPANEL: Contratos por Organizacion (compra + venta juntos) ===== -->
     <div class="subpanel" data-sub-panel="pn-orgs">
@@ -10543,6 +10613,231 @@ document.addEventListener('click', (e) => {
 })();
 
 /* ============================================================
+   ======= TRACKEO DE CAMIONES (pedido usuario 10/09) =========
+   Camion por camion: los entregados en las cerealeras (venta) y
+   los que vienen de campo (compra), cruzados por carta de porte
+   contra los certificados 1116A de Finnegans, con la merma de
+   cada uno. Agrupado por contrato, que es como lo pidio.
+   Fuente: PAYLOAD.trackeo (fetch_trackeo en build.py).
+   ============================================================ */
+(() => {
+  const T = PAYLOAD.trackeo;
+  const abiertos = new Set();
+
+  const n0 = x => fmt.num(Math.round(x || 0));
+  const n1 = x => Number(x || 0).toLocaleString("es-AR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+  const tn = x => n1((x || 0) / 1000);
+  const pct = (a, b) => b ? (100 * a / b).toFixed(2).replace(".", ",") + "%" : "—";
+  // las fechas vienen dd-mm-aaaa
+  const fnum = s => {
+    const m = String(s || "").match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    return m ? Number(m[3] + m[2].padStart(2, "0") + m[1].padStart(2, "0")) : 0;
+  };
+  const fdmy = s => String(s || "").replace(/-/g, "/");
+  const lim = id => { const v = (document.getElementById(id) || {}).value || "";
+                      return v ? Number(v.replace(/-/g, "")) : 0; };
+
+  function filas(){
+    let rs = (T && T.filas || []).slice();
+    const lado = (document.getElementById("tk-lado") || {}).value || "";
+    if(lado) rs = rs.filter(r => r.lado === lado);
+    const pr = (document.getElementById("tk-prod") || {}).value || "";
+    if(pr) rs = rs.filter(r => (r.prod || "") === pr);
+    const d1 = lim("tk-desde"), d2 = lim("tk-hasta");
+    if(d1 || d2) rs = rs.filter(r => { const f = fnum(r.fecha);
+      if(!f) return false; return (!d1 || f >= d1) && (!d2 || f <= d2); });
+    const fl = (document.getElementById("tk-filtro") || {}).value || "";
+    if(fl === "sincert")  rs = rs.filter(r => !r.cert);
+    if(fl === "concert")  rs = rs.filter(r => !!r.cert);
+    if(fl === "sinmerma") rs = rs.filter(r => !(r.merma > 0));
+    if(fl === "ambos")    rs = rs.filter(r => !r.cert && !(r.merma > 0));
+    const q = ((document.getElementById("tk-txt") || {}).value || "").trim().toLowerCase();
+    if(q) rs = rs.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+    return rs;
+  }
+
+  function kpis(rs){
+    const c = document.getElementById("tk-kpis");
+    if(!c) return;
+    const kg = rs.reduce((a, r) => a + (r.kg || 0), 0);
+    const sc = rs.filter(r => !r.cert), sm = rs.filter(r => !(r.merma > 0));
+    const mer = rs.reduce((a, r) => a + (r.merma || 0), 0);
+    const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
+        border-left:5px solid ${col};border-radius:11px;padding:12px 14px">
+      <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
+      <div style="font-size:24px;font-weight:800;color:${col};line-height:1.15;margin-top:4px">${val}</div>
+      <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
+    c.innerHTML =
+      card("Camiones", n0(rs.length), `${tn(kg)} tn entregadas`, "#0f766e") +
+      card("Sin certificado 1116A", n0(sc.length),
+           `${tn(sc.reduce((a, r) => a + (r.kg || 0), 0))} tn \u00b7 ${pct(sc.length, rs.length)} de los camiones`, "#b3372b") +
+      card("Sin merma aplicada", n0(sm.length),
+           `${tn(sm.reduce((a, r) => a + (r.kg || 0), 0))} tn \u00b7 ${pct(sm.length, rs.length)} de los camiones`, "#a97b12") +
+      card("Merma aplicada", n0(mer) + " kg", `${pct(mer, kg)} sobre lo entregado`, "#2b5fb3");
+    const ch = document.getElementById("tk-chips");
+    if(ch) ch.innerHTML = [`${n0((T.filas || []).length)} camiones bajados`,
+                           `${n0(T.n_cert)} certificados 1116A`,
+                           `desde ${fdmy(T.desde)}`,
+                           `actualizado ${String(T.generado || "").replace("T", " ").slice(0, 16)}`]
+      .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(x)}</span>`).join("");
+  }
+
+  const CAB_CTO = `<tr><th>Contrato / firma</th><th class="num">Camiones</th>
+      <th class="num">Kg entregados</th><th class="num">Sin certificado</th><th class="num">Kg sin certificado</th>
+      <th class="num">Sin merma</th><th class="num">Merma kg</th><th class="num">% merma</th></tr>`;
+  const CAB_CAM = `<tr><th>Fecha</th><th>Carta de porte</th><th>CTG</th><th>Punta</th><th>Producto</th>
+      <th>Firma</th><th>Contrato</th><th class="num">Kg</th><th class="num">Merma kg</th>
+      <th class="num">% hum.</th><th>Certificado 1116A</th></tr>`;
+
+  function filaCam(r, sub){
+    const mal = !r.cert, ojo = !mal && !(r.merma > 0);
+    const cls = (sub ? "tk-sub " : "") + (mal ? "tk-alerta" : (ojo ? "tk-ojo" : ""));
+    return `<tr class="${cls}"><td>${escapeHtml(fdmy(r.fecha))}</td>`
+         + `<td style="font-family:ui-monospace,monospace">${escapeHtml(r.cp || "—")}</td>`
+         + `<td style="font-family:ui-monospace,monospace">${escapeHtml(r.ctg || "—")}</td>`
+         + `<td>${r.lado === "venta" ? "Venta" : "Compra"}</td>`
+         + `<td>${escapeHtml((r.prod || "").replace("Grano ", ""))}</td>`
+         + `<td>${escapeHtml(r.org || "—")}</td>`
+         + `<td>${escapeHtml(r.cto || "—")}</td>`
+         + `<td class="num">${n0(r.kg)}</td>`
+         + `<td class="num">${r.merma > 0 ? n0(r.merma) : '<span class="tk-no">0</span>'}</td>`
+         + `<td class="num">${r.hum > 0 ? n1(r.hum) : "—"}</td>`
+         + `<td>${r.cert ? `<span class="tk-si">\u2713</span> ${escapeHtml(r.cert)}`
+                          : '<span class="tk-no">\u2716 falta</span>'}</td></tr>`;
+  }
+
+  function render(){
+    if(!T){
+      const c = document.getElementById("tk-kpis");
+      if(c) c.innerHTML = '<div style="color:var(--muted);font-size:12px">Todav\u00eda no hay bajada de trackeo en este build.</div>';
+      return;
+    }
+    const rs = filas(), vista = (document.getElementById("tk-vista") || {}).value || "cto";
+    const t = document.getElementById("tk-tabla");
+    kpis(rs);
+    if(vista === "cam"){
+      t.querySelector("thead").innerHTML = CAB_CAM;
+      t.querySelector("tbody").innerHTML = rs.slice(0, 1500)
+        .sort((a, b) => fnum(b.fecha) - fnum(a.fecha)).map(r => filaCam(r, false)).join("")
+        || `<tr><td colspan="11" style="padding:22px;text-align:center;color:var(--muted)">Sin camiones con estos filtros.</td></tr>`;
+      const kg = rs.reduce((a, r) => a + (r.kg || 0), 0);
+      t.querySelector("tfoot").innerHTML = rs.length ? `<tr class="pn-total">
+        <td colspan="7">TOTAL ${n0(rs.length)} camiones</td><td class="num">${n0(kg)}</td>
+        <td class="num">${n0(rs.reduce((a, r) => a + (r.merma || 0), 0))}</td><td></td><td></td></tr>` : "";
+    } else {
+      // agrupado por contrato
+      const g = {};
+      rs.forEach(r => {
+        const k = (r.cto || "").trim() || "(sin contrato)";
+        const a = g[k] || (g[k] = {cto: k, org: "", lado: r.lado, cs: [], kg: 0, sc: 0, kgsc: 0, sm: 0, merma: 0});
+        a.cs.push(r); a.kg += r.kg || 0; a.merma += r.merma || 0;
+        if(!r.cert){ a.sc++; a.kgsc += r.kg || 0; }
+        if(!(r.merma > 0)) a.sm++;
+        a.org = r.org || a.org;
+      });
+      const gs = Object.values(g).sort((a, b) => b.kgsc - a.kgsc || b.kg - a.kg);
+      t.querySelector("thead").innerHTML = CAB_CTO;
+      let h = "";
+      gs.forEach(a => {
+        const ab = abiertos.has(a.cto);
+        const alerta = a.sc > 0;
+        h += `<tr class="tk-grp${alerta ? " tk-alerta" : ""}" data-cto="${escapeHtml(a.cto)}">`
+           + `<td><span class="tk-fl">${ab ? "\u25be" : "\u25b8"}</span>${escapeHtml(a.cto)}`
+           + `${a.sc ? `<span class="tk-pill c">${a.sc} sin cert.</span>` : ""}`
+           + `${a.sm ? `<span class="tk-pill m">${a.sm} sin merma</span>` : ""}`
+           + `<span class="tk-org">${escapeHtml(a.org)} \u00b7 ${a.lado === "venta" ? "venta" : "compra"}</span></td>`
+           + `<td class="num">${n0(a.cs.length)}</td><td class="num">${n0(a.kg)}</td>`
+           + `<td class="num${a.sc ? " tk-no" : ""}">${a.sc ? n0(a.sc) : "—"}</td>`
+           + `<td class="num${a.kgsc ? " tk-no" : ""}">${a.kgsc ? n0(a.kgsc) : "—"}</td>`
+           + `<td class="num">${a.sm ? n0(a.sm) : "—"}</td>`
+           + `<td class="num">${a.merma ? n0(a.merma) : '<span class="tk-no">0</span>'}</td>`
+           + `<td class="num">${pct(a.merma, a.kg)}</td></tr>`;
+        if(ab){
+          h += `<tr><td colspan="8" style="padding:0"><div style="padding:8px 10px 12px;background:#f8fafc">`
+             + `<table style="width:100%;border-collapse:collapse;font-size:11.5px"><thead>${CAB_CAM}</thead><tbody>`
+             + a.cs.sort((x, y) => fnum(y.fecha) - fnum(x.fecha)).map(r => filaCam(r, false)).join("")
+             + `</tbody></table></div></td></tr>`;
+        }
+      });
+      t.querySelector("tbody").innerHTML = h
+        || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">Sin contratos con estos filtros.</td></tr>`;
+      const Tt = gs.reduce((a, x) => ({n: a.n + x.cs.length, kg: a.kg + x.kg, sc: a.sc + x.sc,
+                                       kgsc: a.kgsc + x.kgsc, sm: a.sm + x.sm, m: a.m + x.merma}),
+                           {n: 0, kg: 0, sc: 0, kgsc: 0, sm: 0, m: 0});
+      t.querySelector("tfoot").innerHTML = gs.length ? `<tr class="pn-total">
+        <td>TOTAL \u00b7 ${n0(gs.length)} contrato(s)</td><td class="num">${n0(Tt.n)}</td>
+        <td class="num">${n0(Tt.kg)}</td><td class="num">${n0(Tt.sc)}</td><td class="num">${n0(Tt.kgsc)}</td>
+        <td class="num">${n0(Tt.sm)}</td><td class="num">${n0(Tt.m)}</td>
+        <td class="num">${pct(Tt.m, Tt.kg)}</td></tr>` : "";
+    }
+    document.getElementById("tk-info").textContent =
+      `${n0(rs.length)} camión(es)` + (vista === "cam" && rs.length > 1500 ? " — muestro los primeros 1.500" : "");
+    document.getElementById("tk-nota").textContent = vista === "cto"
+      ? "Click en el contrato para abrir sus camiones. El certificado se cruza por carta de porte contra los 1116A de Finnegans (en el reporte de entregas las columnas de certificación vienen vacías, así que no sirven). Fila roja = falta el certificado; fila ámbar = tiene certificado pero cero merma."
+      : "Un camión por fila. Fila roja = sin certificado 1116A; fila ámbar = con certificado pero sin merma aplicada.";
+  }
+
+  function cultivos(){
+    const sel = document.getElementById("tk-prod");
+    if(!sel || !T) return;
+    const prev = sel.value;
+    const ps = [...new Set((T.filas || []).map(r => r.prod).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">Todos</option>' +
+      ps.map(x => `<option${x === prev ? " selected" : ""}>${escapeHtml(x)}</option>`).join("");
+  }
+
+  function exportar(){
+    const rs = filas();
+    if(!rs.length){ alert("No hay camiones para exportar con estos filtros."); return; }
+    const esc = x => { let t = String(x == null ? "" : x);
+      if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"'; return t; };
+    const num = x => String(x == null ? "" : x).replace(".", ",");
+    const cols = [["fecha", "Fecha"], ["cp", "Carta de porte"], ["ctg", "CTG"], ["lado", "Punta"],
+                  ["prod", "Producto"], ["org", "Firma"], ["cto", "Contrato"], ["doc", "Doc interno"],
+                  ["dest", "Destino"], ["camp", "Campaña"], ["pat", "Patente"], ["kg", "Kg", 1],
+                  ["merma", "Merma kg", 1], ["hum", "% humedad", 1], ["factor", "Factor", 1],
+                  ["cert", "Certificado 1116A"], ["cert_f", "Fecha certificado"],
+                  ["cert_nro", "Nº certificado"], ["estado_ctg", "Estado CTG"]];
+    const L = [cols.map(c => esc(c[1])).join(";")];
+    rs.forEach(r => L.push(cols.map(c => esc(c[2] ? num(r[c[0]]) : r[c[0]])).join(";")));
+    const hoy = new Date().toISOString().slice(0, 10);
+    const blob = new Blob(["\ufeff" + L.join("\r\n")], {type: "text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Trackeo-camiones_${hoy}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  document.addEventListener("click", (e) => {
+    const tr = e.target.closest("#tk-tabla tr.tk-grp");
+    if(!tr) return;
+    const k = tr.dataset.cto;
+    if(abiertos.has(k)) abiertos.delete(k); else abiertos.add(k);
+    render();
+  });
+  ["tk-vista", "tk-lado", "tk-prod", "tk-filtro", "tk-desde", "tk-hasta"].forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.addEventListener("change", render);
+  });
+  const tx = document.getElementById("tk-txt");
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
+  const bx = document.getElementById("tk-excel");
+  if(bx) bx.addEventListener("click", exportar);
+  const lm = document.getElementById("tk-limpiar");
+  if(lm) lm.addEventListener("click", () => {
+    abiertos.clear();
+    ["tk-lado", "tk-prod", "tk-filtro", "tk-txt", "tk-desde", "tk-hasta"].forEach(id => {
+      const e = document.getElementById(id); if(e) e.value = ""; });
+    render();
+  });
+  document.querySelectorAll('[data-go-sub="pn-trackeo"], .subtab[data-sub="pn-trackeo"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(render, 60)));
+  cultivos();
+  setTimeout(render, 400);
+})();
+
+/* ============================================================
    ==== CONTRATOS POR ORGANIZACION (pedido usuario 08/09) =====
    Grilla tipo tabla dinamica: una linea por firma con sus
    contratos de COMPRA y de VENTA juntos, y el detalle de cada
@@ -15166,6 +15461,148 @@ def dw_query(table_name: str, date_cols: set | None = None) -> list[dict] | None
     return out
 
 
+
+# ── TRACKEO DE CAMIONES: entregas vs certificados 1116A vs mermas ────────────
+# Pedido del usuario (10/09/2026): "un trackeo con todos los camiones que
+# entregamos en todos los extranet y los camiones que vienen de campo, y ver si
+# estan los certificados de deposito... sospecho que faltan aplicar mermas".
+#
+# Fuentes:
+#   VENTA  /reports/ANALISISENTREGASCERTIFICACIONESVENTAS   (camiones a cerealeras)
+#   COMPRA /reports/ANALISISENTREGASCERTIFICACIONESCOMPRAS  (camiones de campo)
+#   CERTIF. DW agronasajasrl_usr_spgranoscertificado1116a_dataset
+#
+# OJO: en los dos reportes las columnas CANTIDAD CERTIFICADA / NUMEROCERTIFICADO
+# vienen SIEMPRE vacias (verificado sobre 331 camiones de maiz), asi que el
+# certificado NO se puede leer de ahi: hay que cruzar contra el 1116A del DW por
+# carta de porte (el campo "traslados" del certificado trae la lista de CP).
+TRACKEO_DESDE = "2025-07-01"
+
+
+def fetch_trackeo(desde: str = TRACKEO_DESDE):
+    import re as _re
+    from datetime import date as _date
+
+    hasta = _date.today().isoformat()
+    print(f"\n[+] Trackeo de camiones: entregas vs certificados 1116A ({desde} a {hasta})...", flush=True)
+
+    def _cp(x):
+        """La carta de porte se escribe distinto en cada lado: solo digitos y sin
+        los ceros de la izquierda."""
+        d = _re.sub(r"\D", "", str(x or ""))
+        return d.lstrip("0") or ""
+
+    # 1) certificados 1116A del DW
+    cp_cert, ctg_cert, n_cert = {}, {}, 0
+    try:
+        import psycopg2, psycopg2.extras
+        cn = psycopg2.connect(host=os.environ["FNN_DW_HOST"], dbname="finnegansbi",
+                              user=os.environ["FNN_DW_USER"], password=os.environ["FNN_DW_PASS"],
+                              port=5432, sslmode="require", connect_timeout=20)
+        cr = cn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cr.execute("""SELECT transaccionsubtiponombre, documento, fecha, numerodocumento,
+                             organizacionnombre, estado, traslados, ctg
+                      FROM public.agronasajasrl_usr_spgranoscertificado1116a_dataset""")
+        for c in cr.fetchall():
+            if str(c.get("estado") or "").lower().startswith("anul"):
+                continue
+            n_cert += 1
+            ref = {"doc": c.get("documento") or "", "fecha": str(c.get("fecha") or "")[:10],
+                   "nro": c.get("numerodocumento") or ""}
+            for t in str(c.get("traslados") or "").split(","):
+                k = _cp(t)
+                if k:
+                    cp_cert.setdefault(k, ref)
+            for g in str(c.get("ctg") or "").split(","):
+                k = _re.sub(r"\D", "", g)
+                if k:
+                    ctg_cert.setdefault(k, ref)
+            k = _re.sub(r"\D", "", str(c.get("numerodocumento") or ""))
+            if k:
+                ctg_cert.setdefault(k, ref)
+        cn.close()
+        print(f"    certificados 1116A activos: {n_cert} "
+              f"({len(cp_cert)} cartas de porte, {len(ctg_cert)} CTG)")
+    except Exception as e:
+        print(f"    [!] no pude leer los certificados 1116A: {e}")
+
+    # 2) los camiones de las dos puntas
+    prm = {"PARAMWEBREPORT_FechaDesde": desde, "PARAMWEBREPORT_FechaHasta": hasta}
+    filas = []
+    for lado, ep in (("venta", "/reports/ANALISISENTREGASCERTIFICACIONESVENTAS"),
+                     ("compra", "/reports/ANALISISENTREGASCERTIFICACIONESCOMPRAS")):
+        try:
+            data = api.call(ep, prm, timeout=300)
+        except Exception as e:
+            print(f"    [!] {lado}: {e}")
+            continue
+        if not isinstance(data, list):
+            data = []
+        n_sc = 0
+        for r in data:
+            g = lambda k: r.get(k)
+            fn = lambda k: float(r.get(k) or 0)
+            cp = _cp(g("CARTA DE PORTE"))
+            ctg = _re.sub(r"\D", "", str(g("CTG") or ""))
+            cert = cp_cert.get(cp) if cp else None
+            por = "cp"
+            if not cert and ctg:
+                cert = ctg_cert.get(ctg)
+                por = "ctg" if cert else ""
+            if not cert:
+                n_sc += 1
+            merma = (fn("MERMA HUMEDAD") + fn("MERMAZARANDA") + fn("MERMAVOLATIL")
+                     + fn("MERMAOTROS") + fn("MERMAKGSCALIDAD"))
+            kg = fn("CANTIDAD ENTREGADA") or fn("PESONETO")
+            filas.append({
+                "lado": lado,
+                "fecha": str(g("FECHA") or ""),
+                "cp": str(g("CARTA DE PORTE") or ""),
+                "ctg": str(g("CTG") or ""),
+                "prod": str(g("PRODUCTO") or "").replace(" (Kilos)", ""),
+                "org": str(g("ORGANIZACION") or ""),
+                "cto": str(g("N° CONTRATO") or ""),
+                "doc": str(g("DOC-INTERNO") or ""),
+                "dest": str(g("DESTINO") or ""),
+                "camp": str(g("COSECHA") or ""),
+                "pat": str(g("PATENTE") or ""),
+                "kg": round(kg, 1),
+                "kg_sm": round(fn("PESONETOSINMERMAS"), 1),
+                "merma": round(merma, 1),
+                "hum": round(fn("% HUMEDAD"), 2),
+                "factor": round(fn("FACTOR"), 4),
+                "cert": (cert or {}).get("doc", ""),
+                "cert_f": (cert or {}).get("fecha", ""),
+                "cert_nro": (cert or {}).get("nro", ""),
+                "cert_por": por,
+                "estado_ctg": str(g("ESTADO DE CTG") or ""),
+            })
+        print(f"    {lado}: {len(data)} camiones · {n_sc} sin certificado 1116A")
+
+    if not filas:
+        return None
+    tot_kg = sum(f["kg"] for f in filas)
+    sin_c = [f for f in filas if not f["cert"]]
+    sin_m = [f for f in filas if f["merma"] <= 0]
+    out = {
+        "generado": datetime.now().isoformat(timespec="seconds"),
+        "desde": desde, "hasta": hasta,
+        "n_cert": n_cert,
+        "kpi": {
+            "camiones": len(filas), "kg": round(tot_kg, 1),
+            "sin_cert": len(sin_c), "kg_sin_cert": round(sum(f["kg"] for f in sin_c), 1),
+            "sin_merma": len(sin_m), "kg_sin_merma": round(sum(f["kg"] for f in sin_m), 1),
+            "merma": round(sum(f["merma"] for f in filas), 1),
+        },
+        "filas": filas,
+    }
+    print(f"    -> {len(filas)} camiones · {tot_kg / 1000:,.1f} tn · "
+          f"{len(sin_c)} sin certificado ({sum(f['kg'] for f in sin_c) / 1000:,.1f} tn) · "
+          f"{len(sin_m)} sin merma · mermas {sum(f['merma'] for f in filas):,.0f} kg "
+          f"({100 * sum(f['merma'] for f in filas) / max(1, tot_kg):.2f}%)")
+    return out
+
+
 def main() -> int:
     # Intentar primero el DATAWAREHOUSE Postgres. Si no esta disponible o falla,
     # se cae a la API REST (codigo original). El DW es la fuente preferida porque:
@@ -16393,6 +16830,13 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] taqueo_liquidar.json: {e}")
 
+    # Trackeo de camiones: entregas vs certificados 1116A vs mermas
+    try:
+        trackeo = fetch_trackeo()
+    except Exception as e:
+        print(f"    [!] trackeo: {e}")
+        trackeo = None
+
     # Cruce LIQUIDACIONES ARCA vs Finnegans (scripts/arca_lpg_scraper.py baja ARCA,
     # scripts/finn_liq_coes.py junta los COE de Finnegans y scripts/arca_liq_cruce.py cruza)
     print(f"\n[+] Cargando cruce LIQUIDACIONES ARCA vs Finnegans (si existe)...", flush=True)
@@ -16723,6 +17167,7 @@ def main() -> int:
         "extranet_cta": extranet_cta,
         "arca_cruce":      arca_cruce,
         "arca_liq":        arca_liq,
+        "trackeo":         trackeo,
         "coberturas":      coberturas,
         "produccion_camp": produccion_camp,
         "prod_agnsj_pct": prod_agnsj_pct,
