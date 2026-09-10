@@ -2605,6 +2605,8 @@ window.apiFetch = function(path, opts){
             <option value="sincert">Sin certificado 1116A</option>
             <option value="sinmerma">Sin merma aplicada</option>
             <option value="ambos">Sin certificado Y sin merma</option>
+            <option value="faltamerma">Con merma de menos (humedad medida)</option>
+            <option value="conhum">Con humedad de la cerealera</option>
             <option value="concert">Con certificado</option>
           </select></div>
           <div><label>DESDE</label><input type="date" id="tk-desde"
@@ -10651,6 +10653,8 @@ document.addEventListener('click', (e) => {
     if(fl === "concert")  rs = rs.filter(r => !!r.cert);
     if(fl === "sinmerma") rs = rs.filter(r => !(r.merma > 0));
     if(fl === "ambos")    rs = rs.filter(r => !r.cert && !(r.merma > 0));
+    if(fl === "conhum")   rs = rs.filter(r => (r.hum || 0) > 0);
+    if(fl === "faltamerma") rs = rs.filter(r => (r.merma_teo || 0) - (r.merma || 0) > 1);
     const q = ((document.getElementById("tk-txt") || {}).value || "").trim().toLowerCase();
     if(q) rs = rs.filter(r => JSON.stringify(r).toLowerCase().includes(q));
     return rs;
@@ -10673,7 +10677,21 @@ document.addEventListener('click', (e) => {
            `${tn(sc.reduce((a, r) => a + (r.kg || 0), 0))} tn \u00b7 ${pct(sc.length, rs.length)} de los camiones`, "#b3372b") +
       card("Sin merma aplicada", n0(sm.length),
            `${tn(sm.reduce((a, r) => a + (r.kg || 0), 0))} tn \u00b7 ${pct(sm.length, rs.length)} de los camiones`, "#a97b12") +
-      card("Merma aplicada", n0(mer) + " kg", `${pct(mer, kg)} sobre lo entregado`, "#2b5fb3");
+      card("Merma aplicada", n0(mer) + " kg", `${pct(mer, kg)} sobre lo entregado`, "#2b5fb3") +
+      (() => {
+        // solo sobre los camiones que tienen humedad medida: en los otros no se
+        // puede saber cuanta merma corresponde
+        const ch = rs.filter(r => (r.hum || 0) > 0);
+        if(!ch.length) return card("Merma que falta", "sin humedad",
+             "ningún camión con humedad medida", "#68737f");
+        const kgh = ch.reduce((a, r) => a + (r.kg || 0), 0);
+        const ap = ch.reduce((a, r) => a + (r.merma || 0), 0);
+        const te = ch.reduce((a, r) => a + (r.merma_teo || 0), 0);
+        const hp = kgh ? ch.reduce((a, r) => a + (r.hum || 0) * (r.kg || 0), 0) / kgh : 0;
+        return card("Merma que falta aplicar", n0(Math.max(0, te - ap)) + " kg",
+          `sobre ${n0(ch.length)} camiones con humedad medida (prom. ${n1(hp)}%) \u00b7 corresponde ${n0(te)} kg`,
+          te - ap > 1 ? "#b3372b" : "#1a7f4b");
+      })();
     const ch = document.getElementById("tk-chips");
     if(ch) ch.innerHTML = [`${n0((T.filas || []).length)} camiones bajados`,
                            `${n0(T.n_cert)} certificados 1116A`,
@@ -10684,13 +10702,22 @@ document.addEventListener('click', (e) => {
 
   const CAB_CTO = `<tr><th>Contrato / firma</th><th class="num">Camiones</th>
       <th class="num">Kg entregados</th><th class="num">Sin certificado</th><th class="num">Kg sin certificado</th>
-      <th class="num">Sin merma</th><th class="num">Merma kg</th><th class="num">% merma</th></tr>`;
+      <th class="num">Sin merma</th><th class="num">Merma aplicada</th><th class="num">% merma</th>
+      <th class="num" title="Merma que corresponde por la humedad medida, solo en los camiones que la tienen">Corresponde</th>
+      <th class="num">Falta aplicar</th></tr>`;
+  const NCOL_CTO = 10;
   const CAB_CAM = `<tr><th>Fecha</th><th>Carta de porte</th><th>CTG</th><th>Punta</th><th>Producto</th>
-      <th>Firma</th><th>Contrato</th><th class="num">Kg</th><th class="num">Merma kg</th>
-      <th class="num">% hum.</th><th>Certificado 1116A</th></tr>`;
+      <th>Firma</th><th>Contrato</th><th class="num">Kg</th>
+      <th class="num" title="Humedad medida. La toma del extranet de la cerealera; si no hay, de Finnegans">% hum.</th>
+      <th class="num" title="Merma que corresponde por humedad segun la base de la Camara Arbitral">Corresponde</th>
+      <th class="num">Merma aplicada</th>
+      <th class="num" title="Lo que falta aplicar">Falta</th>
+      <th>Certificado 1116A</th></tr>`;
+  const NCOL_CAM = 13;
 
   function filaCam(r, sub){
-    const mal = !r.cert, ojo = !mal && !(r.merma > 0);
+    const falta = (r.merma_teo || 0) - (r.merma || 0);
+    const mal = !r.cert, ojo = !mal && (falta > 1 || !(r.merma > 0));
     const cls = (sub ? "tk-sub " : "") + (mal ? "tk-alerta" : (ojo ? "tk-ojo" : ""));
     return `<tr class="${cls}"><td>${escapeHtml(fdmy(r.fecha))}</td>`
          + `<td style="font-family:ui-monospace,monospace">${escapeHtml(r.cp || "—")}</td>`
@@ -10700,8 +10727,10 @@ document.addEventListener('click', (e) => {
          + `<td>${escapeHtml(r.org || "—")}</td>`
          + `<td>${escapeHtml(r.cto || "—")}</td>`
          + `<td class="num">${n0(r.kg)}</td>`
+         + `<td class="num" title="${escapeHtml(r.hum_de || "")}">${r.hum > 0 ? n1(r.hum) : "—"}</td>`
+         + `<td class="num">${r.merma_teo > 0 ? n0(r.merma_teo) : "—"}</td>`
          + `<td class="num">${r.merma > 0 ? n0(r.merma) : '<span class="tk-no">0</span>'}</td>`
-         + `<td class="num">${r.hum > 0 ? n1(r.hum) : "—"}</td>`
+         + `<td class="num">${falta > 1 ? `<span class="tk-no">${n0(falta)}</span>` : "—"}</td>`
          + `<td>${r.cert ? `<span class="tk-si">\u2713</span> ${escapeHtml(r.cert)}`
                           : '<span class="tk-no">\u2716 falta</span>'}</td></tr>`;
   }
@@ -10719,18 +10748,27 @@ document.addEventListener('click', (e) => {
       t.querySelector("thead").innerHTML = CAB_CAM;
       t.querySelector("tbody").innerHTML = rs.slice(0, 1500)
         .sort((a, b) => fnum(b.fecha) - fnum(a.fecha)).map(r => filaCam(r, false)).join("")
-        || `<tr><td colspan="11" style="padding:22px;text-align:center;color:var(--muted)">Sin camiones con estos filtros.</td></tr>`;
+        || `<tr><td colspan="${NCOL_CAM}" style="padding:22px;text-align:center;color:var(--muted)">Sin camiones con estos filtros.</td></tr>`;
       const kg = rs.reduce((a, r) => a + (r.kg || 0), 0);
+      const _te = rs.reduce((a, r) => a + (r.merma_teo || 0), 0);
+      const _ap = rs.reduce((a, r) => a + (r.merma || 0), 0);
       t.querySelector("tfoot").innerHTML = rs.length ? `<tr class="pn-total">
         <td colspan="7">TOTAL ${n0(rs.length)} camiones</td><td class="num">${n0(kg)}</td>
-        <td class="num">${n0(rs.reduce((a, r) => a + (r.merma || 0), 0))}</td><td></td><td></td></tr>` : "";
+        <td></td><td class="num">${n0(_te)}</td><td class="num">${n0(_ap)}</td>
+        <td class="num">${n0(Math.max(0, _te - _ap))}</td><td></td></tr>` : "";
     } else {
       // agrupado por contrato
       const g = {};
       rs.forEach(r => {
         const k = (r.cto || "").trim() || "(sin contrato)";
-        const a = g[k] || (g[k] = {cto: k, org: "", lado: r.lado, cs: [], kg: 0, sc: 0, kgsc: 0, sm: 0, merma: 0});
+        const a = g[k] || (g[k] = {cto: k, org: "", lado: r.lado, cs: [], kg: 0, sc: 0,
+                                   kgsc: 0, sm: 0, merma: 0, teo: 0, ch: 0,
+                                   merma_h: 0, kg_h: 0});
         a.cs.push(r); a.kg += r.kg || 0; a.merma += r.merma || 0;
+        a.teo += r.merma_teo || 0;
+        // la merma aplicada de los camiones QUE TIENEN humedad medida: es la unica
+        // comparable contra "corresponde"
+        if((r.hum || 0) > 0){ a.ch++; a.merma_h += r.merma || 0; a.kg_h += r.kg || 0; }
         if(!r.cert){ a.sc++; a.kgsc += r.kg || 0; }
         if(!(r.merma > 0)) a.sm++;
         a.org = r.org || a.org;
@@ -10751,30 +10789,34 @@ document.addEventListener('click', (e) => {
            + `<td class="num${a.kgsc ? " tk-no" : ""}">${a.kgsc ? n0(a.kgsc) : "—"}</td>`
            + `<td class="num">${a.sm ? n0(a.sm) : "—"}</td>`
            + `<td class="num">${a.merma ? n0(a.merma) : '<span class="tk-no">0</span>'}</td>`
-           + `<td class="num">${pct(a.merma, a.kg)}</td></tr>`;
+           + `<td class="num">${pct(a.merma, a.kg)}</td>`
+           + `<td class="num">${a.ch ? n0(a.teo) : '<span style="color:var(--muted)">sin hum.</span>'}</td>`
+           + `<td class="num${a.teo - a.merma_h > 1 ? " tk-no" : ""}" title="${a.ch ? `sobre ${a.ch} de ${a.cs.length} camiones, los que tienen humedad medida` : "sin humedad medida"}">${a.teo - a.merma_h > 1 ? n0(a.teo - a.merma_h) : "—"}</td></tr>`;
         if(ab){
-          h += `<tr><td colspan="8" style="padding:0"><div style="padding:8px 10px 12px;background:#f8fafc">`
+          h += `<tr><td colspan="${NCOL_CTO}" style="padding:0"><div style="padding:8px 10px 12px;background:#f8fafc">`
              + `<table style="width:100%;border-collapse:collapse;font-size:11.5px"><thead>${CAB_CAM}</thead><tbody>`
              + a.cs.sort((x, y) => fnum(y.fecha) - fnum(x.fecha)).map(r => filaCam(r, false)).join("")
              + `</tbody></table></div></td></tr>`;
         }
       });
       t.querySelector("tbody").innerHTML = h
-        || `<tr><td colspan="8" style="padding:22px;text-align:center;color:var(--muted)">Sin contratos con estos filtros.</td></tr>`;
+        || `<tr><td colspan="${NCOL_CTO}" style="padding:22px;text-align:center;color:var(--muted)">Sin contratos con estos filtros.</td></tr>`;
       const Tt = gs.reduce((a, x) => ({n: a.n + x.cs.length, kg: a.kg + x.kg, sc: a.sc + x.sc,
-                                       kgsc: a.kgsc + x.kgsc, sm: a.sm + x.sm, m: a.m + x.merma}),
-                           {n: 0, kg: 0, sc: 0, kgsc: 0, sm: 0, m: 0});
+                                       kgsc: a.kgsc + x.kgsc, sm: a.sm + x.sm, m: a.m + x.merma,
+                                       te: a.te + x.teo, mh: a.mh + x.merma_h}),
+                           {n: 0, kg: 0, sc: 0, kgsc: 0, sm: 0, m: 0, te: 0, mh: 0});
       t.querySelector("tfoot").innerHTML = gs.length ? `<tr class="pn-total">
         <td>TOTAL \u00b7 ${n0(gs.length)} contrato(s)</td><td class="num">${n0(Tt.n)}</td>
         <td class="num">${n0(Tt.kg)}</td><td class="num">${n0(Tt.sc)}</td><td class="num">${n0(Tt.kgsc)}</td>
         <td class="num">${n0(Tt.sm)}</td><td class="num">${n0(Tt.m)}</td>
-        <td class="num">${pct(Tt.m, Tt.kg)}</td></tr>` : "";
+        <td class="num">${pct(Tt.m, Tt.kg)}</td><td class="num">${n0(Tt.te)}</td>
+        <td class="num">${n0(Math.max(0, Tt.te - Tt.mh))}</td></tr>` : "";
     }
     document.getElementById("tk-info").textContent =
       `${n0(rs.length)} camión(es)` + (vista === "cam" && rs.length > 1500 ? " — muestro los primeros 1.500" : "");
     document.getElementById("tk-nota").textContent = vista === "cto"
-      ? "Click en el contrato para abrir sus camiones. El certificado se cruza por carta de porte contra los 1116A de Finnegans (en el reporte de entregas las columnas de certificación vienen vacías, así que no sirven). Fila roja = falta el certificado; fila ámbar = tiene certificado pero cero merma."
-      : "Un camión por fila. Fila roja = sin certificado 1116A; fila ámbar = con certificado pero sin merma aplicada.";
+      ? "Click en el contrato para abrir sus camiones. El certificado se cruza por carta de porte contra los 1116A de Finnegans (en el reporte de entregas las columnas de certificación vienen vacías, así que no sirven). \"Corresponde\" es la merma por humedad según la base de la Cámara Arbitral (maíz 14,5% · soja 13,5% · trigo y sorgo 14% · girasol 11%), calculada solo en los camiones que tienen humedad medida: la humedad la toma del extranet de la cerealera y, si no hay, de Finnegans. Fila roja = falta el certificado."
+      : "Un camión por fila. \"Corresponde\" = kg × (humedad − base) / (100 − base). Pasá el mouse por la humedad para ver de qué extranet salió. Fila roja = sin certificado 1116A; fila ámbar = falta aplicar merma.";
   }
 
   function cultivos(){
@@ -10795,7 +10837,9 @@ document.addEventListener('click', (e) => {
     const cols = [["fecha", "Fecha"], ["cp", "Carta de porte"], ["ctg", "CTG"], ["lado", "Punta"],
                   ["prod", "Producto"], ["org", "Firma"], ["cto", "Contrato"], ["doc", "Doc interno"],
                   ["dest", "Destino"], ["camp", "Campaña"], ["pat", "Patente"], ["kg", "Kg", 1],
-                  ["merma", "Merma kg", 1], ["hum", "% humedad", 1], ["factor", "Factor", 1],
+                  ["hum", "% humedad", 1], ["hum_de", "Humedad de"], ["base", "Base humedad", 1],
+                  ["merma_teo", "Merma que corresponde kg", 1], ["merma", "Merma aplicada kg", 1],
+                  ["merma_cer", "Merma que informa la cerealera kg", 1], ["factor", "Factor", 1],
                   ["cert", "Certificado 1116A"], ["cert_f", "Fecha certificado"],
                   ["cert_nro", "Nº certificado"], ["estado_ctg", "Estado CTG"]];
     const L = [cols.map(c => esc(c[1])).join(";")];
@@ -15526,6 +15570,67 @@ def fetch_trackeo(desde: str = TRACKEO_DESDE):
     except Exception as e:
         print(f"    [!] no pude leer los certificados 1116A: {e}")
 
+    # 1bis) HUMEDAD Y MERMA REALES de los extranets de las cerealeras.
+    # En Finnegans la humedad casi no se carga (32 de 264 camiones de maiz), asi que
+    # sin esto no se puede calcular la merma. Cada extranet la guarda distinto:
+    #   Cargill  calidad.<concepto>.valor + .mermaKg   (el mas completo: merma por concepto)
+    #   LDC      calidad.HUMEDAD + netWeight vs pesoAcondicionado (en tn)
+    #   Intagro  humedad + netos vs aplicados
+    #   Bunge    calidad.Humedad (sin merma en kg)
+    calidad = {}
+
+    def _k(c):
+        return _re.sub(r"\D", "", str(c or "")).lstrip("0")
+
+    def _fl(x):
+        try:
+            return float(x or 0)
+        except Exception:
+            return 0.0
+
+    _dd = Path(__file__).resolve().parent / "data"
+    try:
+        _f = _dd / "cargill" / "quality.json"
+        if _f.exists():
+            for ctg, v in json.loads(_f.read_text(encoding="utf-8")).items():
+                cal = v.get("calidad") or {}
+                _h = cal.get("HUMEDAD")
+                hv = _fl(_h.get("valor")) if isinstance(_h, dict) else _fl(_h)
+                mk = sum(_fl((x or {}).get("mermaKg")) for x in cal.values() if isinstance(x, dict))
+                calidad[_k(ctg)] = {"f": "Cargill", "hum": hv, "mcer": mk}
+        _f = _dd / "ldc" / "quality.json"
+        if _f.exists():
+            for ctg, v in json.loads(_f.read_text(encoding="utf-8")).items():
+                cal = v.get("calidad") or {}
+                calidad[_k(ctg)] = {"f": "LDC", "hum": _fl(cal.get("HUMEDAD")),
+                                    "mcer": (_fl(v.get("netWeight")) - _fl(v.get("pesoAcondicionado"))) * 1000}
+        _f = _dd / "intagro" / "quality.json"
+        if _f.exists():
+            for ctg, v in json.loads(_f.read_text(encoding="utf-8")).items():
+                calidad[_k(ctg)] = {"f": "Intagro", "hum": _fl(v.get("humedad")),
+                                    "mcer": _fl(v.get("netos")) - _fl(v.get("aplicados"))}
+        _f = _dd / "bunge" / "quality.json"
+        if _f.exists():
+            for ctg, v in json.loads(_f.read_text(encoding="utf-8")).items():
+                cal = v.get("calidad") or {}
+                calidad[_k(ctg)] = {"f": "Bunge", "hum": _fl(cal.get("Humedad")), "mcer": 0.0}
+    except Exception as e:
+        print(f"    [!] calidad de extranets: {e}")
+    print(f"    calidad de extranets: {len(calidad)} CTG con humedad "
+          f"({sum(1 for v in calidad.values() if v['hum'] > 0)} con valor)")
+
+    # bases de humedad de la Camara Arbitral: la merma de humedad es
+    #   kg x (humedad - base) / (100 - base)
+    BASE_HUM = {"maiz": 14.5, "maíz": 14.5, "soja": 13.5, "trigo": 14.0,
+                "girasol": 11.0, "sorgo": 14.0, "cebada": 12.5, "mani": 8.0, "maní": 8.0}
+
+    def _base(prod):
+        pl = (prod or "").lower()
+        for k, v in BASE_HUM.items():
+            if k in pl:
+                return v
+        return 0.0
+
     # 2) los camiones de las dos puntas
     prm = {"PARAMWEBREPORT_FechaDesde": desde, "PARAMWEBREPORT_FechaHasta": hasta}
     filas = []
@@ -15554,6 +15659,11 @@ def fetch_trackeo(desde: str = TRACKEO_DESDE):
             merma = (fn("MERMA HUMEDAD") + fn("MERMAZARANDA") + fn("MERMAVOLATIL")
                      + fn("MERMAOTROS") + fn("MERMAKGSCALIDAD"))
             kg = fn("CANTIDAD ENTREGADA") or fn("PESONETO")
+            # humedad: la del extranet de la cerealera y, si no hay, la de Finnegans
+            cal = calidad.get(ctg) or {}
+            hum = cal.get("hum") or fn("% HUMEDAD")
+            bse = _base(g("PRODUCTO"))
+            teo = (kg * (hum - bse) / (100 - bse)) if (hum > bse > 0) else 0.0
             filas.append({
                 "lado": lado,
                 "fecha": str(g("FECHA") or ""),
@@ -15569,7 +15679,12 @@ def fetch_trackeo(desde: str = TRACKEO_DESDE):
                 "kg": round(kg, 1),
                 "kg_sm": round(fn("PESONETOSINMERMAS"), 1),
                 "merma": round(merma, 1),
-                "hum": round(fn("% HUMEDAD"), 2),
+                "hum": round(hum, 2),
+                "hum_fnn": round(fn("% HUMEDAD"), 2),
+                "hum_de": cal.get("f", "") if cal.get("hum") else ("Finnegans" if fn("% HUMEDAD") else ""),
+                "base": bse,
+                "merma_teo": round(teo, 1),
+                "merma_cer": round(cal.get("mcer") or 0, 1),
                 "factor": round(fn("FACTOR"), 4),
                 "cert": (cert or {}).get("doc", ""),
                 "cert_f": (cert or {}).get("fecha", ""),
@@ -15593,13 +15708,26 @@ def fetch_trackeo(desde: str = TRACKEO_DESDE):
             "sin_cert": len(sin_c), "kg_sin_cert": round(sum(f["kg"] for f in sin_c), 1),
             "sin_merma": len(sin_m), "kg_sin_merma": round(sum(f["kg"] for f in sin_m), 1),
             "merma": round(sum(f["merma"] for f in filas), 1),
+            "merma_teo": round(sum(f["merma_teo"] for f in filas), 1),
+            "con_hum": sum(1 for f in filas if f["hum"] > 0),
         },
         "filas": filas,
     }
+    _ap = sum(f["merma"] for f in filas)
+    # la comparacion teorica vs aplicada SOLO vale sobre los camiones que tienen
+    # humedad medida: en el resto no hay con que calcular cuanta merma corresponde
+    _hum = [f for f in filas if f["hum"] > 0]
+    _te = sum(f["merma_teo"] for f in _hum)
+    _ap_h = sum(f["merma"] for f in _hum)
+    _kg_h = sum(f["kg"] for f in _hum)
+    _ch = len(_hum)
     print(f"    -> {len(filas)} camiones · {tot_kg / 1000:,.1f} tn · "
           f"{len(sin_c)} sin certificado ({sum(f['kg'] for f in sin_c) / 1000:,.1f} tn) · "
-          f"{len(sin_m)} sin merma · mermas {sum(f['merma'] for f in filas):,.0f} kg "
-          f"({100 * sum(f['merma'] for f in filas) / max(1, tot_kg):.2f}%)")
+          f"{len(sin_m)} sin merma · mermas {_ap:,.0f} kg "
+          f"({100 * _ap / max(1, tot_kg):.2f}%)")
+    print(f"       {_ch} camiones con humedad medida ({_kg_h / 1000:,.1f} tn): "
+          f"corresponde {_te:,.0f} kg de merma y hay aplicados {_ap_h:,.0f} kg "
+          f"-> faltarian {max(0, _te - _ap_h):,.0f} kg")
     return out
 
 
