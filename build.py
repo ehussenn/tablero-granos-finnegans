@@ -257,6 +257,16 @@ def fetch_produccion() -> tuple[dict, dict, dict | None]:
             ck = f'{(l.get("convenio") or "").upper().strip()}||{c}'
             d = conv_agg.setdefault(ck, {"producto": p, "pendFis": 0.0, "pctw": 0.0, "haL": 0.0, "lotes": []})
             d["haL"] += haL; d["pctw"] += pct * haL
+            # El lote se da por terminado con AVANCE = 1, que es lo que carga el
+            # encargado en el portal, y esa es la señal buena. Las hectareas
+            # cosechadas a veces no cierran con las del lote (GARGANO AQUILANO 75
+            # de 121, SAN BERNARDO 73 de 114, LA EMILIA 0 de 44,6) y tomando esa
+            # resta el tablero mostraba 162 tn de maiz pendientes cuando el portal
+            # dice 2. (pedido usuario 11/09/2026)
+            try:
+                if float(l.get("avance") or 0) >= 0.999: continue
+            except Exception:
+                pass
             pend = max(0.0, haL - hc - haP)
             if pend <= 0: continue
             campo = (l.get("campo") or "").upper().strip(); lote = (l.get("lote") or "").upper().strip()
@@ -1201,7 +1211,8 @@ window.apiFetch = function(path, opts){
         <div class="nav-items">
           <a class="nav-item" data-go-tab="venta" data-go-sub="posicion" data-title="Venta · Posición General">Posición General</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="financiera" data-title="Venta · Financiera">Financiera</a>
-          <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">💰 Precios por Contrato</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="vt-analisis-px" data-title="Venta · Análisis de Precios">💰 Precios de Venta</a>
+          <a class="nav-item" data-go-tab="venta" data-go-sub="vt-precios" data-title="Venta · Precios por Contrato">📄 Precios por Contrato</a>
           <a class="nav-item" data-go-tab="venta" data-go-sub="vt-extranets" data-title="Venta · Cta Cte Extranets">🏦 Cta Cte Extranets</a>
         </div>
       </div>
@@ -2155,7 +2166,8 @@ window.apiFetch = function(path, opts){
     <div class="subtabs">
       <button class="subtab active" data-sub="posicion">Posición General</button>
       <button class="subtab" data-sub="financiera">Financiera</button>
-      <button class="subtab" data-sub="vt-precios">💰 Precios por Contrato</button>
+      <button class="subtab" data-sub="vt-analisis-px">💰 Precios de Venta</button>
+      <button class="subtab" data-sub="vt-precios">📄 Precios por Contrato</button>
       <button class="subtab" data-sub="vt-extranets">🏦 Cta Cte Extranets</button>
     </div>
 
@@ -2312,6 +2324,72 @@ window.apiFetch = function(path, opts){
       </div>
 
     </div>
+
+    <!-- ========== SUB: PRECIOS DE VENTA ========== -->
+    <div class="subpanel" data-sub-panel="vt-analisis-px">
+      <div class="section" style="background:linear-gradient(135deg,#14532d 0%,#1a7f4b 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">💰 Análisis de Precios de Venta</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.45">
+          A qué precio se vendió el grano: promedio ponderado por cultivo, cómo se movió mes a mes,
+          qué pagó cada cliente y contrato por contrato con su desvío contra el promedio del cultivo.
+          Todo llevado a <b>USD por tonelada</b> para poder comparar.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="pv2-chips"></div>
+      </div>
+
+      <div class="section">
+        <div id="pv2-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 14px"></div>
+        <div class="filterbar" style="margin:0">
+          <div><label>CAMPAÑA</label><select id="pv2-camp"></select></div>
+          <div><label>CULTIVO</label><select id="pv2-prod"><option value="">Todos</option></select></div>
+          <div><label>CLIENTE</label><select id="pv2-org"><option value="">Todos</option></select></div>
+          <div><label>CORREDOR</label><select id="pv2-corr"><option value="">Todos</option></select></div>
+          <div><label>INCLUIR</label><select id="pv2-tipo">
+            <option value="grano">Solo granos</option>
+            <option value="todo">Granos y semillas</option>
+            <option value="semilla">Solo semillas</option>
+          </select></div>
+          <div><label>BUSCAR</label><input id="pv2-txt" placeholder="contrato / cliente"
+            style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+          <button class="clear" id="pv2-limpiar">Limpiar</button>
+          <button class="clear" id="pv2-ver-sucios" title="Los datos sucios no entran en ningún cálculo. Acá los podés ver para corregirlos en el sistema.">⚠ Ver desestimados</button>
+          <button class="clear" id="pv2-excel">⬇ Exportar a Excel</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="pv2-info"></span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Precio por cultivo <span class="badge">promedio ponderado por toneladas fijadas</span></h3>
+        <div class="tbl-wrap"><table id="pv2-tbl-cult"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+      </div>
+
+      <div class="section">
+        <h3>Cómo se movió mes a mes <span class="badge">por fecha del contrato</span></h3>
+        <div class="tbl-wrap" style="max-height:420px"><table id="pv2-tbl-mes"><thead></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="section">
+        <h3>Qué pagó cada cliente <span class="badge">click para abrir sus contratos</span></h3>
+        <div class="tbl-wrap" style="max-height:520px"><table id="pv2-tbl-org"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+      </div>
+
+      <div class="section">
+        <h3>Contrato por contrato <span class="badge" id="pv2-meta-det"></span></h3>
+        <div class="tbl-wrap" style="max-height:620px"><table id="pv2-tbl-det" style="font-size:11.5px"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
+          💡 <b>Cómo se lee</b>: el precio se lleva a USD/tn. La moneda del contrato en Finnegans viene mezclada
+          (hay soja marcada "dólares" con el precio en pesos), así que se decide <b>por la magnitud</b>:
+          menos de 5.000 es USD, de ahí para arriba son pesos y se dividen por el dólar mayorista
+          <b>del día en que se pactó el contrato</b> (no el de hoy: un precio en pesos de hace un año
+          convertido al dólar actual queda muy por debajo de lo que realmente se pagó).
+          El <b>desvío</b> compara cada contrato contra el promedio ponderado de su cultivo y campaña.
+          Los <b>datos sucios quedan afuera de todos los cálculos</b>: las fijaciones simbólicas de precio 1,
+          los precios de menos de 15 USD/tn y los que se van más del 50% de la mediana de su cultivo y campaña
+          (esto último solo cuando hay al menos 4 contratos con qué comparar). Con el botón
+          <b>Ver desestimados</b> los mirás para corregirlos en el sistema, con su número de contrato y el motivo.
+        </div>
+      </div>
+    </div><!-- /subpanel vt-analisis-px -->
 
     <!-- ========== SUB: PRECIOS POR CONTRATO ========== -->
     <div class="subpanel" data-sub-panel="vt-precios">
@@ -10698,14 +10776,20 @@ document.addEventListener('click', (e) => {
 })();
 
 /* ============================================================
-   ========= PRECIOS DE COMPRA (pedido usuario 11/09) =========
-   A que precio se compro: por cultivo, mes a mes, por entregador
-   y contrato por contrato. Sale de PAYLOAD.compra.
-   La moneda del contrato en Finnegans viene mezclada, asi que el
-   precio se decide POR MAGNITUD (< 5000 = USD) y se lleva todo a
-   USD/tn con el TC del BCR, que es la unica forma de comparar.
+   ===== PRECIOS DE COMPRA Y DE VENTA (pedido usuario 11/09) ===
+   A que precio se compro y a que precio se vendio: por cultivo,
+   mes a mes, por firma y contrato por contrato.
+   Un solo modulo para las dos puntas: se instancia abajo con la
+   fuente de datos y el prefijo de ids de cada solapa.
+   Reglas comunes:
+     - la moneda del contrato viene mezclada en Finnegans, asi
+       que el precio se decide POR MAGNITUD (< 5000 = USD)
+     - los pesos se pasan a dolares con el TC del DIA DEL
+       CONTRATO, no con el de hoy
+     - los datos sucios quedan afuera de todos los calculos y se
+       pueden mirar aparte, identificados y con el motivo
    ============================================================ */
-(() => {
+function moduloPrecios(PRE, DATOS, LADO, ETIQ, ROT, ROT_TN, SUB){
   const TC = (PAYLOAD.bcr && PAYLOAD.bcr.tc_usd_ars) || 1500;
   const abiertos = new Set();
 
@@ -10750,7 +10834,7 @@ document.addEventListener('click', (e) => {
   // el grupo no se juzga: no hay con que comparar.
   const MED = (() => {
     const m = {};
-    (PAYLOAD.compra || []).forEach(c => {
+    (DATOS || []).forEach(c => {
       const px = pxUsd(c);
       if(px <= 0 || f(c.cantidadfijada) <= 0) return;
       const k = (c.producto || "?") + "|" + (c.campana || "");
@@ -10787,9 +10871,9 @@ document.addEventListener('click', (e) => {
   let verSucios = false;
 
   function base(){
-    let rs = (PAYLOAD.compra || []).filter(c => pxUsd(c) > 0 && f(c.cantidadfijada) > 0);
+    let rs = (DATOS || []).filter(c => pxUsd(c) > 0 && f(c.cantidadfijada) > 0);
     rs = verSucios ? rs.filter(esSucio) : rs.filter(c => !esSucio(c));
-    const tipo = (document.getElementById("px-tipo") || {}).value || "grano";
+    const tipo = (document.getElementById(PRE + "-tipo") || {}).value || "grano";
     if(tipo === "grano")   rs = rs.filter(c => !esSem(c.producto));
     if(tipo === "semilla") rs = rs.filter(c => esSem(c.producto));
     return rs;
@@ -10798,15 +10882,17 @@ document.addEventListener('click', (e) => {
   function filas(omitir){
     omitir = omitir || {};
     let rs = base();
-    const camp = (document.getElementById("px-camp") || {}).value || "";
+    const camp = (document.getElementById(PRE + "-camp") || {}).value || "";
     if(camp) rs = rs.filter(c => (c.campana || "").includes(camp));
-    const pr = (document.getElementById("px-prod") || {}).value || "";
-    if(pr && !omitir.prod) rs = rs.filter(c => (c.producto || "") === pr);
-    const og = (document.getElementById("px-org") || {}).value || "";
-    if(og && !omitir.org) rs = rs.filter(c => (c.organizacion || "") === og);
-    const co = (document.getElementById("px-corr") || {}).value || "";
-    if(co) rs = rs.filter(c => (c.corredor || "") === co);
-    const q = ((document.getElementById("px-txt") || {}).value || "").trim().toLowerCase();
+    // los nombres vienen con espacios de sobra en Finnegans: se compara recortado
+    const T = x => String(x || "").trim();
+    const pr = T((document.getElementById(PRE + "-prod") || {}).value);
+    if(pr && !omitir.prod) rs = rs.filter(c => T(c.producto) === pr);
+    const og = T((document.getElementById(PRE + "-org") || {}).value);
+    if(og && !omitir.org) rs = rs.filter(c => T(c.organizacion) === og);
+    const co = T((document.getElementById(PRE + "-corr") || {}).value);
+    if(co && !omitir.corr) rs = rs.filter(c => T(c.corredor) === co);
+    const q = ((document.getElementById(PRE + "-txt") || {}).value || "").trim().toLowerCase();
     if(q) rs = rs.filter(c => ((c.organizacion || "") + " " + (c.numerointerno || "") + " "
                              + (c.numerodocumentoadicional || "")).toLowerCase().includes(q));
     return rs;
@@ -10847,7 +10933,7 @@ document.addEventListener('click', (e) => {
   };
 
   function kpis(rs, ref){
-    const c = document.getElementById("px-kpis");
+    const c = document.getElementById(PRE + "-kpis");
     if(!c) return;
     const t = pond(rs);
     const pxs = rs.map(pxUsd).filter(x => x > 0).sort((a, b) => a - b);
@@ -10857,7 +10943,7 @@ document.addEventListener('click', (e) => {
       <div style="font-size:24px;font-weight:800;color:${col};line-height:1.15;margin-top:4px">${val}</div>
       <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
     c.innerHTML =
-      card("Toneladas compradas", n1(t.tn), `${n0(rs.length)} contratos con precio`, "#8f2b22") +
+      card(ROT_TN, n1(t.tn), `${n0(rs.length)} contratos con precio`, "#8f2b22") +
       card("Precio promedio", "US$ " + n2(t.px), "ponderado por toneladas", "#8f2b22") +
       card("Rango de precios", pxs.length ? `${n2(pxs[0])} – ${n2(pxs[pxs.length - 1])}`  : "—",
            "del contrato más barato al más caro", "#a97b12") +
@@ -10867,8 +10953,8 @@ document.addEventListener('click', (e) => {
            verSucios ? "tocá el botón de nuevo para volver"
                      : "datos sucios, afuera de todos los cálculos",
            nSucios() ? "#a97b12" : "#1a7f4b");
-    const ch = document.getElementById("px-chips");
-    if(ch) ch.innerHTML = [`${n0(base().length)} contratos de compra con precio`,
+    const ch = document.getElementById(PRE + "-chips");
+    if(ch) ch.innerHTML = [`${n0(base().length)} ${ROT} con precio`,
                            "pesos al TC del día del contrato", "precios en USD por tonelada"]
       .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(x)}</span>`).join("");
   }
@@ -10876,7 +10962,7 @@ document.addEventListener('click', (e) => {
   const fueraBanda = c => esSucio(c);
 
   function tablaCultivo(rs, ref){
-    const t = document.getElementById("px-tbl-cult");
+    const t = document.getElementById(PRE + "-tbl-cult");
     const m = {};
     rs.forEach(c => {
       const k = c.producto || "?";
@@ -10905,7 +10991,7 @@ document.addEventListener('click', (e) => {
   }
 
   function tablaMes(rs){
-    const t = document.getElementById("px-tbl-mes");
+    const t = document.getElementById(PRE + "-tbl-mes");
     // una columna por cultivo (los 6 con mas toneladas), una fila por mes
     const porProd = {};
     rs.forEach(c => { porProd[c.producto] = (porProd[c.producto] || 0) + f(c.cantidadfijada); });
@@ -10938,10 +11024,10 @@ document.addEventListener('click', (e) => {
   }
 
   function tablaOrg(rs, ref){
-    const t = document.getElementById("px-tbl-org");
+    const t = document.getElementById(PRE + "-tbl-org");
     const m = {};
     rs.forEach(c => {
-      const k = (c.organizacion || "—").trim() || "—";
+      const k = String(c.organizacion || "").trim() || "—";
       const a = m[k] || (m[k] = {n: 0, tn: 0, imp: 0, cs: [], dev: 0});
       const tn = f(c.cantidadfijada), px = pxUsd(c);
       a.n++; a.tn += tn; a.imp += tn * px; a.cs.push(c);
@@ -10950,7 +11036,7 @@ document.addEventListener('click', (e) => {
     });
     const gs = Object.entries(m).map(([k, a]) => ({k, ...a, px: a.tn ? a.imp / a.tn : 0}))
                                 .sort((a, b) => b.dev - a.dev);
-    t.querySelector("thead").innerHTML = `<tr><th>Entregador</th><th class="num">Contratos</th>
+    t.querySelector("thead").innerHTML = `<tr><th>${ETIQ}</th><th class="num">Contratos</th>
       <th class="num">Tn</th><th class="num">US$ / tn</th>
       <th class="num" title="Comparado con el promedio ponderado del mismo cultivo">Dif. vs promedio</th>
       <th class="num" title="Lo que esa diferencia representa en dólares sobre las toneladas de esa firma">US$ de más / de menos</th></tr>`;
@@ -10985,8 +11071,8 @@ document.addEventListener('click', (e) => {
   }
 
   function tablaDetalle(rs, ref){
-    const t = document.getElementById("px-tbl-det");
-    t.querySelector("thead").innerHTML = `<tr><th>Nº</th><th>Fecha</th><th>Entregador</th>
+    const t = document.getElementById(PRE + "-tbl-det");
+    t.querySelector("thead").innerHTML = `<tr><th>Nº</th><th>Fecha</th><th>${ETIQ}</th>
       <th>Cultivo</th><th>Campaña</th><th>Tipo</th><th>Corredor</th>
       <th class="num">Tn fijadas</th><th class="num">Precio original</th><th>Moneda</th>
       <th class="num">US$ / tn</th><th class="num">Dif. vs promedio</th><th class="num">Importe US$</th>
@@ -11018,7 +11104,7 @@ document.addEventListener('click', (e) => {
       <td colspan="7">TOTAL ${n0(rs.length)} contratos</td><td class="num">${n1(T.tn)}</td>
       <td></td><td></td><td class="num">${n2(T.px)}</td><td></td>
       <td class="num">${n0(T.tn * T.px)}</td><td></td></tr>` : "";
-    document.getElementById("px-meta-det").textContent =
+    document.getElementById(PRE + "-meta-det").textContent =
       rs.length > 1200 ? "muestro los 1.200 más nuevos" : "ordenado por fecha";
   }
 
@@ -11029,12 +11115,12 @@ document.addEventListener('click', (e) => {
       if(!e) return;
       const prev = e.value;
       e.innerHTML = (todos ? `<option value="">${todos}</option>` : "") +
-        vals.map(v => `<option${v === prev ? " selected" : ""}>${escapeHtml(v)}</option>`).join("");
+        vals.map(v => `<option value="${escapeHtml(v)}"${v === prev ? " selected" : ""}>${escapeHtml(v)}</option>`).join("");
       if(prev && vals.includes(prev)) e.value = prev;
     };
     const camps = [...new Set(rs.map(c => (c.campana || "").replace("CAMPAÑA ", "")).filter(Boolean))]
                     .sort().reverse();
-    const e = document.getElementById("px-camp");
+    const e = document.getElementById(PRE + "-camp");
     if(e && !e.dataset.listo){
       e.innerHTML = '<option value="">Todas</option>' + camps.map(v => `<option>${escapeHtml(v)}</option>`).join("");
       // arranca en la campaña con mas toneladas
@@ -11045,13 +11131,17 @@ document.addEventListener('click', (e) => {
       if(top) e.value = top[0];
       e.dataset.listo = "1";
     }
-    put("px-prod", [...new Set(rs.map(c => c.producto).filter(Boolean))].sort(), "Todos");
-    put("px-org", [...new Set(rs.map(c => c.organizacion).filter(Boolean))].sort(), "Todos");
-    put("px-corr", [...new Set(rs.map(c => c.corredor).filter(Boolean))].sort(), "Todos");
+    // cada desplegable se arma con lo que queda despues de los OTROS filtros
+    // (si no, se podian elegir firmas que no tenian ni un contrato en la campaña
+    // elegida y quedaba todo vacio)
+    const T2 = x => String(x || "").trim();
+    put(PRE + "-prod", [...new Set(filas({prod: true}).map(c => T2(c.producto)).filter(Boolean))].sort(), "Todos");
+    put(PRE + "-org",  [...new Set(filas({org: true}).map(c => T2(c.organizacion)).filter(Boolean))].sort(), "Todos");
+    put(PRE + "-corr", [...new Set(filas({corr: true}).map(c => T2(c.corredor)).filter(Boolean))].sort(), "Todos");
   }
 
   function render(){
-    if(!(PAYLOAD.compra || []).length) return;
+    if(!(DATOS || []).length) return;
     opciones();
     const rs = filas();
     const ref = refCultivo(filas({org: true}));   // el promedio del cultivo no mira el filtro de firma
@@ -11060,7 +11150,7 @@ document.addEventListener('click', (e) => {
     tablaMes(rs);
     tablaOrg(rs, ref);
     tablaDetalle(rs, ref);
-    document.getElementById("px-info").textContent =
+    document.getElementById(PRE + "-info").textContent =
       `${n0(rs.length)} contrato(s) · ${n1(pond(rs).tn)} tn`;
   }
 
@@ -11070,7 +11160,7 @@ document.addEventListener('click', (e) => {
     const esc = x => { let t = String(x == null ? "" : x);
       if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"'; return t; };
     const num = x => String(Math.round((x || 0) * 100) / 100).replace(".", ",");
-    const L = [["Nº", "Código contrato", "Fecha", "Entregador", "Cultivo", "Campaña", "Tipo",
+    const L = [["Nº", "Código contrato", "Fecha", ETIQ, "Cultivo", "Campaña", "Tipo",
                 "Corredor", "Tn fijadas", "Precio original", "Moneda", "USD por tn",
                 "Dif vs promedio", "Importe USD", "Desestimado", "Por qué"].join(";")];
     rs.forEach(c => {
@@ -11087,47 +11177,52 @@ document.addEventListener('click', (e) => {
     const blob = new Blob(["\ufeff" + L.join("\r\n")], {type: "text/csv;charset=utf-8"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `Precios-de-compra${verSucios ? "-DESESTIMADOS" : ""}_${hoy}.csv`;
+    a.download = `Precios-de-${LADO}${verSucios ? "-DESESTIMADOS" : ""}_${hoy}.csv`;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   }
 
   document.addEventListener("click", (e) => {
-    const tr = e.target.closest("#px-tbl-org tr.px-org");
+    const tr = e.target.closest("#" + PRE + "-tbl-org tr.px-org");
     if(!tr) return;
     const k = tr.dataset.org;
     if(abiertos.has(k)) abiertos.delete(k); else abiertos.add(k);
     render();
   });
-  ["px-camp", "px-prod", "px-org", "px-corr", "px-tipo"].forEach(id => {
-    const e = document.getElementById(id);
+  ["camp", "prod", "org", "corr", "tipo"].forEach(n => {
+    const e = document.getElementById(PRE + "-" + n);
     if(e) e.addEventListener("change", render);
   });
-  const tx = document.getElementById("px-txt");
+  const tx = document.getElementById(PRE + "-txt");
   if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
-  const bx = document.getElementById("px-excel");
+  const bx = document.getElementById(PRE + "-excel");
   if(bx) bx.addEventListener("click", exportar);
-  const vs = document.getElementById("px-ver-sucios");
+  const vs = document.getElementById(PRE + "-ver-sucios");
   if(vs) vs.addEventListener("click", () => {
     verSucios = !verSucios;
     vs.textContent = verSucios ? "↩ Volver a los buenos" : "⚠ Ver desestimados";
     vs.style.background = verSucios ? "#fdf9ef" : "";
     render();
   });
-  const lm = document.getElementById("px-limpiar");
+  const lm = document.getElementById(PRE + "-limpiar");
   if(lm) lm.addEventListener("click", () => {
     abiertos.clear();
     verSucios = false;
     if(vs){ vs.textContent = "⚠ Ver desestimados"; vs.style.background = ""; }
-    ["px-prod", "px-org", "px-corr", "px-txt"].forEach(id => {
-      const e = document.getElementById(id); if(e) e.value = ""; });
-    const tp = document.getElementById("px-tipo"); if(tp) tp.value = "grano";
+    ["prod", "org", "corr", "txt"].forEach(n => {
+      const e = document.getElementById(PRE + "-" + n); if(e) e.value = ""; });
+    const tp = document.getElementById(PRE + "-tipo"); if(tp) tp.value = "grano";
     render();
   });
-  document.querySelectorAll('[data-go-sub="cp-precios"], .subtab[data-sub="cp-precios"]')
+  document.querySelectorAll(`[data-go-sub="${SUB}"], .subtab[data-sub="${SUB}"]`)
     .forEach(a => a.addEventListener("click", () => setTimeout(render, 60)));
   setTimeout(render, 400);
-})();
+}
+
+moduloPrecios("px", PAYLOAD.compra, "compra", "Entregador",
+              "contratos de compra", "Toneladas compradas", "cp-precios");
+moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
+              "contratos de venta", "Toneladas vendidas", "vt-analisis-px");
 
 /* ============================================================
    ======= TRACKEO DE CAMIONES (pedido usuario 10/09) =========
