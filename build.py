@@ -1593,6 +1593,7 @@ window.apiFetch = function(path, opts){
           <div><label>BUSCAR</label><input id="px-txt" placeholder="contrato / firma"
             style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
           <button class="clear" id="px-limpiar">Limpiar</button>
+          <button class="clear" id="px-ver-sucios" title="Los datos sucios no entran en ningún cálculo. Acá los podés ver para corregirlos en el sistema.">⚠ Ver desestimados</button>
           <button class="clear" id="px-excel">⬇ Exportar a Excel</button>
           <span style="margin-left:auto;color:var(--muted);font-size:12px" id="px-info"></span>
         </div>
@@ -1619,10 +1620,14 @@ window.apiFetch = function(path, opts){
         <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
           💡 <b>Cómo se lee</b>: el precio se lleva a USD/tn. La moneda del contrato en Finnegans viene mezclada
           (hay soja marcada "dólares" con el precio en pesos), así que se decide <b>por la magnitud</b>:
-          menos de 5.000 es USD, de ahí para arriba son pesos y se dividen por el tipo de cambio del día.
+          menos de 5.000 es USD, de ahí para arriba son pesos y se dividen por el dólar mayorista
+          <b>del día en que se pactó el contrato</b> (no el de hoy: un precio en pesos de hace un año
+          convertido al dólar actual queda muy por debajo de lo que realmente se pagó).
           El <b>desvío</b> compara cada contrato contra el promedio ponderado de su cultivo y campaña.
-          Las filas marcadas <span class="px-out">fuera de banda</span> tienen un precio que se va más del 50%
-          de la mediana del cultivo: casi siempre son datos sucios, convienen revisarlos antes de sacar conclusiones.
+          Los <b>datos sucios quedan afuera de todos los cálculos</b>: las fijaciones simbólicas de precio 1,
+          los precios de menos de 15 USD/tn y los que se van más del 50% de la mediana de su cultivo y campaña
+          (esto último solo cuando hay al menos 4 contratos con qué comparar). Con el botón
+          <b>Ver desestimados</b> los mirás para corregirlos en el sistema, con su número de contrato y el motivo.
         </div>
       </div>
     </div><!-- /subpanel cp-precios -->
@@ -10711,15 +10716,79 @@ document.addEventListener('click', (e) => {
   const esSem = p => /^SEM|SEMILLA/i.test(p || "");
   const mes = c => String(c.fecha || "").slice(0, 7);
 
-  // precio a USD/tn: por magnitud, como en el resto del tablero
+  // TC del dia del contrato: un precio en pesos de hace un año no se puede
+  // dividir por el dolar de hoy. Si ese dia no cotizo (finde o feriado) se toma
+  // el ultimo anterior.
+  const TCH = PAYLOAD.tc_hist || {};
+  const TCF = Object.keys(TCH).sort();
+  function tcDe(fecha){
+    const d = String(fecha || "").slice(0, 10);
+    if(!d || !TCF.length) return TC;
+    if(TCH[d]) return TCH[d];
+    let lo = 0, hi = TCF.length - 1, r = -1;
+    while(lo <= hi){
+      const m = (lo + hi) >> 1;
+      if(TCF[m] <= d){ r = m; lo = m + 1; } else hi = m - 1;
+    }
+    return r >= 0 ? TCH[TCF[r]] : TCH[TCF[0]];
+  }
+
+  // precio a USD/tn. La moneda del contrato viene mezclada en Finnegans, asi que
+  // se decide por magnitud; los pesos van al TC del dia en que se pacto.
   function pxUsd(c){
     const px = f(c.preciopromediofijado);
     if(px <= 1.01) return 0;                 // fijaciones simbolicas: no son precio
-    return px < 5000 ? px : px / TC;
+    return px < 5000 ? px : px / tcDe(c.fecha);
   }
+
+  // DATOS SUCIOS (pedido del usuario 11/09): no entran en ningun calculo.
+  //   - fijaciones simbolicas: precio <= 1,01 (ya las descarta pxUsd)
+  //   - precios que no son precios de grano: menos de 15 USD/tn
+  //   - precios que se van mas del 50% de la mediana de su cultivo Y campaña
+  // La mediana se calcula UNA vez sobre todos los contratos con precio, asi la
+  // regla no se mueve cuando se cambian los filtros. Con menos de 4 contratos en
+  // el grupo no se juzga: no hay con que comparar.
+  const MED = (() => {
+    const m = {};
+    (PAYLOAD.compra || []).forEach(c => {
+      const px = pxUsd(c);
+      if(px <= 0 || f(c.cantidadfijada) <= 0) return;
+      const k = (c.producto || "?") + "|" + (c.campana || "");
+      (m[k] || (m[k] = [])).push(px);
+    });
+    const r = {};
+    Object.entries(m).forEach(([k, a]) => {
+      const o = a.sort((x, y) => x - y);
+      r[k] = {n: o.length,
+              med: o.length % 2 ? o[(o.length - 1) / 2] : (o[o.length / 2 - 1] + o[o.length / 2]) / 2};
+    });
+    return r;
+  })();
+
+  function esSucio(c){
+    const px = pxUsd(c);
+    if(px <= 0) return true;                 // fijacion simbolica o sin precio
+    if(px < 15) return true;                 // no es un precio de grano
+    const r = MED[(c.producto || "?") + "|" + (c.campana || "")];
+    if(!r || r.n < 4) return false;          // con pocos contratos no hay con que juzgar
+    return px < r.med * 0.5 || px > r.med * 1.5;
+  }
+
+  function porQue(c){
+    const px = pxUsd(c);
+    if(px <= 0) return "fijación simbólica (precio 1)";
+    if(px < 15) return "precio imposible para grano";
+    const r = MED[(c.producto || "?") + "|" + (c.campana || "")];
+    if(!r) return "";
+    return px < r.med * 0.5 ? `muy por debajo de la mediana del cultivo (US$ ${n2(r.med)})`
+                            : `muy por encima de la mediana del cultivo (US$ ${n2(r.med)})`;
+  }
+
+  let verSucios = false;
 
   function base(){
     let rs = (PAYLOAD.compra || []).filter(c => pxUsd(c) > 0 && f(c.cantidadfijada) > 0);
+    rs = verSucios ? rs.filter(esSucio) : rs.filter(c => !esSucio(c));
     const tipo = (document.getElementById("px-tipo") || {}).value || "grano";
     if(tipo === "grano")   rs = rs.filter(c => !esSem(c.producto));
     if(tipo === "semilla") rs = rs.filter(c => esSem(c.producto));
@@ -10761,6 +10830,17 @@ document.addEventListener('click', (e) => {
     return m;
   }
 
+  // los desestimados que corresponden a los filtros puestos, para que la tarjeta
+  // diga lo mismo que muestra el boton "Ver desestimados"
+  function sucios(){
+    const g = verSucios;
+    verSucios = true;
+    const r = filas();
+    verSucios = g;
+    return r;
+  }
+  const nSucios = () => sucios().length;
+
   const pond = rs => {
     const tn = rs.reduce((a, c) => a + f(c.cantidadfijada), 0);
     return {tn, px: tn ? rs.reduce((a, c) => a + f(c.cantidadfijada) * pxUsd(c), 0) / tn : 0};
@@ -10771,7 +10851,6 @@ document.addEventListener('click', (e) => {
     if(!c) return;
     const t = pond(rs);
     const pxs = rs.map(pxUsd).filter(x => x > 0).sort((a, b) => a - b);
-    const out = rs.filter(x => fueraBanda(x, ref)).length;
     const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
         border-left:5px solid ${col};border-radius:11px;padding:12px 14px">
       <div style="font-size:10.5px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase">${lbl}</div>
@@ -10782,21 +10861,19 @@ document.addEventListener('click', (e) => {
       card("Precio promedio", "US$ " + n2(t.px), "ponderado por toneladas", "#8f2b22") +
       card("Rango de precios", pxs.length ? `${n2(pxs[0])} – ${n2(pxs[pxs.length - 1])}`  : "—",
            "del contrato más barato al más caro", "#a97b12") +
-      card("Importe total", "US$ " + n0(t.tn * t.px), `al TC $ ${n0(TC)}`, "#2b5fb3") +
-      card("A revisar", n0(out), "contratos con precio fuera de banda", out ? "#a97b12" : "#1a7f4b");
+      card("Importe total", "US$ " + n0(t.tn * t.px), "cada contrato a su TC", "#2b5fb3") +
+      card(verSucios ? "Viendo los desestimados" : "Desestimados",
+           n0(nSucios()),
+           verSucios ? "tocá el botón de nuevo para volver"
+                     : "datos sucios, afuera de todos los cálculos",
+           nSucios() ? "#a97b12" : "#1a7f4b");
     const ch = document.getElementById("px-chips");
     if(ch) ch.innerHTML = [`${n0(base().length)} contratos de compra con precio`,
-                           `TC $ ${n0(TC)}`, "precios en USD por tonelada"]
+                           "pesos al TC del día del contrato", "precios en USD por tonelada"]
       .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${escapeHtml(x)}</span>`).join("");
   }
 
-  // fuera de banda: se va mas del 50% de la mediana de su cultivo
-  function fueraBanda(c, ref){
-    const r = ref[c.producto || "?"];
-    if(!r || !r.med) return false;
-    const px = pxUsd(c);
-    return px < r.med * 0.5 || px > r.med * 1.5;
-  }
+  const fueraBanda = c => esSucio(c);
 
   function tablaCultivo(rs, ref){
     const t = document.getElementById("px-tbl-cult");
@@ -10912,7 +10989,8 @@ document.addEventListener('click', (e) => {
     t.querySelector("thead").innerHTML = `<tr><th>Nº</th><th>Fecha</th><th>Entregador</th>
       <th>Cultivo</th><th>Campaña</th><th>Tipo</th><th>Corredor</th>
       <th class="num">Tn fijadas</th><th class="num">Precio original</th><th>Moneda</th>
-      <th class="num">US$ / tn</th><th class="num">Dif. vs promedio</th><th class="num">Importe US$</th></tr>`;
+      <th class="num">US$ / tn</th><th class="num">Dif. vs promedio</th><th class="num">Importe US$</th>
+      <th>Por qué se desestima</th></tr>`;
     const orden = rs.slice().sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")));
     t.querySelector("tbody").innerHTML = orden.slice(0, 1200).map(c => {
       const px = pxUsd(c), tn = f(c.cantidadfijada);
@@ -10920,7 +10998,7 @@ document.addEventListener('click', (e) => {
       const out = fueraBanda(c, ref);
       const pxo = f(c.preciopromediofijado);
       return `<tr class="${out ? "px-outrow" : ""}">
-        <td>#${escapeHtml(String(c.numerointerno || "—"))}${out ? '<span class="px-out">fuera de banda</span>' : ""}</td>
+        <td><b>#${escapeHtml(String(c.numerointerno || "—"))}</b>${c.numerodocumentoadicional ? ` · ${escapeHtml(String(c.numerodocumentoadicional))}` : ""}${out ? `<span class="px-out" title="${escapeHtml(porQue(c))}">desestimado</span>` : ""}</td>
         <td>${escapeHtml(String(c.fecha || "").slice(0, 10))}</td>
         <td>${escapeHtml(c.organizacion || "—")}</td>
         <td>${escapeHtml((c.producto || "").replace("Grano ", ""))}</td>
@@ -10932,13 +11010,14 @@ document.addEventListener('click', (e) => {
         <td>${pxo < 5000 ? "USD" : "ARS"}</td>
         <td class="num" style="font-weight:700">${n2(px)}</td>
         <td class="num ${d > 0.5 ? "px-alto" : (d < -0.5 ? "px-bajo" : "")}">${d >= 0 ? "+" : ""}${n2(d)}</td>
-        <td class="num">${n0(px * tn)}</td></tr>`;
-    }).join("") || `<tr><td colspan="13" style="color:var(--muted);padding:18px">Sin contratos con estos filtros.</td></tr>`;
+        <td class="num">${n0(px * tn)}</td>
+        <td style="color:#a97b12">${out ? escapeHtml(porQue(c)) : ""}</td></tr>`;
+    }).join("") || `<tr><td colspan="14" style="color:var(--muted);padding:18px">${verSucios ? "No hay contratos desestimados con estos filtros." : "Sin contratos con estos filtros."}</td></tr>`;
     const T = pond(rs);
     t.querySelector("tfoot").innerHTML = rs.length ? `<tr class="pn-total">
       <td colspan="7">TOTAL ${n0(rs.length)} contratos</td><td class="num">${n1(T.tn)}</td>
       <td></td><td></td><td class="num">${n2(T.px)}</td><td></td>
-      <td class="num">${n0(T.tn * T.px)}</td></tr>` : "";
+      <td class="num">${n0(T.tn * T.px)}</td><td></td></tr>` : "";
     document.getElementById("px-meta-det").textContent =
       rs.length > 1200 ? "muestro los 1.200 más nuevos" : "ordenado por fecha";
   }
@@ -10991,22 +11070,24 @@ document.addEventListener('click', (e) => {
     const esc = x => { let t = String(x == null ? "" : x);
       if(/[";\n]/.test(t)) t = '"' + t.replace(/"/g, '""') + '"'; return t; };
     const num = x => String(Math.round((x || 0) * 100) / 100).replace(".", ",");
-    const L = [["Nº", "Fecha", "Entregador", "Cultivo", "Campaña", "Tipo", "Corredor",
-                "Tn fijadas", "Precio original", "Moneda", "USD por tn", "Dif vs promedio",
-                "Importe USD", "Fuera de banda"].join(";")];
+    const L = [["Nº", "Código contrato", "Fecha", "Entregador", "Cultivo", "Campaña", "Tipo",
+                "Corredor", "Tn fijadas", "Precio original", "Moneda", "USD por tn",
+                "Dif vs promedio", "Importe USD", "Desestimado", "Por qué"].join(";")];
     rs.forEach(c => {
       const px = pxUsd(c), tn = f(c.cantidadfijada), pxo = f(c.preciopromediofijado);
       const r = ref[c.producto || "?"], d = r && r.prom ? px - r.prom : 0;
-      L.push([c.numerointerno, String(c.fecha || "").slice(0, 10), esc(c.organizacion),
-              esc(c.producto), esc((c.campana || "").replace("CAMPAÑA ", "")), esc(c.tipocontrato),
-              esc(c.corredor), num(tn), num(pxo), pxo < 5000 ? "USD" : "ARS", num(px), num(d),
-              num(px * tn), fueraBanda(c, ref) ? "SI" : ""].join(";"));
+      const suc = esSucio(c);
+      L.push([c.numerointerno, esc(c.numerodocumentoadicional), String(c.fecha || "").slice(0, 10),
+              esc(c.organizacion), esc(c.producto), esc((c.campana || "").replace("CAMPAÑA ", "")),
+              esc(c.tipocontrato), esc(c.corredor), num(tn), num(pxo),
+              pxo < 5000 ? "USD" : "ARS", num(px), num(d), num(px * tn),
+              suc ? "SI" : "", suc ? esc(porQue(c)) : ""].join(";"));
     });
     const hoy = new Date().toISOString().slice(0, 10);
     const blob = new Blob(["\ufeff" + L.join("\r\n")], {type: "text/csv;charset=utf-8"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `Precios-de-compra_${hoy}.csv`;
+    a.download = `Precios-de-compra${verSucios ? "-DESESTIMADOS" : ""}_${hoy}.csv`;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   }
@@ -11026,9 +11107,18 @@ document.addEventListener('click', (e) => {
   if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
   const bx = document.getElementById("px-excel");
   if(bx) bx.addEventListener("click", exportar);
+  const vs = document.getElementById("px-ver-sucios");
+  if(vs) vs.addEventListener("click", () => {
+    verSucios = !verSucios;
+    vs.textContent = verSucios ? "↩ Volver a los buenos" : "⚠ Ver desestimados";
+    vs.style.background = verSucios ? "#fdf9ef" : "";
+    render();
+  });
   const lm = document.getElementById("px-limpiar");
   if(lm) lm.addEventListener("click", () => {
     abiertos.clear();
+    verSucios = false;
+    if(vs){ vs.textContent = "⚠ Ver desestimados"; vs.style.background = ""; }
     ["px-prod", "px-org", "px-corr", "px-txt"].forEach(id => {
       const e = document.getElementById(id); if(e) e.value = ""; });
     const tp = document.getElementById("px-tipo"); if(tp) tp.value = "grano";
@@ -15948,6 +16038,35 @@ def dw_query(table_name: str, date_cols: set | None = None) -> list[dict] | None
 TRACKEO_DESDE = "2026-01-01"    # pedido usuario 10/09/2026: desde el 01/01/2026
 
 
+
+# -- SERIE HISTORICA DEL DOLAR ------------------------------------------------
+# Para llevar a dolares un precio en pesos hay que usar el TC del dia en que se
+# pacto, no el de hoy. Sin esto los contratos viejos en pesos quedan subvaluados
+# (la soja de abril/2025 a $506.600 daba 336 USD/tn con el TC de hoy cuando fueron
+# 436). Se usa el dolar MAYORISTA comprador, la misma serie del informe mensual.
+def fetch_tc_hist(desde: str = "2022-01-01") -> dict:
+    import urllib.request, ssl
+    url = "https://api.argentinadatos.com/v1/cotizaciones/dolares/mayorista"
+    print(f"\n[+] Bajando serie historica del dolar mayorista (desde {desde})...", flush=True)
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (tablero-granos)"})
+        with urllib.request.urlopen(req, timeout=60, context=ssl.create_default_context()) as r:
+            data = json.loads(r.read().decode("utf-8", "replace"))
+    except Exception as e:
+        print(f"    [!] no pude bajar la serie: {e}")
+        return {}
+    out = {}
+    for x in data:
+        f = str(x.get("fecha") or "")
+        c = x.get("compra")
+        if f >= desde and c:
+            out[f] = round(float(c), 2)
+    if out:
+        ks = sorted(out)
+        print(f"    -> {len(out)} cotizaciones · {ks[0]} a {ks[-1]} "
+              f"(hoy ${out[ks[-1]]:,.2f})")
+    return out
+
 def fetch_trackeo(desde: str = TRACKEO_DESDE):
     import re as _re
     from datetime import date as _date
@@ -17383,6 +17502,12 @@ def main() -> int:
         except Exception as e:
             print(f"    [!] taqueo_liquidar.json: {e}")
 
+    try:
+        tc_hist = fetch_tc_hist()
+    except Exception as e:
+        print(f"    [!] tc_hist: {e}")
+        tc_hist = {}
+
     # Trackeo de camiones: entregas vs certificados 1116A vs mermas
     try:
         trackeo = fetch_trackeo()
@@ -17721,6 +17846,7 @@ def main() -> int:
         "arca_cruce":      arca_cruce,
         "arca_liq":        arca_liq,
         "trackeo":         trackeo,
+        "tc_hist":         tc_hist,
         "coberturas":      coberturas,
         "produccion_camp": produccion_camp,
         "prod_agnsj_pct": prod_agnsj_pct,
