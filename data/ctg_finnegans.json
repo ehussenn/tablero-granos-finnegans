@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8207,
-  "con_ctg": 6927,
+  "filas": 8210,
+  "con_ctg": 6930,
   "sin_ctg": 1280,
-  "ctg_unicos": 5199,
+  "ctg_unicos": 5202,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1716,8 +1716,8 @@
   },
   "por_flujo": {
    "SEMILLA PROPIA": {
-    "n": 9,
-    "tn": 252.4
+    "n": 12,
+    "tn": 341.649
    },
    "COMPRA SEMILLA": {
     "n": 114,
@@ -1729,18 +1729,18 @@
    },
    "COMPRA": {
     "n": 1681,
-    "tn": 53980.635
+    "tn": 53976.06800000001
    },
    "VENTA": {
     "n": 1681,
-    "tn": 54042.43199999999
+    "tn": 54038.60599999999
    },
    "PRODUCCIÓN (CPE propia)": {
     "n": 3438,
     "tn": 104372.26300000002
    }
   },
-  "tn_total": 214892.092
+  "tn_total": 214972.948
  },
  "rows": [
   {
@@ -10382,6 +10382,96 @@
    "cancelado": false,
    "contrato": "",
    "doc": "REC-SEM-PPIO - 927"
+  },
+  {
+   "ctg": "000100008942",
+   "cp": "R-0001-00008942",
+   "fecha": "09-09-2026",
+   "fecha_partida": "10-09-2026",
+   "fecha_descarga": "10-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 40E25 ORIGINAL",
+   "kg": 29078.0,
+   "kg_sin_merma": 31360.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "gutierrez gabriel",
+   "transportista": "GONZALEZ FACUNDO",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "AGRONASAJA S.R.L.",
+   "loc_origen": "RAFAEL OBLIGADO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla PROPIA",
+   "flujo": "SEMILLA PROPIA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-PPIO - 928"
+  },
+  {
+   "ctg": "000100008943",
+   "cp": "R-0001-00008943",
+   "fecha": "09-09-2026",
+   "fecha_partida": "10-09-2026",
+   "fecha_descarga": "10-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 40E25 ORIGINAL",
+   "kg": 26386.0,
+   "kg_sin_merma": 28060.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "JUAN IRIART",
+   "transportista": "GONZALEZ FACUNDO",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "AGRONASAJA S.R.L.",
+   "loc_origen": "RAFAEL OBLIGADO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla PROPIA",
+   "flujo": "SEMILLA PROPIA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-PPIO - 929"
+  },
+  {
+   "ctg": "000100008714",
+   "cp": "R-0001-00008714",
+   "fecha": "10-09-2026",
+   "fecha_partida": "10-09-2026",
+   "fecha_descarga": "10-09-2026",
+   "grano": "SEM. GRANEL SOJA DM 40E25 ORIGINAL",
+   "kg": 33785.0,
+   "kg_sin_merma": 35160.0,
+   "kg_afip": 0.0,
+   "patente": "DOQ483",
+   "chofer": "SARMIENTO RICARDO",
+   "transportista": "SARMIENTO RICARDO",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "AGRONASAJA S.R.L.",
+   "loc_origen": "RAFAEL OBLIGADO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla PROPIA",
+   "flujo": "SEMILLA PROPIA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-PPIO - 930"
   },
   {
    "ctg": "000100000001",
@@ -51310,7 +51400,7 @@
    "fecha_partida": "25-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 30000.0,
+   "kg": 29700.0,
    "kg_sin_merma": 30000.0,
    "kg_afip": 0.0,
    "patente": "JSB489",
@@ -51430,7 +51520,7 @@
    "fecha_partida": "25-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29480.0,
+   "kg": 28660.0,
    "kg_sin_merma": 29480.0,
    "kg_afip": 0.0,
    "patente": "RLV887",
@@ -51520,7 +51610,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29280.0,
+   "kg": 28703.0,
    "kg_sin_merma": 29280.0,
    "kg_afip": 0.0,
    "patente": "FNW007",
@@ -51580,7 +51670,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29410.0,
+   "kg": 28289.0,
    "kg_sin_merma": 29410.0,
    "kg_afip": 0.0,
    "patente": "DII506",
@@ -51730,7 +51820,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "28-04-2026",
    "grano": "Grano Soja",
-   "kg": 29040.0,
+   "kg": 28032.0,
    "kg_sin_merma": 29040.0,
    "kg_afip": 0.0,
    "patente": "BVE850",
@@ -58980,7 +59070,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "COMP093,COMP385",
+   "contrato": "COMP385,COMP093",
    "doc": "TRAS-CPRA-CV - 3855"
   },
   {
@@ -68891,7 +68981,7 @@
    "fecha_descarga": "13-08-2026",
    "grano": "Grano Maíz",
    "kg": 29299.0,
-   "kg_sin_merma": 29299.0,
+   "kg_sin_merma": 30340.0,
    "kg_afip": 0.0,
    "patente": "JAV519",
    "chofer": "",
@@ -69070,7 +69160,7 @@
    "fecha_partida": "11-08-2026",
    "fecha_descarga": "13-08-2026",
    "grano": "Grano Maíz",
-   "kg": 28717.0,
+   "kg": 27982.0,
    "kg_sin_merma": 28717.0,
    "kg_afip": 0.0,
    "patente": "ROP701",
@@ -69130,8 +69220,8 @@
    "fecha_partida": "11-08-2026",
    "fecha_descarga": "13-08-2026",
    "grano": "Grano Maíz",
-   "kg": 28509.0,
-   "kg_sin_merma": 28509.0,
+   "kg": 28506.0,
+   "kg_sin_merma": 29700.0,
    "kg_afip": 0.0,
    "patente": "RHS541",
    "chofer": "",
@@ -69760,8 +69850,8 @@
    "fecha_partida": "11-08-2026",
    "fecha_descarga": "20-08-2026",
    "grano": "Grano Maíz",
-   "kg": 30226.0,
-   "kg_sin_merma": 30226.0,
+   "kg": 30223.0,
+   "kg_sin_merma": 31300.0,
    "kg_afip": 0.0,
    "patente": "UIW155",
    "chofer": "",
@@ -72540,7 +72630,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "COMP093",
+   "contrato": "COMP499",
    "doc": "TRAS-CPRA-CV - 4312"
   },
   {
@@ -107790,7 +107880,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901474516,901474521",
+   "contrato": "901474521,901474516",
    "doc": "TRAS-VTA-CV - 3383"
   },
   {
@@ -120030,7 +120120,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115126,118444",
+   "contrato": "118444,115126",
    "doc": "TRAS-VTA-CV - 3797"
   },
   {
@@ -122110,7 +122200,7 @@
    "fecha_partida": "25-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 30000.0,
+   "kg": 29700.0,
    "kg_sin_merma": 30000.0,
    "kg_afip": 0.0,
    "patente": "JSB489",
@@ -122230,7 +122320,7 @@
    "fecha_partida": "25-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29480.0,
+   "kg": 28660.0,
    "kg_sin_merma": 29480.0,
    "kg_afip": 0.0,
    "patente": "RLV887",
@@ -122320,7 +122410,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29280.0,
+   "kg": 28703.0,
    "kg_sin_merma": 29280.0,
    "kg_afip": 0.0,
    "patente": "FNW007",
@@ -122380,7 +122470,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "27-04-2026",
    "grano": "Grano Soja",
-   "kg": 29410.0,
+   "kg": 28289.0,
    "kg_sin_merma": 29410.0,
    "kg_afip": 0.0,
    "patente": "DII506",
@@ -122530,7 +122620,7 @@
    "fecha_partida": "26-04-2026",
    "fecha_descarga": "28-04-2026",
    "grano": "Grano Soja",
-   "kg": 29040.0,
+   "kg": 28032.0,
    "kg_sin_merma": 29040.0,
    "kg_afip": 0.0,
    "patente": "BVE850",
@@ -123300,7 +123390,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115272,115272,229289",
+   "contrato": "229289,115272,115272",
    "doc": "TRAS-VTA-CV - 3906"
   },
   {
@@ -126870,7 +126960,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "118444,118485,118485",
+   "contrato": "118485,118485,118444",
    "doc": "TRAS-VTA-CV - 4026"
   },
   {
@@ -129780,7 +129870,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "7179,7087",
+   "contrato": "7087,7179",
    "doc": "TRAS-VTA-CV - 4124"
   },
   {
@@ -130620,7 +130710,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "7179,7247",
+   "contrato": "7247,7179",
    "doc": "TRAS-VTA-CV - 4152"
   },
   {
@@ -131370,7 +131460,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115261,115259",
+   "contrato": "115259,115261",
    "doc": "TRAS-VTA-CV - 4177"
   },
   {
@@ -146850,7 +146940,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "681200PROPIO,686320 prod",
+   "contrato": "686320 prod,681200PROPIO",
    "doc": "TRAS-VTA-GRANO-AS - 4735"
   },
   {
@@ -171390,7 +171480,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "003CB001001072,VEN076Primar",
+   "contrato": "VEN076Primar,003CB001001072",
    "doc": "TRAS-VTA-GRANO-AS - 5581"
   },
   {
@@ -173940,7 +174030,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "115268Primario,115270Primario",
+   "contrato": "115270Primario,115268Primario",
    "doc": "TRAS-VTA-GRANO-AS - 5667"
   },
   {
@@ -187080,7 +187170,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "901499325AA,901496487AC",
+   "contrato": "901496487AC,901499325AA",
    "doc": "TRAS-VTA-GRANO-AS - 6109"
   },
   {
@@ -196860,7 +196950,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "200709577,200712787",
+   "contrato": "200712787,200709577",
    "doc": "TRAS-VTA-GRANO-AS - 6441"
   },
   {
@@ -216960,7 +217050,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "711246/0/1,69477301",
+   "contrato": "69477301,711246/0/1",
    "doc": "TRAS-VTA-GRANO-AS - 7121"
   },
   {
@@ -236490,7 +236580,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "VEN253,70650701",
+   "contrato": "70650701,VEN253",
    "doc": "TRAS-VTA-GRANO-AS - 7791"
   },
   {
@@ -246229,7 +246319,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "AMAUTA AGRO S.A.",
+   "org": "FYO ACOPIO S.A.",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Buenos Aires",
@@ -246259,7 +246349,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "AMAUTA AGRO S.A.",
+   "org": "FYO ACOPIO S.A.",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Buenos Aires",
@@ -246289,7 +246379,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "AMAUTA AGRO S.A.",
+   "org": "FYO ACOPIO S.A.",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Buenos Aires",
@@ -246319,7 +246409,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "AMAUTA AGRO S.A.",
+   "org": "FYO ACOPIO S.A.",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Buenos Aires",
@@ -246349,7 +246439,7 @@
    "titular": "AGRONASAJA S.R.L.",
    "destinatario": "LDC ARGENTINA S.A.",
    "destino": "LDC ARGENTINA S.A.",
-   "org": "AMAUTA AGRO S.A.",
+   "org": "FYO ACOPIO S.A.",
    "loc_origen": "FLORENTINO AMEGHINO",
    "loc_destino": "GENERAL LAGOS",
    "prov_origen": "Buenos Aires",
@@ -247800,7 +247890,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "69780801",
    "doc": "TRAS-VTA-GRANO-AS - 8175"
   },
   {
@@ -247830,7 +247920,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN246",
    "doc": "TRAS-VTA-GRANO-AS - 8176"
   },
   {
@@ -247860,7 +247950,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8177"
   },
   {
@@ -247890,7 +247980,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "0051410 P",
    "doc": "TRAS-VTA-GRANO-AS - 8178"
   },
   {
