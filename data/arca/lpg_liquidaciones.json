@@ -1,11 +1,11 @@
 {
- "bajado": "2026-09-11T07:19:34",
+ "bajado": "2026-09-11T09:13:22",
  "desde": "2026-07-28",
  "hasta": "2026-09-11",
  "cuit": "30710712758",
  "por_consulta": {
   "lpg_emitidas": 1497,
-  "lpg_recibidas": 1796,
+  "lpg_recibidas": 1797,
   "lsg_emitidas": 555,
   "lsg_recibidas": 52,
   "lpg_por_comprador": 1497,
@@ -49406,6 +49406,21 @@
    "operacion": "Consignaci?n de granos",
    "estado": "Activo",
    "sujeto": "COMPRADOR"
+  },
+  {
+   "coe": "330132458740",
+   "fecha": "2026-09-11",
+   "fecha_arca": "11/09/2026",
+   "consulta": "lpg_recibidas",
+   "tipo": "primaria",
+   "flujo": "recibida",
+   "lado": "venta",
+   "cuit": "30707796223",
+   "denominacion": "AGRONASAJA SRL",
+   "sistema": "WS",
+   "operacion": "Compraventa de granos",
+   "estado": "Activo",
+   "sujeto": "CORREDOR"
   },
   {
    "coe": "331007905868",

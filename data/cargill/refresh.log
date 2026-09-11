@@ -39,3 +39,20 @@
 [2026-08-27 11:20:33]     -> 3191 details totales
 [2026-08-27 11:20:33] [+] JSONs guardados en data/cargill/
 [2026-08-27 11:20:33] [OK] DONE
+[2026-09-10 11:57:31] ============================================================
+[2026-09-10 11:57:31] CARGILL DAILY REFRESH START
+[2026-09-10 11:57:31] ============================================================
+[2026-09-10 11:57:31] [+] headless=True
+[2026-09-10 11:57:32] [+] Abriendo /Movements para capturar token...
+[2026-09-10 11:57:42] [+] Sesion expirada, re-logueando...
+[2026-09-10 11:58:01] [+] Token OK
+[2026-09-10 11:58:01] [+] Bajando MOVEMENTS...
+[2026-09-10 11:58:21]     -> 3216 movements
+[2026-09-10 11:58:21] [+] Bajando PAYMENTS...
+[2026-09-10 11:58:29]     -> 901 payments
+[2026-09-10 11:58:29] [+] Bajando INVOICES...
+[2026-09-10 11:59:57]     -> 5082 invoices
+[2026-09-10 11:59:58] [+] Bajando DETAILS incremental: 14 nuevos (ya tengo 3191)
+[2026-09-10 12:00:07]     -> 3205 details totales
+[2026-09-10 12:00:07] [+] JSONs guardados en data/cargill/
+[2026-09-10 12:00:07] [OK] DONE

@@ -1,17 +1,17 @@
 {
- "generado": "2026-09-11T07:14:55",
+ "generado": "2026-09-11T09:13:48",
  "rango_arca": [
   "2026-02-01",
   "2026-09-10"
  ],
  "kpi": {
   "arca_ctg": 1431,
-  "fnn_ctg": 5202,
+  "fnn_ctg": 5205,
   "no_ingresados": 25,
   "no_ingresados_tn": 1180.9,
   "a_ingresar": 25,
   "a_ingresar_tn": 1180.9,
-  "sin_arca": 1770,
+  "sin_arca": 1773,
   "dif_kg_n": 1406
  },
  "por_cultivo": {
@@ -1364,6 +1364,16 @@
    "Kg": 27611.0,
    "Flujo": "PRODUCCIÓN (CPE propia)",
    "Organizacion": "LDC ARGENTINA S.A.",
+   "Estado": "CN"
+  },
+  {
+   "CTG": "10134862026",
+   "CartaPorte": "00000-00000117",
+   "Fecha": "02-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 34220.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "AVANZAR SRL ",
    "Estado": "CN"
   },
   {
@@ -4934,6 +4944,26 @@
    "Kg": 31409.0,
    "Flujo": "PRODUCCIÓN (CPE propia)",
    "Organizacion": "TOMAS HNOS Y CIA SA",
+   "Estado": "CN"
+  },
+  {
+   "CTG": "10134964098",
+   "CartaPorte": "00000-00001034",
+   "Fecha": "08-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 36750.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "ARBUATTI FERNANDO",
+   "Estado": "CN"
+  },
+  {
+   "CTG": "10134984283",
+   "CartaPorte": "00000-00001037",
+   "Fecha": "08-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 31460.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "ARBUATTI FERNANDO",
    "Estado": "CN"
   },
   {

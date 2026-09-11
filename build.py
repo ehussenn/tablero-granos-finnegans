@@ -388,7 +388,10 @@ def fetch_produccion() -> tuple[dict, dict, dict | None]:
                 # EXCEPTO con "forzar": true (regla 07/09: el portal quedó desincronizado
                 # del Seguimiento de la extranet — lotes ya cosechados seguían pendientes —
                 # y el usuario pidió pisar con el número del Seguimiento).
-                if ant and not v.get("forzar"):
+                # OJO con el "ant and": si el pendiente vivo es CERO (que es un dato
+                # valido: no queda nada por cosechar) daba falsy y revivia el snapshot
+                # viejo. Se compara contra None. (11/09/2026)
+                if ant is not None and not v.get("forzar"):
                     print(f"    -> pendcos 25/26 {p}: vivo {ant:,.1f} tn manda (snapshot decía {tn:,.1f}, ignorado)")
                     continue
                 c25.setdefault(p, {})["pendcos"] = tn

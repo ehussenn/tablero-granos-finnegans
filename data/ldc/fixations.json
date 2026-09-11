@@ -607,6 +607,38 @@
       "FixationCalculatedPriceWithCurrency": "USD 511,00",
       "ID": 0,
       "Name": null
+    },
+    {
+      "FixationConfirmedStateName": "Abierto",
+      "SocietyID": null,
+      "CounterpartID": null,
+      "DateFrom": null,
+      "DateUntil": null,
+      "ContractNumber": "001CP735000716",
+      "CounterpartName": null,
+      "CounterpartContract": null,
+      "BrokerContractPS": null,
+      "FixationDate": "2026-09-07T00:00:00-03:00",
+      "SymbolCurrency": "USD",
+      "FixationPrice": 487.0,
+      "FixationCalculatedPrice": 527.0,
+      "FixationQuantity": 9.0,
+      "FixationID": 332493,
+      "UnitID": 210,
+      "SettlementQuantity": 0.0,
+      "ContractTypeID": 1,
+      "UserWebID": null,
+      "UserWebName": null,
+      "ProductID": 1059,
+      "ProductName": "CAMELINA",
+      "ProductMarketName": "Camelina - CBOT",
+      "Harvest": "2026/2027",
+      "HarvestID": 2732,
+      "FixationDateFormatted": "07/09/2026",
+      "FixationPriceWithCurrency": "USD 487,00",
+      "FixationCalculatedPriceWithCurrency": "USD 527,00",
+      "ID": 0,
+      "Name": null
     }
   ]
 }

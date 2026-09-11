@@ -608214,5 +608214,2987 @@
       "empty": false
     },
     "services": []
+  },
+  "51240-E1-02229807": {
+    "movementNumber": "51240-E1-02229807",
+    "legalDocument": "0000000011607-10134862428",
+    "deliveryDate": "03/09/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LOS CHAÑARES",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 32980.0,
+    "netWeight": 16880.0,
+    "totalWeight": 16796.0,
+    "tareWeight": 16100.0,
+    "unit": "KG",
+    "driverName": "CHIALVO NESTOR ADRIAN",
+    "transportType": "CAMION",
+    "truckPlate": "AC219UQ",
+    "truckPlate2": "AE504UY",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6174315",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 84,
+    "discountApplied": 84.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.8",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "1.1",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.2",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "72.4",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 84,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "03/09/2026",
+    "coeNumber": "332023714177",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 84,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 16.80 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.21",
+        "calculationType": "17.21 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 16.80 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 16.80 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02230207": {
+    "movementNumber": "51240-E1-02230207",
+    "legalDocument": "0000000000117-10134862026",
+    "deliveryDate": "03/09/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 47400.0,
+    "netWeight": 34220.0,
+    "totalWeight": 34049.0,
+    "tareWeight": 13180.0,
+    "unit": "KG",
+    "driverName": "RANZINI JORGE DANIEL",
+    "transportType": "CAMION",
+    "truckPlate": "XKJ890",
+    "truckPlate2": " ",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6174948",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 171,
+    "discountApplied": 171.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.6",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "1.1",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "13.8",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "73.9",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 171,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "04/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 171,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 34.05 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 34.05 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 34.05 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02226323": {
+    "movementNumber": "51240-E1-02226323",
+    "legalDocument": "0000000001639-10134802197",
+    "deliveryDate": "01/09/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 43480.0,
+    "netWeight": 31280.0,
+    "totalWeight": 30651.0,
+    "tareWeight": 12200.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "WDL789",
+    "truckPlate2": "VAY758",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6163235",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 629,
+    "discountApplied": 629.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.6",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 475,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.6",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "72.0",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 154,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "04/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 629,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 30.65 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 30.65 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 30.65 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02226374": {
+    "movementNumber": "51240-E1-02226374",
+    "legalDocument": "0000000001640-10134802362",
+    "deliveryDate": "01/09/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 43940.0,
+    "netWeight": 30640.0,
+    "totalWeight": 29987.0,
+    "tareWeight": 13300.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "RTJ022",
+    "truckPlate2": "VRF852",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6163383",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 653,
+    "discountApplied": 653.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.7",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 502,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.6",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "72.1",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 151,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "04/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 653,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 29.99 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 29.99 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 29.99 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02225613": {
+    "movementNumber": "51240-E1-02225613",
+    "legalDocument": "0000000001634-10134781026",
+    "deliveryDate": "31/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 46260.0,
+    "netWeight": 31600.0,
+    "totalWeight": 31442.0,
+    "tareWeight": 14660.0,
+    "unit": "KG",
+    "driverName": "ANSELMINO FELIX JOSE",
+    "transportType": "CAMION",
+    "truckPlate": "AWG468",
+    "truckPlate2": "EFM873",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6159778",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 158,
+    "discountApplied": 158.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.6",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.8",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.4",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.6",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "73.0",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 158,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "04/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 158,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 31.44 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 31.44 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 31.44 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02222902": {
+    "movementNumber": "51240-E1-02222902",
+    "legalDocument": "0000000001627-10134771890",
+    "deliveryDate": "30/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 44020.0,
+    "netWeight": 30720.0,
+    "totalWeight": 30566.0,
+    "tareWeight": 13300.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "RTJ022",
+    "truckPlate2": "VRF852",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6155028",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 154,
+    "discountApplied": 154.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.4",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.4",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.2",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "73.3",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 154,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "02/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 154,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 30.57 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "6032.00",
+        "calculationType": "6032.00 x 30.57 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "583000008519",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "51272.00",
+        "calculationType": "51272.00 x 30.57 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      }
+    ]
+  },
+  "51240-E1-02223644": {
+    "movementNumber": "51240-E1-02223644",
+    "legalDocument": "0000000001632-10134780142",
+    "deliveryDate": "30/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 43280.0,
+    "netWeight": 31060.0,
+    "totalWeight": 30363.0,
+    "tareWeight": 12220.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "WDL789",
+    "truckPlate2": "RHK999",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6156245",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 697,
+    "discountApplied": 697.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "2.0",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.8",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 544,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "70.8",
+        "cargillQualityCode": "3",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 153,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "3",
+    "applicationDate": "02/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 697,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 30.36 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "583000008519",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "51272.00",
+        "calculationType": "51272.00 x 30.36 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "6032.00",
+        "calculationType": "6032.00 x 30.36 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      }
+    ]
+  },
+  "51240-E1-02223668": {
+    "movementNumber": "51240-E1-02223668",
+    "legalDocument": "0000000001633-10134780960",
+    "deliveryDate": "30/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 43800.0,
+    "netWeight": 30540.0,
+    "totalWeight": 29819.0,
+    "tareWeight": 13260.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "RTJ022",
+    "truckPlate2": "VRF852",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6156270",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 721,
+    "discountApplied": 721.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "2.3",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.8",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.9",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 571,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "69.9",
+        "cargillQualityCode": "3",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 150,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "3",
+    "applicationDate": "02/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 721,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "51272.00",
+        "calculationType": "51272.00 x 29.82 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "6032.00",
+        "calculationType": "6032.00 x 29.82 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "583000008519",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 29.82 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      }
+    ]
+  },
+  "51240-E1-02223701": {
+    "movementNumber": "51240-E1-02223701",
+    "legalDocument": "0000000001635-10134782034",
+    "deliveryDate": "30/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 47300.0,
+    "netWeight": 34200.0,
+    "totalWeight": 33434.0,
+    "tareWeight": 13100.0,
+    "unit": "KG",
+    "driverName": "RANZINI JORGE DANIEL",
+    "transportType": "CAMION",
+    "truckPlate": "XKJ890",
+    "truckPlate2": "FST619",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6156305",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 766,
+    "discountApplied": 766.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "2.0",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.7",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.8",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 598,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "70.5",
+        "cargillQualityCode": "3",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 168,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "3",
+    "applicationDate": "02/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 766,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "51272.00",
+        "calculationType": "51272.00 x 25.37 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "6032.00",
+        "calculationType": "6032.00 x 25.37 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "1.80",
+        "calculationType": "1.80 x 8.06 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "4.00",
+        "calculationType": "4.00 x 8.06 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "4.16",
+        "calculationType": "4.16 x UN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 25.37 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "34.00",
+        "calculationType": "34.00 x 8.06 TN",
+        "billed": "",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "13.08",
+        "calculationType": "13.08 x UN",
+        "billed": "583000008519",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02222267": {
+    "movementNumber": "51240-E1-02222267",
+    "legalDocument": "0000000000772-10134719961",
+    "deliveryDate": "29/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LOS CHAÑARES",
+    "destination": "CARGILL SACI (PUNTA ALVEAR)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 44150.0,
+    "netWeight": 29440.0,
+    "totalWeight": 29440.0,
+    "tareWeight": 14710.0,
+    "unit": "KG",
+    "driverName": "HUMBER SA",
+    "transportType": "CAMION",
+    "truckPlate": "GXG810",
+    "truckPlate2": "GXG811",
+    "exitPlace": "CARGILL SACI (PUNTA ALVEAR)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6154265",
+    "cargillAgency": "CARGILL SACI PUNTA ALVEAR",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 0,
+    "discountApplied": 0.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "2.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "13.9",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "75.3",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "1",
+    "applicationDate": "29/08/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI PUNTA ALVEAR",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 0,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PUERTO",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 29.44 TN",
+        "billed": "547000004064",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.20",
+        "calculationType": "17.20 x UN",
+        "billed": "547000004048",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02222786": {
+    "movementNumber": "51240-E1-02222786",
+    "legalDocument": "0000000001626-10134771618",
+    "deliveryDate": "29/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LAS ISLETAS",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 43260.0,
+    "netWeight": 31020.0,
+    "totalWeight": 30865.0,
+    "tareWeight": 12240.0,
+    "unit": "KG",
+    "driverName": "RANZINI SEBASTIAN OSCAR",
+    "transportType": "CAMION",
+    "truckPlate": "WDL789",
+    "truckPlate2": "RHK999",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6154861",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 155,
+    "discountApplied": 155.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.8",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.4",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.8",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "73.8",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 155,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "02/09/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 155,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "PARITARIA PLANTA",
+        "unitPrice": "6032.00",
+        "calculationType": "6032.00 x 30.87 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "COMISION PLANTA",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 30.87 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.24",
+        "calculationType": "17.24 x UN",
+        "billed": "583000008519",
+        "currencyCode": "Dolares"
+      },
+      {
+        "serviceName": "FLETE LARGO",
+        "unitPrice": "51272.00",
+        "calculationType": "51272.00 x 30.87 TN",
+        "billed": "583000008518",
+        "currencyCode": "Pesos"
+      }
+    ]
+  },
+  "51240-E1-02220630": {
+    "movementNumber": "51240-E1-02220630",
+    "legalDocument": "0000000000774-10134720178",
+    "deliveryDate": "28/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LOS CHAÑARES",
+    "destination": "CARGILL SACI (PUNTA ALVEAR)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 45420.0,
+    "netWeight": 30110.0,
+    "totalWeight": 30110.0,
+    "tareWeight": 15310.0,
+    "unit": "KG",
+    "driverName": "HUMBER SA",
+    "transportType": "CAMION",
+    "truckPlate": "SLU656",
+    "truckPlate2": "LAW439",
+    "exitPlace": "CARGILL SACI (PUNTA ALVEAR)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6150523",
+    "cargillAgency": "CARGILL SACI PUNTA ALVEAR",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 0,
+    "discountApplied": 0.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.4",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "2.0",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "14.1",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.9",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "75.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "1",
+    "applicationDate": "28/08/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI PUNTA ALVEAR",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 0,
+      "camaraQualityDescription": 0,
+      "discount": 0,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PUERTO",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 30.11 TN",
+        "billed": "547000004064",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.20",
+        "calculationType": "17.20 x UN",
+        "billed": "547000004036",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-E1-02221148": {
+    "movementNumber": "51240-E1-02221148",
+    "legalDocument": "0000000000773-10134720097",
+    "deliveryDate": "28/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Deposito",
+    "origin": "LOS CHAÑARES",
+    "destination": "CARGILL SACI (PUNTA ALVEAR)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 44960.0,
+    "netWeight": 30550.0,
+    "totalWeight": 30550.0,
+    "tareWeight": 14410.0,
+    "unit": "KG",
+    "driverName": "HUMBER SA",
+    "transportType": "CAMION",
+    "truckPlate": "FCJ711",
+    "truckPlate2": "FEY413",
+    "exitPlace": "CARGILL SACI (PUNTA ALVEAR)",
+    "contractNumber": "DEPOSITO",
+    "contractType": " ",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6151579",
+    "cargillAgency": "CARGILL SACI PUNTA ALVEAR",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 0,
+    "discountApplied": 0.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "2.4",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "1.5",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "13.5",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.4",
+        "cargillQualityCode": "1",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "74.6",
+        "cargillQualityCode": "2",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "2",
+    "applicationDate": "28/08/2026",
+    "coeNumber": " ",
+    "documentTypeCode": "E",
+    "originAddress": "CARGILL SACI PUNTA ALVEAR",
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 0,
+      "empty": false
+    },
+    "services": [
+      {
+        "serviceName": "COMISION PUERTO",
+        "unitPrice": "2714.40",
+        "calculationType": "2714.40 x 30.55 TN",
+        "billed": "547000004064",
+        "currencyCode": "Pesos"
+      },
+      {
+        "serviceName": "HONORARIOS LABORATORIO",
+        "unitPrice": "17.20",
+        "calculationType": "17.20 x UN",
+        "billed": "547000004036",
+        "currencyCode": "Dolares"
+      }
+    ]
+  },
+  "51240-OH-03141895": {
+    "movementNumber": "51240-OH-03141895",
+    "legalDocument": "0000000000117-10134497871",
+    "deliveryDate": "21/08/2026",
+    "deliveryStatus": " ",
+    "documentType": "Recepcion Aplicada",
+    "origin": "LA CHACRA",
+    "destination": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "productName": "MAIZ DURO",
+    "grossWeight": 28277.0,
+    "netWeight": 15077.0,
+    "totalWeight": 15077.0,
+    "tareWeight": 13200.0,
+    "unit": "KG",
+    "driverName": "YUNSHU SOCIEDAD POR ACCIONESSIMPLIFICADA",
+    "transportType": "CAMION",
+    "truckPlate": "RNO537",
+    "truckPlate2": " ",
+    "exitPlace": "CARGILL SACI (WATT -  HUINCARENAN)",
+    "contractNumber": "901552777A",
+    "contractType": "Precio Fijo",
+    "clientName": "AGRONASAJA SRL",
+    "movementStatus": " ",
+    "cargillAnalysisId": "6174156",
+    "cargillAgency": "CARGILL SACI WATT HUINCA RENAN",
+    "transgenicAnalysis": " ",
+    "totalDiscount": 0,
+    "discountApplied": 0.0,
+    "qualityAnalysis": [
+      {
+        "analysisType": "CHAMICO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "COLOR",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "FUMIGADA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS AMOHOSADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS DA#ADOS",
+        "valueCargill": "1.9",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS PICADOS",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "GRANOS QUEBRADOS/CHUZOS",
+        "valueCargill": "0.7",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "HUMEDAD",
+        "valueCargill": "15.3",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "MATERIAS EXTRA#AS",
+        "valueCargill": "0.3",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "OLORES OBJETABLES",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "PESO HECTOLITRICO",
+        "valueCargill": "70.4",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO CALOR",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "SECADO FRIO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "TIPO",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "VOLATIL",
+        "valueCargill": "1.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      },
+      {
+        "analysisType": "ZARANDA",
+        "valueCargill": "0.0",
+        "cargillQualityCode": "",
+        "cargillQualityDescription": 0.0,
+        "analysisUnit": "%",
+        "discount": 0,
+        "empty": false
+      }
+    ],
+    "cargillGrade": "3",
+    "applicationDate": "07/09/2026",
+    "coeNumber": "332023708392",
+    "documentTypeCode": "O",
+    "originAddress": "CARGILL SACI WATT HUINCA RENANCO",
+    "totalApplied": 15077.0,
+    "qualityAnalysisSummary": {
+      "cargillQualityDescription": 100.0,
+      "camaraQualityDescription": 100.0,
+      "discount": 0,
+      "empty": false
+    },
+    "services": []
   }
 }
