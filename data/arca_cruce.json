@@ -1,5 +1,5 @@
 {
- "generado": "2026-09-12T07:05:36",
+ "generado": "2026-09-13T07:05:24",
  "rango_arca": [
   "2026-02-01",
   "2026-09-10"
@@ -21,13 +21,13 @@
   }
  },
  "por_origen": {
-  "Solicitada": {
-   "camiones": 12,
-   "tn": 584.3
-  },
   "Participante + Solicitada": {
+   "camiones": 12,
+   "tn": 576.1
+  },
+  "Solicitada": {
    "camiones": 8,
-   "tn": 373.6
+   "tn": 381.8
   },
   "Participante": {
    "camiones": 5,
@@ -379,8 +379,8 @@
    "Cultivo": "Maíz",
    "Kg": 52500.0,
    "Estado": "Activa",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
@@ -396,8 +396,8 @@
    "Cultivo": "Maíz",
    "Kg": 52500.0,
    "Estado": "Activa",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
@@ -413,8 +413,8 @@
    "Cultivo": "Maíz",
    "Kg": 45000.0,
    "Estado": "Activa",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
@@ -430,8 +430,8 @@
    "Cultivo": "Maíz",
    "Kg": 52500.0,
    "Estado": "Activa",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Productor",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
