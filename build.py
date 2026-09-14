@@ -950,6 +950,21 @@ window.apiFetch = function(path, opts){
   .tk-pill.c{border:1px solid #b3372b;color:#b3372b}
   .tk-pill.m{border:1px solid #a97b12;color:#a97b12}
   /* ===== Por Organizacion: grilla tipo tabla dinamica ===== */
+  /* Enviar a liquidar */
+  #el-tabla tbody tr.el-off td{opacity:.45}
+  #el-tabla input.el-pct,#el-tabla input.el-imp{width:100%;text-align:right;padding:3px 6px;
+    border:1px solid var(--line);border-radius:6px;background:var(--bg2);color:var(--ink);
+    font-family:ui-monospace,monospace}
+  #el-tabla input.el-pct.parcial{border-color:#c2410c;background:#fff7ed;font-weight:700}
+  #el-tabla select.el-mon{width:100%;padding:3px 5px;border:1px solid var(--line);border-radius:6px;
+    background:var(--bg2);color:var(--ink);font-size:11.5px}
+  #el-cfg-tbl input{font-family:inherit}
+  #el-prev{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+    background:#0b1f33;color:#e2e8f0;padding:14px 16px;border-radius:10px;max-height:420px;overflow:auto;line-height:1.5}
+  .el-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+  .el-card b{display:block;font-size:10.5px;letter-spacing:.04em;color:var(--muted);
+    text-transform:uppercase;font-weight:600}
+  .el-card span{font-size:15px;font-weight:700}
   /* CTG sin liquidar: tres niveles (firma -> contrato -> carta de porte) */
   #cl-tabla{border-collapse:separate;border-spacing:0}
   #cl-tabla tbody tr.cl-org{cursor:pointer;background:var(--bg2);font-weight:600}
@@ -1218,6 +1233,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-precios" data-title="Compra · Análisis de Precios">💰 Precios de Compra</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-envliq" data-title="Compra · Enviar a Liquidar">📧 Enviar a Liquidar</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-pend" data-title="Compra · Finales Pendientes">🧾 Finales Pendientes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-resultados" data-title="Compra · Resultados">📈 Resultados</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cierre-cli" data-title="Compra · Cierre de Clientes">🧾 Cierre de Clientes</a>
@@ -1351,6 +1367,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="cp-precios">💰 Precios de Compra</button>
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
+      <button class="subtab" data-sub="cp-envliq">📧 Enviar a Liquidar</button>
       <button class="subtab" data-sub="cp-finales-pend">🧾 Finales Pendientes</button>
       <button class="subtab" data-sub="cp-resultados">📈 Resultados</button>
       <button class="subtab" data-sub="cp-cierre-cli">🧾 Cierre de Clientes</button>
@@ -1599,6 +1616,153 @@ window.apiFetch = function(path, opts){
       </div>
     </div>
 
+
+    <!-- ===== SUBPANEL: Enviar a liquidar (pedido usuario 14/09) ===== -->
+    <div class="subpanel" data-sub-panel="cp-envliq">
+      <div class="section" style="background:linear-gradient(135deg,#5a1f1a 0%,#a1452b 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">📧 Enviar a Liquidar · camiones de un contrato de compra</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
+          Poné el <b>número de contrato de Finnegans</b> y se levantan sus CTG con los kilos.
+          Tildás los que van y armás el envío: <b>% de liquidación</b>, <b>moneda</b> e <b>importe</b>,
+          uno por uno o de a muchos sobre todo lo tildado. El correo sale al <b>comercial</b> de la firma,
+          a su <b>administrativa</b> y a los fijos que dejes puestos.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="el-chips"></div>
+      </div>
+
+      <div class="section">
+        <div class="filterbar" style="margin:0 0 12px">
+          <div><label>Nº DE CONTRATO</label>
+            <input id="el-cto" list="el-ctos" placeholder="1013" autocomplete="off"
+              style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);width:150px;font-weight:600">
+            <datalist id="el-ctos"></datalist></div>
+          <button class="clear" id="el-buscar" style="background:#012F55;color:#fff;border-color:#012F55;font-weight:600">🔎 Traer CTG</button>
+          <div><label>PLANTILLA</label><select id="el-tpl">
+            <option value="pago">Para pago</option>
+            <option value="canje">Para canje (aplicar en cuenta)</option>
+          </select></div>
+          <button class="clear" id="el-cfg">⚙ Comerciales y correos</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="el-info"></span>
+        </div>
+
+        <div id="el-ficha" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px"></div>
+
+        <div id="el-vacio" style="padding:26px;text-align:center;color:var(--muted)">
+          Escribí el número de contrato de compra y apretá <b>Traer CTG</b>.
+        </div>
+
+        <div id="el-zona" style="display:none">
+          <!-- barra de carga masiva -->
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;margin-bottom:10px;
+                      display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="font-size:11px;font-weight:700;color:#9a3412;align-self:center">APLICAR A LO TILDADO →</div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">% LIQUIDACIÓN</label>
+              <input id="el-m-pct" type="number" step="0.01" min="0" max="100" placeholder="100"
+                style="width:92px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:right"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">MONEDA</label>
+              <select id="el-m-mon" style="padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff">
+                <option value="">— sin cambio —</option><option value="PESOS">Pesos</option><option value="DOLARES">Dólares</option>
+              </select></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">IMPORTE</label>
+              <input id="el-m-imp" type="number" step="0.01" min="0" placeholder="por CTG"
+                style="width:120px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:right"></div>
+            <button class="clear" id="el-m-ok" style="background:#b3372b;color:#fff;border-color:#b3372b;font-weight:600">Aplicar</button>
+            <div style="width:1px;background:#fed7aa;align-self:stretch;margin:0 2px"></div>
+            <button class="clear" id="el-todos">☑ Tildar todos</button>
+            <button class="clear" id="el-ninguno">☐ Destildar</button>
+            <span style="margin-left:auto;font-size:13px;font-weight:700;align-self:center" id="el-total"></span>
+          </div>
+
+          <div class="tbl-wrap" style="max-height:430px">
+            <table id="el-tabla" style="font-size:12px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+          </div>
+
+          <!-- los valores que van en el encabezado del correo -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;margin-top:12px;
+                      display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+            <div style="font-size:11px;font-weight:700;color:#1e40af;align-self:center">CONDICIONES DEL ENVÍO →</div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">TONELADAS</label>
+              <input id="el-h-tn" readonly title="sale de lo que tildaste en la grilla"
+                style="width:110px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#e2e8f0;text-align:right;font-weight:700"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">SE LIQUIDA AL %</label>
+              <input id="el-h-liq" type="number" step="0.01" min="0" max="100"
+                style="width:96px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:right"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">ND %</label>
+              <input id="el-h-nd" type="number" step="0.01" min="0"
+                style="width:84px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:right"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">COMISIÓN %</label>
+              <input id="el-h-com" type="number" step="0.01" min="0"
+                style="width:90px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff;text-align:right"></div>
+            <div id="el-h-pago-box"><label style="font-size:10px;color:var(--muted);display:block">EL PAGO SE EFECTÚA EL DÍA</label>
+              <input id="el-h-pago" type="date"
+                style="padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
+            <button class="clear" id="el-h-def" title="Vuelve a los valores de fábrica de esta plantilla"
+              style="align-self:flex-end">↺ Valores por defecto</button>
+          </div>
+
+          <!-- a quien va -->
+          <div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-top:12px">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+              <div><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Comercial</label>
+                <select id="el-com" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);min-width:190px"></select></div>
+              <div><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Administrativa</label>
+                <input id="el-adm" readonly placeholder="—"
+                  style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#f1f5f9;color:var(--ink);min-width:180px"></div>
+              <div style="flex:1 1 280px"><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Va a</label>
+                <input id="el-para" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+              <div style="flex:1 1 200px"><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Copia fija</label>
+                <input id="el-cc" placeholder="siempre en copia"
+                  style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:12px">
+            <div>
+              <label style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;font-weight:600">Observaciones (van en el correo)</label>
+              <textarea id="el-obs" rows="3" placeholder="opcional"
+                style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);font-size:12px;resize:vertical"></textarea>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                <button class="clear" id="el-mail" style="background:#b3372b;color:#fff;border-color:#b3372b;font-weight:600">📧 Abrir correo</button>
+                <button class="clear" id="el-copiar">⧉ Copiar texto</button>
+                <button class="clear" id="el-excel">⬇ Bajar planilla</button>
+                <button class="clear" id="el-marcar" title="Descuenta lo enviado para no mandarlo dos veces">✔ Marcar como enviado</button>
+              </div>
+              <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="el-nota"></div>
+            </div>
+            <div>
+              <label style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;font-weight:600">Así va a salir el correo</label>
+              <div id="el-prev"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px">
+            <h3 style="font-size:13px">Ya enviados de este contrato <span class="badge" id="el-hist-meta"></span></h3>
+            <div id="el-hist"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- config: comercial -> administrativa -->
+      <div id="el-cfg-box" style="display:none" class="section">
+        <h3 style="font-size:13px">⚙ Comerciales y correos
+          <span class="badge">el comercial de cada firma sale de Finnegans · la administrativa se carga acá</span></h3>
+        <div style="font-size:11.5px;color:var(--muted);margin:-2px 0 10px;line-height:1.5">
+          Finnegans sabe qué comercial atiende a cada firma, pero <b>no</b> guarda qué administrativa
+          trabaja con cada comercial. Cargalo una vez acá y queda: cuando traigas un contrato,
+          el correo ya sale con los dos puestos.
+        </div>
+        <div class="tbl-wrap" style="max-height:420px">
+          <table id="el-cfg-tbl" style="font-size:12px"><thead><tr>
+            <th>Comercial</th><th>Correo del comercial</th><th>Administrativa</th><th>Correo de la administrativa</th>
+          </tr></thead><tbody></tbody></table>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+          <button class="clear" id="el-cfg-save" style="background:#012F55;color:#fff;border-color:#012F55;font-weight:600">💾 Guardar</button>
+          <button class="clear" id="el-cfg-close">Cerrar</button>
+          <span style="color:var(--muted);font-size:11.5px" id="el-cfg-msg"></span>
+        </div>
+      </div>
+    </div><!-- /subpanel cp-envliq -->
 
     <!-- ========== SUB: PRECIOS DE COMPRA ========== -->
     <div class="subpanel" data-sub-panel="cp-precios">
@@ -15116,6 +15280,664 @@ function ctRender(){
 })();
 
 
+
+/* ============================================================
+   =========  ENVIAR A LIQUIDAR  (pedido usuario 14/09)  ======
+   Se pone el numero de contrato de compra de Finnegans y se
+   levantan sus CTG con los kilos. Por cada uno se elige el
+   porcentaje a liquidar, la moneda y el importe — de a uno o
+   de a muchos sobre lo tildado — y sale el correo armado al
+   comercial de la firma, su administrativa y los fijos.
+   Lo enviado se registra (clave envios_liq) para no repetirlo.
+   ============================================================ */
+(function elInit(){
+  const KV = "envios_liq", LS = "envios_liq_local";
+  const KVC = "comerciales_admin", LSC = "comerciales_admin_local";
+  const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n3 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:3,maximumFractionDigits:3});
+  const n2 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const n1 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
+  const n0 = v => (Number(v)||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+  const fec = f => { const t=String(f||"").slice(0,10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8,10)+"/"+t.slice(5,7)+"/"+t.slice(0,4) : (t||"—"); };
+  const pad  = (t,n) => { t=String(t==null?"":t); return t.length>=n ? t.slice(0,n) : t+" ".repeat(n-t.length); };
+  const padL = (t,n) => { t=String(t==null?"":t); return t.length>=n ? t : " ".repeat(n-t.length)+t; };
+  const norm = s => String(s||"").replace(/\s+/g," ").trim().toUpperCase();
+  const SIM = {PESOS:"$", DOLARES:"US$"};
+
+  const CT = {};
+  ((PAYLOAD.ctgliq||{}).contratos||[]).forEach(c => { if(c.lado === "compra") CT[String(c.num)] = c; });
+  const EX = {};
+  (PAYLOAD.compra||[]).forEach(r => { const k = String(r.numerointerno||""); if(k) EX[k] = r; });
+  const VEN = PAYLOAD.vendedores || {por_cuit:{}, por_nombre:{}, comerciales:[]};
+
+  // Relacion comercial -> administrativa (la paso el usuario el 14/09/2026).
+  // Finnegans no la tiene: viene cargada de fabrica y se puede editar desde
+  // la pantalla de configuracion, donde lo editado manda sobre esto.
+  const ADM_DEF = {
+    "DIEGO LOZA": {
+      "com": "Diego Loza",
+      "mail_com": "dloza@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "CAMPUZANO JULIO": {
+      "com": "Julio Campuzano",
+      "mail_com": "jcampuzano@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "GUILLERMO LOPEZ RONDO": {
+      "com": "Guillermo Lopez Rondo",
+      "mail_com": "glopezrondo@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "LOZA MATIAS": {
+      "com": "Matias Loza",
+      "mail_com": "mloza@agronasaja.com.ar",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "MARIANO YERIO": {
+      "com": "Mariano Yerio",
+      "mail_com": "myerio@agronasaja.com.ar",
+      "adm": "Florencia Llanes",
+      "mail_adm": "fllanes@agronasaja.com.ar"
+    },
+    "AGRONASAJA": {
+      "com": "Agronasaja",
+      "mail_com": "santiagolm@agronasaja.com.ar",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "NICOLAS PARDO": {
+      "com": "Nicolas Pardo",
+      "mail_com": "npardo@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "BAGLIETTO JOAQUIN": {
+      "com": "Joaquin Baglietto",
+      "mail_com": "jbaglietto@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "GONZALEZ HUGO": {
+      "com": "Hugo Gonzalez",
+      "mail_com": "hgonzalez@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "MARCO NICOLAS": {
+      "com": "Nicolas Marco",
+      "mail_com": "npardo@agronasaja.com.ar",
+      "adm": "Melisa Zanchetta",
+      "mail_adm": "mzanchetta@agronasaja.com.ar"
+    },
+    "FEDERICO MILLET": {
+      "com": "Federico Millet",
+      "mail_com": "fmillet@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "ANDRES VIGLIOCCO": {
+      "com": "Andres Vigliocco",
+      "mail_com": "andres_vigliocco_hotmail.com#EXT#@agronasajasrl.onmicrosoft.com",
+      "adm": "Florencia Llanes",
+      "mail_adm": "fllanes@agronasaja.com.ar"
+    },
+    "FIORITO FRANCO": {
+      "com": "Franco Fiorito",
+      "mail_com": "ffiorito@agronasaja.com.ar",
+      "adm": "Melisa Zanchetta",
+      "mail_adm": "mzanchetta@agronasaja.com.ar"
+    },
+    "ALFONSO BOLIVAR": {
+      "com": "Alfonso Bolivar",
+      "mail_com": "abolivar@agronasaja.com.ar",
+      "adm": "Melisa Zanchetta",
+      "mail_adm": "mzanchetta@agronasaja.com.ar"
+    },
+    "FEDERICO LAURETTA": {
+      "com": "Federico Lauretta",
+      "mail_com": "flauretta@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "CARLOS CRIVELLO": {
+      "com": "Carlos Crivello",
+      "mail_com": "ccrivello@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "PODESTA RAMON": {
+      "com": "Ramon Podesta",
+      "mail_com": "rpodesta@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "BALCARCE GARCIA MARIANO": {
+      "com": "Mariano Garcia Balcarce",
+      "mail_com": "mgarciabalcarce@agronasaja.com.ar",
+      "adm": "Fernanda Pavese",
+      "mail_adm": "fpavese@agronasaja.com.ar"
+    },
+    "GARCIA JULIAN MACHADO": {
+      "com": "Julian Garcia Machado",
+      "mail_com": "jgmachado@agronasaja.com.ar",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "GERMAN TRESSENS": {
+      "com": "German Tressens",
+      "mail_com": "gtressens@agronasaja.com.ar",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "IMBERTI JUAN": {
+      "com": "Juan Imberti",
+      "mail_com": "jimberti@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "CAPITAL GLYCINE": {
+      "com": "Glycine Capital",
+      "mail_com": "jbrie@glycinecapital.com",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "JAVIER SANGUINETTI": {
+      "com": "Javier Sanguinetti",
+      "mail_com": "sanguine@agronasaja.com.ar",
+      "adm": "Julia Aristuche",
+      "mail_adm": "jaristuche@agronasaja.com.ar"
+    },
+    "EL TORDO": {
+      "com": "El Tordo",
+      "mail_com": "",
+      "adm": "Melisa Zanchetta",
+      "mail_adm": "mzanchetta@agronasaja.com.ar"
+    },
+    "BAIMA CECILIA": {
+      "com": "Cecilia Baima",
+      "mail_com": "cbaima@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    },
+    "MONCHO PODESTA": {
+      "com": "Ramon Podesta",
+      "mail_com": "rpodesta@agronasaja.com.ar",
+      "adm": "Evangelina Santoro",
+      "mail_adm": "esantoro@agronasaja.com.ar"
+    }
+  };
+  const claveCom = n => { n = String(n||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"");
+    return n.toUpperCase().replace(/\./g," ").split(/\s+/).filter(Boolean).sort().join(" "); };
+  const cfgDe = com => Object.assign({}, ADM_DEF[claveCom(com)] || {}, CFG[com] || {});
+  let ENV = [], CFG = {}, cur = null, sel = {};
+  const el = id => document.getElementById(id);
+  const val = id => (el(id)||{}).value || "";
+
+  // ── persistencia ─────────────────────────────────────────────────────────
+  async function cargar(){
+    let r = null;
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) r = await apiLoad(KV);
+    if(!Array.isArray(r)){ try { r = JSON.parse(localStorage.getItem(LS)||"[]"); } catch(e){ r = []; } }
+    ENV = Array.isArray(r) ? r : [];
+    let c = null;
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) c = await apiLoad(KVC);
+    if(!c || typeof c !== "object" || Array.isArray(c)){
+      try { c = JSON.parse(localStorage.getItem(LSC)||"{}"); } catch(e){ c = {}; }
+    }
+    CFG = (c && typeof c === "object" && !Array.isArray(c)) ? c : {};
+  }
+  async function guardarEnv(){
+    try { localStorage.setItem(LS, JSON.stringify(ENV)); } catch(e){}
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE){
+      const r = await apiLoad(KV); const prev = Array.isArray(r) ? r : [];
+      const ids = new Set(prev.map(x => x.id));
+      ENV.forEach(x => { if(!ids.has(x.id)) prev.push(x); });
+      ENV = prev; await apiSave(KV, ENV);
+    }
+  }
+  async function guardarCfg(){
+    try { localStorage.setItem(LSC, JSON.stringify(CFG)); } catch(e){}
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) await apiSave(KVC, CFG);
+  }
+
+  // ── quien atiende a esta firma ───────────────────────────────────────────
+  function comercialDe(org){
+    const n = norm(org);
+    if(VEN.por_nombre && VEN.por_nombre[n]) return VEN.por_nombre[n];
+    // a veces el nombre del contrato trae puntos o SA/SRL con distinto espaciado
+    const limpio = n.replace(/[.,]/g,"").replace(/\s+/g," ").trim();
+    for(const k in (VEN.por_nombre||{})){
+      if(k.replace(/[.,]/g,"").replace(/\s+/g," ").trim() === limpio) return VEN.por_nombre[k];
+    }
+    return "";
+  }
+  function destinatarios(){
+    const com = val("el-com");
+    const c = cfgDe(com);
+    const fijos = (localStorage.getItem("el_fijos")||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+    const to = [...new Set([c.mail_com, c.mail_adm, ...fijos].map(x=>String(x||"").trim()).filter(Boolean))];
+    return to;
+  }
+  function pintarQuien(){
+    const com = val("el-com"), c = cfgDe(com);
+    el("el-adm").value = c.adm || "";
+    const to = destinatarios();
+    if(!el("el-para").dataset.tocado) el("el-para").value = to.join("; ");
+  }
+
+  // ── camiones del contrato ────────────────────────────────────────────────
+  function yaEnviado(cto, ctg){
+    let kg = 0;
+    ENV.forEach(e => { if(String(e.cto) === String(cto))
+      (e.ctgs||[]).forEach(x => { if(String(x.ctg) === String(ctg)) kg += Number(x.kg)||0; }); });
+    return kg;
+  }
+  function filas(){
+    if(!cur) return [];
+    return (cur.ctgs||[]).map(x => {
+      const kg = (Number(x.tn)||0) * 1000;              // kg de la carta de porte (con mermas aplicadas)
+      const kgliq = (Number(x.tn_liq)||0) * 1000;       // lo que ya entro en una liquidacion
+      const env = yaEnviado(cur.num, x.ctg);            // lo que ya mandaste desde aca
+      const disp = Math.max(0, kg - kgliq - env);
+      return {...x, kg, kgliq, env, disp};
+    }).sort((a,b) => (b.disp>0) - (a.disp>0) || String(a.fecha||"").localeCompare(String(b.fecha||"")));
+  }
+
+  function ficha(){
+    const f = el("el-ficha");
+    if(!cur){ f.innerHTML = ""; return; }
+    const e = EX[String(cur.num)] || {};
+    const card = (l,v) => `<div class="el-card"><b>${l}</b><span>${v}</span></div>`;
+    f.innerHTML =
+      card("Contrato", `#${esc(cur.num)}${e.numerodocumentoadicional?' <span style="font-size:11px;font-weight:400;color:var(--muted)">'+esc(e.numerodocumentoadicional)+'</span>':""}`) +
+      card("Entregador", `<span style="font-size:12.5px">${esc(cur.org||"—")}</span>`) +
+      card("Grano", esc((cur.prod||"").replace(/^Grano\s+/,"") || "—")) +
+      card("Campaña", esc(String(cur.cos||"").replace("CAMPAÑA ","") || "—")) +
+      card("Entregado", n1(cur.sis_ent) + " tn") +
+      card("Liquidado", n1(cur.sis_liq) + " tn") +
+      card("Pendiente", `<span style="color:#b3372b">${n1(cur.sis_pend)} tn</span>`) +
+      card("Moneda contrato", esc(e.moneda || "—"));
+  }
+
+  function pintar(){
+    const z = el("el-zona"), v = el("el-vacio");
+    if(!cur){ z.style.display="none"; v.style.display=""; el("el-ficha").innerHTML=""; return; }
+    z.style.display=""; v.style.display="none";
+    ficha();
+    const rs = filas(), t = el("el-tabla");
+    t.querySelector("thead").innerHTML = `<tr>
+      <th style="width:30px"></th><th>CTG</th><th>Carta de porte</th><th>Fecha</th>
+      <th class="num" title="peso neto de la carta de porte, con las mermas aplicadas">Kg (c/mermas)</th>
+      <th class="num">Ya liquidado</th><th class="num">Ya enviado</th><th class="num">Disponible</th>
+      <th class="num" style="width:86px">% liq.</th><th class="num">Kg a liquidar</th>
+      <th style="width:104px">Moneda</th><th class="num" style="width:120px">Importe</th></tr>`;
+    t.querySelector("tbody").innerHTML = rs.map(x => {
+      const st = sel[x.ctg], on = !!st, hay = x.disp > 0.5;
+      const pct = on ? st.pct : 100;
+      const kgl = on ? x.disp * pct/100 : 0;
+      return `<tr class="${hay?"":"el-off"}" data-ctg="${esc(x.ctg)}">
+        <td><input type="checkbox" class="el-ck" ${on?"checked":""} ${hay?"":"disabled"}></td>
+        <td style="font-family:ui-monospace,monospace;font-weight:600">${esc(x.ctg)}</td>
+        <td style="font-family:ui-monospace,monospace">${esc(x.cp||"—")}</td>
+        <td>${fec(x.fecha)}</td>
+        <td class="num" style="font-weight:600">${n0(x.kg)}</td>
+        <td class="num">${x.kgliq>0.5?n0(x.kgliq):'<span style="color:var(--line)">·</span>'}</td>
+        <td class="num">${x.env>0.5?n0(x.env):'<span style="color:var(--line)">·</span>'}</td>
+        <td class="num" style="font-weight:700">${hay?n0(x.disp):'<span style="color:var(--line)">·</span>'}</td>
+        <td class="num"><input class="el-pct ${on&&pct!==100?"parcial":""}" type="number" step="0.01" min="0" max="100"
+             value="${on?pct:""}" ${hay?"":"disabled"}></td>
+        <td class="num" style="font-weight:700;color:${on?"#b3372b":"var(--line)"}">${on?n0(kgl):"·"}</td>
+        <td><select class="el-mon" ${hay?"":"disabled"}>
+              <option value="PESOS" ${on&&st.mon==="PESOS"?"selected":""}>Pesos</option>
+              <option value="DOLARES" ${on&&st.mon==="DOLARES"?"selected":""}>Dólares</option>
+            </select></td>
+        <td class="num"><input class="el-imp" type="number" step="0.01" min="0"
+             value="${on&&st.imp!=null?st.imp:""}" ${hay?"":"disabled"}></td></tr>`;
+    }).join("") || '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--muted)">Este contrato no tiene CTG cargados en Finnegans.</td></tr>';
+
+    const gs = elegidos();
+    const kgSel = gs.reduce((a,x) => a + x.kg_liq, 0);
+    const disp  = rs.reduce((a,x) => a + x.disp, 0);
+    const impP  = gs.filter(x=>x.mon==="PESOS").reduce((a,x)=>a+(x.imp||0),0);
+    const impD  = gs.filter(x=>x.mon==="DOLARES").reduce((a,x)=>a+(x.imp||0),0);
+    t.querySelector("tfoot").innerHTML = `<tr class="pn-total">
+      <td colspan="7">TOTAL · ${n0(rs.length)} CTG · tildados ${n0(gs.length)}</td>
+      <td class="num">${n0(disp)}</td><td></td><td class="num">${n0(kgSel)}</td>
+      <td></td><td class="num">${impP?"$ "+n2(impP):""}${impP&&impD?" · ":""}${impD?"US$ "+n2(impD):""}</td></tr>`;
+    el("el-total").innerHTML = gs.length
+      ? `A liquidar: <span style="color:#b3372b">${n0(kgSel)} kg</span> · ${n0(gs.length)} CTG`
+      : '<span style="color:var(--muted);font-weight:400">Todavía no tildaste ningún CTG</span>';
+    el("el-info").textContent = `${n0(rs.length)} CTG · ${n0(disp)} kg disponibles`;
+    el("el-h-tn").value = n3(kgSel/1000) + " tn";
+    pintarQuien(); preview(); historial();
+  }
+
+  // ── el correo ────────────────────────────────────────────────────────────
+  // Los textos y los valores de fabrica de cada plantilla (dictados por el usuario
+  // el 14/09/2026). Todo lo que es "%" y la fecha de pago se puede cambiar antes
+  // de mandar, y lo que cambie queda guardado para la proxima.
+  const TPL = {
+    pago:  {tit:"PARA PAGO",  enc:"ENVIO A LIQUIDAR PARA PAGO",  pago:true,  liq:"", nd:"", com:""},
+    canje: {tit:"PARA CANJE", enc:"ENVIO A LIQUIDAR PARA CANJE", pago:false, liq:97.5, nd:1.25, com:1.5}
+  };
+  const numAR = v => (v === "" || v == null || isNaN(Number(v))) ? "____"
+                   : Number(v).toLocaleString("es-AR",{maximumFractionDigits:3});
+  function tplActual(){ return TPL[val("el-tpl")] || TPL.pago; }
+  function guardaCond(){
+    const t = val("el-tpl");
+    try { localStorage.setItem("el_cond_"+t, JSON.stringify(
+      {liq:val("el-h-liq"), nd:val("el-h-nd"), com:val("el-h-com")})); } catch(e){}
+  }
+  function ponerCond(deFabrica){
+    const t = val("el-tpl"), d = tplActual();
+    let g = null;
+    if(!deFabrica){ try { g = JSON.parse(localStorage.getItem("el_cond_"+t)||"null"); } catch(e){} }
+    el("el-h-liq").value = g && g.liq !== "" && g.liq != null ? g.liq : (d.liq === "" ? "" : d.liq);
+    el("el-h-nd").value  = g && g.nd  !== "" && g.nd  != null ? g.nd  : (d.nd  === "" ? "" : d.nd);
+    el("el-h-com").value = g && g.com !== "" && g.com != null ? g.com : (d.com === "" ? "" : d.com);
+    el("el-h-pago-box").style.display = d.pago ? "" : "none";
+  }
+
+  function elegidos(){
+    return filas().filter(x => sel[x.ctg]).map(x => {
+      const st = sel[x.ctg];
+      return {...x, pct: st.pct, mon: st.mon, imp: (st.imp==null?null:Number(st.imp)),
+              kg_liq: Math.round(x.disp * st.pct/100)};
+    }).filter(x => x.kg_liq > 0);
+  }
+  function asunto(){
+    if(!cur) return "";
+    const t = tplActual();
+    return `Enviar a liquidar · contrato ${cur.num} · ${cur.org} · ${(cur.prod||"").replace(/^Grano\s+/,"")} · ${t.tit}`;
+  }
+  // la linea que dicta la operacion, con las toneladas de lo tildado
+  function encabezado(){
+    const t = tplActual();
+    const tn = elegidos().reduce((a,x) => a + x.kg_liq, 0) / 1000;
+    let l = `${t.enc} ${numAR(Math.round(tn*1000)/1000)} TN. `
+          + `SE LIQUIDA AL ${numAR(val("el-h-liq"))}%. `
+          + `ND ${numAR(val("el-h-nd"))}%. `
+          + `COMISION ${numAR(val("el-h-com"))}%.`;
+    if(t.pago) l += ` EL PAGO SE EFECTUA EL DIA ${val("el-h-pago") ? fec(val("el-h-pago")) : "____________"}`;
+    return l;
+  }
+  function cuerpo(){
+    if(!cur) return "";
+    const t = tplActual();
+    const e = EX[String(cur.num)] || {}, gs = elegidos();
+    let b = "Hola,\n\n" + encabezado() + "\n\n";
+    b += `Contrato de compra : ${cur.num}${e.numerodocumentoadicional?" ("+e.numerodocumentoadicional+")":""}\n`;
+    b += `Entregador         : ${cur.org||""}\n`;
+    b += `Grano              : ${(cur.prod||"").replace(/^Grano\s+/,"")}\n`;
+    if(cur.cos) b += `Campaña            : ${String(cur.cos).replace("CAMPAÑA ","")}\n`;
+    if(val("el-com")) b += `Comercial          : ${val("el-com")}${el("el-adm").value?"  ·  Administrativa: "+el("el-adm").value:""}\n`;
+    b += `Modalidad          : ${t.tit}\n\n`;
+    b += pad("CTG",15)+pad("CARTA DE PORTE",19)+pad("FECHA",12)+padL("KG",11)+padL("% LIQ",8)
+       + padL("KG A LIQ.",12)+"  "+pad("MON",5)+padL("IMPORTE",14)+"\n";
+    b += "-".repeat(88)+"\n";
+    let kg=0, ip=0, id=0;
+    gs.forEach(x => {
+      kg += x.kg_liq;
+      if(x.imp!=null){ if(x.mon==="DOLARES") id += x.imp; else ip += x.imp; }
+      b += pad(x.ctg,15)+pad(x.cp||"",19)+pad(fec(x.fecha),12)+padL(n0(x.kg),11)
+         + padL(n2(x.pct)+"%",8)+padL(n0(x.kg_liq),12)+"  "+pad(SIM[x.mon]||x.mon,5)
+         + padL(x.imp!=null?n2(x.imp):"-",14)+"\n";
+    });
+    b += "-".repeat(88)+"\n";
+    b += pad("TOTAL "+gs.length+" CTG",57)+padL(n0(kg),12)+"  "+pad("",5)
+       + padL((ip?"$ "+n2(ip):"")+(ip&&id?" / ":"")+(id?"US$ "+n2(id):""),14)+"\n";
+    const obs = (val("el-obs")||"").trim();
+    if(obs) b += "\nObservaciones: " + obs + "\n";
+    b += "\nGracias.\n";
+    return b;
+  }
+  function preview(){
+    const pv = el("el-prev"); if(!pv) return;
+    const gs = elegidos();
+    pv.textContent = gs.length ? cuerpo()
+      : "Tildá los CTG que querés mandar a liquidar y acá vas a ver el correo tal cual sale.";
+    const largo = gs.length ? cuerpo().length : 0;
+    el("el-nota").innerHTML = !gs.length ? ""
+      : (largo > 1800
+        ? '⚠ El correo quedó largo ('+n0(largo)+' caracteres) y algunos programas de mail lo cortan. Usá <b>Copiar texto</b> o mandá la planilla adjunta.'
+        : '💡 <b>Abrir correo</b> abre tu programa de mail con todo cargado. <b>Marcar como enviado</b> descuenta estos kilos para que no los mandes dos veces.');
+  }
+
+  function historial(){
+    const h = el("el-hist"), m = el("el-hist-meta");
+    if(!h || !cur) return;
+    const es = ENV.filter(e => String(e.cto)===String(cur.num)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
+    m.textContent = es.length ? es.length+" envío(s)" : "ninguno todavía";
+    if(!es.length){ h.innerHTML='<div style="color:var(--muted);font-size:12px;padding:6px 0">Todavía no mandaste nada de este contrato.</div>'; return; }
+    h.innerHTML = `<div class="tbl-wrap"><table style="font-size:11.5px"><thead><tr>
+      <th>Fecha</th><th>Modalidad</th><th>Condiciones</th><th class="num">CTG</th><th class="num">Kg</th><th class="num">Importe</th><th>CTG enviados</th><th style="width:36px"></th>
+      </tr></thead><tbody>` + es.map(e => {
+        const kg = (e.ctgs||[]).reduce((a,x)=>a+(Number(x.kg)||0),0);
+        const ip = (e.ctgs||[]).filter(x=>x.mon!=="DOLARES").reduce((a,x)=>a+(Number(x.imp)||0),0);
+        const id = (e.ctgs||[]).filter(x=>x.mon==="DOLARES").reduce((a,x)=>a+(Number(x.imp)||0),0);
+        const cond = [e.liq?"liq "+e.liq+"%":"", e.nd?"ND "+e.nd+"%":"", e.comis?"com "+e.comis+"%":"",
+                      e.pagof?"pago "+fec(e.pagof):""].filter(Boolean).join(" · ");
+        return `<tr><td>${fec(e.fecha)}</td><td>${esc((TPL[e.tpl]||{}).tit||e.tpl||"")}</td>
+          <td style="font-size:11px;color:#475569">${esc(cond)}</td>
+          <td class="num">${n0((e.ctgs||[]).length)}</td><td class="num" style="font-weight:700">${n0(kg)}</td>
+          <td class="num">${ip?"$ "+n2(ip):""}${ip&&id?" · ":""}${id?"US$ "+n2(id):""}</td>
+          <td style="font-size:11px;font-family:ui-monospace,monospace;color:#475569">${esc((e.ctgs||[]).map(x=>x.ctg).join(", "))}</td>
+          <td><button class="clear el-del" data-id="${esc(e.id)}" title="Deshacer" style="padding:2px 7px">✕</button></td></tr>`;
+      }).join("") + "</tbody></table></div>";
+  }
+
+  // ── acciones ─────────────────────────────────────────────────────────────
+  function monDefault(){
+    const e = EX[String(cur?cur.num:"")] || {};
+    return String(e.moneda||"").toUpperCase().startsWith("DOL") ? "DOLARES" : "PESOS";
+  }
+  function buscar(){
+    const q = String(val("el-cto")).replace(/\D/g,"");
+    sel = {}; el("el-para").dataset.tocado = "";
+    if(!q){ cur = null; pintar(); return; }
+    cur = CT[q] || null;
+    if(!cur){
+      const e = EX[q];
+      el("el-vacio").innerHTML = e
+        ? `El contrato <b>#${esc(q)}</b> (${esc(e.organizacion||"")}) no tiene CTG con carta de porte cargada en Finnegans.`
+        : `No encontré el contrato de compra <b>#${esc(q)}</b>. Fijate el número interno en Finnegans (por ejemplo 1013).`;
+      pintar(); return;
+    }
+    // el comercial de la firma, si Finnegans lo tiene
+    const com = comercialDe(cur.org);
+    const sc = el("el-com");
+    const lista = [...new Set([...(VEN.comerciales||[]), ...Object.keys(CFG),
+                              ...Object.values(ADM_DEF).map(x => x.com)])].sort();
+    sc.innerHTML = '<option value="">— sin comercial —</option>' +
+      lista.map(v => `<option value="${esc(v)}" ${v===com?"selected":""}>${esc(v)}</option>`).join("");
+    if(com) sc.value = com;
+    pintar();
+  }
+  function tildar(todos){
+    sel = {};
+    if(todos){ const m = monDefault();
+      filas().forEach(x => { if(x.disp > 0.5) sel[x.ctg] = {pct:100, mon:m, imp:null}; }); }
+    pintar();
+  }
+  function masivo(){
+    const gs = Object.keys(sel);
+    if(!gs.length){ alert("Primero tildá los CTG a los que querés aplicarle los valores."); return; }
+    const pct = el("el-m-pct").value, mon = val("el-m-mon"), imp = el("el-m-imp").value;
+    gs.forEach(k => {
+      if(pct !== "") sel[k].pct = Math.max(0, Math.min(100, Number(pct)||0));
+      if(mon) sel[k].mon = mon;
+      if(imp !== "") sel[k].imp = Number(imp)||0;
+    });
+    pintar();
+  }
+  async function marcar(){
+    const gs = elegidos();
+    if(!gs.length){ alert("Primero tildá los CTG que mandaste."); return; }
+    const kg = gs.reduce((a,x)=>a+x.kg_liq,0);
+    if(!confirm(`¿Marco como enviados ${gs.length} CTG por ${n0(kg)} kg del contrato #${cur.num}?\n\n`
+              + "Se descuentan del disponible para que no los mandes dos veces.")) return;
+    ENV.push({id:"e"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+              fecha:new Date().toISOString().slice(0,10), cto:String(cur.num), org:cur.org,
+              prod:cur.prod, tpl:val("el-tpl"), com:val("el-com"), adm:el("el-adm").value,
+              para:val("el-para"),
+              liq:val("el-h-liq"), nd:val("el-h-nd"), comis:val("el-h-com"), pagof:val("el-h-pago"),
+              ctgs:gs.map(x => ({ctg:x.ctg, cp:x.cp, kg:x.kg_liq, pct:x.pct, mon:x.mon, imp:x.imp}))});
+    await guardarEnv(); sel = {}; pintar();
+  }
+  async function borrar(id){
+    if(!confirm("¿Deshago este envío? Los kilos vuelven a quedar disponibles.")) return;
+    ENV = ENV.filter(e => e.id !== id);
+    try { localStorage.setItem(LS, JSON.stringify(ENV)); } catch(e){}
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) await apiSave(KV, ENV);
+    pintar();
+  }
+  function abrirMail(){
+    const gs = elegidos();
+    if(!gs.length){ alert("Primero tildá los CTG que querés mandar a liquidar."); return; }
+    const to = (val("el-para")||"").trim();
+    if(!to){ alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); return; }
+    const cc = (val("el-cc")||"").trim();
+    if(cc) localStorage.setItem("el_fijos", cc);
+    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(asunto())}`
+      + `&body=${encodeURIComponent(cuerpo())}`;
+  }
+  function copiar(){
+    if(!elegidos().length){ alert("Primero tildá los CTG."); return; }
+    navigator.clipboard.writeText(asunto()+"\n\n"+cuerpo())
+      .then(()=>{ const b=el("el-copiar"); b.textContent="✓ copiado"; setTimeout(()=>b.textContent="⧉ Copiar texto",2000); })
+      .catch(()=>alert("No pude copiar al portapapeles."));
+  }
+  function excel(){
+    const gs = elegidos();
+    if(!gs.length){ alert("Primero tildá los CTG."); return; }
+    const q = v => { let t=String(v==null?"":v); return /[";\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
+    const num = v => String(Math.round((Number(v)||0)*100)/100).replace(".",",");
+    const t = tplActual();
+    const L = [[encabezado()].join(";"), "",
+               ["Contrato","Entregador","Grano","Campaña","Modalidad","Comercial","Administrativa",
+                "CTG","Carta de porte","Fecha","Kg con mermas","% liquidación","Kg a liquidar","Moneda","Importe"].join(";")];
+    gs.forEach(x => L.push([q(cur.num),q(cur.org),q((cur.prod||"").replace(/^Grano\s+/,"")),
+      q(String(cur.cos||"").replace("CAMPAÑA ","")),q(t.tit),q(val("el-com")),q(el("el-adm").value),
+      q(x.ctg),q(x.cp),q(String(x.fecha||"").slice(0,10)),num(x.kg),num(x.pct),num(x.kg_liq),
+      q(x.mon),x.imp!=null?num(x.imp):""].join(";")));
+    const b = new Blob(["\ufeff"+L.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = `Enviar-a-liquidar_contrato-${cur.num}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  }
+
+  // ── config comercial -> administrativa ───────────────────────────────────
+  function cfgPintar(){
+    const lista = [...new Set([...(VEN.comerciales||[]), ...Object.keys(CFG),
+                              ...Object.values(ADM_DEF).map(x => x.com)])].sort();
+    el("el-cfg-tbl").querySelector("tbody").innerHTML = lista.map(v => {
+      const c = cfgDe(v);
+      const inp = (cls, val2, ph) => `<input class="${cls}" value="${esc(val2||"")}" placeholder="${ph}"
+        style="width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg2);color:var(--ink);font-size:11.5px">`;
+      return `<tr data-com="${esc(v)}"><td style="font-weight:600">${esc(v)}</td>
+        <td>${inp("cfg-mc", c.mail_com, "correo@…")}</td>
+        <td>${inp("cfg-ad", c.adm, "nombre")}</td>
+        <td>${inp("cfg-ma", c.mail_adm, "correo@…")}</td></tr>`;
+    }).join("");
+  }
+  async function cfgGuardar(){
+    el("el-cfg-tbl").querySelectorAll("tbody tr").forEach(tr => {
+      const v = tr.dataset.com;
+      const g = c => (tr.querySelector(c)||{}).value || "";
+      const o = {mail_com:g(".cfg-mc").trim(), adm:g(".cfg-ad").trim(), mail_adm:g(".cfg-ma").trim()};
+      if(o.mail_com || o.adm || o.mail_adm) CFG[v] = o; else delete CFG[v];
+    });
+    await guardarCfg();
+    el("el-cfg-msg").textContent = "guardado ✓";
+    setTimeout(()=>el("el-cfg-msg").textContent="", 2500);
+    pintarQuien();
+  }
+
+  // ── enganches ────────────────────────────────────────────────────────────
+  el("el-buscar").addEventListener("click", buscar);
+  el("el-cto").addEventListener("keydown", ev => { if(ev.key==="Enter"){ ev.preventDefault(); buscar(); } });
+  el("el-cto").addEventListener("change", buscar);
+  el("el-tpl").addEventListener("change", () => { ponerCond(false); preview(); });
+  ["el-h-liq","el-h-nd","el-h-com"].forEach(id =>
+    el(id).addEventListener("input", () => { clearTimeout(el(id)._t);
+      el(id)._t = setTimeout(() => { guardaCond(); preview(); }, 250); }));
+  el("el-h-pago").addEventListener("change", preview);
+  el("el-h-def").addEventListener("click", () => { ponerCond(true); guardaCond(); preview(); });
+  el("el-com").addEventListener("change", () => { el("el-para").dataset.tocado=""; pintarQuien(); preview(); });
+  el("el-para").addEventListener("input", () => { el("el-para").dataset.tocado="1"; });
+  el("el-cc").addEventListener("change", () => { localStorage.setItem("el_fijos", val("el-cc"));
+    el("el-para").dataset.tocado=""; pintarQuien(); });
+  el("el-obs").addEventListener("input", () => { clearTimeout(el("el-obs")._t); el("el-obs")._t=setTimeout(preview,250); });
+  el("el-todos").addEventListener("click", () => tildar(true));
+  el("el-ninguno").addEventListener("click", () => tildar(false));
+  el("el-m-ok").addEventListener("click", masivo);
+  el("el-mail").addEventListener("click", abrirMail);
+  el("el-copiar").addEventListener("click", copiar);
+  el("el-excel").addEventListener("click", excel);
+  el("el-marcar").addEventListener("click", marcar);
+  el("el-cfg").addEventListener("click", () => { const b=el("el-cfg-box");
+    const abrirlo = b.style.display === "none"; b.style.display = abrirlo ? "" : "none";
+    if(abrirlo){ cfgPintar(); b.scrollIntoView({behavior:"smooth", block:"start"}); } });
+  el("el-cfg-close").addEventListener("click", () => el("el-cfg-box").style.display="none");
+  el("el-cfg-save").addEventListener("click", cfgGuardar);
+
+  el("el-tabla").addEventListener("change", ev => {
+    const tr = ev.target.closest("tr[data-ctg]"); if(!tr) return;
+    const ctg = tr.dataset.ctg, f = filas().find(x => String(x.ctg)===ctg); if(!f) return;
+    const g = ev.target;
+    if(g.classList.contains("el-ck")){
+      if(g.checked) sel[ctg] = {pct:100, mon:monDefault(), imp:null}; else delete sel[ctg];
+    } else if(g.classList.contains("el-pct")){
+      let v = Number(g.value);
+      if(!(v > 0)){ delete sel[ctg]; }
+      else { if(v > 100) v = 100; sel[ctg] = sel[ctg] || {mon:monDefault(), imp:null}; sel[ctg].pct = v; }
+    } else if(g.classList.contains("el-mon")){
+      sel[ctg] = sel[ctg] || {pct:100, imp:null}; sel[ctg].mon = g.value;
+    } else if(g.classList.contains("el-imp")){
+      sel[ctg] = sel[ctg] || {pct:100, mon:monDefault()};
+      sel[ctg].imp = g.value === "" ? null : (Number(g.value)||0);
+    }
+    pintar();
+  });
+  el("el-hist").addEventListener("click", ev => {
+    const b = ev.target.closest(".el-del"); if(b) borrar(b.dataset.id);
+  });
+
+  let _listo = false;
+  async function abrir(){
+    if(_listo) return; _listo = true;
+    await cargar();
+    const ds = el("el-ctos");
+    ds.innerHTML = Object.values(CT)
+      .filter(c => (c.sin_n||0) > 0 || (c.sis_pend||0) > 0.05)
+      .sort((a,b) => (b.sin_tn||0)-(a.sin_tn||0)).slice(0,400)
+      .map(c => `<option value="${esc(c.num)}">#${esc(c.num)} · ${esc(c.org||"")} · ${esc((c.prod||"").replace(/^Grano\s+/,""))} · ${n1(c.sin_tn)} tn</option>`)
+      .join("");
+    const fijos = localStorage.getItem("el_fijos") || "";
+    if(fijos) el("el-cc").value = fijos;
+    ponerCond(false);
+    const ch = el("el-chips");
+    if(ch) ch.innerHTML = [
+      n0(Object.keys(CT).length)+" contratos de compra",
+      n0((VEN.comerciales||[]).length)+" comerciales en Finnegans",
+      n0(new Set([...Object.keys(CFG), ...Object.values(ADM_DEF).map(x=>x.com)]).size)+" con administrativa",
+      "CTG al "+fec((PAYLOAD.ctgliq||{}).cam_hasta)
+    ].map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${esc(x)}</span>`).join("");
+    pintar();
+  }
+  document.querySelectorAll('[data-go-sub="cp-envliq"], .subtab[data-sub="cp-envliq"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(abrir,60)));
+  setTimeout(abrir, 900);
+})();
+
 /* ============================================================
    ======  CTG SIN LIQUIDAR  (pedido usuario 14/09/2026)  =====
    "de estos entregadores que tienen pendiente de liquidar,
@@ -16538,6 +17360,49 @@ TRACKEO_DESDE = "2026-01-01"    # pedido usuario 10/09/2026: desde el 01/01/2026
 # pacto, no el de hoy. Sin esto los contratos viejos en pesos quedan subvaluados
 # (la soja de abril/2025 a $506.600 daba 336 USD/tn con el TC de hoy cuando fueron
 # 436). Se usa el dolar MAYORISTA comprador, la misma serie del informe mensual.
+def fetch_vendedores() -> dict:
+    """Quien es el comercial de cada firma. Sale de la tabla usr_clientesvendedores
+    del datawarehouse (CUIT / razon social -> vendedor). La administrativa que
+    acompaña a cada comercial NO esta en Finnegans: esa relacion se carga a mano en
+    el tablero y se guarda en la nube."""
+    out = {"por_cuit": {}, "por_nombre": {}, "comerciales": []}
+    host = os.environ.get("FNN_DW_HOST")
+    if not (host and os.environ.get("FNN_DW_USER") and os.environ.get("FNN_DW_PASS")):
+        print("    [.] vendedores: sin credenciales de DW")
+        return out
+    try:
+        import psycopg2, psycopg2.extras
+        cn = psycopg2.connect(host=host, dbname=os.environ.get("FNN_DW_DB", "finnegansbi"),
+                              user=os.environ["FNN_DW_USER"], password=os.environ["FNN_DW_PASS"],
+                              port=int(os.environ.get("FNN_DW_PORT", "5432")),
+                              sslmode="require", connect_timeout=20)
+        cr = cn.cursor()
+        cr.execute("""SELECT cuit, nombre, razonsocial, vendedor
+                        FROM public.agronasajasrl_usr_clientesvendedores
+                       WHERE COALESCE(vendedor,'') <> ''""")
+        vis = {}
+        for cuit, nombre, razon, vend in cr.fetchall():
+            v = " ".join(str(vend or "").split()).strip()
+            if not v:
+                continue
+            c = "".join(ch for ch in str(cuit or "") if ch.isdigit())
+            if c:
+                out["por_cuit"][c] = v
+            for nm in (nombre, razon):
+                nm = " ".join(str(nm or "").split()).strip().upper()
+                if nm:
+                    out["por_nombre"][nm] = v
+            vis[v] = vis.get(v, 0) + 1
+        cn.close()
+        out["comerciales"] = [k for k, _ in sorted(vis.items(), key=lambda kv: -kv[1])]
+        print(f"[+] Comerciales: {len(out['comerciales'])} vendedores · "
+              f"{len(out['por_nombre'])} firmas asignadas")
+    except Exception as e:
+        print(f"    [!] vendedores: {type(e).__name__}: {str(e)[:120]}")
+    return out
+
+
+
 def fetch_tc_hist(desde: str = "2022-01-01") -> dict:
     import urllib.request, ssl
     url = "https://api.argentinadatos.com/v1/cotizaciones/dolares/mayorista"
@@ -16953,7 +17818,7 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
             "num": (nm.split(" - ")[-1] if " - " in nm else nm),
             "org": (r.get("organizacion") if r else None) or (cams[0].get("dest") if cams else ""),
             "prod": (r.get("producto") if r else None) or (cams[0].get("prod") if cams else ""),
-            "cos": (r.get("cosecha") if r else "") or "",
+            "cos": ((r.get("cosecha") or r.get("campana")) if r else "") or "",
             "corr": (r.get("corredor") if r else "") or "",
             "fecha": (r.get("fecha") if r else "") or "",
             "sis_ent": round(ent, 3), "sis_liq": round(liqd, 3), "sis_pend": round(pend, 3),
@@ -18574,9 +19439,14 @@ def main() -> int:
         print(f"    [!] ctgliq: {type(e).__name__}: {e}")
         ctgliq = {"contratos": [], "kpi": {}, "generado": "", "cam_hasta": ""}
 
+    # Quien es el comercial de cada firma (para el correo de "Enviar a liquidar")
+    print("\n[+] Bajando comerciales por firma...", flush=True)
+    vendedores = fetch_vendedores()
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "ctgliq": ctgliq,
+        "vendedores": vendedores,
         "counts": counts,
         "fp_auto_hechas": fp_auto_hechas,
         "extranet_cta": extranet_cta,
