@@ -950,6 +950,25 @@ window.apiFetch = function(path, opts){
   .tk-pill.c{border:1px solid #b3372b;color:#b3372b}
   .tk-pill.m{border:1px solid #a97b12;color:#a97b12}
   /* ===== Por Organizacion: grilla tipo tabla dinamica ===== */
+  /* CTG sin liquidar: tres niveles (firma -> contrato -> carta de porte) */
+  #cl-tabla{border-collapse:separate;border-spacing:0}
+  #cl-tabla tbody tr.cl-org{cursor:pointer;background:var(--bg2);font-weight:600}
+  #cl-tabla tbody tr.cl-org:hover{background:#e8eef7}
+  #cl-tabla tbody tr.cl-org.abierta{background:#dce7f5}
+  #cl-tabla tbody tr.cl-cto{cursor:pointer;background:#fff}
+  #cl-tabla tbody tr.cl-cto:hover{background:#f3f7fc}
+  #cl-tabla tbody tr.cl-cto > td:first-child{padding-left:26px}
+  #cl-tabla tbody tr.cl-cto.abierta{background:#eef4fb}
+  #cl-tabla tbody tr.cl-ctgs > td{padding:0;background:#fbfcfe}
+  #cl-tabla table.cl-det{width:auto;min-width:820px;margin:8px 10px 12px 34px;font-size:11.5px}
+  #cl-tabla table.cl-det th{position:static;top:auto;background:var(--bg2);color:var(--ink);
+    font-size:10.5px;letter-spacing:.02em;padding:5px 8px;border-bottom:1px solid var(--line)}
+  #cl-tabla table.cl-det td{padding:4px 8px;border-bottom:1px solid #eef2f7}
+  #cl-tabla table.cl-det tr.cl-sin td{background:#fef2f2}
+  #cl-tabla table.cl-det tr.cl-par td{background:#fff7ed}
+  .cl-fl{display:inline-block;width:12px;color:var(--muted)}
+  .cl-bad{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700;white-space:nowrap}
+  .cl-sub{font-weight:400;color:var(--muted);font-size:11px;margin-left:6px}
   #org-tabla{border-collapse:separate;border-spacing:0}
   /* Dos filas de encabezado, las dos pegadas arriba: la de grupo a top:0 y la de
      columnas justo abajo (si las dos van a top:0 la segunda queda tapada).
@@ -1228,6 +1247,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arcaliq" data-title="Cruce Liquidaciones · ARCA vs Finnegans">🧾 Cruce Liquidaciones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-trackeo" data-title="Trackeo de Camiones · certificados y mermas">🎯 Trackeo Camiones</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-ctgliq" data-title="CTG sin Liquidar · qué carta de porte falta liquidar o vincular">🧾 CTG sin Liquidar</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
@@ -2474,6 +2494,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="pn-arcaliq">🧾 Cruce Liquidaciones</button>
       <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
       <button class="subtab" data-sub="pn-trackeo">🎯 Trackeo Camiones</button>
+      <button class="subtab" data-sub="pn-ctgliq">🧾 CTG sin Liquidar</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
@@ -2789,6 +2810,58 @@ window.apiFetch = function(path, opts){
         <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="tk-nota"></div>
       </div>
     </div><!-- /subpanel pn-trackeo -->
+
+    <!-- ===== SUBPANEL: CTG sin liquidar (pedido usuario 14/09) ===== -->
+    <div class="subpanel" data-sub-panel="pn-ctgliq">
+      <div class="section" style="background:linear-gradient(135deg,#3b1f5c 0%,#6d28d9 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🧾 CTG sin Liquidar · qué carta de porte falta liquidar o vincular</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
+          De lo que ya entregaste y Finnegans sigue mostrando <b>pendiente de liquidar</b>, acá está
+          el detalle: <b>qué carta de porte es</b>. Cada liquidación de granos cita el <b>traslado</b>
+          y cuántas toneladas de él está liquidando; cada CTG pertenece a un traslado. Si el traslado
+          del camión no figura en ninguna liquidación, ese CTG está <b>sin liquidar</b>; si figura por
+          menos kilos de los que entraron, está <b>a medias</b>. Y cuando el contrato ya no tiene
+          pendiente pero igual quedan CTG sueltos, lo que falta es <b>vincular</b> el traslado.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="cl-chips"></div>
+      </div>
+
+      <div class="section">
+        <div id="cl-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 14px"></div>
+
+        <div class="filterbar" style="margin:0 0 12px">
+          <div><label>PUNTA</label><select id="cl-lado">
+            <option value="venta">Venta (a cerealeras)</option>
+            <option value="compra">Compra (de entregadores)</option>
+            <option value="">Las dos</option>
+          </select></div>
+          <div><label>CAMPAÑA</label><select id="cl-camp"></select></div>
+          <div><label>CULTIVO</label><select id="cl-prod"><option value="">Todos</option></select></div>
+          <div><label>ORGANIZACIÓN</label><select id="cl-org"><option value="">Todas</option></select></div>
+          <div><label>SITUACIÓN</label><select id="cl-est">
+            <option value="prob">Solo lo que tiene algo para revisar</option>
+            <option value="sinliq">Falta liquidar</option>
+            <option value="vincular">Falta vincular</option>
+            <option value="sincp">Sin carta de porte</option>
+            <option value="sobre">Liquidado de más</option>
+            <option value="">Todos los contratos</option>
+          </select></div>
+          <div><label>BUSCAR</label><input id="cl-txt" placeholder="CTG / carta de porte / contrato / firma"
+            style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);min-width:190px"></div>
+          <button class="clear" id="cl-limpiar">Limpiar</button>
+          <button class="clear" id="cl-abrir">⬍ Abrir todas</button>
+          <button class="clear" id="cl-cerrar">⬏ Cerrar todas</button>
+          <button class="clear" id="cl-excel" title="Baja el detalle CTG por CTG con los filtros puestos">⬇ Exportar a Excel</button>
+          <button class="clear" id="cl-copiar" title="Copia los CTG sin liquidar, uno por línea, para pegarlos en Finnegans">⧉ Copiar CTGs</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="cl-info"></span>
+        </div>
+
+        <div class="tbl-wrap" style="max-height:720px">
+          <table id="cl-tabla" style="font-size:12px"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.55" id="cl-nota"></div>
+      </div>
+    </div><!-- /subpanel pn-ctgliq -->
 
     <!-- ===== SUBPANEL: Contratos por Organizacion (compra + venta juntos) ===== -->
     <div class="subpanel" data-sub-panel="pn-orgs">
@@ -15042,6 +15115,329 @@ function ctRender(){
   const btn=document.getElementById("tq-cruzar"); if(btn) btn.addEventListener("click", crossRange);
 })();
 
+
+/* ============================================================
+   ======  CTG SIN LIQUIDAR  (pedido usuario 14/09/2026)  =====
+   "de estos entregadores que tienen pendiente de liquidar,
+    que CTG no esta liquidado o si falta vincular"
+   Agrupado por firma como la tabla dinamica que usa el: se abre
+   en contratos y cada contrato en sus cartas de porte.
+   Fuente: PAYLOAD.ctgliq (build.py -> armar_ctgliq)
+   ============================================================ */
+(function clInit(){
+  const D = PAYLOAD.ctgliq || {};
+  const TODO = D.contratos || [];
+  const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n0 = v => (Number(v)||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+  const n1 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
+  const n3 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:3,maximumFractionDigits:3});
+  const nz = v => Math.abs(Number(v)||0) < 0.001 ? '<span style="color:var(--line)">·</span>' : n1(v);
+  const campS = c => { const m = String(c||"").match(/(\d{2}\s*[-\/]\s*\d{2})/); return m ? m[1].replace(/\s/g,"") : String(c||""); };
+  const fec = f => { const t = String(f||"").slice(0,10); if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) return t||"—";
+                     return t.slice(8,10)+"/"+t.slice(5,7)+"/"+t.slice(0,4); };
+
+  const EST = {
+    sinliq:   {t:"Falta liquidar",     c:"#991b1b", bg:"#fee2e2"},
+    mixto:    {t:"Falta vincular",     c:"#854d0e", bg:"#fef9c3"},
+    vincular: {t:"Falta vincular",     c:"#854d0e", bg:"#fef9c3"},
+    parcial:  {t:"Falta identificar",  c:"#9a3412", bg:"#ffedd5"},
+    sincp:    {t:"Sin carta de porte", c:"#3730a3", bg:"#e0e7ff"},
+    sobre:    {t:"Liquidado de más",   c:"#5b21b6", bg:"#ede9fe"},
+    ok:       {t:"Al día",             c:"#166534", bg:"#dcfce7"}
+  };
+  const badge = e => { const x = EST[e] || EST.ok;
+    return `<span class="cl-bad" style="background:${x.bg};color:${x.c}">${x.t}</span>`; };
+  // los que tienen algo para revisar
+  const PROB = new Set(["sinliq","mixto","vincular","parcial","sincp","sobre"]);
+
+  const abO = new Set(), abC = new Set();
+  const val = id => (document.getElementById(id) || {}).value || "";
+
+  // cada desplegable se arma con lo que queda despues de los OTROS filtros, asi
+  // que todo lo que se puede elegir tiene datos (si no, se elegian firmas vacias)
+  function filas(omitir){
+    omitir = omitir || {};
+    let r = TODO;
+    const lado = val("cl-lado");
+    if(lado) r = r.filter(c => c.lado === lado);
+    const ca = val("cl-camp");
+    if(ca && !omitir.camp) r = r.filter(c => campS(c.cos) === ca);
+    const pr = val("cl-prod");
+    if(pr && !omitir.prod) r = r.filter(c => (c.prod||"") === pr);
+    const og = val("cl-org");
+    if(og && !omitir.org) r = r.filter(c => (c.org||"").trim() === og);
+    const es = val("cl-est");
+    if(es === "prob") r = r.filter(c => PROB.has(c.est));
+    else if(es) r = r.filter(c => c.est === es || (es === "vincular" && c.est === "mixto"));
+    const q = val("cl-txt").trim().toLowerCase();
+    if(q){
+      const qn = q.replace(/\D/g,"");
+      r = r.filter(c => (c.org||"").toLowerCase().includes(q) || (c.cto||"").toLowerCase().includes(q)
+        || (qn && (c.ctgs||[]).some(x => String(x.ctg||"").includes(qn)
+                                      || String(x.cp||"").replace(/\D/g,"").includes(qn))));
+    }
+    return r;
+  }
+
+  function opciones(id, vals, todos){
+    const e = document.getElementById(id);
+    if(!e) return;
+    const ant = e.value;
+    e.innerHTML = `<option value="">${todos}</option>` +
+      vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+    if(vals.indexOf(ant) >= 0 || ant === "") e.value = ant;
+  }
+
+  function agrupar(rs){
+    const m = new Map();
+    rs.forEach(c => {
+      const k = (c.org||"—").trim() || "—";
+      if(!m.has(k)) m.set(k, {org:k, cs:[], pend:0, ent:0, sin_n:0, sin_tn:0, par_tn:0, cub:0, cam_n:0, ests:new Set()});
+      const g = m.get(k);
+      g.cs.push(c); g.pend += c.sis_pend||0; g.ent += c.sis_ent||0;
+      g.sin_n += c.sin_n||0; g.sin_tn += c.sin_tn||0; g.par_tn += c.par_tn||0;
+      g.cub += c.cubierto||0; g.cam_n += c.cam_n||0;
+      if(c.est !== "ok") g.ests.add(c.est);
+    });
+    const gs = [...m.values()];
+    gs.forEach(g => g.cs.sort((a,b) => (b.sin_tn||0)-(a.sin_tn||0) || (b.sis_pend||0)-(a.sis_pend||0)));
+    gs.sort((a,b) => (b.sin_tn||0)-(a.sin_tn||0) || (b.pend||0)-(a.pend||0) || a.org.localeCompare(b.org));
+    return gs;
+  }
+
+  const CAB = `<tr>
+      <th style="min-width:280px">Organización · contrato</th>
+      <th class="num">Ctos</th>
+      <th class="num">Entregado</th>
+      <th class="num">Pend. Finnegans</th>
+      <th class="num">Camiones</th>
+      <th class="num" title="cartas de porte que no figuran en ninguna liquidación">CTG sin vincular</th>
+      <th class="num" title="toneladas de esas cartas de porte">Tn sin vincular</th>
+      <th class="num" title="del pendiente que informa Finnegans, cuánto queda identificado carta por carta">Tn identificadas</th>
+      <th>Situación</th>
+    </tr>`;
+
+  // un CTG que no figura en ninguna liquidacion se llama "sin liquidar" solo si el
+  // contrato todavia debe plata; si el contrato ya esta saldado, esa mercaderia se
+  // cobro y lo que falta es el vinculo del traslado (pasa en el 13% de las liq.)
+  const FALTA_PLATA = new Set(["sinliq","parcial","mixto"]);
+  function tablaCtgs(c){
+    if(!(c.ctgs||[]).length)
+      return '<div style="padding:10px 34px;color:var(--muted);font-size:11.5px">Este contrato no tiene ninguna carta de porte cargada en Finnegans.</div>';
+    const debe = FALTA_PLATA.has(c.est);
+    let h = `<table class="cl-det"><thead><tr><th>CTG</th><th>Carta de porte</th><th>Fecha</th>`
+          + `<th class="num">Tn entregadas</th><th class="num">Tn liquidadas</th><th class="num">Tn sin vincular</th>`
+          + `<th>Estado</th><th>Liquidación</th><th>Traslado</th></tr></thead><tbody>`;
+    c.ctgs.forEach(x => {
+      const cls = x.est === "sin" ? (debe ? "cl-sin" : "cl-par") : (x.est === "parcial" ? "cl-par" : "");
+      const et  = x.est === "sin"
+                ? (debe ? '<span class="cl-bad" style="background:#fee2e2;color:#991b1b" title="el contrato todavía tiene pendiente de liquidar">SIN LIQUIDAR</span>'
+                        : '<span class="cl-bad" style="background:#fef9c3;color:#854d0e" title="el contrato ya no tiene pendiente: la mercadería se cobró, falta vincular el traslado">Sin vincular</span>')
+                : x.est === "parcial" ? '<span class="cl-bad" style="background:#ffedd5;color:#9a3412">A medias</span>'
+                : '<span class="cl-bad" style="background:#dcfce7;color:#166534">Liquidado</span>';
+      const lq = (x.liqs||[]).length
+        ? esc((x.liqs||[]).join(" · ")) + (x.liq_fecha ? `<span class="cl-sub">${fec(x.liq_fecha)}</span>` : "")
+        : '<span style="color:var(--muted)">—</span>';
+      h += `<tr class="${cls}"><td style="font-family:ui-monospace,monospace;font-weight:600">${esc(x.ctg)}</td>`
+         + `<td style="font-family:ui-monospace,monospace">${esc(x.cp||"—")}</td><td>${fec(x.fecha)}</td>`
+         + `<td class="num">${n3(x.tn)}</td><td class="num">${x.tn_liq>0.0005?n3(x.tn_liq):'<span style="color:var(--line)">·</span>'}</td>`
+         + `<td class="num" style="font-weight:700">${x.falta>0.0005?n3(x.falta):'<span style="color:var(--line)">·</span>'}</td>`
+         + `<td>${et}</td><td style="font-size:11px">${lq}</td>`
+         + `<td style="font-size:11px;color:var(--muted)">${esc(x.doc||"")}</td></tr>`;
+    });
+    h += `</tbody></table>`;
+    return h;
+  }
+
+  function render(){
+    const t = document.getElementById("cl-tabla");
+    if(!t) return;
+    if(!TODO.length){
+      t.querySelector("thead").innerHTML = "";
+      t.querySelector("tbody").innerHTML =
+        '<tr><td style="padding:24px;color:var(--muted)">Todavía no hay datos. Se arman en el build, cruzando la trazabilidad del datawarehouse contra los snapshots de liquidaciones (<code>data/liq_*_api.json</code>).</td></tr>';
+      return;
+    }
+    // desplegables cruzados
+    const cmp = [...new Set(filas({camp:true}).map(c => campS(c.cos)).filter(Boolean))].sort().reverse();
+    const e = document.getElementById("cl-camp");
+    const antC = e.value;
+    e.innerHTML = '<option value="">Todas</option>' + cmp.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+    e.value = (cmp.indexOf(antC) >= 0 || antC === "") ? antC : "";
+    opciones("cl-prod", [...new Set(filas({prod:true}).map(c => c.prod).filter(Boolean))].sort(), "Todos");
+    opciones("cl-org",  [...new Set(filas({org:true}).map(c => (c.org||"").trim()).filter(Boolean))].sort(), "Todas");
+
+    const rs = filas(), gs = agrupar(rs);
+    t.querySelector("thead").innerHTML = CAB;
+    let h = "";
+    gs.forEach(g => {
+      const ab = abO.has(g.org);
+      const cult = [...new Set(g.cs.map(c => (c.prod||"").replace(/^Grano\s+/,"")))].filter(Boolean).sort().join(" · ");
+      const chips = [...new Set([...g.ests].map(x => (EST[x]||EST.ok).t))]
+        .map(t => { const k = Object.keys(EST).find(k2 => EST[k2].t === t) || "ok";
+                    return badge(k); }).join(" ");
+      h += `<tr class="cl-org${ab?" abierta":""}" data-org="${esc(g.org)}">`
+         + `<td><span class="cl-fl">${ab?"▾":"▸"}</span>${esc(g.org)}<span class="cl-sub">${esc(cult)}</span></td>`
+         + `<td class="num">${n0(g.cs.length)}</td><td class="num">${nz(g.ent)}</td>`
+         + `<td class="num" style="font-weight:700">${nz(g.pend)}</td><td class="num">${n0(g.cam_n)}</td>`
+         + `<td class="num" style="font-weight:700;color:${g.sin_n?"#b91c1c":"inherit"}">${g.sin_n?n0(g.sin_n):'<span style="color:var(--line)">·</span>'}</td>`
+         + `<td class="num" style="font-weight:700;color:${g.sin_tn>0.05?"#b91c1c":"inherit"}">${nz(g.sin_tn)}</td>`
+         + `<td class="num">${nz(g.cub)}</td><td>${chips}</td></tr>`;
+      if(!ab) return;
+      g.cs.forEach(c => {
+        const ac = abC.has(c.lado + "|" + c.cto);
+        h += `<tr class="cl-cto${ac?" abierta":""}" data-cto="${esc(c.lado+"|"+c.cto)}">`
+           + `<td><span class="cl-fl">${ac?"▾":"▸"}</span>`
+           + `<b style="font-family:ui-monospace,monospace">#${esc(c.num)}</b>`
+           + `<span class="cl-sub">${esc((c.prod||"").replace(/^Grano\s+/,""))} · ${esc(campS(c.cos)||"—")}`
+           + `${c.corr?" · "+esc(c.corr):""}</span></td>`
+           + `<td class="num"></td><td class="num">${nz(c.sis_ent)}</td>`
+           + `<td class="num" style="font-weight:700">${nz(c.sis_pend)}</td><td class="num">${n0(c.cam_n)}</td>`
+           + `<td class="num" style="font-weight:700;color:${c.sin_n?"#b91c1c":"inherit"}">${c.sin_n?n0(c.sin_n):'<span style="color:var(--line)">·</span>'}</td>`
+           + `<td class="num" style="font-weight:700;color:${c.sin_tn>0.05?"#b91c1c":"inherit"}">${nz(c.sin_tn)}</td>`
+           + `<td class="num">${nz(c.cubierto)}</td>`
+           + `<td>${badge(c.est)}<div class="cl-sub" style="margin:2px 0 0;display:block">${esc(c.txt||"")}</div></td></tr>`;
+        if(ac) h += `<tr class="cl-ctgs"><td colspan="9">${tablaCtgs(c)}</td></tr>`;
+      });
+    });
+    t.querySelector("tbody").innerHTML = h ||
+      '<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted)">Nada para mostrar con estos filtros.</td></tr>';
+
+    const T = rs.reduce((a,c) => ({ent:a.ent+(c.sis_ent||0), pend:a.pend+(c.sis_pend||0),
+      pp:a.pp+Math.max(0,c.sis_pend||0), cam:a.cam+(c.cam_n||0), sn:a.sn+(c.sin_n||0),
+      st:a.st+(c.sin_tn||0), pt:a.pt+(c.par_tn||0), cu:a.cu+(c.cubierto||0)}),
+      {ent:0,pend:0,pp:0,cam:0,sn:0,st:0,pt:0,cu:0});
+    t.querySelector("tfoot").innerHTML = rs.length ? `<tr class="pn-total">
+      <td>TOTAL · ${n0(gs.length)} firma(s)</td><td class="num">${n0(rs.length)}</td>
+      <td class="num">${n1(T.ent)}</td><td class="num">${n1(T.pend)}</td><td class="num">${n0(T.cam)}</td>
+      <td class="num">${n0(T.sn)}</td><td class="num">${n1(T.st)}</td><td class="num">${n1(T.cu)}</td><td></td></tr>` : "";
+
+    const kp = document.getElementById("cl-kpis");
+    if(kp){
+      const card = (lbl, v, hint, col) =>
+        `<div style="background:#fff;border:1px solid var(--line);border-left:4px solid ${col};border-radius:10px;padding:11px 13px">
+           <div style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase">${lbl}</div>
+           <div style="font-size:21px;font-weight:700;color:${col};margin:2px 0 1px">${v}</div>
+           <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
+      const debe   = rs.filter(c => FALTA_PLATA.has(c.est));
+      const nVinc  = rs.filter(c => c.est === "vincular");
+      const tnVinc = rs.filter(c => !FALTA_PLATA.has(c.est)).reduce((a,c) => a+(c.sin_tn||0), 0);
+      const nSinLq = debe.reduce((a,c) => a+(c.sin_n||0), 0);
+      const tSinLq = debe.reduce((a,c) => a+(c.sin_tn||0), 0);
+      const sinCp  = rs.filter(c => c.est === "sincp");
+      const pctCub = T.pp > 0.05 ? Math.round(100*Math.min(1, T.cu/T.pp)) : 0;
+      kp.innerHTML =
+        card("Pendiente de liquidar", n1(T.pp) + " tn",
+             `${n0(rs.length)} contrato(s) · lo que informa Finnegans`, "#0f766e") +
+        card("Identificado carta por carta", n1(T.cu) + " tn",
+             `${pctCub}% del pendiente · el resto son kilos sueltos o no tiene CP cargada`, "#1d4ed8") +
+        card("CTG sin liquidar", n0(nSinLq),
+             `${n1(tSinLq)} tn · en contratos que todavía tienen pendiente — esto es lo accionable`, "#b91c1c") +
+        card("Falta vincular", n1(tnVinc) + " tn",
+             `${n0(nVinc.length)} contrato(s) ya cobrados donde el traslado no quedó citado`, "#a16207") +
+        card("Sin carta de porte", n1(sinCp.reduce((a,c)=>a+(c.sis_pend||0),0)) + " tn",
+             `${n0(sinCp.length)} contrato(s) que el sistema da por entregados sin CP cargada`, "#4338ca");
+    }
+
+    const ch = document.getElementById("cl-chips");
+    if(ch){
+      const k = (D.kpi || {})[val("cl-lado") || "venta"] || {};
+      ch.innerHTML = [
+        "camiones hasta " + fec(D.cam_hasta),
+        "liquidaciones hasta " + fec(k.ult_liq),
+        n0(k.liqs) + " liquidaciones leídas",
+        (val("cl-lado") === "compra" ? "punta compra" : val("cl-lado") === "" ? "las dos puntas" : "punta venta")
+      ].map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${esc(x)}</span>`).join("");
+    }
+    document.getElementById("cl-info").textContent =
+      `${n0(gs.length)} firma(s) · ${n0(rs.length)} contrato(s) · ${n0(T.sn)} CTG sin vincular`;
+    document.getElementById("cl-nota").innerHTML =
+      `💡 <b>Cómo se lee</b>. <b>Pend. Finnegans</b> es lo que informa el contrato: entregado que todavía no entró en ninguna
+       liquidación. <b>CTG sin vincular</b> son las cartas de porte cuyo traslado no aparece citado en ninguna liquidación.
+       Ojo con esto: no siempre significa que no se cobró — cerca del 13% de las liquidaciones liquidan mercadería
+       <i>sin</i> citar el traslado. Por eso quien manda es el pendiente del contrato:
+       <span class="cl-bad" style="background:#fee2e2;color:#991b1b">Falta liquidar</span> el contrato debe plata y los CTG de
+       abajo lo explican &nbsp;·&nbsp;
+       <span class="cl-bad" style="background:#fef9c3;color:#854d0e">Falta vincular</span> ya se cobró, falta el vínculo
+       (no reclames plata, corregí el vínculo) &nbsp;·&nbsp;
+       <span class="cl-bad" style="background:#ffedd5;color:#9a3412">Falta identificar</span> el pendiente son kilos sueltos de
+       camiones ya liquidados: merma, parciales o diferencia de balanza &nbsp;·&nbsp;
+       <span class="cl-bad" style="background:#e0e7ff;color:#3730a3">Sin carta de porte</span> el sistema lo da por entregado
+       pero no hay CP cargada, así que no se puede señalar el CTG &nbsp;·&nbsp;
+       <span class="cl-bad" style="background:#ede9fe;color:#5b21b6">Liquidado de más</span> se liquidó más de lo entregado.
+       <br>Se recalcula en cada build, cruzando la trazabilidad del datawarehouse contra las liquidaciones que baja
+       <code>scripts/finn_liq_coes.py</code>. La punta compra usa entregado − liquidado, porque Finnegans no calcula
+       ahí el campo de pendiente.`;
+  }
+
+  function detalle(){
+    const rs = filas(), out = [];
+    rs.forEach(c => (c.ctgs||[]).forEach(x => out.push({c, x})));
+    return out;
+  }
+
+  function exportar(){
+    const rows = detalle();
+    if(!rows.length){ alert("No hay nada para exportar con estos filtros."); return; }
+    const q = v => { let t = String(v==null?"":v); return /[";\n]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t; };
+    const num = v => String(Math.round((Number(v)||0)*1000)/1000).replace(".", ",");
+    const ESTT = {parcial:"A medias", liq:"Liquidado"};
+    const estCtg = (c, x) => x.est === "sin" ? (FALTA_PLATA.has(c.est) ? "SIN LIQUIDAR" : "Sin vincular")
+                                             : (ESTT[x.est] || x.est);
+    const L = [["Punta","Organización","Contrato","Cultivo","Campaña","Pend. Finnegans (tn)","Situación contrato",
+                "CTG","Carta de porte","Fecha","Tn entregadas","Tn liquidadas","Tn sin liquidar","Estado CTG",
+                "Liquidación","Traslado"].join(";")];
+    rows.forEach(({c, x}) => L.push([q(c.lado), q(c.org), q(c.cto), q(c.prod), q(campS(c.cos)),
+      num(c.sis_pend), q((EST[c.est]||{}).t), q(x.ctg), q(x.cp), q(String(x.fecha||"").slice(0,10)),
+      num(x.tn), num(x.tn_liq), num(x.falta), q(estCtg(c, x)),
+      q((x.liqs||[]).join(" | ")), q(x.doc)].join(";")));
+    const hoy = new Date().toISOString().slice(0,10);
+    const b = new Blob(["\ufeff" + L.join("\r\n")], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = `CTG-sin-liquidar_${hoy}.csv`;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  document.addEventListener("click", ev => {
+    const to = ev.target.closest("#cl-tabla tr.cl-org");
+    if(to){ const k = to.dataset.org; abO.has(k) ? abO.delete(k) : abO.add(k); render(); return; }
+    const tc = ev.target.closest("#cl-tabla tr.cl-cto");
+    if(tc){ const k = tc.dataset.cto; abC.has(k) ? abC.delete(k) : abC.add(k); render(); }
+  });
+  ["cl-lado","cl-camp","cl-prod","cl-org","cl-est"].forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.addEventListener("change", render);
+  });
+  const tx = document.getElementById("cl-txt");
+  if(tx) tx.addEventListener("input", () => { clearTimeout(tx._t); tx._t = setTimeout(render, 250); });
+  const lm = document.getElementById("cl-limpiar");
+  if(lm) lm.addEventListener("click", () => {
+    ["cl-camp","cl-prod","cl-org","cl-txt"].forEach(id => { const e = document.getElementById(id); if(e) e.value = ""; });
+    const e = document.getElementById("cl-est"); if(e) e.value = "prob";
+    abO.clear(); abC.clear(); render();
+  });
+  const ba = document.getElementById("cl-abrir");
+  if(ba) ba.addEventListener("click", () => { agrupar(filas()).forEach(g => abO.add(g.org)); render(); });
+  const bc = document.getElementById("cl-cerrar");
+  if(bc) bc.addEventListener("click", () => { abO.clear(); abC.clear(); render(); });
+  const bx = document.getElementById("cl-excel");
+  if(bx) bx.addEventListener("click", exportar);
+  const bp = document.getElementById("cl-copiar");
+  if(bp) bp.addEventListener("click", () => {
+    const cs = detalle().filter(r => r.x.est === "sin" && FALTA_PLATA.has(r.c.est)).map(r => r.x.ctg);
+    if(!cs.length){ alert("No hay CTG sin liquidar con estos filtros."); return; }
+    navigator.clipboard.writeText(cs.join("\n"))
+      .then(() => { bp.textContent = `✓ ${cs.length} CTG copiados`; setTimeout(() => bp.textContent = "⧉ Copiar CTGs", 2200); })
+      .catch(() => alert("No pude copiar al portapapeles."));
+  });
+  let _dib = false;
+  document.querySelectorAll('[data-go-sub="pn-ctgliq"], .subtab[data-sub="pn-ctgliq"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(() => { _dib = true; render(); }, 60)));
+  setTimeout(() => { if(!_dib) render(); }, 600);
+})();
+
 /* ============================================================
    ====  ANÁLISIS DE CANJE DE COMPRAS · pend. liquidar  =======
    Contratos de compra de GRANOS con entregado sin liquidar,
@@ -16373,6 +16769,234 @@ def fetch_trackeo(desde: str = TRACKEO_DESDE):
     return out
 
 
+
+# ============================================================================
+#  CTG SIN LIQUIDAR  (pedido usuario 14/09/2026)
+#  "de estos entregadores que tienen pendiente de liquidar, que CTG no esta
+#   liquidado o si falta vincular"
+#
+#  La liquidacion de granos cita el TRASLADO y las toneladas que liquida de el.
+#  Cada carta de porte pertenece a un traslado. Cruzando ambos lados sale, camion
+#  por camion, cual esta liquidado, cual a medias y cual no entro en ninguna
+#  liquidacion. Contra el pendiente que informa Finnegans se distingue lo que
+#  falta LIQUIDAR de lo que solo falta VINCULAR.
+# ============================================================================
+
+# archivo snapshot -> (prefijo del documento, punta)
+_LIQ_SERIES = [
+    ("liq_venta_pri_api.json",   "LIQ-PRI-VTA",     "venta"),
+    ("liq_venta_sec_api.json",   "LIQ-SEC-VTA",     "venta"),
+    ("liq_vta_int_api.json",     "LIQ-VTA-INT",     "venta"),
+    ("liq_pri_vta_int_api.json", "LIQ-PRI-VTA-INT", "venta"),
+    ("liq_compra_api.json",      "LIQPRICPRA",      "compra"),
+    ("liq_cpragra_api.json",     "LIQCPRAGRA",      "compra"),
+    ("liq_cprasem_api.json",     "LIQCPRASEM",      "compra"),
+]
+
+
+def armar_ctgliq(traza_list, pilot_norm, compra_norm):
+    """Devuelve el payload de la solapa "CTG sin liquidar"."""
+    data_dir = Path(__file__).resolve().parent / "data"
+
+    def _f(v):
+        try:
+            return float(str(v).replace(",", "") or 0)
+        except Exception:
+            return 0.0
+
+    # ---- 1) que traslado cita cada liquidacion, y por cuantas toneladas -------
+    liq_por_tras = {}          # traslado -> [{liq, fecha, tn}]
+    ult_liq = {"venta": "", "compra": ""}
+    n_liq = {"venta": 0, "compra": 0}
+    for arch, pref, lado in _LIQ_SERIES:
+        fp = data_dir / arch
+        if not fp.exists():
+            continue
+        try:
+            snap = json.loads(fp.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"    [!] ctgliq: no pude leer {arch}: {e}")
+            continue
+        n_liq[lado] += len(snap)
+        for num, rec in snap.items():
+            fec = str(rec.get("fecha") or "")[:10]
+            if fec > ult_liq[lado]:
+                ult_liq[lado] = fec
+            for pr in (rec.get("productos") or []):
+                t = str(pr.get("traslado") or "").strip()
+                if not t or t == "None":
+                    continue
+                liq_por_tras.setdefault(t, []).append(
+                    {"liq": f"{pref} - {num}", "fecha": fec, "tn": _f(pr.get("cantidad"))})
+
+    # ---- 2) los camiones, por punta -----------------------------------------
+    # un traslado puede agrupar varias cartas de porte: las toneladas liquidadas
+    # se reparten a prorrata de los kilos de cada una
+    tras_kg = {}
+    for t in traza_list:
+        for lado in ("compra", "venta"):
+            d = str(t.get("doc_" + lado) or "").strip()
+            if d:
+                tras_kg[d] = tras_kg.get(d, 0.0) + _f(t.get("peso_neto"))
+
+    # contrato -> ficha del contrato (numero interno tal como lo nombra el traslado)
+    ficha = {}
+    for r in pilot_norm:
+        nm = str(r.get("nombre") or "").strip()
+        if nm:
+            ficha[nm] = ("venta", r)
+    for r in compra_norm:
+        nm = str(r.get("nombre") or "").strip()
+        if nm:
+            ficha.setdefault(nm, ("compra", r))
+
+    por_cto = {}               # (lado, contrato) -> [camiones]
+    for t in traza_list:
+        for lado in ("compra", "venta"):
+            doc = str(t.get("doc_" + lado) or "").strip()
+            cto = str(t.get("contrato_" + lado) or "").strip()
+            if not doc or not cto:
+                continue
+            kg = _f(t.get("peso_neto"))
+            ls = liq_por_tras.get(doc) or []
+            prop = (kg / tras_kg[doc]) if tras_kg.get(doc) else 1.0
+            tn_cam = kg / 1000.0
+            tn_liq = sum(x["tn"] for x in ls) * prop
+            falta = round(max(0.0, tn_cam - tn_liq), 3)
+            # merma y redondeos hacen que casi nunca de exacto: un camion se da por
+            # liquidado si la diferencia no llega a medio tonelada ni al 2%
+            tol = max(0.5, tn_cam * 0.02)
+            est = "sin" if not ls else ("parcial" if falta > tol else "liq")
+            cam = {
+                "ctg": t.get("ctg"), "cp": t.get("cp"), "fecha": t.get("fecha"),
+                "tn": round(tn_cam, 3), "tn_liq": round(tn_liq, 3), "falta": falta,
+                "doc": doc, "est": est,
+                "liqs": sorted({x["liq"] for x in ls}),
+                "liq_fecha": max((x["fecha"] for x in ls), default=""),
+                "cert": t.get("certificado_1116a") or t.get("comprobante_1116a") or None,
+                "dest": t.get("destinatario") or t.get("cerealera"),
+                "otro": t.get("entregador") if lado == "venta" else t.get("cerealera"),
+            }
+            # el DW a veces concatena dos contratos en la misma celda
+            for c in cto.split(","):
+                c = c.strip()
+                if c:
+                    por_cto.setdefault((lado, c), []).append(cam)
+
+    # ---- 3) una fila por contrato, con el diagnostico ------------------------
+    # En VENTA, Finnegans calcula el campo cantidadentregadapendienteliquidar
+    # (entregado que todavia no entro en ninguna liquidacion). En COMPRA ese campo
+    # viene siempre en cero, asi que ahi el pendiente es entregado - liquidado.
+    CAMPO_PEND = "cantidadentregadapendienteliquidar"
+    contratos = []
+    vistos = set()
+    def _pend_ficha(l, r):
+        return _f(r.get(CAMPO_PEND)) if l == "venta" else                (_f(r.get("cantidadentregada")) - _f(r.get("cantidadliquidada")))
+    claves = set(por_cto) | {(l, n) for n, (l, r) in ficha.items()
+                             if abs(_pend_ficha(l, r)) > 0.001}
+    for lado, nm in sorted(claves):
+        f = ficha.get(nm)
+        if f and f[0] != lado:
+            f = None
+        r = f[1] if f else {}
+        cams = por_cto.get((lado, nm), [])
+        if not f and not cams:
+            continue
+        if (lado, nm) in vistos:
+            continue
+        vistos.add((lado, nm))
+
+        ent = _f(r.get("cantidadentregada")) if r else 0.0
+        liqd = _f(r.get("cantidadliquidada")) if r else 0.0
+        pend = (_f(r.get(CAMPO_PEND)) if lado == "venta" else round(ent - liqd, 3)) if r else 0.0
+        sin = [c for c in cams if c["est"] == "sin"]
+        par = [c for c in cams if c["est"] == "parcial"]
+        tn_cam = round(sum(c["tn"] for c in cams), 3)
+        tn_sin = round(sum(c["tn"] for c in sin), 3)
+        tn_par = round(sum(c["falta"] for c in par), 3)
+        # lo que se puede senalar con nombre y apellido
+        tn_ident = round(tn_sin + tn_par, 3)
+
+        # cuanto del pendiente queda identificado carta por carta
+        cubierto = round(min(tn_ident, max(0.0, pend)), 3)
+        tol = max(0.5, abs(pend) * 0.02)
+        if pend < -0.5:
+            est = "sobre"
+            txt = (f"El sistema liquidó {abs(pend):,.1f} tn más de lo entregado contra este contrato"
+                   + (f". Los {len(sin)} CTG de abajo tampoco quedaron vinculados" if sin else ""))
+        elif abs(pend) <= 0.5 and tn_sin > 0.5:
+            est = "vincular"
+            txt = (f"Ya está todo liquidado, pero {len(sin)} CTG ({tn_sin:,.1f} tn) no quedaron vinculados "
+                   "a ninguna liquidación: la plata entró, falta el vínculo del traslado")
+        elif abs(pend) <= 0.5:
+            est, txt = "ok", "Al día: entregado y liquidado coinciden"
+        elif not cams:
+            est = "sincp"
+            txt = (f"El sistema lo da por entregado ({ent:,.1f} tn) pero no hay ninguna carta de porte "
+                   "cargada, así que no puedo decir qué CTG es")
+        elif abs(tn_ident - pend) <= tol:
+            est = "sinliq"
+            txt = f"Falta liquidar {pend:,.1f} tn y los CTG de abajo son exactamente eso"
+        elif tn_ident < pend - tol:
+            est = "parcial"
+            txt = (f"De las {pend:,.1f} tn pendientes ubico {tn_ident:,.1f} con nombre y apellido; "
+                   f"las otras {pend - tn_ident:,.1f} son kilos sueltos de camiones ya liquidados "
+                   "(merma, parciales o diferencia de balanza)")
+        else:
+            est = "mixto"
+            txt = (f"Hay {tn_ident:,.1f} tn de CTG sin vincular contra {pend:,.1f} tn de pendiente: "
+                   "faltan liquidar algunos y otros ya se cobraron sin vincular el traslado")
+
+        cams.sort(key=lambda c: (c["est"] != "sin", str(c.get("fecha") or "")))
+        contratos.append({
+            "lado": lado, "cto": nm,
+            "num": (nm.split(" - ")[-1] if " - " in nm else nm),
+            "org": (r.get("organizacion") if r else None) or (cams[0].get("dest") if cams else ""),
+            "prod": (r.get("producto") if r else None) or (cams[0].get("prod") if cams else ""),
+            "cos": (r.get("cosecha") if r else "") or "",
+            "corr": (r.get("corredor") if r else "") or "",
+            "fecha": (r.get("fecha") if r else "") or "",
+            "sis_ent": round(ent, 3), "sis_liq": round(liqd, 3), "sis_pend": round(pend, 3),
+            "cam_n": len(cams), "cam_tn": tn_cam,
+            "sin_n": len(sin), "sin_tn": tn_sin,
+            "par_n": len(par), "par_tn": tn_par,
+            "ident_tn": tn_ident, "cubierto": cubierto,
+            "est": est, "txt": txt,
+            "ctgs": cams,
+        })
+
+    kpi = {}
+    for lado in ("venta", "compra"):
+        cs = [c for c in contratos if c["lado"] == lado]
+        kpi[lado] = {
+            "contratos": len(cs),
+            "pend_sis": round(sum(c["sis_pend"] for c in cs), 1),
+            "pend_pos": round(sum(c["sis_pend"] for c in cs if c["sis_pend"] > 0), 1),
+            "cubierto": round(sum(c["cubierto"] for c in cs), 1),
+            "sin_n": sum(c["sin_n"] for c in cs),
+            "sin_tn": round(sum(c["sin_tn"] for c in cs), 1),
+            "par_n": sum(c["par_n"] for c in cs),
+            "par_tn": round(sum(c["par_tn"] for c in cs), 1),
+            "vincular": sum(1 for c in cs if c["est"] == "vincular"),
+            "sincp": sum(1 for c in cs if c["est"] == "sincp"),
+            "sincp_tn": round(sum(c["sis_pend"] for c in cs if c["est"] == "sincp"), 1),
+            "liqs": n_liq[lado],
+            "ult_liq": ult_liq[lado],
+        }
+    fechas = [str(c.get("fecha") or "") for cs in contratos for c in cs["ctgs"]]
+    out = {
+        "generado": datetime.now(timezone.utc).isoformat(),
+        "contratos": contratos,
+        "kpi": kpi,
+        "cam_hasta": max(fechas) if fechas else "",
+    }
+    print(f"[+] CTG sin liquidar: {len(contratos)} contratos · "
+          f"venta {kpi['venta']['sin_n']} CTG ({kpi['venta']['sin_tn']:,.1f} tn) · "
+          f"compra {kpi['compra']['sin_n']} CTG ({kpi['compra']['sin_tn']:,.1f} tn)")
+    return out
+
+
+
 def main() -> int:
     # Intentar primero el DATAWAREHOUSE Postgres. Si no esta disponible o falla,
     # se cae a la API REST (codigo original). El DW es la fuente preferida porque:
@@ -16992,6 +17616,8 @@ def main() -> int:
                         "corredor_secundario": r.get("corredorsecundario"),
                         # Datos por lado (poblados abajo)
                         "entregador": None, "cerealera": None,
+                        # el traslado de CADA pata (la liquidacion de venta cita el de venta)
+                        "doc_compra": None, "doc_venta": None,
                         "contrato_compra": None, "contrato_venta": None,
                         "subtipo_compra": None, "subtipo_venta": None,
                         "transaccion_compra": None, "transaccion_venta": None,
@@ -17007,6 +17633,8 @@ def main() -> int:
                         item["subtipo_compra"] = r.get("subtipo")
                     if r.get("transaccionid") and not item["transaccion_compra"]:
                         item["transaccion_compra"] = r.get("transaccionid")
+                    if r.get("documento") and not item["doc_compra"]:
+                        item["doc_compra"] = str(r.get("documento")).strip()
                 elif opt == "Venta":
                     if contrato and not item["contrato_venta"]:
                         item["contrato_venta"] = contrato
@@ -17016,6 +17644,8 @@ def main() -> int:
                         item["subtipo_venta"] = r.get("subtipo")
                     if r.get("transaccionid") and not item["transaccion_venta"]:
                         item["transaccion_venta"] = r.get("transaccionid")
+                    if r.get("documento") and not item["doc_venta"]:
+                        item["doc_venta"] = str(r.get("documento")).strip()
                     if r.get("destinatario") and not item.get("destinatario"):
                         item["destinatario"] = r.get("destinatario")
 
@@ -17936,8 +18566,17 @@ def main() -> int:
     except Exception as e:
         print(f"    [!] fp_auto_hechas: {e}")
 
+    # ---- CTG sin liquidar (pedido 14/09): que carta de porte entregada no
+    # entro en ninguna liquidacion, y si lo que falta es liquidar o solo vincular
+    try:
+        ctgliq = armar_ctgliq(traza_list, pilot_norm, compra_norm)
+    except Exception as e:
+        print(f"    [!] ctgliq: {type(e).__name__}: {e}")
+        ctgliq = {"contratos": [], "kpi": {}, "generado": "", "cam_hasta": ""}
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "ctgliq": ctgliq,
         "counts": counts,
         "fp_auto_hechas": fp_auto_hechas,
         "extranet_cta": extranet_cta,
