@@ -952,16 +952,20 @@ window.apiFetch = function(path, opts){
   /* ===== Por Organizacion: grilla tipo tabla dinamica ===== */
   /* Enviar a liquidar */
   #el-tabla tbody tr.el-off td{opacity:.45}
-  #el-tabla input.el-pct,#el-tabla input.el-imp{width:100%;text-align:right;padding:3px 6px;
+  #el-tabla input.el-pct,#el-tabla input.el-imp,#el-tabla input.el-kg{width:100%;text-align:right;padding:3px 6px;
     border:1px solid var(--line);border-radius:6px;background:var(--bg2);color:var(--ink);
     font-family:ui-monospace,monospace}
-  #el-tabla input.el-pct.parcial{border-color:#c2410c;background:#fff7ed;font-weight:700}
+  #el-tabla input.el-kg{font-weight:700;color:#b3372b}
+  #el-tabla input.el-kg.parcial{border-color:#c2410c;background:#fff7ed}
   #el-tabla select.el-mon{width:100%;padding:3px 5px;border:1px solid var(--line);border-radius:6px;
     background:var(--bg2);color:var(--ink);font-size:11.5px}
   #el-cfg-tbl input{font-family:inherit}
   #el-tabla tbody tr.el-liq td{background:#f0fdf4}
   .el-mk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;white-space:nowrap}
   .el-mk input{cursor:pointer}
+  .el-ir{font-family:ui-monospace,monospace;font-weight:700;cursor:pointer;color:#012F55;
+    border-bottom:1px solid #94a3b8}
+  .el-ir:hover{background:#dbeafe}
   .el-cp{font-family:ui-monospace,monospace;font-weight:600;cursor:pointer;border-bottom:1px dotted var(--line)}
   .el-cp:hover{background:#fef9c3;border-bottom-color:#a16207}
   .el-cp.ok{background:#dcfce7;border-bottom-color:#166534}
@@ -1650,6 +1654,8 @@ window.apiFetch = function(path, opts){
             <option value="canje">Para canje (aplicar en cuenta)</option>
           </select></div>
           <button class="clear" id="el-cfg">⚙ Comerciales y correos</button>
+          <button class="clear" id="el-guardar" title="Todo se guarda solo; esto lo fuerza y te confirma">💾 Guardar</button>
+          <span id="el-save" style="font-size:11.5px;font-weight:600;color:var(--green)"></span>
           <span style="margin-left:auto;color:var(--muted);font-size:12px" id="el-info"></span>
         </div>
 
@@ -1747,7 +1753,6 @@ window.apiFetch = function(path, opts){
                 <button class="clear" id="el-copiar">⧉ Copiar texto</button>
                 <button class="clear" id="el-excel">⬇ Bajar planilla</button>
                 <button class="clear" id="el-marcar" title="Solo lo registra, sin abrir el correo">✔ Solo registrar</button>
-                <button class="clear" id="el-backup" title="Baja TODO lo que mandaste a liquidar y todas las marcas, de todos los contratos">💾 Respaldo completo</button>
               </div>
               <div style="margin-top:10px;font-size:11.5px;color:var(--muted)" id="el-nota"></div>
             </div>
@@ -1762,6 +1767,19 @@ window.apiFetch = function(path, opts){
             <div id="el-hist"></div>
           </div>
         </div>
+      </div>
+
+      <!-- todo lo que viene mandando a liquidar, de todos los contratos -->
+      <div class="section">
+        <h3 style="font-size:13.5px">📋 Contratos que enviaste a liquidar
+          <span class="badge" id="el-envios-meta">ninguno todavía</span></h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:-2px 0 10px">
+          <input id="el-envios-q" placeholder="buscar contrato, entregador o CTG…"
+            style="padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);min-width:230px;font-size:12px">
+          <button class="clear" id="el-backup" title="Baja TODO lo enviado y todas las marcas, de todos los contratos">💾 Respaldo completo</button>
+          <span style="color:var(--muted);font-size:11.5px">click en el número de contrato para abrirlo</span>
+        </div>
+        <div id="el-envios"></div>
       </div>
 
       <!-- config: comercial -> administrativa -->
@@ -15521,9 +15539,18 @@ function ctRender(){
     }
     MAR = (m && typeof m === "object" && !Array.isArray(m)) ? m : {};
   }
+  function avisoGuardado(txt){
+    const e = el("el-save");
+    if(!e) return;
+    const h = new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"});
+    e.textContent = (txt || "guardado") + " ✓ " + h;
+    clearTimeout(e._t);
+    e._t = setTimeout(() => { e.textContent = ""; }, 6000);
+  }
   async function guardarMar(){
     try { localStorage.setItem(LSM, JSON.stringify(MAR)); } catch(e){}
     if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) await apiSave(KVM, MAR);
+    avisoGuardado("cambio guardado");
   }
   const marcaDe = ctg => ((MAR[String(cur?cur.num:"")]||{})[String(ctg)] || {});
   function ponerMarca(ctg, campo, valor){
@@ -15613,7 +15640,7 @@ function ctRender(){
 
   function pintar(){
     const z = el("el-zona"), v = el("el-vacio");
-    if(!cur){ z.style.display="none"; v.style.display=""; el("el-ficha").innerHTML=""; return; }
+    if(!cur){ z.style.display="none"; v.style.display=""; el("el-ficha").innerHTML=""; envios(); return; }
     z.style.display=""; v.style.display="none";
     ficha();
     const rs = filas(), t = el("el-tabla");
@@ -15630,8 +15657,9 @@ function ctRender(){
       <th style="width:100px">Moneda</th><th class="num" style="width:116px">Importe</th></tr>`;
     t.querySelector("tbody").innerHTML = rs.map(x => {
       const st = sel[x.ctg], on = !!st, hay = x.disp > 0.5;
-      const pct = on ? st.pct : 100;
-      const kgl = on ? x.disp * pct/100 : 0;
+      const pct = on ? st.pct : "";
+      const kgl = on ? ((st.kg == null) ? x.disp : Number(st.kg)) : 0;
+      const kgTocado = on && st.kg != null && Math.abs(Number(st.kg) - x.disp) > 0.5;
       const liqTxt = (x.liqs||[]).length
         ? `<span class="el-src" title="${esc((x.liqs||[]).join(" · "))}">${esc((x.liqs||[])[0])}</span>`
         : (x.manual.liq != null ? '<span class="el-src">a mano</span>' : "");
@@ -15648,9 +15676,10 @@ function ctRender(){
         <td><label class="el-mk"><input type="checkbox" class="el-env" ${x.enviado?"checked":""}>
             <span>${x.enviado ? (x.env>0.5 ? n0(x.env)+" kg" : "sí") : "no"}</span></label></td>
         <td class="num" style="font-weight:700">${hay?n0(x.disp):'<span style="color:var(--line)">·</span>'}</td>
-        <td class="num"><input class="el-pct ${on&&pct!==100?"parcial":""}" type="number" step="0.01" min="0" max="100"
-             value="${on?pct:""}" ${hay?"":"disabled"}></td>
-        <td class="num" style="font-weight:700;color:${on?"#b3372b":"var(--line)"}">${on?n0(kgl):"·"}</td>
+        <td class="num"><input class="el-pct" type="number" step="0.01" min="0" max="100"
+             value="${on?pct:""}" placeholder="${hay?"—":""}" ${hay?"":"disabled"}></td>
+        <td class="num"><input class="el-kg ${kgTocado?"parcial":""}" type="number" step="1" min="0"
+             max="${x.disp}" value="${on?Math.round(kgl):""}" ${hay?"":"disabled"}></td>
         <td><select class="el-mon" ${hay?"":"disabled"}>
               <option value="PESOS" ${on&&st.mon==="PESOS"?"selected":""}>Pesos</option>
               <option value="DOLARES" ${on&&st.mon==="DOLARES"?"selected":""}>Dólares</option>
@@ -15662,12 +15691,13 @@ function ctRender(){
     const gs = elegidos();
     const kgSel = gs.reduce((a,x) => a + x.kg_liq, 0);
     const disp  = rs.reduce((a,x) => a + x.disp, 0);
-    const impP  = gs.filter(x=>x.mon==="PESOS").reduce((a,x)=>a+(x.imp||0),0);
-    const impD  = gs.filter(x=>x.mon==="DOLARES").reduce((a,x)=>a+(x.imp||0),0);
+    const kgTot = rs.reduce((a,x) => a + x.kg, 0);
+    // los importes NO se suman a proposito: son valores por CTG y sumarlos confunde
     t.querySelector("tfoot").innerHTML = `<tr class="pn-total">
-      <td colspan="9">TOTAL · ${n0(rs.length)} CTG · tildados ${n0(gs.length)}</td>
+      <td colspan="6">TOTAL · ${n0(rs.length)} CTG · tildados ${n0(gs.length)}</td>
+      <td class="num">${n0(kgTot)}</td><td></td><td></td>
       <td class="num">${n0(disp)}</td><td></td><td class="num">${n0(kgSel)}</td>
-      <td></td><td class="num">${impP?"$ "+n2(impP):""}${impP&&impD?" · ":""}${impD?"US$ "+n2(impD):""}</td></tr>`;
+      <td></td><td></td></tr>`;
     el("el-total").innerHTML = gs.length
       ? `A liquidar: <span style="color:#b3372b">${n0(kgSel)} kg</span> · ${n0(gs.length)} CTG`
       : '<span style="color:var(--muted);font-weight:400">Todavía no tildaste ningún CTG</span>';
@@ -15680,7 +15710,7 @@ function ctRender(){
       todo.indeterminate = gs.length > 0 && gs.length < libres;
       todo.disabled = libres === 0;
     }
-    pintarQuien(); preview(); historial();
+    pintarQuien(); preview(); historial(); envios();
   }
 
   // ── el correo ────────────────────────────────────────────────────────────
@@ -15712,8 +15742,11 @@ function ctRender(){
   function elegidos(){
     return filas().filter(x => sel[x.ctg]).map(x => {
       const st = sel[x.ctg];
+      // los kg a liquidar son los de la carta de porte, salvo que el los cambie;
+      // el % es una condicion de la operacion y no los toca
+      const kg = (st.kg == null) ? x.disp : Number(st.kg);
       return {...x, pct: st.pct, mon: st.mon, imp: (st.imp==null?null:Number(st.imp)),
-              kg_liq: Math.round(x.disp * st.pct/100)};
+              kg_liq: Math.round(kg)};
     }).filter(x => x.kg_liq > 0);
   }
   function asunto(){
@@ -15746,17 +15779,16 @@ function ctRender(){
     b += pad("CTG",15)+pad("CARTA DE PORTE",19)+pad("FECHA",12)+pad("CLIENTE",26)
        + padL("KG",11)+padL("% LIQ",8)+padL("KG A LIQ.",12)+"  "+pad("MON",5)+padL("IMPORTE",14)+"\n";
     b += "-".repeat(114)+"\n";
-    let kg=0, ip=0, id=0;
+    let kg=0;
     gs.forEach(x => {
       kg += x.kg_liq;
-      if(x.imp!=null){ if(x.mon==="DOLARES") id += x.imp; else ip += x.imp; }
       b += pad(x.ctg,15)+pad(x.cp||"",19)+pad(fec(x.fecha),12)+pad(x.dest||"",26)
-         + padL(n0(x.kg),11)+padL(n2(x.pct)+"%",8)+padL(n0(x.kg_liq),12)+"  "+pad(SIM[x.mon]||x.mon,5)
+         + padL(n0(x.kg),11)+padL(x.pct===""||x.pct==null?"-":n2(x.pct)+"%",8)
+         + padL(n0(x.kg_liq),12)+"  "+pad(SIM[x.mon]||x.mon,5)
          + padL(x.imp!=null?n2(x.imp):"-",14)+"\n";
     });
     b += "-".repeat(114)+"\n";
-    b += pad("TOTAL "+gs.length+" CTG",83)+padL(n0(kg),12)+"  "+pad("",5)
-       + padL((ip?"$ "+n2(ip):"")+(ip&&id?" / ":"")+(id?"US$ "+n2(id):""),14)+"\n";
+    b += pad("TOTAL "+gs.length+" CTG",83)+padL(n0(kg),12)+"\n";
     const obs = (val("el-obs")||"").trim();
     if(obs) b += "\nObservaciones: " + obs + "\n";
     b += "\nGracias.\n";
@@ -15772,6 +15804,48 @@ function ctRender(){
       : (largo > 1800
         ? '⚠ El correo quedó largo ('+n0(largo)+' caracteres) y algunos programas de mail lo cortan. Usá <b>Copiar texto</b> o mandá la planilla adjunta.'
         : '💡 <b>Abrir correo</b> abre tu programa de mail con todo cargado. <b>Marcar como enviado</b> descuenta estos kilos para que no los mandes dos veces.');
+  }
+
+  // Todo lo que se viene mandando a liquidar, de todos los contratos.
+  function envios(){
+    const cont = el("el-envios"), meta = el("el-envios-meta");
+    if(!cont) return;
+    const q = (val("el-envios-q")||"").trim().toLowerCase();
+    const qn = q.replace(/\D/g, "");
+    let es = ENV.slice().sort((a,b) => String(b.fecha).localeCompare(String(a.fecha))
+                                    || String(b.id).localeCompare(String(a.id)));
+    if(q) es = es.filter(e => String(e.cto).includes(q) || (e.org||"").toLowerCase().includes(q)
+      || (qn && (e.ctgs||[]).some(x => String(x.ctg||"").includes(qn))));
+    const kg = es.reduce((a,e) => a + (e.ctgs||[]).reduce((b,x) => b + (Number(x.kg)||0), 0), 0);
+    const ctos = new Set(es.map(e => String(e.cto))).size;
+    meta.textContent = es.length
+      ? `${n0(es.length)} envío(s) · ${n0(ctos)} contrato(s) · ${n0(kg)} kg`
+      : (ENV.length ? "ninguno con esa búsqueda" : "ninguno todavía");
+    if(!es.length){
+      cont.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">'
+        + (ENV.length ? "No encontré envíos con esa búsqueda."
+                      : "Todavía no mandaste nada a liquidar. Cuando aprietes <b>📨 ENVIAR A LIQUIDAR</b> van a ir apareciendo acá.")
+        + "</div>";
+      return;
+    }
+    cont.innerHTML = `<div class="tbl-wrap" style="max-height:340px"><table style="font-size:11.5px"><thead><tr>
+        <th>Fecha</th><th>Contrato</th><th>Entregador</th><th>Grano</th><th>Modalidad</th>
+        <th>Condiciones</th><th class="num">CTG</th><th class="num">Kg</th><th>Enviado a</th><th style="width:34px"></th>
+      </tr></thead><tbody>` + es.map(e => {
+        const k = (e.ctgs||[]).reduce((a,x) => a + (Number(x.kg)||0), 0);
+        const cond = [e.liq?"liq "+e.liq+"%":"", e.nd?"ND "+e.nd+"%":"", e.comis?"com "+e.comis+"%":"",
+                      e.pagof?"pago "+fec(e.pagof):""].filter(Boolean).join(" · ");
+        return `<tr><td>${fec(e.fecha)}</td>
+          <td><span class="el-ir" data-cto="${esc(e.cto)}" title="abrir este contrato">#${esc(e.cto)}</span></td>
+          <td style="font-size:11px">${esc(e.org||"")}</td>
+          <td style="font-size:11px">${esc((e.prod||"").replace(/^Grano\s+/,""))}</td>
+          <td>${esc((TPL[e.tpl]||{}).tit||e.tpl||"")}</td>
+          <td style="font-size:10.5px;color:#475569">${esc(cond)}</td>
+          <td class="num">${n0((e.ctgs||[]).length)}</td>
+          <td class="num" style="font-weight:700">${n0(k)}</td>
+          <td style="font-size:10.5px;color:#475569">${esc(e.para||"")}</td>
+          <td><button class="clear el-del" data-id="${esc(e.id)}" title="Deshacer este envío" style="padding:2px 7px">✕</button></td></tr>`;
+      }).join("") + "</tbody></table></div>";
   }
 
   function historial(){
@@ -15798,6 +15872,11 @@ function ctRender(){
   }
 
   // ── acciones ─────────────────────────────────────────────────────────────
+  // el % de cada CTG arranca con el de la operacion (el del encabezado)
+  function pctDefault(){
+    const v = val("el-h-liq");
+    return v === "" ? "" : Number(v);
+  }
   function monDefault(){
     const e = EX[String(cur?cur.num:"")] || {};
     return String(e.moneda||"").toUpperCase().startsWith("DOL") ? "DOLARES" : "PESOS";
@@ -15826,23 +15905,34 @@ function ctRender(){
   }
   function tildar(todos){
     sel = {};
-    if(todos){ const m = monDefault();
-      filas().forEach(x => { if(x.disp > 0.5) sel[x.ctg] = {pct:100, mon:m, imp:null}; }); }
+    if(todos){
+      const mp = el("el-m-pct").value, mk = el("el-m-kg").value,
+            mm = val("el-m-mon"), mi = el("el-m-imp").value;
+      const pc = mp !== "" ? Number(mp) : pctDefault(), m = mm || monDefault();
+      filas().forEach(x => { if(x.disp > 0.5) sel[x.ctg] = {
+        pct: pc,
+        kg:  mk !== "" ? Math.min(Math.round(Number(mk)||0), Math.round(x.disp)) : null,
+        mon: m,
+        imp: mi !== "" ? (Number(mi)||0) : null}; }); }
     pintar();
   }
-  function masivo(){
+  function masivo(auto){
     const gs = Object.keys(sel);
-    if(!gs.length){ alert("Primero tildá los CTG a los que querés aplicarle los valores."); return; }
+    // "auto" es cuando baja solo al cargar un valor arriba: ahi no molesta con avisos
+    if(!gs.length){
+      if(!auto) alert("Primero tildá los CTG a los que querés aplicarle los valores.");
+      return;
+    }
     const pct = el("el-m-pct").value, kgm = el("el-m-kg").value, mon = val("el-m-mon"),
           imp = el("el-m-imp").value, mliq = val("el-m-liq"), menv = val("el-m-env");
     const porCtg = {};
     filas().forEach(f => porCtg[f.ctg] = f);
     gs.forEach(k => {
+      // el % es la condicion de la operacion y no toca los kilos
       if(pct !== "") sel[k].pct = Math.max(0, Math.min(100, Number(pct)||0));
-      // los kg mandan sobre el %: se recalcula el porcentaje que representan
       if(kgm !== ""){
         const f = porCtg[k];
-        if(f && f.disp > 0.5) sel[k].pct = Math.max(0, Math.min(100, (Number(kgm)||0) * 100 / f.disp));
+        sel[k].kg = f ? Math.min(Math.round(Number(kgm)||0), Math.round(f.disp)) : Math.round(Number(kgm)||0);
       }
       if(mon) sel[k].mon = mon;
       if(imp !== "") sel[k].imp = Number(imp)||0;
@@ -15870,7 +15960,7 @@ function ctRender(){
               ctgs:gs.map(x => ({ctg:x.ctg, cp:x.cp, fecha:String(x.fecha||"").slice(0,10),
                                  kg:x.kg_liq, kg_cp:x.kg, pct:x.pct, mon:x.mon, imp:x.imp,
                                  cliente:x.dest||null, flete:x.flete||null}))});
-    await guardarEnv(); sel = {}; pintar();
+    await guardarEnv(); avisoGuardado("envío guardado"); sel = {}; pintar();
   }
   async function borrar(id){
     if(!confirm("¿Deshago este envío? Los kilos vuelven a quedar disponibles.")) return;
@@ -16014,7 +16104,11 @@ function ctRender(){
   el("el-tpl").addEventListener("change", () => { ponerCond(false); preview(); });
   ["el-h-liq","el-h-nd","el-h-com"].forEach(id =>
     el(id).addEventListener("input", () => { clearTimeout(el(id)._t);
-      el(id)._t = setTimeout(() => { guardaCond(); preview(); }, 250); }));
+      el(id)._t = setTimeout(() => { guardaCond();
+        // el % de la operacion se copia a los CTG que no fueron tocados a mano
+        if(id === "el-h-liq"){ const pc = pctDefault();
+          Object.keys(sel).forEach(k => { if(!sel[k].pctMano) sel[k].pct = pc; }); pintar(); }
+        else preview(); }, 250); }));
   el("el-h-pago").addEventListener("change", preview);
   el("el-h-def").addEventListener("click", () => { ponerCond(true); guardaCond(); preview(); });
   el("el-com").addEventListener("change", () => { el("el-para").dataset.tocado=""; pintarQuien(); preview(); });
@@ -16024,13 +16118,28 @@ function ctRender(){
   el("el-obs").addEventListener("input", () => { clearTimeout(el("el-obs")._t); el("el-obs")._t=setTimeout(preview,250); });
   el("el-todos").addEventListener("click", () => tildar(true));
   el("el-ninguno").addEventListener("click", () => tildar(false));
-  el("el-m-ok").addEventListener("click", masivo);
+  el("el-m-ok").addEventListener("click", () => masivo());
+  // lo que carga arriba baja solo a los CTG tildados, sin apretar Aplicar.
+  // En los casilleros de numero se engancha "input" (y no solo "change") porque
+  // segun como se escriba el valor el change puede no llegar nunca.
+  ["el-m-pct", "el-m-kg", "el-m-imp"].forEach(id => {
+    const e = el(id);
+    const dispara = () => { clearTimeout(e._t); e._t = setTimeout(() => masivo(true), 350); };
+    e.addEventListener("input", dispara);
+    e.addEventListener("change", dispara);
+  });
+  ["el-m-mon", "el-m-liq", "el-m-env"].forEach(id =>
+    el(id).addEventListener("change", () => masivo(true)));
   el("el-enviar").addEventListener("click", enviarTodo);
   el("el-mail").addEventListener("click", abrirMail);
   el("el-copiar").addEventListener("click", copiar);
   el("el-excel").addEventListener("click", excel);
   el("el-marcar").addEventListener("click", () => marcar(false));
   el("el-backup").addEventListener("click", respaldo);
+  el("el-guardar").addEventListener("click", async () => {
+    await guardarMar(); await guardarEnv(); await guardarCfg();
+    avisoGuardado("todo guardado"); pintar();
+  });
   el("el-cfg").addEventListener("click", () => { const b=el("el-cfg-box");
     const abrirlo = b.style.display === "none"; b.style.display = abrirlo ? "" : "none";
     if(abrirlo){ cfgPintar(); b.scrollIntoView({behavior:"smooth", block:"start"}); } });
@@ -16042,16 +16151,30 @@ function ctRender(){
     const tr = ev.target.closest("tr[data-ctg]"); if(!tr) return;
     const ctg = tr.dataset.ctg, f = filas().find(x => String(x.ctg)===ctg); if(!f) return;
     const g = ev.target;
+    // un CTG que se tilda arranca con lo que este cargado en la barra de arriba
+    const nuevo = () => {
+      const mp = el("el-m-pct").value, mk = el("el-m-kg").value,
+            mm = val("el-m-mon"), mi = el("el-m-imp").value;
+      return {pct: mp !== "" ? Number(mp) : pctDefault(),
+              kg:  mk !== "" ? Math.round(Number(mk)||0) : null,
+              mon: mm || monDefault(),
+              imp: mi !== "" ? (Number(mi)||0) : null};
+    };
     if(g.classList.contains("el-ck")){
-      if(g.checked) sel[ctg] = {pct:100, mon:monDefault(), imp:null}; else delete sel[ctg];
+      if(g.checked) sel[ctg] = nuevo(); else delete sel[ctg];
     } else if(g.classList.contains("el-pct")){
+      // el % NO toca los kilos: es la condicion de la operacion
+      sel[ctg] = sel[ctg] || nuevo();
+      sel[ctg].pct = g.value === "" ? "" : Math.max(0, Math.min(100, Number(g.value)||0));
+      sel[ctg].pctMano = true;
+    } else if(g.classList.contains("el-kg")){
       let v = Number(g.value);
-      if(!(v > 0)){ delete sel[ctg]; }
-      else { if(v > 100) v = 100; sel[ctg] = sel[ctg] || {mon:monDefault(), imp:null}; sel[ctg].pct = v; }
+      if(g.value === "" || !(v > 0)){ delete sel[ctg]; }
+      else { if(v > f.disp) v = f.disp; sel[ctg] = sel[ctg] || nuevo(); sel[ctg].kg = Math.round(v); }
     } else if(g.classList.contains("el-mon")){
-      sel[ctg] = sel[ctg] || {pct:100, imp:null}; sel[ctg].mon = g.value;
+      sel[ctg] = sel[ctg] || nuevo(); sel[ctg].mon = g.value;
     } else if(g.classList.contains("el-imp")){
-      sel[ctg] = sel[ctg] || {pct:100, mon:monDefault()};
+      sel[ctg] = sel[ctg] || nuevo();
       sel[ctg].imp = g.value === "" ? null : (Number(g.value)||0);
     } else if(g.classList.contains("el-liq") || g.classList.contains("el-env")){
       const campo = g.classList.contains("el-liq") ? "liq" : "env";
@@ -16064,6 +16187,15 @@ function ctRender(){
   el("el-hist").addEventListener("click", ev => {
     const b = ev.target.closest(".el-del"); if(b) borrar(b.dataset.id);
   });
+  el("el-envios").addEventListener("click", ev => {
+    const b = ev.target.closest(".el-del");
+    if(b){ borrar(b.dataset.id); return; }
+    const ir = ev.target.closest(".el-ir");
+    if(ir){ el("el-cto").value = ir.dataset.cto; buscar();
+            el("el-cto").scrollIntoView({behavior:"smooth", block:"center"}); }
+  });
+  const eq = el("el-envios-q");
+  if(eq) eq.addEventListener("input", () => { clearTimeout(eq._t); eq._t = setTimeout(envios, 250); });
   // un click en el CTG (o en la carta de porte) lo copia al portapapeles
   el("el-tabla").addEventListener("click", ev => {
     const c = ev.target.closest(".el-cp"); if(!c) return;
@@ -16089,6 +16221,7 @@ function ctRender(){
     const fijos = localStorage.getItem("el_fijos") || "";
     if(fijos) el("el-cc").value = fijos;
     ponerCond(false);
+    envios();
     const ch = el("el-chips");
     if(ch) ch.innerHTML = [
       n0(Object.keys(CT).length)+" contratos de compra",
