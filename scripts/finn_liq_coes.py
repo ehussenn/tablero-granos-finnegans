@@ -95,14 +95,26 @@ def resumen(d: dict) -> dict:
             return float(str(v).replace(",", "") or 0)
         except Exception:
             return 0.0
+    # vinculacionOrigen es el TRASLADO que liquida cada renglon (TRAS-CPRA-CV - N /
+    # TRAS-VTA-GRANO-AS - N). Es la unica forma de saber que carta de porte entro en
+    # que liquidacion, asi que hay que guardarlo (antes se tiraba y por eso los
+    # contratos de compra aparecian con todos los CTG "sin liquidar").
     prods = [{"producto": p.get("ProductoCodigo"), "cantidad": p.get("Cantidad"),
-              "precio": p.get("Precio")} for p in (d.get("Productos") or [])]
+              "precio": p.get("Precio"),
+              "traslado": (str(p.get("vinculacionOrigen") or "").strip() or None),
+              "fijacion": p.get("vinculacionDestino"),
+              "partida": p.get("PartidaNumero")} for p in (d.get("Productos") or [])]
     # las toneladas de grano: los conceptos de gasto vienen con cantidad 1
     kg = sum(f(p.get("cantidad")) for p in prods
              if f(p.get("cantidad")) > 1.5 and "sellado" not in str(p.get("producto") or "").lower())
     return {"fecha": (d.get("Fecha") or "")[:10],
             "proveedor": d.get("Proveedor"),
             "comprobante": str(d.get("NumeroComprobante") or "").strip(),
+            # el nro de contrato del corredor ata la liquidacion a su contrato,
+            # y el % parcial es el "se liquida al ...%" de los correos
+            "contrato": str(d.get("NumeroContratoIntermediario") or "").strip() or None,
+            "parcial_pct": d.get("PorcentajeParcial"),
+            "moneda": d.get("MonedaCodigo"),
             "tn": round(kg, 3),
             "productos": prods}
 

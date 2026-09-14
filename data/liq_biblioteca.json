@@ -1,0 +1,2566 @@
+{
+ "generado": "2026-09-14T16:24:47.299863+00:00",
+ "liquidaciones": {
+  "LIQPRICPRA - 336": {
+   "liq": "LIQPRICPRA - 336",
+   "fecha": "2026-09-11",
+   "comprobante": "000000000000",
+   "contrato_corredor": "COMP456",
+   "proveedor": "DELSEN S.R.L",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "grmani",
+     "cantidad": 312.965,
+     "precio": 698575.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 335": {
+   "liq": "LIQPRICPRA - 335",
+   "fecha": "2026-09-10",
+   "comprobante": "330132453362",
+   "contrato_corredor": "COMP499",
+   "proveedor": "3096",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 36.11,
+     "precio": 564000.0,
+     "traslado": "TRAS-CPRA-CV - 4312",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1813": {
+   "liq": "LIQCPRAGRA - 1813",
+   "fecha": "2026-09-09",
+   "comprobante": "330132441787",
+   "contrato_corredor": "COMP366",
+   "proveedor": "20148225134",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Calidad - Granos",
+     "cantidad": 30.12,
+     "precio": -8405.7939,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1810": {
+   "liq": "LIQCPRAGRA - 1810",
+   "fecha": "2026-09-09",
+   "comprobante": "330132438814",
+   "contrato_corredor": "COMP493",
+   "proveedor": "350",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 38.0,
+     "precio": 525000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1808": {
+   "liq": "LIQCPRAGRA - 1808",
+   "fecha": "2026-09-09",
+   "comprobante": "330132437451",
+   "contrato_corredor": "COMP493",
+   "proveedor": "350",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 38.0,
+     "precio": 525000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1804": {
+   "liq": "LIQCPRAGRA - 1804",
+   "fecha": "2026-09-08",
+   "comprobante": "330132427244",
+   "contrato_corredor": "COMP494",
+   "proveedor": "7285",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 15.077,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4319",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1798": {
+   "liq": "LIQCPRAGRA - 1798",
+   "fecha": "2026-09-04",
+   "comprobante": "330132399106",
+   "contrato_corredor": "COMP259",
+   "proveedor": "969",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 30.363,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4280",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.442,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4288",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.651,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4296",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.865,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4276",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.566,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4278",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.987,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4297",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.819,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4281",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 33.433,
+     "precio": 277315.0,
+     "traslado": "TRAS-CPRA-CV - 4282",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1788": {
+   "liq": "LIQCPRAGRA - 1788",
+   "fecha": "2026-09-02",
+   "comprobante": "330132378453",
+   "contrato_corredor": "COMP477",
+   "proveedor": "4416",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.46,
+     "precio": 520000.0,
+     "traslado": "TRAS-CPRA-CV - 4226",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1787": {
+   "liq": "LIQCPRAGRA - 1787",
+   "fecha": "2026-09-02",
+   "comprobante": "330132377704",
+   "contrato_corredor": "PRESUTTI R SOJA 25",
+   "proveedor": "4909",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.499,
+     "precio": 367608.78,
+     "traslado": "TRAS-CPRA-CV - 1894",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 2.55,
+     "precio": 367608.78,
+     "traslado": "TRAS-CPRA-CV - 2228",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.57,
+     "precio": 367608.78,
+     "traslado": "TRAS-CPRA-CV - 2229",
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQPRICPRA - 332": {
+   "liq": "LIQPRICPRA - 332",
+   "fecha": "2026-09-02",
+   "comprobante": "330132379065",
+   "contrato_corredor": "COMP352",
+   "proveedor": "970",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 37.69,
+     "precio": 540000.0,
+     "traslado": "TRAS-CPRA-CV - 4269",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 32.31,
+     "precio": 540000.0,
+     "traslado": "TRAS-CPRA-CV - 4270",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1779": {
+   "liq": "LIQCPRAGRA - 1779",
+   "fecha": "2026-08-31",
+   "comprobante": "330132355423",
+   "contrato_corredor": "COMP441",
+   "proveedor": "7108",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 17.56,
+     "precio": 540000.0,
+     "traslado": "TRAS-CPRA-CV - 4165",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1766": {
+   "liq": "LIQCPRAGRA - 1766",
+   "fecha": "2026-08-28",
+   "comprobante": "330132334956",
+   "contrato_corredor": "COMP476",
+   "proveedor": "935",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 34.89,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4243",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1758": {
+   "liq": "LIQCPRAGRA - 1758",
+   "fecha": "2026-08-28",
+   "comprobante": "330132331779",
+   "contrato_corredor": "4004",
+   "proveedor": "20270745890",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 29.83,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4230",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.206,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4236",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.428,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4233",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 32.761,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4231",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.556,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4234",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.14,
+     "precio": 270540.0,
+     "traslado": "TRAS-CPRA-CV - 4242",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1736": {
+   "liq": "LIQCPRAGRA - 1736",
+   "fecha": "2026-08-25",
+   "comprobante": "330132293444",
+   "contrato_corredor": "COMP430",
+   "proveedor": "30682530088",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 29.753,
+     "precio": 278256.0,
+     "traslado": "TRAS-CPRA-CV - 4169",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 34.829,
+     "precio": 278256.0,
+     "traslado": "TRAS-CPRA-CV - 4168",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1735": {
+   "liq": "LIQCPRAGRA - 1735",
+   "fecha": "2026-08-25",
+   "comprobante": "330132293311",
+   "contrato_corredor": "COMP430",
+   "proveedor": "30682530088",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 30.32,
+     "precio": 282435.0,
+     "traslado": "TRAS-CPRA-CV - 4124",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.32,
+     "precio": 282435.0,
+     "traslado": "TRAS-CPRA-CV - 4125",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.5,
+     "precio": 282435.0,
+     "traslado": "TRAS-CPRA-CV - 4123",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1730": {
+   "liq": "LIQCPRAGRA - 1730",
+   "fecha": "2026-08-25",
+   "comprobante": "330132290000",
+   "contrato_corredor": "COMP429",
+   "proveedor": "970",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 35.82,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4223",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 36.16,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4237",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 36.115,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4239",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.965,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4220",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 37.26,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4221",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 37.12,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4238",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.56,
+     "precio": 285190.0,
+     "traslado": "TRAS-CPRA-CV - 4224",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1727": {
+   "liq": "LIQCPRAGRA - 1727",
+   "fecha": "2026-08-24",
+   "comprobante": "330132280273",
+   "contrato_corredor": "CONOR SOJA 25",
+   "proveedor": "33633051629",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 31.72,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 1911",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.94,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 1910",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 34.76,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 1909",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 36.84,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 1912",
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1726": {
+   "liq": "LIQCPRAGRA - 1726",
+   "fecha": "2026-08-24",
+   "comprobante": "330132278842",
+   "contrato_corredor": "COMP377",
+   "proveedor": "30708474998",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 31.108,
+     "precio": 281485.0,
+     "traslado": "TRAS-CPRA-CV - 4137",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.597,
+     "precio": 281485.0,
+     "traslado": "TRAS-CPRA-CV - 4138",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1725": {
+   "liq": "LIQCPRAGRA - 1725",
+   "fecha": "2026-08-24",
+   "comprobante": "330132278674",
+   "contrato_corredor": "COMP377",
+   "proveedor": "30708474998",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 31.182,
+     "precio": 282435.0,
+     "traslado": "TRAS-CPRA-CV - 4128",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1724": {
+   "liq": "LIQCPRAGRA - 1724",
+   "fecha": "2026-08-24",
+   "comprobante": "330132278557",
+   "contrato_corredor": "COMP377",
+   "proveedor": "30708474998",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 28.822,
+     "precio": 282530.0,
+     "traslado": "TRAS-CPRA-CV - 4098",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 28.2,
+     "precio": 282530.0,
+     "traslado": "TRAS-CPRA-CV - 4096",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1723": {
+   "liq": "LIQCPRAGRA - 1723",
+   "fecha": "2026-08-21",
+   "comprobante": "330132265987",
+   "contrato_corredor": "COMP437",
+   "proveedor": "30719098270",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 29.363,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4151",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.796,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4152",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.76,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4155",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.48,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4162",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 27.556,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4163",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.229,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4153",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.3,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4145",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 35.134,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4156",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.246,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4154",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.551,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4150",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.147,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4146",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.369,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4144",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 27.909,
+     "precio": 503000.0,
+     "traslado": "TRAS-CPRA-CV - 4164",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1721": {
+   "liq": "LIQCPRAGRA - 1721",
+   "fecha": "2026-08-21",
+   "comprobante": "330132265570",
+   "contrato_corredor": "COMP470",
+   "proveedor": "986",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 26.406,
+     "precio": 272300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1719": {
+   "liq": "LIQCPRAGRA - 1719",
+   "fecha": "2026-08-21",
+   "comprobante": "330132264937",
+   "contrato_corredor": "COMP448",
+   "proveedor": "1263",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 29.265,
+     "precio": 269090.0,
+     "traslado": "TRAS-CPRA-CV - 4210",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 21.082,
+     "precio": 269090.0,
+     "traslado": "TRAS-CPRA-CV - 4214",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.037,
+     "precio": 269090.0,
+     "traslado": "TRAS-CPRA-CV - 4215",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.814,
+     "precio": 269090.0,
+     "traslado": "TRAS-CPRA-CV - 4209",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1718": {
+   "liq": "LIQCPRAGRA - 1718",
+   "fecha": "2026-08-21",
+   "comprobante": "330132264564",
+   "contrato_corredor": "COMP438",
+   "proveedor": "3879",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.74,
+     "precio": 507186.0,
+     "traslado": "TRAS-CPRA-CV - 4159",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.34,
+     "precio": 507186.0,
+     "traslado": "TRAS-CPRA-CV - 4158",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 35.87,
+     "precio": 507186.0,
+     "traslado": "TRAS-CPRA-CV - 4157",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1717": {
+   "liq": "LIQCPRAGRA - 1717",
+   "fecha": "2026-08-21",
+   "comprobante": "330132264113",
+   "contrato_corredor": "COMP449",
+   "proveedor": "30718765869",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 28.775,
+     "precio": 267840.0,
+     "traslado": "TRAS-CPRA-CV - 4198",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1716": {
+   "liq": "LIQCPRAGRA - 1716",
+   "fecha": "2026-08-21",
+   "comprobante": "330132263890",
+   "contrato_corredor": "COMP449",
+   "proveedor": "30718765869",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 26.014,
+     "precio": 267840.0,
+     "traslado": "TRAS-CPRA-CV - 4188",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 26.363,
+     "precio": 267840.0,
+     "traslado": "TRAS-CPRA-CV - 4187",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1715": {
+   "liq": "LIQCPRAGRA - 1715",
+   "fecha": "2026-08-21",
+   "comprobante": "330132262898",
+   "contrato_corredor": "COMP392",
+   "proveedor": "4210",
+   "moneda": "PES",
+   "parcial_pct": 95.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.96,
+     "precio": 301350.0,
+     "traslado": "TRAS-CPRA-CV - 4004",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 29.14,
+     "precio": 301350.0,
+     "traslado": "TRAS-CPRA-CV - 3999",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1714": {
+   "liq": "LIQCPRAGRA - 1714",
+   "fecha": "2026-08-21",
+   "comprobante": "330132262740",
+   "contrato_corredor": "COMP392",
+   "proveedor": "4210",
+   "moneda": "PES",
+   "parcial_pct": 95.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 29.4,
+     "precio": 297762.5,
+     "traslado": "TRAS-CPRA-CV - 3997",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1706": {
+   "liq": "LIQCPRAGRA - 1706",
+   "fecha": "2026-08-20",
+   "comprobante": "330132251781",
+   "contrato_corredor": "COMP278",
+   "proveedor": "3410",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 35.91,
+     "precio": 479136.0,
+     "traslado": "TRAS-CPRA-CV - 4170",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1698": {
+   "liq": "LIQCPRAGRA - 1698",
+   "fecha": "2026-08-19",
+   "comprobante": "330132237201",
+   "contrato_corredor": "COMP453",
+   "proveedor": "30509273916",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.74,
+     "precio": 316474.0,
+     "traslado": "TRAS-CPRA-CV - 4166",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.49,
+     "precio": 316474.0,
+     "traslado": "TRAS-CPRA-CV - 4167",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 317": {
+   "liq": "LIQPRICPRA - 317",
+   "fecha": "2026-08-19",
+   "comprobante": "330132238400",
+   "contrato_corredor": "COMP380",
+   "proveedor": "3352",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 15.0,
+     "precio": 510000.0,
+     "traslado": "TRAS-CPRA-CV - 3927",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1691": {
+   "liq": "LIQCPRAGRA - 1691",
+   "fecha": "2026-08-18",
+   "comprobante": "330132224158",
+   "contrato_corredor": "COMP224",
+   "proveedor": "20-26781399-0",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 27.16,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 1257",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 28.134,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4114",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.053,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4099",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.251,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4102",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.646,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4113",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 28.446,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4100",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 28.422,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4112",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.075,
+     "precio": 263700.0,
+     "traslado": "TRAS-CPRA-CV - 4101",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 316": {
+   "liq": "LIQPRICPRA - 316",
+   "fecha": "2026-08-18",
+   "comprobante": "330132225028",
+   "contrato_corredor": "COMP462",
+   "proveedor": "970",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 36.89,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 4212",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 35.8,
+     "precio": 505500.0,
+     "traslado": "TRAS-CPRA-CV - 4213",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1687": {
+   "liq": "LIQCPRAGRA - 1687",
+   "fecha": "2026-08-14",
+   "comprobante": "330132204955",
+   "contrato_corredor": "COMP274",
+   "proveedor": "30718565401",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Recupero de gastos de comercializacion de granos 10.5%",
+     "cantidad": 11.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1686": {
+   "liq": "LIQCPRAGRA - 1686",
+   "fecha": "2026-08-14",
+   "comprobante": "330132204863",
+   "contrato_corredor": "COMP274",
+   "proveedor": "30718565401",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1655": {
+   "liq": "LIQCPRAGRA - 1655",
+   "fecha": "2026-08-03",
+   "comprobante": "330132106555",
+   "contrato_corredor": "COMP361",
+   "proveedor": "24257901501",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -27161.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1646": {
+   "liq": "LIQCPRAGRA - 1646",
+   "fecha": "2026-07-30",
+   "comprobante": "330132078720",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1644": {
+   "liq": "LIQCPRAGRA - 1644",
+   "fecha": "2026-07-30",
+   "comprobante": "330132078464",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 3.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1643": {
+   "liq": "LIQCPRAGRA - 1643",
+   "fecha": "2026-07-30",
+   "comprobante": "330132076835",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 4.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1642": {
+   "liq": "LIQCPRAGRA - 1642",
+   "fecha": "2026-07-30",
+   "comprobante": "330132074479",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 10.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1641": {
+   "liq": "LIQCPRAGRA - 1641",
+   "fecha": "2026-07-29",
+   "comprobante": "330132071161",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 5.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1640": {
+   "liq": "LIQCPRAGRA - 1640",
+   "fecha": "2026-07-29",
+   "comprobante": "330132071045",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 4.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1638": {
+   "liq": "LIQCPRAGRA - 1638",
+   "fecha": "2026-07-29",
+   "comprobante": "330132070824",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1637": {
+   "liq": "LIQCPRAGRA - 1637",
+   "fecha": "2026-07-29",
+   "comprobante": "330132070697",
+   "contrato_corredor": "COMP275",
+   "proveedor": "30709828424",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -26000.0,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1635": {
+   "liq": "LIQCPRAGRA - 1635",
+   "fecha": "2026-07-29",
+   "comprobante": "330132070984",
+   "contrato_corredor": "COMP423",
+   "proveedor": "30715386409",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 200.0,
+     "precio": 500000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1620": {
+   "liq": "LIQCPRAGRA - 1620",
+   "fecha": "2026-07-21",
+   "comprobante": "330131973853",
+   "contrato_corredor": "COMP415",
+   "proveedor": "20284015690",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 60.0,
+     "precio": 475600.0,
+     "traslado": "TRAS-CPRA-CV - 4078",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 292": {
+   "liq": "LIQPRICPRA - 292",
+   "fecha": "2026-07-14",
+   "comprobante": "330131903560",
+   "contrato_corredor": "COMP352",
+   "proveedor": "970",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 36.78,
+     "precio": 476000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 36.58,
+     "precio": 476000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 35.76,
+     "precio": 476000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1590": {
+   "liq": "LIQCPRAGRA - 1590",
+   "fecha": "2026-06-19",
+   "comprobante": "330131702332",
+   "contrato_corredor": "COMP394",
+   "proveedor": "6237",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 244.786,
+     "precio": 465000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 270": {
+   "liq": "LIQPRICPRA - 270",
+   "fecha": "2026-06-03",
+   "comprobante": "330131532702",
+   "contrato_corredor": "COMP385",
+   "proveedor": "3096",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 29.691,
+     "precio": 623445.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.627,
+     "precio": 623445.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.58,
+     "precio": 623445.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 2.028,
+     "precio": 623445.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1536": {
+   "liq": "LIQCPRAGRA - 1536",
+   "fecha": "2026-05-28",
+   "comprobante": "330131463079",
+   "contrato_corredor": "COMP381",
+   "proveedor": "30715386409",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 300.0,
+     "precio": 465119.9,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1488": {
+   "liq": "LIQCPRAGRA - 1488",
+   "fecha": "2026-05-19",
+   "comprobante": "330131337647",
+   "contrato_corredor": "COMP328",
+   "proveedor": "33633051629",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 33.84,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3576",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.162,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3574",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.44,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3577",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.555,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3573",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 26.324,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3575",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.926,
+     "precio": 430000.0,
+     "traslado": "TRAS-CPRA-CV - 3573",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1486": {
+   "liq": "LIQCPRAGRA - 1486",
+   "fecha": "2026-05-18",
+   "comprobante": "330131324588",
+   "contrato_corredor": "COMP287",
+   "proveedor": "3005",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.92,
+     "precio": 453058.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1485": {
+   "liq": "LIQCPRAGRA - 1485",
+   "fecha": "2026-05-18",
+   "comprobante": "330131323879",
+   "contrato_corredor": "COMP267",
+   "proveedor": "3005",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 35.93,
+     "precio": 432276.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 253": {
+   "liq": "LIQPRICPRA - 253",
+   "fecha": "2026-05-18",
+   "comprobante": "330131318508",
+   "contrato_corredor": "COMP331",
+   "proveedor": "5449",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.24,
+     "precio": 428000.46,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1468": {
+   "liq": "LIQCPRAGRA - 1468",
+   "fecha": "2026-05-15",
+   "comprobante": "330131300859",
+   "contrato_corredor": "COMP281",
+   "proveedor": "1494",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 30.389,
+     "precio": 248760.0,
+     "traslado": "TRAS-CPRA-CV - 3457",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 27.955,
+     "precio": 248760.0,
+     "traslado": "TRAS-CPRA-CV - 3463",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.67,
+     "precio": 248760.0,
+     "traslado": "TRAS-CPRA-CV - 3460",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 23.28,
+     "precio": 248760.0,
+     "traslado": "TRAS-CPRA-CV - 3890",
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.53,
+     "precio": 248760.0,
+     "traslado": "TRAS-CPRA-CV - 3461",
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1467": {
+   "liq": "LIQCPRAGRA - 1467",
+   "fecha": "2026-05-15",
+   "comprobante": "330131298270",
+   "contrato_corredor": "COMP346",
+   "proveedor": "20217589976",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.21,
+     "precio": 422000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.6,
+     "precio": 422000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1466": {
+   "liq": "LIQCPRAGRA - 1466",
+   "fecha": "2026-05-14",
+   "comprobante": "330131291626",
+   "contrato_corredor": "COMP363",
+   "proveedor": "33710314379",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 100.0,
+     "precio": 426766.14,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1464": {
+   "liq": "LIQCPRAGRA - 1464",
+   "fecha": "2026-05-14",
+   "comprobante": "330131290278",
+   "contrato_corredor": "COMP308",
+   "proveedor": "30715386409",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 360.0,
+     "precio": 442560.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1453": {
+   "liq": "LIQCPRAGRA - 1453",
+   "fecha": "2026-05-13",
+   "comprobante": "330131270479",
+   "contrato_corredor": "COMP253",
+   "proveedor": "30719056225",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.85,
+     "precio": 449312.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 31.88,
+     "precio": 449312.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.18,
+     "precio": 449312.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.72,
+     "precio": 449312.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1345": {
+   "liq": "LIQCPRAGRA - 1345",
+   "fecha": "2026-04-24",
+   "comprobante": "330131082592",
+   "contrato_corredor": "COMP297",
+   "proveedor": "6604",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 25.92,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 31.15,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 2.316,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.04,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.3,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.12,
+     "precio": 258300.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  }
+ },
+ "contratos": {
+  "compra-1149": {
+   "lado": "compra",
+   "numero": "1149",
+   "consultado": "2026-09-14T16:24:47.299824+00:00",
+   "org": "DUBINI GUILLERMO JOSE",
+   "grano": "Grano Maíz",
+   "cosecha": "25-26",
+   "kg_total": 311025.0,
+   "kg_liquidado": 250425.0,
+   "liquidaciones": [
+    "LIQCPRAGRA - 1730"
+   ],
+   "ctgs": [
+    {
+     "ctg": "10134464190",
+     "cp": "00000-00000756",
+     "fecha": "2026-08-18",
+     "kg": 35965.0,
+     "traslado": "TRAS-CPRA-CV - 4220",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134484764",
+     "cp": "00000-00000757",
+     "fecha": "2026-08-19",
+     "kg": 35820.0,
+     "traslado": "TRAS-CPRA-CV - 4223",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134485201",
+     "cp": "00000-00000758",
+     "fecha": "2026-08-19",
+     "kg": 37260.0,
+     "traslado": "TRAS-CPRA-CV - 4221",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134485657",
+     "cp": "00000-00000759",
+     "fecha": "2026-08-19",
+     "kg": 31560.0,
+     "traslado": "TRAS-CPRA-CV - 4224",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134535539",
+     "cp": "00000-00000766",
+     "fecha": "2026-08-20",
+     "kg": 30340.0,
+     "traslado": "TRAS-CPRA-CV - 4232",
+     "liqs": []
+    },
+    {
+     "ctg": "10134549898",
+     "cp": "00000-00000772",
+     "fecha": "2026-08-21",
+     "kg": 36160.0,
+     "traslado": "TRAS-CPRA-CV - 4237",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134550149",
+     "cp": "00000-00000773",
+     "fecha": "2026-08-21",
+     "kg": 37120.0,
+     "traslado": "TRAS-CPRA-CV - 4238",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134567745",
+     "cp": "00000-00000777",
+     "fecha": "2026-08-21",
+     "kg": 36540.0,
+     "traslado": "TRAS-CPRA-CV - 4239",
+     "liqs": [
+      "LIQCPRAGRA - 1730"
+     ]
+    },
+    {
+     "ctg": "10134630539",
+     "cp": "00000-00000801",
+     "fecha": "2026-08-24",
+     "kg": 30260.0,
+     "traslado": "TRAS-CPRA-CV - 4240",
+     "liqs": []
+    }
+   ]
+  }
+ },
+ "por_traslado": {
+  "TRAS-CPRA-CV - 4312": [
+   {
+    "liq": "LIQPRICPRA - 335",
+    "fecha": "2026-09-10",
+    "tn": 36.11
+   }
+  ],
+  "TRAS-CPRA-CV - 4319": [
+   {
+    "liq": "LIQCPRAGRA - 1804",
+    "fecha": "2026-09-08",
+    "tn": 15.077
+   }
+  ],
+  "TRAS-CPRA-CV - 4280": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 30.363
+   }
+  ],
+  "TRAS-CPRA-CV - 4288": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 31.442
+   }
+  ],
+  "TRAS-CPRA-CV - 4296": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 30.651
+   }
+  ],
+  "TRAS-CPRA-CV - 4276": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 30.865
+   }
+  ],
+  "TRAS-CPRA-CV - 4278": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 30.566
+   }
+  ],
+  "TRAS-CPRA-CV - 4297": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 29.987
+   }
+  ],
+  "TRAS-CPRA-CV - 4281": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 29.819
+   }
+  ],
+  "TRAS-CPRA-CV - 4282": [
+   {
+    "liq": "LIQCPRAGRA - 1798",
+    "fecha": "2026-09-04",
+    "tn": 33.433
+   }
+  ],
+  "TRAS-CPRA-CV - 4226": [
+   {
+    "liq": "LIQCPRAGRA - 1788",
+    "fecha": "2026-09-02",
+    "tn": 30.46
+   }
+  ],
+  "TRAS-CPRA-CV - 1894": [
+   {
+    "liq": "LIQCPRAGRA - 1787",
+    "fecha": "2026-09-02",
+    "tn": 0.499
+   }
+  ],
+  "TRAS-CPRA-CV - 2228": [
+   {
+    "liq": "LIQCPRAGRA - 1787",
+    "fecha": "2026-09-02",
+    "tn": 2.55
+   }
+  ],
+  "TRAS-CPRA-CV - 2229": [
+   {
+    "liq": "LIQCPRAGRA - 1787",
+    "fecha": "2026-09-02",
+    "tn": 30.57
+   }
+  ],
+  "TRAS-CPRA-CV - 4269": [
+   {
+    "liq": "LIQPRICPRA - 332",
+    "fecha": "2026-09-02",
+    "tn": 37.69
+   }
+  ],
+  "TRAS-CPRA-CV - 4270": [
+   {
+    "liq": "LIQPRICPRA - 332",
+    "fecha": "2026-09-02",
+    "tn": 32.31
+   }
+  ],
+  "TRAS-CPRA-CV - 4165": [
+   {
+    "liq": "LIQCPRAGRA - 1779",
+    "fecha": "2026-08-31",
+    "tn": 17.56
+   }
+  ],
+  "TRAS-CPRA-CV - 4243": [
+   {
+    "liq": "LIQCPRAGRA - 1766",
+    "fecha": "2026-08-28",
+    "tn": 34.89
+   }
+  ],
+  "TRAS-CPRA-CV - 4230": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 29.83
+   }
+  ],
+  "TRAS-CPRA-CV - 4236": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 31.206
+   }
+  ],
+  "TRAS-CPRA-CV - 4233": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 30.428
+   }
+  ],
+  "TRAS-CPRA-CV - 4231": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 32.761
+   }
+  ],
+  "TRAS-CPRA-CV - 4234": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 29.556
+   }
+  ],
+  "TRAS-CPRA-CV - 4242": [
+   {
+    "liq": "LIQCPRAGRA - 1758",
+    "fecha": "2026-08-28",
+    "tn": 31.14
+   }
+  ],
+  "TRAS-CPRA-CV - 4169": [
+   {
+    "liq": "LIQCPRAGRA - 1736",
+    "fecha": "2026-08-25",
+    "tn": 29.753
+   }
+  ],
+  "TRAS-CPRA-CV - 4168": [
+   {
+    "liq": "LIQCPRAGRA - 1736",
+    "fecha": "2026-08-25",
+    "tn": 34.829
+   }
+  ],
+  "TRAS-CPRA-CV - 4124": [
+   {
+    "liq": "LIQCPRAGRA - 1735",
+    "fecha": "2026-08-25",
+    "tn": 30.32
+   }
+  ],
+  "TRAS-CPRA-CV - 4125": [
+   {
+    "liq": "LIQCPRAGRA - 1735",
+    "fecha": "2026-08-25",
+    "tn": 35.32
+   }
+  ],
+  "TRAS-CPRA-CV - 4123": [
+   {
+    "liq": "LIQCPRAGRA - 1735",
+    "fecha": "2026-08-25",
+    "tn": 30.5
+   }
+  ],
+  "TRAS-CPRA-CV - 4223": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 35.82
+   }
+  ],
+  "TRAS-CPRA-CV - 4237": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 36.16
+   }
+  ],
+  "TRAS-CPRA-CV - 4239": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 36.115
+   }
+  ],
+  "TRAS-CPRA-CV - 4220": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 35.965
+   }
+  ],
+  "TRAS-CPRA-CV - 4221": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 37.26
+   }
+  ],
+  "TRAS-CPRA-CV - 4238": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 37.12
+   }
+  ],
+  "TRAS-CPRA-CV - 4224": [
+   {
+    "liq": "LIQCPRAGRA - 1730",
+    "fecha": "2026-08-25",
+    "tn": 31.56
+   }
+  ],
+  "TRAS-CPRA-CV - 1911": [
+   {
+    "liq": "LIQCPRAGRA - 1727",
+    "fecha": "2026-08-24",
+    "tn": 31.72
+   }
+  ],
+  "TRAS-CPRA-CV - 1910": [
+   {
+    "liq": "LIQCPRAGRA - 1727",
+    "fecha": "2026-08-24",
+    "tn": 29.94
+   }
+  ],
+  "TRAS-CPRA-CV - 1909": [
+   {
+    "liq": "LIQCPRAGRA - 1727",
+    "fecha": "2026-08-24",
+    "tn": 34.76
+   }
+  ],
+  "TRAS-CPRA-CV - 1912": [
+   {
+    "liq": "LIQCPRAGRA - 1727",
+    "fecha": "2026-08-24",
+    "tn": 36.84
+   }
+  ],
+  "TRAS-CPRA-CV - 4137": [
+   {
+    "liq": "LIQCPRAGRA - 1726",
+    "fecha": "2026-08-24",
+    "tn": 31.108
+   }
+  ],
+  "TRAS-CPRA-CV - 4138": [
+   {
+    "liq": "LIQCPRAGRA - 1726",
+    "fecha": "2026-08-24",
+    "tn": 30.597
+   }
+  ],
+  "TRAS-CPRA-CV - 4128": [
+   {
+    "liq": "LIQCPRAGRA - 1725",
+    "fecha": "2026-08-24",
+    "tn": 31.182
+   }
+  ],
+  "TRAS-CPRA-CV - 4098": [
+   {
+    "liq": "LIQCPRAGRA - 1724",
+    "fecha": "2026-08-24",
+    "tn": 28.822
+   }
+  ],
+  "TRAS-CPRA-CV - 4096": [
+   {
+    "liq": "LIQCPRAGRA - 1724",
+    "fecha": "2026-08-24",
+    "tn": 28.2
+   }
+  ],
+  "TRAS-CPRA-CV - 4151": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 29.363
+   }
+  ],
+  "TRAS-CPRA-CV - 4152": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 28.796
+   }
+  ],
+  "TRAS-CPRA-CV - 4155": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 30.76
+   }
+  ],
+  "TRAS-CPRA-CV - 4162": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 28.48
+   }
+  ],
+  "TRAS-CPRA-CV - 4163": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 27.556
+   }
+  ],
+  "TRAS-CPRA-CV - 4153": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 29.229
+   }
+  ],
+  "TRAS-CPRA-CV - 4145": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 30.3
+   }
+  ],
+  "TRAS-CPRA-CV - 4156": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 35.134
+   }
+  ],
+  "TRAS-CPRA-CV - 4154": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 29.246
+   }
+  ],
+  "TRAS-CPRA-CV - 4150": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 28.551
+   }
+  ],
+  "TRAS-CPRA-CV - 4146": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 29.147
+   }
+  ],
+  "TRAS-CPRA-CV - 4144": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 29.369
+   }
+  ],
+  "TRAS-CPRA-CV - 4164": [
+   {
+    "liq": "LIQCPRAGRA - 1723",
+    "fecha": "2026-08-21",
+    "tn": 27.909
+   }
+  ],
+  "TRAS-CPRA-CV - 4210": [
+   {
+    "liq": "LIQCPRAGRA - 1719",
+    "fecha": "2026-08-21",
+    "tn": 29.265
+   }
+  ],
+  "TRAS-CPRA-CV - 4214": [
+   {
+    "liq": "LIQCPRAGRA - 1719",
+    "fecha": "2026-08-21",
+    "tn": 21.082
+   }
+  ],
+  "TRAS-CPRA-CV - 4215": [
+   {
+    "liq": "LIQCPRAGRA - 1719",
+    "fecha": "2026-08-21",
+    "tn": 29.037
+   }
+  ],
+  "TRAS-CPRA-CV - 4209": [
+   {
+    "liq": "LIQCPRAGRA - 1719",
+    "fecha": "2026-08-21",
+    "tn": 30.814
+   }
+  ],
+  "TRAS-CPRA-CV - 4159": [
+   {
+    "liq": "LIQCPRAGRA - 1718",
+    "fecha": "2026-08-21",
+    "tn": 30.74
+   }
+  ],
+  "TRAS-CPRA-CV - 4158": [
+   {
+    "liq": "LIQCPRAGRA - 1718",
+    "fecha": "2026-08-21",
+    "tn": 30.34
+   }
+  ],
+  "TRAS-CPRA-CV - 4157": [
+   {
+    "liq": "LIQCPRAGRA - 1718",
+    "fecha": "2026-08-21",
+    "tn": 35.87
+   }
+  ],
+  "TRAS-CPRA-CV - 4198": [
+   {
+    "liq": "LIQCPRAGRA - 1717",
+    "fecha": "2026-08-21",
+    "tn": 28.775
+   }
+  ],
+  "TRAS-CPRA-CV - 4188": [
+   {
+    "liq": "LIQCPRAGRA - 1716",
+    "fecha": "2026-08-21",
+    "tn": 26.014
+   }
+  ],
+  "TRAS-CPRA-CV - 4187": [
+   {
+    "liq": "LIQCPRAGRA - 1716",
+    "fecha": "2026-08-21",
+    "tn": 26.363
+   }
+  ],
+  "TRAS-CPRA-CV - 4004": [
+   {
+    "liq": "LIQCPRAGRA - 1715",
+    "fecha": "2026-08-21",
+    "tn": 30.96
+   }
+  ],
+  "TRAS-CPRA-CV - 3999": [
+   {
+    "liq": "LIQCPRAGRA - 1715",
+    "fecha": "2026-08-21",
+    "tn": 29.14
+   }
+  ],
+  "TRAS-CPRA-CV - 3997": [
+   {
+    "liq": "LIQCPRAGRA - 1714",
+    "fecha": "2026-08-21",
+    "tn": 29.4
+   }
+  ],
+  "TRAS-CPRA-CV - 4170": [
+   {
+    "liq": "LIQCPRAGRA - 1706",
+    "fecha": "2026-08-20",
+    "tn": 35.91
+   }
+  ],
+  "TRAS-CPRA-CV - 4166": [
+   {
+    "liq": "LIQCPRAGRA - 1698",
+    "fecha": "2026-08-19",
+    "tn": 30.74
+   }
+  ],
+  "TRAS-CPRA-CV - 4167": [
+   {
+    "liq": "LIQCPRAGRA - 1698",
+    "fecha": "2026-08-19",
+    "tn": 30.49
+   }
+  ],
+  "TRAS-CPRA-CV - 3927": [
+   {
+    "liq": "LIQPRICPRA - 317",
+    "fecha": "2026-08-19",
+    "tn": 15.0
+   }
+  ],
+  "TRAS-CPRA-CV - 1257": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 27.16
+   }
+  ],
+  "TRAS-CPRA-CV - 4114": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 28.134
+   }
+  ],
+  "TRAS-CPRA-CV - 4099": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 29.053
+   }
+  ],
+  "TRAS-CPRA-CV - 4102": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 29.251
+   }
+  ],
+  "TRAS-CPRA-CV - 4113": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 29.646
+   }
+  ],
+  "TRAS-CPRA-CV - 4100": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 28.446
+   }
+  ],
+  "TRAS-CPRA-CV - 4112": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 28.422
+   }
+  ],
+  "TRAS-CPRA-CV - 4101": [
+   {
+    "liq": "LIQCPRAGRA - 1691",
+    "fecha": "2026-08-18",
+    "tn": 30.075
+   }
+  ],
+  "TRAS-CPRA-CV - 4212": [
+   {
+    "liq": "LIQPRICPRA - 316",
+    "fecha": "2026-08-18",
+    "tn": 36.89
+   }
+  ],
+  "TRAS-CPRA-CV - 4213": [
+   {
+    "liq": "LIQPRICPRA - 316",
+    "fecha": "2026-08-18",
+    "tn": 35.8
+   }
+  ],
+  "TRAS-CPRA-CV - 4078": [
+   {
+    "liq": "LIQCPRAGRA - 1620",
+    "fecha": "2026-07-21",
+    "tn": 60.0
+   }
+  ],
+  "TRAS-CPRA-CV - 3576": [
+   {
+    "liq": "LIQCPRAGRA - 1488",
+    "fecha": "2026-05-19",
+    "tn": 33.84
+   }
+  ],
+  "TRAS-CPRA-CV - 3574": [
+   {
+    "liq": "LIQCPRAGRA - 1488",
+    "fecha": "2026-05-19",
+    "tn": 28.162
+   }
+  ],
+  "TRAS-CPRA-CV - 3577": [
+   {
+    "liq": "LIQCPRAGRA - 1488",
+    "fecha": "2026-05-19",
+    "tn": 29.44
+   }
+  ],
+  "TRAS-CPRA-CV - 3573": [
+   {
+    "liq": "LIQCPRAGRA - 1488",
+    "fecha": "2026-05-19",
+    "tn": 28.555
+   }
+  ],
+  "TRAS-CPRA-CV - 3575": [
+   {
+    "liq": "LIQCPRAGRA - 1488",
+    "fecha": "2026-05-19",
+    "tn": 26.324
+   }
+  ],
+  "TRAS-CPRA-CV - 3457": [
+   {
+    "liq": "LIQCPRAGRA - 1468",
+    "fecha": "2026-05-15",
+    "tn": 30.389
+   }
+  ],
+  "TRAS-CPRA-CV - 3463": [
+   {
+    "liq": "LIQCPRAGRA - 1468",
+    "fecha": "2026-05-15",
+    "tn": 27.955
+   }
+  ],
+  "TRAS-CPRA-CV - 3460": [
+   {
+    "liq": "LIQCPRAGRA - 1468",
+    "fecha": "2026-05-15",
+    "tn": 31.67
+   }
+  ],
+  "TRAS-CPRA-CV - 3890": [
+   {
+    "liq": "LIQCPRAGRA - 1468",
+    "fecha": "2026-05-15",
+    "tn": 23.28
+   }
+  ],
+  "TRAS-CPRA-CV - 3461": [
+   {
+    "liq": "LIQCPRAGRA - 1468",
+    "fecha": "2026-05-15",
+    "tn": 35.53
+   }
+  ]
+ }
+}
