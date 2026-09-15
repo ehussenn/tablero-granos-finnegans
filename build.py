@@ -15639,13 +15639,18 @@ function ctRender(){
       const kgliq = (Number(x.tn_liq)||0) * 1000;       // lo que Finnegans dice que ya se liquido
       const env = yaEnviado(cur.num, x.ctg);            // lo que ya mandaste desde aca
       const m = marcaDe(x.ctg);
-      // Finnegans manda, salvo que vos lo hayas marcado a mano
-      const liqF = kgliq > 0.5 || x.est === "liq";
-      const liq  = (m.liq == null) ? liqF : !!m.liq;
+      // "Liquidado" es liquidado ENTERO. Antes alcanzaba con que tuviera algo de
+      // liquidacion y el saldo quedaba invisible: el contrato 1072 mostraba
+      // 25,2 tn pendientes sin poder decir de que CTG eran, porque 4 cartas de
+      // porte estaban liquidadas a medias (una de 30.360 kg liquidada por 12.330).
+      const tol = Math.max(1, kg * 0.001);
+      const liqF = kgliq >= kg - tol;                   // Finnegans lo liquido entero
+      const parcial = kgliq > 0.5 && !liqF;             // liquidado a medias
+      const liq  = (m.liq == null) ? liqF : !!m.liq;    // salvo que lo marques a mano
       const envF = env > 0.5;
       const enviado = (m.env == null) ? envF : !!m.env;
       const disp = (liq || enviado) ? 0 : Math.max(0, kg - kgliq - env);
-      return {...x, kg, kgliq, env, liq, liqF, enviado, envF, manual: m, disp};
+      return {...x, kg, kgliq, env, liq, liqF, parcial, enviado, envF, manual: m, disp};
     }).sort((a,b) => (b.disp>0) - (a.disp>0) || String(a.fecha||"").localeCompare(String(b.fecha||"")));
   }
 
@@ -15699,7 +15704,10 @@ function ctRender(){
         <td style="font-size:11px" title="${esc(x.flete||"")}${x.transp?" · transporta "+esc(x.transp):""}">${esc(x.flete||"—")}</td>
         <td class="num" style="font-weight:600">${n0(x.kg)}</td>
         <td><label class="el-mk"><input type="checkbox" class="el-liq" ${x.liq?"checked":""}>
-            <span>${x.liq ? (x.kgliq>0.5 ? n0(x.kgliq)+" kg" : "sí") : "no"}</span></label>${liqTxt}</td>
+            <span${x.parcial?' style="color:#9a3412;font-weight:700"':''}>${
+              x.parcial ? n0(x.kgliq)+" kg de "+n0(x.kg)
+                        : (x.liq ? (x.kgliq>0.5 ? n0(x.kgliq)+" kg" : "sí") : "no")
+            }</span></label>${liqTxt}</td>
         <td><label class="el-mk"><input type="checkbox" class="el-env" ${x.enviado?"checked":""}>
             <span>${x.enviado ? (x.env>0.5 ? n0(x.env)+" kg" : "sí") : "no"}</span></label></td>
         <td class="num" style="font-weight:700">${hay?n0(x.disp):'<span style="color:var(--line)">·</span>'}</td>
@@ -15913,7 +15921,8 @@ function ctRender(){
   }
   function buscar(){
     const q = String(val("el-cto")).replace(/\D/g,"");
-    sel = {}; el("el-para").dataset.tocado = "";   // se recalcula segun el comercial
+    sel = {}; limpiarCarga();                     // el contrato nuevo arranca limpio
+    el("el-para").dataset.tocado = "";            // se recalcula segun el comercial
     if(!q){ cur = null; pintar(); return; }
     cur = CT[q] || null;
     if(!cur){
@@ -15946,6 +15955,14 @@ function ctRender(){
         imp: mi !== "" ? (Number(mi)||0) : null}; }); }
     pintar();
   }
+  // Deja la barra de carga masiva y las observaciones en blanco. Se llama al
+  // traer otro contrato y despues de enviar, para que no queden arrastrados el
+  // porcentaje, el importe ni la moneda del envio anterior.
+  function limpiarCarga(){
+    ["el-m-pct", "el-m-kg", "el-m-imp", "el-m-mon", "el-m-liq", "el-m-env", "el-obs"]
+      .forEach(id => { const e = el(id); if(e) e.value = ""; });
+  }
+
   function masivo(auto){
     const gs = Object.keys(sel);
     // "auto" es cuando baja solo al cargar un valor arriba: ahi no molesta con avisos
@@ -15990,7 +16007,8 @@ function ctRender(){
               ctgs:gs.map(x => ({ctg:x.ctg, cp:x.cp, fecha:String(x.fecha||"").slice(0,10),
                                  kg:x.kg_liq, kg_cp:x.kg, pct:x.pct, mon:x.mon, imp:x.imp,
                                  cliente:x.dest||null, flete:x.flete||null}))});
-    await guardarEnv(); avisoGuardado("envío guardado"); sel = {}; pintar();
+    await guardarEnv(); avisoGuardado("envío guardado");
+    sel = {}; limpiarCarga(); pintar();
   }
   async function borrar(id){
     if(!confirm("¿Deshago este envío? Los kilos vuelven a quedar disponibles.")) return;
@@ -16154,6 +16172,8 @@ function ctRender(){
       avisoGuardado("correo abierto");
       excel();                     // la planilla de respaldo
       await marcar(true);          // y el registro, sin volver a preguntar
+      limpiarCarga();              // y todo en cero, listo para el proximo
+      pintar();
       setTimeout(botonNormal, 2600);
     }, 800);
   }
