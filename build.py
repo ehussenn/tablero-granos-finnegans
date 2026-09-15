@@ -1653,6 +1653,11 @@ window.apiFetch = function(path, opts){
             <option value="pago">Para pago</option>
             <option value="canje">Para canje (aplicar en cuenta)</option>
           </select></div>
+          <div><label>ABRIR EL CORREO EN</label><select id="el-via">
+            <option value="owa">Outlook de Agronasaja (navegador)</option>
+            <option value="gmail">Gmail (navegador)</option>
+            <option value="mailto">El programa de correo de la compu</option>
+          </select></div>
           <button class="clear" id="el-cfg">⚙ Comerciales y correos</button>
           <button class="clear" id="el-guardar" title="Todo se guarda solo; esto lo fuerza y te confirma">💾 Guardar</button>
           <span id="el-save" style="font-size:11.5px;font-weight:600;color:var(--green)"></span>
@@ -15802,7 +15807,8 @@ function ctRender(){
     const largo = gs.length ? cuerpo().length : 0;
     el("el-nota").innerHTML = !gs.length ? ""
       : (largo > 1800
-        ? '⚠ El correo quedó largo ('+n0(largo)+' caracteres) y algunos programas de mail lo cortan. Usá <b>Copiar texto</b> o mandá la planilla adjunta.'
+        ? '⚠ El correo quedó largo ('+n0(largo)+' caracteres): el navegador puede recortarlo al abrir Outlook. '
+          + 'Al enviar te queda <b>copiado igual</b>, así que si ves que falta algo, pegalo con Ctrl+V.'
         : '💡 <b>Abrir correo</b> abre tu programa de mail con todo cargado. <b>Marcar como enviado</b> descuenta estos kilos para que no los mandes dos veces.');
   }
 
@@ -15969,6 +15975,9 @@ function ctRender(){
     if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) await apiSave(KV, ENV);
     pintar();
   }
+  // Abre la ventana de redaccion con todo cargado. Por defecto va a Outlook web
+  // (Agronasaja usa Microsoft 365), porque mailto: solo anda si hay un programa
+  // de correo de escritorio configurado y si no, no pasa nada: el correo "no sale".
   function abrirMail(){
     const gs = elegidos();
     if(!gs.length){ alert("Primero tildá los CTG que querés mandar a liquidar."); return; }
@@ -15976,8 +15985,40 @@ function ctRender(){
     if(!to){ alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); return; }
     const cc = (val("el-cc")||"").trim();
     if(cc) localStorage.setItem("el_fijos", cc);
-    window.location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(asunto())}`
-      + `&body=${encodeURIComponent(cuerpo())}`;
+    const via = val("el-via") || "owa";
+    localStorage.setItem("el_via", via);
+    const asu = asunto(), cue = cuerpo();
+    // Siempre queda copiado: si el navegador recorta la direccion, se pega y listo.
+    // El .catch() hace falta porque writeText devuelve una promesa: si el navegador
+    // niega el permiso, sin el queda un error suelto en la consola.
+    try { navigator.clipboard.writeText(asu + "\n\n" + cue).catch(() => {}); } catch(e){}
+    let url;
+    if(via === "owa"){
+      url = "https://outlook.office.com/mail/deeplink/compose"
+          + `?to=${encodeURIComponent(to)}`
+          + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+          + `&subject=${encodeURIComponent(asu)}&body=${encodeURIComponent(cue)}`;
+    } else if(via === "gmail"){
+      url = "https://mail.google.com/mail/?view=cm&fs=1"
+          + `&to=${encodeURIComponent(to)}`
+          + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+          + `&su=${encodeURIComponent(asu)}&body=${encodeURIComponent(cue)}`;
+    } else {
+      window.location.href = `mailto:${encodeURIComponent(to)}`
+        + `?subject=${encodeURIComponent(asu)}`
+        + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+        + `&body=${encodeURIComponent(cue)}`;
+      avisoGuardado("correo abierto");
+      return;
+    }
+    const w = window.open(url, "_blank", "noopener");
+    if(!w){
+      alert("El navegador bloqueó la ventana del correo.\n\n"
+          + "Permitile las ventanas emergentes a esta página, o usá ⧉ Copiar texto: "
+          + "el correo ya te quedó copiado y lo pegás en Outlook.");
+      return;
+    }
+    avisoGuardado("correo abierto");
   }
   // Enviar de verdad: correo + registro + planilla de respaldo, en ese orden.
   // Si algo falla antes de registrar, no se registra nada (asi no queda marcado
@@ -15993,8 +16034,10 @@ function ctRender(){
               + `${t.tit} · se liquida al ${val("el-h-liq")||"—"}% · ND ${val("el-h-nd")||"—"}% · comisión ${val("el-h-com")||"—"}%\n`
               + `A: ${to}\n\n`
               + "Se abre el correo, quedan registrados como enviados y se baja la planilla de respaldo.")) return;
-    excel();                       // 1) la planilla primero (por si el mail tarda)
-    abrirMail();                   // 2) el correo
+    // el correo primero: si abre una pestaña nueva tiene que ser lo mas cerca
+    // posible del click, o el navegador la bloquea
+    abrirMail();                   // 1) la ventana del correo
+    excel();                       // 2) la planilla de respaldo
     await marcar(true);            // 3) el registro, sin volver a preguntar
     const b = el("el-enviar");
     b.textContent = "✓ ENVIADO";
@@ -16102,6 +16145,7 @@ function ctRender(){
   el("el-cto").addEventListener("keydown", ev => { if(ev.key==="Enter"){ ev.preventDefault(); buscar(); } });
   el("el-cto").addEventListener("change", buscar);
   el("el-tpl").addEventListener("change", () => { ponerCond(false); preview(); });
+  el("el-via").addEventListener("change", () => localStorage.setItem("el_via", val("el-via")));
   ["el-h-liq","el-h-nd","el-h-com"].forEach(id =>
     el(id).addEventListener("input", () => { clearTimeout(el(id)._t);
       el(id)._t = setTimeout(() => { guardaCond();
@@ -16220,6 +16264,8 @@ function ctRender(){
       .join("");
     const fijos = localStorage.getItem("el_fijos") || "";
     if(fijos) el("el-cc").value = fijos;
+    const via = localStorage.getItem("el_via");
+    if(via) el("el-via").value = via;
     ponerCond(false);
     envios();
     const ch = el("el-chips");
