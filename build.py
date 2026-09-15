@@ -960,6 +960,8 @@ window.apiFetch = function(path, opts){
   #el-tabla select.el-mon{width:100%;padding:3px 5px;border:1px solid var(--line);border-radius:6px;
     background:var(--bg2);color:var(--ink);font-size:11.5px}
   #el-cfg-tbl input{font-family:inherit}
+  a.el-btn{display:inline-flex;align-items:center;gap:4px;text-decoration:none;cursor:pointer}
+  a.el-btn:hover{filter:brightness(1.06)}
   #el-tabla tbody tr.el-liq td{background:#f0fdf4}
   .el-mk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;white-space:nowrap}
   .el-mk input{cursor:pointer}
@@ -1740,9 +1742,10 @@ window.apiFetch = function(path, opts){
                   style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#f1f5f9;color:var(--ink);min-width:180px"></div>
               <div style="flex:1 1 280px"><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Va a</label>
                 <input id="el-para" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
-              <div style="flex:1 1 200px"><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Copia fija</label>
-                <input id="el-cc" placeholder="siempre en copia"
+              <div style="flex:1 1 200px"><label style="font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.04em">Copia fija (va siempre)</label>
+                <input id="el-cc" placeholder="correo1@… ; correo2@…"
                   style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink)"></div>
+              <button class="clear" id="el-correos-def" title="Vuelve a comercial + administrativa + copia fija">↺ Automáticos</button>
             </div>
           </div>
 
@@ -1752,9 +1755,11 @@ window.apiFetch = function(path, opts){
               <textarea id="el-obs" rows="3" placeholder="opcional"
                 style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);font-size:12px;resize:vertical"></textarea>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-                <button class="clear" id="el-enviar" title="Abre el correo, los deja registrados como enviados y baja la planilla de respaldo"
-                  style="background:#b3372b;color:#fff;border-color:#b3372b;font-weight:700;font-size:13px;padding:8px 16px">📨 ENVIAR A LIQUIDAR</button>
-                <button class="clear" id="el-mail" title="Solo abre el correo, sin registrar nada">📧 Solo el correo</button>
+                <a class="clear el-btn" id="el-enviar" href="#" target="_blank" rel="noopener"
+                   title="Abre el correo, los deja registrados como enviados y baja la planilla de respaldo"
+                   style="background:#b3372b;color:#fff;border-color:#b3372b;font-weight:700;font-size:13px;padding:8px 16px">📨 ENVIAR A LIQUIDAR</a>
+                <a class="clear el-btn" id="el-mail" href="#" target="_blank" rel="noopener"
+                   title="Solo abre el correo, sin registrar nada">📧 Solo el correo</a>
                 <button class="clear" id="el-copiar">⧉ Copiar texto</button>
                 <button class="clear" id="el-excel">⬇ Bajar planilla</button>
                 <button class="clear" id="el-marcar" title="Solo lo registra, sin abrir el correo">✔ Solo registrar</button>
@@ -15592,15 +15597,32 @@ function ctRender(){
   function destinatarios(){
     const com = val("el-com");
     const c = cfgDe(com);
-    const fijos = (localStorage.getItem("el_fijos")||"").split(/[;,]/).map(x=>x.trim()).filter(Boolean);
-    const to = [...new Set([c.mail_com, c.mail_adm, ...fijos].map(x=>String(x||"").trim()).filter(Boolean))];
-    return to;
+    // "VA A" son los destinatarios directos: el comercial y su administrativa.
+    // La copia fija NO se repite aca — va en copia, que para eso es; si estaba en
+    // los dos lados el correo salia con la misma persona duplicada.
+    return [...new Set([c.mail_com, c.mail_adm]
+             .map(x => String(x||"").trim()).filter(Boolean))];
   }
   function pintarQuien(){
     const com = val("el-com"), c = cfgDe(com);
     el("el-adm").value = c.adm || "";
-    const to = destinatarios();
-    if(!el("el-para").dataset.tocado) el("el-para").value = to.join("; ");
+    if(el("el-para").dataset.tocado) return;          // lo esta escribiendo el
+    // si alguna vez guardo un "va a" propio para este comercial, ese manda
+    el("el-para").value = (c.para && c.para.trim()) ? c.para : destinatarios().join("; ");
+  }
+  // guarda lo que escribio: la copia fija siempre, el "va a" por comercial
+  async function guardarCorreos(){
+    const cc = (val("el-cc")||"").trim();
+    try { localStorage.setItem("el_fijos", cc); } catch(e){}
+    const com = val("el-com");
+    if(com){
+      const auto = destinatarios().join("; ");
+      const puesto = (val("el-para")||"").trim();
+      CFG[com] = Object.assign({}, cfgDe(com), {para: (puesto && puesto !== auto) ? puesto : ""});
+      if(!CFG[com].para) delete CFG[com].para;
+    }
+    await guardarCfg();
+    avisoGuardado("correos guardados");
   }
 
   // ── camiones del contrato ────────────────────────────────────────────────
@@ -15707,6 +15729,7 @@ function ctRender(){
       ? `A liquidar: <span style="color:#b3372b">${n0(kgSel)} kg</span> · ${n0(gs.length)} CTG`
       : '<span style="color:var(--muted);font-weight:400">Todavía no tildaste ningún CTG</span>';
     el("el-info").textContent = `${n0(rs.length)} CTG · ${n0(disp)} kg disponibles`;
+    if(_armado) botonNormal();     // si toco algo, se cancela la confirmacion
     el("el-h-tn").value = n3(kgSel/1000) + " tn";
     // el tilde de la cabecera refleja como esta la grilla
     const todo = el("el-all"), libres = rs.filter(x => x.disp > 0.5).length;
@@ -15800,6 +15823,7 @@ function ctRender(){
     return b;
   }
   function preview(){
+    refrescarLinks();
     const pv = el("el-prev"); if(!pv) return;
     const gs = elegidos();
     pv.textContent = gs.length ? cuerpo()
@@ -15889,7 +15913,7 @@ function ctRender(){
   }
   function buscar(){
     const q = String(val("el-cto")).replace(/\D/g,"");
-    sel = {}; el("el-para").dataset.tocado = "";
+    sel = {}; el("el-para").dataset.tocado = "";   // se recalcula segun el comercial
     if(!q){ cur = null; pintar(); return; }
     cur = CT[q] || null;
     if(!cur){
@@ -15978,11 +16002,50 @@ function ctRender(){
   // Abre la ventana de redaccion con todo cargado. Por defecto va a Outlook web
   // (Agronasaja usa Microsoft 365), porque mailto: solo anda si hay un programa
   // de correo de escritorio configurado y si no, no pasa nada: el correo "no sale".
+  // La direccion del correo, lista para colgarla del enlace. Devuelve "" si
+  // todavia no hay nada que mandar.
+  function urlCorreo(){
+    if(!cur) return "";
+    const gs = elegidos();
+    const to = (val("el-para")||"").trim();
+    if(!gs.length || !to) return "";
+    const cc = (val("el-cc")||"").trim();
+    const via = val("el-via") || "owa";
+    const asu = asunto(), cue = cuerpo();
+    if(via === "gmail"){
+      return "https://mail.google.com/mail/?view=cm&fs=1"
+           + `&to=${encodeURIComponent(to)}`
+           + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+           + `&su=${encodeURIComponent(asu)}&body=${encodeURIComponent(cue)}`;
+    }
+    if(via === "mailto"){
+      return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(asu)}`
+           + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+           + `&body=${encodeURIComponent(cue)}`;
+    }
+    return "https://outlook.office.com/mail/deeplink/compose"
+         + `?to=${encodeURIComponent(to)}`
+         + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
+         + `&subject=${encodeURIComponent(asu)}&body=${encodeURIComponent(cue)}`;
+  }
+
+  // Deja la direccion colgada de los dos enlaces. Es lo que hace que el correo
+  // abra SIEMPRE: el navegador no bloquea un click sobre un enlace de verdad.
+  function refrescarLinks(){
+    const u = urlCorreo();
+    ["el-enviar", "el-mail"].forEach(id => {
+      const a = el(id);
+      if(!a) return;
+      if(u){ a.href = u; a.removeAttribute("aria-disabled"); a.style.opacity = ""; }
+      else { a.href = "#"; a.setAttribute("aria-disabled", "true"); a.style.opacity = ".55"; }
+    });
+  }
+
   function abrirMail(){
     const gs = elegidos();
-    if(!gs.length){ alert("Primero tildá los CTG que querés mandar a liquidar."); return; }
+    if(!gs.length){ alert("Primero tildá los CTG que querés mandar a liquidar."); return false; }
     const to = (val("el-para")||"").trim();
-    if(!to){ alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); return; }
+    if(!to){ alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); return false; }
     const cc = (val("el-cc")||"").trim();
     if(cc) localStorage.setItem("el_fijos", cc);
     const via = val("el-via") || "owa";
@@ -16009,39 +16072,90 @@ function ctRender(){
         + (cc ? `&cc=${encodeURIComponent(cc)}` : "")
         + `&body=${encodeURIComponent(cue)}`;
       avisoGuardado("correo abierto");
-      return;
+      return true;
     }
-    const w = window.open(url, "_blank", "noopener");
-    if(!w){
-      alert("El navegador bloqueó la ventana del correo.\n\n"
-          + "Permitile las ventanas emergentes a esta página, o usá ⧉ Copiar texto: "
-          + "el correo ya te quedó copiado y lo pegás en Outlook.");
-      return;
+    // Ojo: window.open(..., "noopener") devuelve null SIEMPRE por especificacion,
+    // asi que no sirve para saber si se bloqueo. Se abre sin esa opcion y se corta
+    // el vinculo a mano.
+    let w = null;
+    try { w = window.open(url, "_blank"); } catch(e){ w = null; }
+    if(w){
+      try { w.opener = null; } catch(e){}
+      avisoGuardado("correo abierto");
+      return true;
     }
-    avisoGuardado("correo abierto");
+    // segundo intento: un enlace de verdad, que algunos navegadores dejan pasar
+    // aunque hayan bloqueado window.open
+    try {
+      const a = document.createElement("a");
+      a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      document.body.appendChild(a); a.click(); a.remove();
+      avisoGuardado("correo abierto");
+      return true;
+    } catch(e){}
+    alert("El navegador no me dejó abrir la ventana del correo.\n\n"
+        + "El texto ya te quedó COPIADO: abrí Outlook, correo nuevo y pegá con Ctrl+V.\n\n"
+        + "Para que no vuelva a pasar, permitile las ventanas emergentes a esta página "
+        + "(el candadito al lado de la dirección → Configuración del sitio → Ventanas emergentes).");
+    return false;
   }
   // Enviar de verdad: correo + registro + planilla de respaldo, en ese orden.
   // Si algo falla antes de registrar, no se registra nada (asi no queda marcado
   // como enviado algo que no salio).
-  async function enviarTodo(){
+  // La confirmacion va en el propio boton y NO en un confirm(): el permiso del
+  // navegador para abrir una pestaña dura pocos segundos desde el click, y
+  // mientras se lee un dialogo modal se vence. Por eso antes quedaba registrado
+  // el envio pero el correo no abria.
+  let _armado = 0;
+  function botonNormal(){
+    const b = el("el-enviar");
+    if(!b) return;
+    b.textContent = "📨 ENVIAR A LIQUIDAR";
+    b.style.background = "#b3372b"; b.style.borderColor = "#b3372b";
+    _armado = 0;
+  }
+  async function enviarTodo(ev){
     const gs = elegidos();
-    if(!gs.length){ alert("Primero tildá los CTG que querés mandar a liquidar."); return; }
+    if(!gs.length){ if(ev) ev.preventDefault();
+      alert("Primero tildá los CTG que querés mandar a liquidar."); botonNormal(); return; }
     const to = (val("el-para")||"").trim();
-    if(!to){ alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); return; }
+    if(!to){ if(ev) ev.preventDefault();
+      alert("Falta a quién mandarlo. Cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."); botonNormal(); return; }
+    const b = el("el-enviar");
     const kg = gs.reduce((a,x) => a + x.kg_liq, 0);
     const t = tplActual();
-    if(!confirm(`¿Envío ${gs.length} CTG por ${n0(kg)} kg (${n3(kg/1000)} tn) del contrato #${cur.num}?\n\n`
-              + `${t.tit} · se liquida al ${val("el-h-liq")||"—"}% · ND ${val("el-h-nd")||"—"}% · comisión ${val("el-h-com")||"—"}%\n`
-              + `A: ${to}\n\n`
-              + "Se abre el correo, quedan registrados como enviados y se baja la planilla de respaldo.")) return;
-    // el correo primero: si abre una pestaña nueva tiene que ser lo mas cerca
-    // posible del click, o el navegador la bloquea
-    abrirMail();                   // 1) la ventana del correo
-    excel();                       // 2) la planilla de respaldo
-    await marcar(true);            // 3) el registro, sin volver a preguntar
-    const b = el("el-enviar");
+    // primer click: muestra que va a mandar y espera la confirmacion
+    if(!_armado || Date.now() - _armado > 20000){
+      if(ev) ev.preventDefault();       // el primer click NO abre nada: solo confirma
+      _armado = Date.now();
+      b.textContent = `✔ Confirmar: ${n0(gs.length)} CTG · ${n0(kg)} kg`;
+      b.style.background = "#166534"; b.style.borderColor = "#166534";
+      el("el-nota").innerHTML =
+        `Vas a mandar <b>${n0(gs.length)} CTG · ${n0(kg)} kg (${n3(kg/1000)} tn)</b> del contrato `
+        + `<b>#${esc(cur.num)}</b> como <b>${esc(t.tit)}</b>`
+        + ` (se liquida al ${esc(val("el-h-liq")||"—")}% · ND ${esc(val("el-h-nd")||"—")}%`
+        + ` · comisión ${esc(val("el-h-com")||"—")}%)<br>a: <b>${esc(to)}</b>`
+        + `<br>Volvé a apretar el botón verde para mandarlo. Si no, en 20 segundos se cancela solo.`;
+      setTimeout(() => { if(_armado && Date.now() - _armado >= 20000){ botonNormal(); preview(); } }, 20500);
+      return;
+    }
+    // Segundo click: NO se frena el enlace. El navegador abre Outlook solo,
+    // porque es un click de la persona sobre un <a target="_blank"> de verdad.
+    //
+    // OJO con el orden: todo lo que redibuja la pantalla (la planilla, el
+    // registro) le saca la direccion al enlace, y si corre aca mismo lo hace
+    // ANTES de que el navegador alcance a seguirlo — terminaba abriendo la
+    // propia pagina en vez de Outlook. Por eso va todo en un setTimeout.
+    _armado = 0;
+    const txt = asunto() + "\n\n" + cuerpo();
     b.textContent = "✓ ENVIADO";
-    setTimeout(() => b.textContent = "📨 ENVIAR A LIQUIDAR", 2600);
+    setTimeout(async () => {
+      try { navigator.clipboard.writeText(txt).catch(() => {}); } catch(e){}
+      avisoGuardado("correo abierto");
+      excel();                     // la planilla de respaldo
+      await marcar(true);          // y el registro, sin volver a preguntar
+      setTimeout(botonNormal, 2600);
+    }, 800);
   }
 
   function copiar(){
@@ -16146,6 +16260,12 @@ function ctRender(){
   el("el-cto").addEventListener("change", buscar);
   el("el-tpl").addEventListener("change", () => { ponerCond(false); preview(); });
   el("el-via").addEventListener("change", () => localStorage.setItem("el_via", val("el-via")));
+  el("el-correos-def").addEventListener("click", async () => {
+    const com = val("el-com");
+    if(com && CFG[com]) { delete CFG[com].para; await guardarCfg(); }
+    el("el-para").dataset.tocado = ""; pintarQuien(); preview();
+    avisoGuardado("restablecido");
+  });
   ["el-h-liq","el-h-nd","el-h-com"].forEach(id =>
     el(id).addEventListener("input", () => { clearTimeout(el(id)._t);
       el(id)._t = setTimeout(() => { guardaCond();
@@ -16156,9 +16276,15 @@ function ctRender(){
   el("el-h-pago").addEventListener("change", preview);
   el("el-h-def").addEventListener("click", () => { ponerCond(true); guardaCond(); preview(); });
   el("el-com").addEventListener("change", () => { el("el-para").dataset.tocado=""; pintarQuien(); preview(); });
-  el("el-para").addEventListener("input", () => { el("el-para").dataset.tocado="1"; });
-  el("el-cc").addEventListener("change", () => { localStorage.setItem("el_fijos", val("el-cc"));
-    el("el-para").dataset.tocado=""; pintarQuien(); });
+  el("el-para").addEventListener("input", () => { el("el-para").dataset.tocado="1";
+    clearTimeout(el("el-para")._t); el("el-para")._t = setTimeout(preview, 350); });
+  el("el-para").addEventListener("change", () => { preview(); guardarCorreos(); });
+  // preview() ademas de redibujar el correo actualiza la direccion del enlace:
+  // sin eso, un correo recien escrito en la copia fija no entraba en el envio
+  el("el-cc").addEventListener("input", () => { clearTimeout(el("el-cc")._t);
+    el("el-cc")._t = setTimeout(() => { el("el-para").dataset.tocado=""; pintarQuien(); preview(); }, 400); });
+  el("el-cc").addEventListener("change", () => { el("el-para").dataset.tocado=""; pintarQuien();
+    preview(); guardarCorreos(); });
   el("el-obs").addEventListener("input", () => { clearTimeout(el("el-obs")._t); el("el-obs")._t=setTimeout(preview,250); });
   el("el-todos").addEventListener("click", () => tildar(true));
   el("el-ninguno").addEventListener("click", () => tildar(false));
@@ -16174,8 +16300,19 @@ function ctRender(){
   });
   ["el-m-mon", "el-m-liq", "el-m-env"].forEach(id =>
     el(id).addEventListener("change", () => masivo(true)));
-  el("el-enviar").addEventListener("click", enviarTodo);
-  el("el-mail").addEventListener("click", abrirMail);
+  el("el-enviar").addEventListener("click", ev => enviarTodo(ev));
+  // "Solo el correo" es un enlace comun: si hay algo que mandar, se deja pasar
+  el("el-mail").addEventListener("click", ev => {
+    if(!urlCorreo()){
+      ev.preventDefault();
+      alert(elegidos().length
+        ? "Falta a quién mandarlo: cargá el correo del comercial y su administrativa en ⚙ Comerciales y correos, o escribilo a mano."
+        : "Primero tildá los CTG que querés mandar a liquidar.");
+      return;
+    }
+    try { navigator.clipboard.writeText(asunto() + "\n\n" + cuerpo()).catch(() => {}); } catch(e){}
+    avisoGuardado("correo abierto");
+  });
   el("el-copiar").addEventListener("click", copiar);
   el("el-excel").addEventListener("click", excel);
   el("el-marcar").addEventListener("click", () => marcar(false));
