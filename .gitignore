@@ -57,3 +57,6 @@ scripts/scraper/.arca_profile/
 data/arca/_dump/
 data/arca/_lpg_ventanas/
 data/arca/_lpg_pdf/
+
+# Snapshots del reporte horario DEM-SUP: se regeneran solos y se limpian a los 200
+data/reportes_demsup/
