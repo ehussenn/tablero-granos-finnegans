@@ -57,6 +57,27 @@ SOLAPAS = [
 ]
 
 
+# Los cuatro casilleros que pidio: primaria y secundaria, emitidas y recibidas.
+# Cada COE cae en uno solo, asi que las toneladas no se cuentan dos veces aunque
+# la misma liquidacion aparezca en dos consultas de ARCA.
+CASILLEROS = [
+    ("primaria",   "emitida",  "LPG Emitidas",  "compra",
+     "Primarias que emite Agronasaja a los productores: sus COMPRAS."),
+    ("primaria",   "recibida", "LPG Recibidas", "venta",
+     "Primarias que le emiten a Agronasaja: sus VENTAS. Son las que hay que pasar a mano."),
+    ("secundaria", "emitida",  "LSG Emitidas",  "venta",
+     "Secundarias donde Agronasaja es el vendedor (las emite el o su corredor)."),
+    ("secundaria", "recibida", "LSG Recibidas", "compra",
+     "Secundarias que le emiten a Agronasaja: compras a no productores."),
+]
+
+
+# Desde cuando se reclama que falta pasar una liquidacion. Las anteriores el
+# usuario las dio por cerradas el 16/09/2026: se siguen bajando y se ven en el
+# detalle, pero no entran en los totales de "falta ingresar".
+DESDE_RECLAMO = "2026-01-01"
+
+
 def log(*a):
     print(*a, flush=True)
 
@@ -236,14 +257,25 @@ def main():
     principales = {"lpg_recibidas", "lsg_emitidas", "lpg_emitidas", "lsg_recibidas"}
     act_todas = [x for x in filas if not anulada(x["estado"])]
     falt_unicas = {}
+    n_viejas = 0
     for x in act_todas:
         if x["en_fnn"]:
+            continue
+        # Las de 2025 no se reclaman: el usuario las dio por cerradas (16/09/2026).
+        # Se siguen bajando y quedan en el detalle, pero no cuentan como "falta
+        # ingresar" ni suman toneladas ni importe.
+        if x["fecha"] and x["fecha"] < DESDE_RECLAMO:
+            x["fuera_de_periodo"] = True
+            n_viejas += 1
             continue
         # una misma liquidacion puede aparecer en dos consultas: la cuento una vez
         ant = falt_unicas.get(x["coe"])
         if ant is None or (ant["consulta"] not in principales and x["consulta"] in principales):
             falt_unicas[x["coe"]] = x
     falt = sorted(falt_unicas.values(), key=lambda x: x["fecha"], reverse=True)
+    if n_viejas:
+        log(f"    [i] {n_viejas} liquidaciones anteriores al {DESDE_RECLAMO} quedan fuera "
+            f"del reclamo (regla del usuario 16/09/2026)")
 
     # ── resumen por solapa ─────────────────────────────────────────────────────
     # los faltantes se cuentan desde la lista deduplicada, para que la tarjeta de
@@ -264,13 +296,59 @@ def main():
             "faltan_importe": round(sum(x["importe"] for x in falt_s), 2),
             "faltan_sin_kg": sum(1 for x in falt_s if not x["con_kg"]),
             "faltan_ajuste": sum(1 for x in falt_s if x["ajuste"]),
+            # toneladas de TODA la solapa, no solo de lo pendiente
+            "tn_total": round(sum(x["tn"] for x in act), 1),
+            "tn_cruzado": round(sum(x["tn"] for x in act if x["en_fnn"]), 1),
+            "importe_total": round(sum(x["importe"] for x in act), 2),
+            "sin_kg": sum(1 for x in act if not x["con_kg"]),
         })
         log(f"    {etiqueta:20s} {len(rs):5d} filas · {len(act):5d} activas · "
             f"{sum(1 for x in act if x['en_fnn']):5d} en Finnegans · {len(falt_s):5d} faltan "
             f"· {sum(x['tn'] for x in falt_s):10,.1f} tn")
 
+    # ── resumen en los cuatro casilleros, cada COE una sola vez ────────────────
+    uno_por_coe: dict[str, dict] = {}
+    for x in act_todas:
+        ant = uno_por_coe.get(x["coe"])
+        # entre dos filas del mismo COE me quedo con la que tenga toneladas
+        if ant is None or (not ant.get("tn") and x.get("tn")):
+            uno_por_coe[x["coe"]] = x
+    casilleros = []
+    for tipo, flujo, etiqueta, lado, ayuda in CASILLEROS:
+        rs = [x for x in uno_por_coe.values() if x["tipo"] == tipo and x["flujo"] == flujo]
+        cruz = [x for x in rs if x["en_fnn"]]
+        fal = [x for x in rs if not x["en_fnn"]]
+        casilleros.append({
+            "tipo": tipo, "flujo": flujo, "etiqueta": etiqueta, "lado": lado, "ayuda": ayuda,
+            "n": len(rs), "tn": round(sum(x["tn"] for x in rs), 1),
+            "importe": round(sum(x["importe"] for x in rs), 2),
+            "n_cruzado": len(cruz), "tn_cruzado": round(sum(x["tn"] for x in cruz), 1),
+            "n_faltan": len(fal), "tn_faltan": round(sum(x["tn"] for x in fal), 1),
+            "importe_faltan": round(sum(x["importe"] for x in fal), 2),
+            "sin_kg": sum(1 for x in rs if not x["con_kg"]),
+        })
+    log("\n[=] EMITIDAS Y RECIBIDAS, en toneladas (cada COE una sola vez):")
+    log(f"    {'CASILLERO':16s} {'LADO':7s} {'N':>5s} {'TN TOTAL':>12s} "
+        f"{'TN EN FNN':>12s} {'TN FALTAN':>12s}")
+    for c in casilleros:
+        log(f"    {c['etiqueta']:16s} {c['lado']:7s} {c['n']:>5d} {c['tn']:>12,.1f} "
+            f"{c['tn_cruzado']:>12,.1f} {c['tn_faltan']:>12,.1f}")
+    log(f"    {'TOTAL':16s} {'':7s} {sum(c['n'] for c in casilleros):>5d} "
+        f"{sum(c['tn'] for c in casilleros):>12,.1f} "
+        f"{sum(c['tn_cruzado'] for c in casilleros):>12,.1f} "
+        f"{sum(c['tn_faltan'] for c in casilleros):>12,.1f}")
+    _sink = sum(c["sin_kg"] for c in casilleros)
+    if _sink:
+        log(f"    [!] {_sink} liquidaciones sin toneladas todavia "
+            f"(corre scripts/arca_liq_kg.py)")
+
     kpi = {
         "arca_coes": len({x["coe"] for x in filas}),
+        # toneladas de todo el universo de ARCA, cruzado y pendiente
+        "tn_total": round(sum(c["tn"] for c in casilleros), 1),
+        "tn_cruzado": round(sum(c["tn_cruzado"] for c in casilleros), 1),
+        "importe_total": round(sum(c["importe"] for c in casilleros), 2),
+        "sin_kg": sum(c["sin_kg"] for c in casilleros),
         "fnn_coes": len(FC),
         "activas": len({x["coe"] for x in act_todas}),
         "en_fnn": len({x["coe"] for x in act_todas if x["en_fnn"]}),
@@ -326,6 +404,7 @@ def main():
         "rango_arca": [r0, r1],
         "rango_fnn": fnn.get("rango"),
         "kpi": kpi,
+        "casilleros": casilleros,
         "solapas": solapas,
         "filas": limpia(filas),
         "faltan": limpia(falt),

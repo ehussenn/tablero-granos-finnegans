@@ -175,9 +175,11 @@ def main() -> None:
         # primer cruce: define cuales faltan pasar
         corre([py, "scripts/arca_liq_cruce.py"], "cruce liquidaciones")
         if not a.solo_cruce:
-            # los kilos no estan en la grilla de ARCA: hay que abrir el comprobante
-            # de cada una de las que faltan (queda cacheado en data/arca/_lpg_pdf)
-            corre([py, "scripts/arca_liq_kg.py"], "kilos de ARCA")
+            # las toneladas no estan en la grilla de ARCA: hay que abrir el
+            # comprobante de cada liquidacion (emitidas y recibidas, primaria y
+            # secundaria). Queda cacheado en data/arca/_lpg_pdf, asi que cada dia
+            # solo baja las nuevas.
+            corre([py, "scripts/arca_liq_kg.py"], "toneladas de ARCA")
             # segundo cruce: pega los kilos y los importes al resultado
             corre([py, "scripts/arca_liq_cruce.py"], "cruce liquidaciones con kilos")
 
@@ -220,6 +222,12 @@ def main() -> None:
             if len(ahora_liq) > 25:
                 log(f"   ... y {len(ahora_liq) - 25} mas (estan todas en la solapa del tablero)")
 
+    # Respaldo de lo que se carga a mano (pedido del usuario 16/09/2026). Va antes
+    # de publicar para que la foto del dia entre en el mismo commit. Es solo
+    # lectura contra el Worker; la Posicion Granaria queda afuera a pedido suyo.
+    titulo("5bis/6  Respaldo de las cargas manuales")
+    corre([py, "scripts/respaldo_tablero.py"], "respaldo")
+
     if a.sin_publicar:
         titulo("6/6  Tablero — salteado (--sin-publicar)")
     else:
@@ -229,9 +237,10 @@ def main() -> None:
                 (["git", "add", "data/arca_cruce.json", "data/ctg_finnegans.json",
                   "data/arca/cpe_solicitadas.json", "data/arca/cpe_participantes.json",
                   "data/arca_liq_cruce.json", "data/liq_coes_finnegans.json",
-                  "data/arca/lpg_liquidaciones.json", "data/arca/lpg_detalle.json"], "git add"),
+                  "data/arca/lpg_liquidaciones.json", "data/arca/lpg_detalle.json",
+                  "data/arca/lpg_codigos.json", "data/respaldos"], "git add"),
                 (["git", "commit", "-q", "-m",
-                  f"Cruce CP y Liquidaciones ARCA vs Finnegans: datos al {date.today().isoformat()}"],
+                  f"Cruces ARCA y respaldo de cargas manuales: datos al {date.today().isoformat()}"],
                  "git commit"),
                 (["git", "push", "-q", "origin", "main"], "git push"),
             ):

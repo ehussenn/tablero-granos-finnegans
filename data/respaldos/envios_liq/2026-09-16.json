@@ -1,0 +1,108 @@
+[
+ {
+  "id": "e1789487688898_3fhrb",
+  "fecha": "2026-09-15",
+  "cto": "1149",
+  "org": "DUBINI GUILLERMO JOSE",
+  "prod": "Grano Maíz",
+  "tpl": "pago",
+  "com": "Hugo Gonzalez",
+  "adm": "Evangelina Santoro",
+  "para": "hgonzalez@agronasaja.com.ar; esantoro@agronasaja.com.ar",
+  "liq": "97.5",
+  "nd": "1.25",
+  "comis": "2",
+  "pagof": "2026-09-21",
+  "ctgs": [
+   {
+    "ctg": "10134535539",
+    "cp": "00000-00000766",
+    "fecha": "2026-08-20",
+    "kg": 30340,
+    "kg_cp": 30340,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 299000,
+    "cliente": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
+    "flete": "TOMAS HNOS Y CIA SA"
+   },
+   {
+    "ctg": "10134630539",
+    "cp": "00000-00000801",
+    "fecha": "2026-08-24",
+    "kg": 30260,
+    "kg_cp": 30260,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 299000,
+    "cliente": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+    "flete": "DUBINI GUILLERMO JOSE"
+   }
+  ]
+ },
+ {
+  "id": "e1789494286908_jvyv3",
+  "fecha": "2026-09-15",
+  "cto": "1072",
+  "org": "DUBINI GUILLERMO JOSE",
+  "prod": "Grano Soja",
+  "tpl": "pago",
+  "com": "Hugo Gonzalez",
+  "adm": "Evangelina Santoro",
+  "para": "hgonzalez@agronasaja.com.ar; esantoro@agronasaja.com.ar",
+  "liq": "97.5",
+  "nd": "1.25",
+  "comis": "2",
+  "pagof": "2026-09-21",
+  "ctgs": [
+   {
+    "ctg": "10131837505",
+    "cp": "00000-00000646",
+    "fecha": "2026-05-07",
+    "kg": 748,
+    "kg_cp": 34780,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "VICENTIN SAIC",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10132247468",
+    "cp": "00000-00000668",
+    "fecha": "2026-05-18",
+    "kg": 18030,
+    "kg_cp": 30360,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10132259682",
+    "cp": "00000-00000671",
+    "fecha": "2026-05-19",
+    "kg": 2670,
+    "kg_cp": 36460,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "LDC ARGENTINA S.A.",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10134744750",
+    "cp": "00000-00000807",
+    "fecha": "2026-08-28",
+    "kg": 4480,
+    "kg_cp": 36790,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "LDC ARGENTINA S.A.",
+    "flete": "DUBINI GUILLERMO JOSE"
+   }
+  ]
+ }
+]
