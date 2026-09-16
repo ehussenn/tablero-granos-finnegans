@@ -1,0 +1,589 @@
+ACTUALIZAR CRUCE CP  Â·  14/09/2026 08:26
+Antes de esta corrida faltaban 25 camiones (25 de ellos para ingresar de verdad)
+Y faltaban pasar 143 liquidaciones
+
+==========================================================================
+  1/6  ARCA â€” bajando cartas de porte
+==========================================================================
+$ scripts/arca_cpe_scraper.py --desde 2026-07-31 --solo solicitadas --forzar
+[+] ARCA CPE Â· 2026-07-31 -> 2026-09-14 Â· 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 31/07/2026: pagina 1 Â· +30 filas (total 30)
+    solicitadas Productor 31/07/2026: pagina 2 Â· +10 filas (total 40)
+    solicitadas Productor 31/07/2026: no hay mas paginas
+    criterio: Productor
+    filas por pagina -> 30
+    solicitadas Productor 30/08/2026: pagina 1 Â· +30 filas (total 30)
+    solicitadas Productor 30/08/2026: pagina 2 Â· +24 filas (total 54)
+    solicitadas Productor 30/08/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 31/07/2026: pagina 1 Â· +16 filas (total 16)
+    solicitadas Operador 31/07/2026: no hay mas paginas
+    criterio: Operador / Planta - 542974 - Ruta 32 Km 3 - SEMILLERO Y/O PROCESADOR DE SEMILLAS (80)
+    filas por pagina -> 30
+    solicitadas Operador 30/08/2026: pagina 1 Â· +5 filas (total 5)
+    solicitadas Operador 30/08/2026: no hay mas paginas
+    -> cpe_solicitadas.json: 115 filas
+[+] consolidado: 115 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+$ scripts/arca_cpe_scraper.py --desde 2026-07-31 --solo participantes --roles Destinatario (G/DG);Remitente Comercial Primario (G);Remitente Comercial Secundario (G);Remitente Comercial Productor (G);Transportista (G/DG);Representante Recibidor (G);Pagador Flete Pagador (G/DG) --forzar
+[+] ARCA CPE Â· 2026-07-31 -> 2026-09-14 Â· 2 ventanas de hasta 30 dias
+[+] entrando como 20-****-5
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+    servicio abierto -> https://cpea-app.afip.gob.ar/cpe-web/secure/index.html#/relation-selector  (pestana nueva)
+    representado confirmado (Agronasaja) via .modal-footer button.btn-primary
+    dentro como Agronasaja
+    filas por pagina -> 50
+    part Destinatario (G/DG 31/07/2026: pagina 1 Â· +4 filas (total 4)
+    part Destinatario (G/DG 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Destinatario (G/DG 30/08/2026: pagina 1 Â· +7 filas (total 7)
+    part Destinatario (G/DG 30/08/2026: no hay mas paginas
+    ROL Destinatario (G/DG): 11 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 31/07/2026: pagina 1 Â· +50 filas (total 50)
+    part Remitente Comercia 31/07/2026: pagina 2 Â· +17 filas (total 67)
+    part Remitente Comercia 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 30/08/2026: pagina 1 Â· +40 filas (total 40)
+    part Remitente Comercia 30/08/2026: no hay mas paginas
+    ROL Remitente Comercial Primario (G): 107 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 31/07/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 30/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 30/08/2026: no hay mas paginas
+    ROL Remitente Comercial Secundario (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Remitente Comercia 31/07/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Remitente Comercia 30/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Remitente Comercia 30/08/2026: no hay mas paginas
+    ROL Remitente Comercial Productor (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Transportista (G/D 31/07/2026: pagina 1 Â· +3 filas (total 3)
+    part Transportista (G/D 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Transportista (G/D 30/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Transportista (G/D 30/08/2026: no hay mas paginas
+    ROL Transportista (G/DG): 3 filas en todo el rango
+    filas por pagina -> 50
+    part Representante Reci 31/07/2026: pagina 1 Â· +0 filas (total 0)
+    part Representante Reci 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Representante Reci 30/08/2026: pagina 1 Â· +0 filas (total 0)
+    part Representante Reci 30/08/2026: no hay mas paginas
+    ROL Representante Recibidor (G): 0 filas en todo el rango
+    filas por pagina -> 50
+    part Pagador Flete Paga 31/07/2026: pagina 1 Â· +50 filas (total 50)
+    part Pagador Flete Paga 31/07/2026: pagina 2 Â· +17 filas (total 67)
+    part Pagador Flete Paga 31/07/2026: no hay mas paginas
+    filas por pagina -> 50
+    part Pagador Flete Paga 30/08/2026: pagina 1 Â· +50 filas (total 50)
+    part Pagador Flete Paga 30/08/2026: pagina 2 Â· +47 filas (total 97)
+    part Pagador Flete Paga 30/08/2026: no hay mas paginas
+    ROL Pagador Flete Pagador (G/DG): 164 filas en todo el rango
+    -> cpe_participantes.json: 285 filas
+[+] consolidado: 267 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+$ scripts/arca_cpe_scraper.py --consolidar
+    -> cpe_solicitadas.json: 766 filas
+    -> cpe_participantes.json: 1313 filas
+[+] consolidado desde cache: 766 solicitadas + 1313 participantes -> 1449 CTG unicos
+
+==========================================================================
+  2/6  Finnegans â€” traslados de grano con CTG
+==========================================================================
+$ scripts/arca_ctg_cruce.py
+[+] Finnegans: 8249 traslados Â· 6939 con CTG (5207 CTG unicos) Â· 1310 sin CTG
+    215,245.2 tn con CTG
+        3438 camiones Â·   104,372.3 tn  PRODUCCIÃ“N (CPE propia)
+        1685 camiones Â·    54,172.5 tn  VENTA
+        1685 camiones Â·    54,109.9 tn  COMPRA
+         115 camiones Â·     2,117.7 tn  COMPRA SEMILLA
+          12 camiones Â·       341.6 tn  SEMILLA PROPIA
+           4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1710 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+
+==========================================================================
+  3/6  Cruce por CTG
+==========================================================================
+$ scripts/arca_ctg_cruce.py --cruce
+[+] ARCA 1346 CTG - Finnegans 5207 CTG (rango ARCA 2026-02-01 a 2026-09-10)
+    NO ingresados en Finnegans: 25 camiones - 1,180.9 tn
+    de esos, A INGRESAR (estado activo/confirmado): 25 - 1,180.9 tn
+    en Finnegans sin CPE en ARCA: 1859
+    con diferencia de kilos > 50: 1321
+
+    por estado:
+         13 camiones -     629.3 tn  Activa
+          6 camiones -     276.8 tn  Activa con confirmacion de arribo
+          6 camiones -     274.8 tn  Confirmada
+
+    por cultivo:
+         25 camiones -   1,180.9 tn  MaÃ­z
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+
+==========================================================================
+  RESULTADO
+==========================================================================
+[--] NO se cargo ninguno de los camiones que faltaban.
+
+AHORA FALTAN: 25 camiones en total Â· 25 para ingresar de verdad (1,180.9 tn)
+
+Los que hay que cargar (confirmadas / activas), primeros 25:
+   CARTA DE PORTE     CTG           FECHA       CULTIVO           KG  ESTADO
+   00000-00011611     10134864930   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011610     10134864565   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011609     10134863883   02/09/2026  MaÃ­z          51,800  Activa
+   00000-00011606     10134860992   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011601     10134858403   02/09/2026  MaÃ­z          45,000  Activa
+   00000-00011598     10134857251   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011597     10134856879   02/09/2026  MaÃ­z          45,000  Activa con confirmacion de arribo
+   00000-00011614     10134875566   03/09/2026  MaÃ­z          51,800  Activa con confirmacion de arribo
+   00000-00011616     10134895038   04/09/2026  MaÃ­z          51,800  Confirmada
+   00000-00011621     10134930012   06/09/2026  MaÃ­z          45,000  Activa
+   00000-00011620     10134929998   06/09/2026  MaÃ­z          45,000  Activa
+   00000-00011619     10134929976   06/09/2026  MaÃ­z          45,000  Activa
+   00000-00011618     10134929934   06/09/2026  MaÃ­z          52,500  Activa
+   00000-00011617     10134929913   06/09/2026  MaÃ­z          52,500  Activa
+   00000-00011638     10135038222   10/09/2026  MaÃ­z          52,500  Activa
+   00000-00011637     10135038208   10/09/2026  MaÃ­z          52,500  Activa
+   00000-00011636     10135038201   10/09/2026  MaÃ­z          45,000  Activa
+   00000-00011635     10135038192   10/09/2026  MaÃ­z          52,500  Activa
+   00000-00011634     10135038182   10/09/2026  MaÃ­z          45,000  Activa
+   00000-00011633     10135037480   10/09/2026  MaÃ­z          45,000  Activa
+   00000-00000237     10134776584   29/08/2026  MaÃ­z          45,000  Confirmada
+   00000-00000236     10134774281   29/08/2026  MaÃ­z          45,000  Confirmada
+   00000-00000235     10134773241   29/08/2026  MaÃ­z          43,500  Confirmada
+   00000-00000234     10134772083   29/08/2026  MaÃ­z          44,900  Confirmada
+   00000-00000233     10134771448   29/08/2026  MaÃ­z          44,600  Confirmada
+
+==========================================================================
+  4/6  ARCA â€” bajando liquidaciones primarias y secundarias
+==========================================================================
+$ scripts/arca_lpg_scraper.py --desde 2026-07-31 --forzar
+[+] ARCA liquidaciones - 2026-07-31 a 2026-09-14 - ventanas de 45 dias
+[1] login
+    despues del login: https://portalcf.cloud.afip.gob.ar/portal/app/ (OK)
+[2] entrando al servicio de liquidaciones
+    servicio abierto (AGRONASAJA SRL) -> https://serviciosjava2.afip.gob.ar/lpg/jsp/setearContribuyente.do?idContribuyent
+
+[3] lpg_emitidas
+    lpg_emitidas 2026-07-31 a 2026-09-13: 194 filas
+    lpg_emitidas 2026-09-14 a 2026-09-14: 0 filas
+
+[3] lpg_recibidas
+    lpg_recibidas 2026-07-31 a 2026-09-13: 244 filas
+    lpg_recibidas 2026-09-14 a 2026-09-14: 0 filas
+
+[3] lsg_emitidas
+    lsg_emitidas 2026-07-31 a 2026-09-13: 36 filas
+    lsg_emitidas 2026-09-14 a 2026-09-14: 0 filas
+
+[3] lsg_recibidas
+    lsg_recibidas 2026-07-31 a 2026-09-13: 1 filas
+    lsg_recibidas 2026-09-14 a 2026-09-14: 0 filas
+
+[3] lpg_por_comprador
+    lpg_por_comprador 2026-07-31 a 2026-09-13: 199 filas
+    lpg_por_comprador 2026-09-14 a 2026-09-14: 0 filas
+
+[3] lsg_por_vendedor
+    lsg_por_vendedor 2026-07-31 a 2026-09-13: 68 filas
+    lsg_por_vendedor 2026-09-14 a 2026-09-14: 0 filas
+
+[OK] 6432 liquidaciones (4376 COE unicos) -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\lpg_liquidaciones.json
+     lpg_emitidas      1501
+     lpg_recibidas     1801
+     lsg_emitidas       555
+     lsg_recibidas       52
+     lpg_por_comprador  1501
+     lsg_por_vendedor  1022
+
+==========================================================================
+  5/6  Finnegans â€” COE de liquidaciones y cruce
+==========================================================================
+$ scripts/finn_liq_coes.py
+[1] API de transacciones (7 series, incremental)
+    LIQPRICPRA       snapshot   308 docs · sigo desde 338
+    LIQPRICPRA       -> 308 docs (+0 nuevas)
+    LIQCPRAGRA       snapshot  1742 docs · sigo desde 1819
+    LIQCPRAGRA       -> 1742 docs (+0 nuevas)
+    LIQCPRASEM       snapshot   123 docs · sigo desde 155
+    LIQCPRASEM       -> 123 docs (+0 nuevas)
+    LIQ-PRI-VTA      snapshot  2428 docs · sigo desde 2545
+    LIQ-PRI-VTA      -> 2428 docs (+0 nuevas)
+    LIQ-SEC-VTA      snapshot   947 docs · sigo desde 992
+    LIQ-SEC-VTA      -> 947 docs (+0 nuevas)
+    LIQ-VTA-INT      snapshot   665 docs · sigo desde 687
+    LIQ-VTA-INT      -> 665 docs (+0 nuevas)
+    LIQ-PRI-VTA-INT  snapshot   602 docs · sigo desde 641
+    LIQ-PRI-VTA-INT  -> 602 docs (+0 nuevas)
+
+[2] Datawarehouse (liquidaciones de venta)
+    DW venta -> 2783 filas
+
+[OK] 6834 COE de Finnegans -> liq_coes_finnegans.json
+     rango 2023-08-02 a 2026-09-11
+     compra: 2165
+     venta: 4669
+$ scripts/arca_liq_cruce.py
+[+] ARCA: 6432 filas · Finnegans: 6834 COE
+    kilos del PDF de ARCA: 4376 liquidaciones
+
+[!] 8 COE mal tipeados en Finnegans (el de ARCA existe con un digito distinto):
+      LIQPRICPRA - 320       2026-08-25  220132288389 -> 330132288389 (prefijo 2201 -> 3301)
+      LIQCPRAGRA - 1711      2026-08-19  331032236611 -> 330132236611 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1671      2026-07-29  331032070240 -> 330132070240 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1672      2026-07-29  331032068965 -> 330132068965 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1673      2026-07-29  331032068905 -> 330132068905 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1674      2026-07-29  331032068841 -> 330132068841 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1675      2026-07-29  331032068620 -> 330132068620 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1676      2026-07-29  331032068517 -> 330132068517 (digitos 3-4 dados vuelta)
+    LPG Recibidas         1801 filas ·  1732 activas ·  1659 en Finnegans ·    73 faltan ·    5,268.4 tn
+    LSG Emitidas           555 filas ·   540 activas ·   539 en Finnegans ·     1 faltan ·        0.0 tn
+    LPG Emitidas          1501 filas ·  1452 activas ·  1446 en Finnegans ·     6 faltan ·      349.6 tn
+    LSG Recibidas           52 filas ·    49 activas ·     7 en Finnegans ·    41 faltan ·    2,872.5 tn
+    LSG por Vendedor      1022 filas ·  1022 activas ·  1002 en Finnegans ·    20 faltan ·      926.7 tn
+    LPG por Comprador     1501 filas ·  1501 activas ·  1493 en Finnegans ·     2 faltan ·      349.6 tn
+
+[=] EMITIDAS Y RECIBIDAS, en toneladas (cada COE una sola vez):
+    CASILLERO        LADO        N     TN TOTAL    TN EN FNN    TN FALTAN
+    LPG Emitidas     compra   1501     89,541.0     88,841.8        699.1
+    LPG Recibidas    venta    1732    152,733.0    147,464.5      5,268.4
+    LSG Emitidas     venta    1023     96,315.1     95,388.4        926.7
+    LSG Recibidas    compra     48      3,367.8        495.3      2,872.5
+    TOTAL                     4304    341,956.9    332,190.0      9,766.7
+
+[=] COE de ARCA: 4376 (4304 activos) · en Finnegans 4161 · FALTAN 143 (94 de venta, 49 de compra)
+[=] KILOS que faltan pasar: 9,766.8 tn (5,967.6 primaria + 3,799.2 secundaria) · $ 3,426,760,022
+    de esas, 35 son ajustes de precio (0 tn nuevas) por $ 279,957,848
+[=] cargados en Finnegans sin liquidacion en ARCA: 3 (referencial)
+
+    primeras que faltan ingresar:
+      2026-09-11  330132462581  prim compra WEB  JTF SRL
+      2026-09-11  330132462359  prim compra WEB  JTF SRL
+      2026-09-11  330232465523  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-11  330132466923  prim venta  WS   LDC ARGENTINA S.A.
+      2026-09-11  330232465520  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-11  330132469521  prim venta  WS   ACEITERA GENERAL DEHEZA S.A.
+      2026-09-11  330132458740  prim venta  WS   LBO S A
+      2026-09-10  330232448143  prim venta  WS   INTAGRO SOCIEDAD ANONIMA
+      2026-09-10  330232455710  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-10  330232455594  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-10  330232455002  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+      2026-09-10  331009446851  secu venta  WS   LBO S A
+      2026-09-09  330232442881  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+      2026-09-09  330132435648  prim venta  WS   LBO S A
+      2026-09-09  330232442869  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+
+    faltantes por contraparte:
+        20  AGRO BAYER S. R. L.
+        17  PUERTO ARROYO SECO SA
+        10  CANZANI CASAS SA
+        10  ASOCIACION DE COOPERATIVAS ARGENTINAS - COOP. LTDA
+         9  TOMAS HNOS Y CIA SA
+         8  ACEITERA GENERAL DEHEZA S.A.
+         7  LBO S A
+         6  LA BRAGADENSE SOCIEDAD ANONIMA
+         5  ACOPIOS DEL SUR SA
+         5  AGROFONTEZUELAS S. A.
+         4  LDC ARGENTINA S.A.
+         4  INTAGRO SOCIEDAD ANONIMA
+
+[OK] -> arca_liq_cruce.json (3,366 KB)
+$ scripts/arca_liq_kg.py
+[+] 4376 liquidaciones a mirar · 4376 ya con toneladas · 0 PDF por bajar
+
+[OK] 4376 liquidaciones con toneladas · 352,085.8 tn -> lpg_detalle.json
+     de las 143 que faltan pasar tengo tn de 143: 9,766.8 tn · $ 3,426,760,022
+$ scripts/arca_liq_cruce.py
+[+] ARCA: 6432 filas · Finnegans: 6834 COE
+    kilos del PDF de ARCA: 4376 liquidaciones
+
+[!] 8 COE mal tipeados en Finnegans (el de ARCA existe con un digito distinto):
+      LIQPRICPRA - 320       2026-08-25  220132288389 -> 330132288389 (prefijo 2201 -> 3301)
+      LIQCPRAGRA - 1711      2026-08-19  331032236611 -> 330132236611 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1671      2026-07-29  331032070240 -> 330132070240 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1672      2026-07-29  331032068965 -> 330132068965 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1673      2026-07-29  331032068905 -> 330132068905 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1674      2026-07-29  331032068841 -> 330132068841 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1675      2026-07-29  331032068620 -> 330132068620 (digitos 3-4 dados vuelta)
+      LIQCPRAGRA - 1676      2026-07-29  331032068517 -> 330132068517 (digitos 3-4 dados vuelta)
+    LPG Recibidas         1801 filas ·  1732 activas ·  1659 en Finnegans ·    73 faltan ·    5,268.4 tn
+    LSG Emitidas           555 filas ·   540 activas ·   539 en Finnegans ·     1 faltan ·        0.0 tn
+    LPG Emitidas          1501 filas ·  1452 activas ·  1446 en Finnegans ·     6 faltan ·      349.6 tn
+    LSG Recibidas           52 filas ·    49 activas ·     7 en Finnegans ·    41 faltan ·    2,872.5 tn
+    LSG por Vendedor      1022 filas ·  1022 activas ·  1002 en Finnegans ·    20 faltan ·      926.7 tn
+    LPG por Comprador     1501 filas ·  1501 activas ·  1493 en Finnegans ·     2 faltan ·      349.6 tn
+
+[=] EMITIDAS Y RECIBIDAS, en toneladas (cada COE una sola vez):
+    CASILLERO        LADO        N     TN TOTAL    TN EN FNN    TN FALTAN
+    LPG Emitidas     compra   1501     89,541.0     88,841.8        699.1
+    LPG Recibidas    venta    1732    152,733.0    147,464.5      5,268.4
+    LSG Emitidas     venta    1023     96,315.1     95,388.4        926.7
+    LSG Recibidas    compra     48      3,367.8        495.3      2,872.5
+    TOTAL                     4304    341,956.9    332,190.0      9,766.7
+
+[=] COE de ARCA: 4376 (4304 activos) · en Finnegans 4161 · FALTAN 143 (94 de venta, 49 de compra)
+[=] KILOS que faltan pasar: 9,766.8 tn (5,967.6 primaria + 3,799.2 secundaria) · $ 3,426,760,022
+    de esas, 35 son ajustes de precio (0 tn nuevas) por $ 279,957,848
+[=] cargados en Finnegans sin liquidacion en ARCA: 3 (referencial)
+
+    primeras que faltan ingresar:
+      2026-09-11  330132462581  prim compra WEB  JTF SRL
+      2026-09-11  330132462359  prim compra WEB  JTF SRL
+      2026-09-11  330232465523  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-11  330132466923  prim venta  WS   LDC ARGENTINA S.A.
+      2026-09-11  330232465520  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-11  330132469521  prim venta  WS   ACEITERA GENERAL DEHEZA S.A.
+      2026-09-11  330132458740  prim venta  WS   LBO S A
+      2026-09-10  330232448143  prim venta  WS   INTAGRO SOCIEDAD ANONIMA
+      2026-09-10  330232455710  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-10  330232455594  prim venta  WS   LA BRAGADENSE SOCIEDAD ANONIMA
+      2026-09-10  330232455002  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+      2026-09-10  331009446851  secu venta  WS   LBO S A
+      2026-09-09  330232442881  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+      2026-09-09  330132435648  prim venta  WS   LBO S A
+      2026-09-09  330232442869  prim venta  WS   GROBOCOPATEL HERMANOS SOCIEDAD ANONIMA
+
+    faltantes por contraparte:
+        20  AGRO BAYER S. R. L.
+        17  PUERTO ARROYO SECO SA
+        10  CANZANI CASAS SA
+        10  ASOCIACION DE COOPERATIVAS ARGENTINAS - COOP. LTDA
+         9  TOMAS HNOS Y CIA SA
+         8  ACEITERA GENERAL DEHEZA S.A.
+         7  LBO S A
+         6  LA BRAGADENSE SOCIEDAD ANONIMA
+         5  ACOPIOS DEL SUR SA
+         5  AGROFONTEZUELAS S. A.
+         4  LDC ARGENTINA S.A.
+         4  INTAGRO SOCIEDAD ANONIMA
+
+[OK] -> arca_liq_cruce.json (3,366 KB)
+
+==========================================================================
+  RESULTADO LIQUIDACIONES
+==========================================================================
+[--] NO se paso ninguna de las liquidaciones que faltaban.
+
+AHORA FALTAN PASAR: 143 liquidaciones Â· 9,766.8 tn Â· $ 3,426,760,022 (94 de venta, 49 de compra)
+   primaria 5,967.6 tn Â· secundaria 3,799.2 tn
+
+Las que hay que pasar, primeras 25:
+   FECHA       COE            LIQ         LADO            TN      IMPORTE $  CONTRAPARTE
+   2026-09-11  330132466923   primaria    venta    1,785.439    590,484,100  LDC ARGENTINA S.A.
+   2025-09-30  331008433095   secundaria  compra     520.580    141,169,294  J.H.B. SAU
+   2025-09-30  331008433090   secundaria  compra     484.440    131,368,959  J.H.B. SAU
+   2026-09-08  330232433092   primaria    venta      467.147    143,483,530  ALLARIA AGROFINANZAS S.A.
+   2026-09-09  331009443222   secundaria  venta      297.000     97,173,938  CANZANI CASAS SA
+   2026-09-11  330232465523   primaria    venta      277.876     92,211,911  LA BRAGADENSE SOCIEDAD ANONIMA
+   2025-09-01  331008344370   secundaria  compra     241.660     65,514,195  ACOPIOS DEL SUR SA
+   2026-09-07  330132414698   primaria    venta      216.007     61,429,153  FRIGORIFICO RIOPLATENSE S A I C I F
+   2025-09-03  331008350282   secundaria  compra     213.970     57,539,272  PUERTO ARROYO SECO SA
+   2026-09-03  330132384659   primaria    venta      208.890     62,058,731  LBO S A
+   2026-05-07  330131203412   primaria    compra     199.370     62,037,564  AGROPECUARIA PLAZIBAT
+   2026-05-07  330131201826   primaria    compra     199.370     62,037,564  AGROPECUARIA PLAZIBAT
+   2025-10-29  331008506788   secundaria  compra     181.228     54,311,685  AGROFONTEZUELAS S. A.
+   2026-09-09  330132435648   primaria    venta      177.160     52,667,167  LBO S A
+   2026-09-02  330232373170   primaria    venta      166.646     49,751,980  LA BRAGADENSE SOCIEDAD ANONIMA
+   2026-09-11  330132458740   primaria    venta      160.540     47,758,030  LBO S A
+   2025-09-16  331008388325   secundaria  compra     152.390     45,420,091  PUERTO ARROYO SECO SA
+   2025-09-17  330129497564   primaria    compra     150.200     53,115,449  ESTANCIA MIRAFLORES SA
+   2025-09-16  330129485985   primaria    compra     150.200     53,115,449  ESTANCIA MIRAFLORES SA
+   2026-09-10  330232448143   primaria    venta      141.240     42,265,371  INTAGRO SOCIEDAD ANONIMA
+   2025-07-23  331008223300   secundaria  compra     139.593     57,435,086  QUANTA S.A.
+   2025-06-27  331008139726   secundaria  compra     120.000     46,821,060  QUANTA S.A.
+   2025-10-02  331008437586   secundaria  compra     119.940     35,606,504  PUERTO ARROYO SECO SA
+   2026-09-02  330232375606   primaria    venta      119.175     37,606,249  ASOCIACION DE COOPERATIVAS ARGENTINAS 
+   2025-06-02  331008053104   secundaria  compra     106.220     36,385,661  AST AGRO S.A.
+   ... y 118 mas (estan todas en la solapa del tablero)
+
+==========================================================================
+  6/6  Tablero â€” regenerando y publicando
+==========================================================================
+$ build.py
+[+] DW Postgres disponible (FNN_DW_HOST seteado)
+[+] Autenticando contra API de Finnegans ...
+[+] Token OK
+[+] Contratos COMPRA/VENTA: usando reporte REST de Finnegans (no DW)
+[+] Fallback API REST para contratos faltantes...
+  [compra  ] Resumen Contrato Compra Granos              -> GET /reports/ResumenContratoCompraGranos
+    -> 1397 filas (descarté 7 anulados de 1404)
+  [venta   ] Resumen Contratos Venta Granos              -> GET /reports/resumenContratosVentaGranos
+    -> 1169 filas (descarté 29 anulados de 1198)
+  [posicion] Composicion Saldos (Email c/Vendedor)       -> GET /reports/USR_ComposicionSaldosResumenParaEmail_API
+    -> 4434 filas (descarté 0 anulados de 4434)
+[+] Pendiente capeado: venta #922 YARA ARGENTINA SA -> pend 60 tn (regla usuario)
+[+] Pendiente capeado: venta #1064 ASOC DE COOPERATIVAS ARGEN -> pend 0 tn (regla usuario)
+[+] Pendiente capeado: venta #1217 ALLARIA AGRONEGOCIOS S.A. -> pend 0 tn (regla usuario)
+[+] Cobertura: venta #1419 ARGENTRADING S.A. 2,000 tn a 378,000.00 -> fuera de la posicion
+[!] PENDIENTE QUE NO COMPUTA: compra #847 TAMBO NORTE S.A Grano Soja 185.852 tn -> se muestra en rojo, no suma (lo entregado si sigue contando)
+[+] Exclusiones manuales: venta -1 · compra -1 (datos sucios, ver comentario)
+[+] Filtro Anulado: venta 1169->1167  compra 1397->1396
+[+] Unificaciones de producto (maní en caja, semilla de maíz -> grano): 93 contratos
+[+] Comision de corredor (DW): 392 contratos de compra con % cargado
+[+] Libro mayor: recupero real compra 481,696,770 $ (463 grupos) · comisiones venta 368,939,071 $ (112 grupos)
+[+] % reales del mayor aplicados: 181 contratos de compra · 350 de venta
+[+] Canje: 194 clientes con facturas de insumos en canje · $ 333,334,359 facturados
+
+[+] Bajando Composicion Saldo Cliente (snapshot actual via API REST)...
+    -> 5186 filas
+    -> 5186 filas de saldos, 655 con condicion 'Canje'
+
+[+] Bajando Traslados de Granos (desde jul-2025) para cruce Cliente x Comprador...
+    -> 6525 traslados totales, 2566 de COMPRA CV / VENTA CV
+    -> datos RAIZ adjuntos: 890 camiones con ambas liquidaciones reales
+    -> 1281 CTGs unicos, 1281 con cliente+comprador completos
+
+[+] Bajando Trazabilidad desde datawarehouse...
+    -> 10449 filas raw tabla CRUCE
+    -> 7381 filas raw tabla traslado_de_granos (enriquecimiento)
+    -> 10449 filas fusionadas (CRUCE primaria + traslado_de_granos enrich)
+    -> 7714 CTGs unicos: 2606 con ambos contratos, 5042 sin compra, 336 sin venta
+
+[+] Bajando precios pizarra BCR...
+    -> TC USD/ARS: 1504.0
+       soja: ARS 560000.0 / USD 372.34 (estim=False)
+       maiz: ARS 299000.0 / USD 198.8 (estim=False)
+       trigo: ARS 341400.0 / USD 226.99 (estim=False)
+       girasol: ARS None / USD None (estim=False)
+       sorgo: ARS 276700.0 / USD 183.98 (estim=False)
+
+[+] Cargando data Cargill GPS (si existe)...
+    -> movements.json: 3216 entradas
+    -> invoices.json: 5082 entradas
+    -> payments.json: 901 entradas
+    -> movements_detail.json: 3205 entradas
+
+[+] Calculando gastos a descontar por contrato (Cargill services)...
+    -> 520 contratos con CTG en traza · 152 con gastos de Cargill
+    -> comision real Cargill por CTG para Resultados: 2195 camiones
+
+[+] Cargando data LDC (si existe)...
+    -> settlements.json: 172 entradas
+    -> fixations.json: 20 entradas
+    -> ldc_ctgs.json: 1031 entradas
+
+[+] Cargando data ACA (si existe)...
+    -> aca_ctgs.json: 133 entradas
+
+[+] Cargando data FYO (si existe)...
+    -> fyo_ctgs.json: 72 entradas
+
+[+] Cargando data Intagro (si existe)...
+    -> intagro_ctgs.json: 247 entradas
+
+[+] Cargando data Bunge (si existe)...
+    -> bunge_ctgs.json: 196 entradas
+
+[+] Cargando data COFCO (si existe)...
+    -> cofco_ctgs.json: 194 entradas
+
+[+] Cargando data Allaria (si existe)...
+    -> allaria_ctgs.json: 418 entradas
+    -> mercaderias.json: 104 entradas
+    -> cuenta_corriente.json: 4 entradas
+
+[+] Cargados 159 pagos iniciales desde proyectado_pagos.json
+[+] Cruce trigo 25/26: 1081 camiones compra · 3084 venta
+
+[+] Calculando COSECHADO desde traslados (solo Traslado CPE Agronasaja, 25-26)...
+    -> 11 productos con cosechado
+          42,254.86 tn  Grano Maíz
+          20,710.58 tn  Grano Soja
+          17,598.16 tn  Grano Trigo Pan
+           1,150.74 tn  Grano Arveja
+             900.24 tn  Grano Girasol
+             448.87 tn  Grano Maní en caja
+    -> PRÉSTAMO CP: 415 cartas de porte prestadas · 20,569.7 tn · 58 filas (todas las campañas)
+
+[+] Bajando Liquidaciones VENTA desde DW...
+    -> 422 liquidaciones venta con COE
+    -> 6 liquidaciones secundarias con importes
+
+[+] Bajando Stock por Deposito (DW primero)...
+    -> 7707 filas desde DW
+    -> SILO:      14 productos
+    -> SILOBOLSA: 9 productos
+    -> BOLSAS:    173 productos
+    -> DESCARTE:  3 productos
+
+[+] Bajando DEM-SUP Soja (fuente Extranet Agronasaja / DW)...
+    -> granel en campo (silo bolsa): 1,245.2 tn · en semillero: 2,902.0 tn · clasificado: 3,793.6 tn · venta pendiente: 3,849.6 tn
+
+[+] Bajando DEM-SUP Trigo (fuente Extranet Agronasaja)...
+    -> campo 198.1 tn · semillero 0.0 · clasificado 6,274.7 · corte 414.1 · venta desp 5,206.6
+
+[+] Bajando Finales de Compra (balanza) + calculando factor...
+[+] Tarifas de venta por entregador: 24 cargadas
+[+] Liq. pendientes de pasar: 20 grupos (snapshot 2026-08-24)
+    -> 1835 liquidaciones · estados: {'sin_factor': 1242, 'calc_only': 502, 'solo_cereal': 69, 'ok': 18, 'revisar': 4}
+
+[+] Calculando Taqueo CTG (seguimiento fino + pendiente liquidar)...
+    -> pendiente liquidar: 27269.9 tn · duplicados/falta-vincular calculados
+
+[+] Cargando Taqueo entregado-sin-liquidar (si existe)...
+    -> taqueo_liquidar.json: 122 contratos · 827 CTG · 24846.2 tn
+
+[+] Bajando serie historica del dolar mayorista (desde 2022-01-01)...
+    -> 1718 cotizaciones · 2022-01-01 a 2026-09-14 (hoy $1,499.50)
+
+[+] Trackeo de camiones: entregas vs certificados 1116A (2026-01-01 a 2026-09-14)...
+    certificados 1116A activos: 2116 (2543 cartas de porte, 4984 CTG)
+    calidad de extranets: 1126 CTG con humedad (1011 con valor)
+    venta: 651 camiones · 164 sin certificado 1116A
+    compra: 430 camiones · 373 sin certificado 1116A
+    -> 1081 camiones · 40,601.4 tn · 537 sin certificado (20,785.3 tn) · 814 sin merma · mermas 172,194 kg (0.42%)
+       521 camiones con humedad medida (16,052.4 tn): corresponde 71,530 kg de merma y hay aplicados 169,993 kg -> faltarian 0 kg
+
+[+] Cargando cruce LIQUIDACIONES ARCA vs Finnegans (si existe)...
+    -> ARCA 4376 COE vs Finnegans 6834 COE - faltan ingresar 143 (94 venta / 49 compra)
+
+[+] Cargando cruce CP ARCA vs Finnegans (si existe)...
+    -> ARCA 1346 CTG vs Finnegans 5207 CTG · no ingresados 25 (a ingresar 25)
+
+[+] Bajando Producción (Portal de Producción Agronasaja)...
+    -> cosecha 25/26 (KG AGNSJ, 4106 retiros): 6 cultivos · cosechado 70576 tn · pend AGNSJ 2 tn
+    -> siembra 26/27: 336 lotes leídos pero EXCLUIDA del tablero (sin producción real, pedido del usuario)
+    -> 26/27 (Excel del usuario) Grano Trigo Pan: 3,083.8 tn · 22 lotes
+    -> 26/27 (Excel del usuario) SEMILLA TRIGO: 4,721.2 tn · 45 lotes
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Soja: 20,900.0 tn
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Maíz: 37,407.0 tn
+    -> 26/27 (Planif. Económica extranet, snapshot 2026-08-25) Grano Girasol: 686.0 tn
+    -> Producción AGNSJ según %: 12,535 ha cosechadas · 60,685 tn · avance 98% · pend 259 ha
+    -> Grano Soja: CPE 20,710.6 - a semilla 3,146.1 = 17,564.5 tn (portal decía 24,736.2)
+    -> Grano Trigo Pan: CPE 17,598.2 - a semilla 3,713.5 = 13,884.7 tn
+    -> Grano Maíz: CPE 42,254.9 - a semilla 0.0 = 42,254.9 tn (portal decía 44,083.5)
+    -> Grano Girasol: CPE 900.2 - a semilla 0.0 = 900.2 tn (portal decía 895.8)
+    -> Grano Maíz: produccion segun % 38,677.0 = 38,677.0 tn (antes 42,254.9)
+    -> Grano Soja: produccion segun % 20,407.7 - a semilla 3,146.1 = 17,261.6 tn (antes 17,564.5)
+    -> Grano Maíz Pisingallo: produccion segun % 353.4 = 353.4 tn (antes 227.8)
+    -> Grano Girasol: produccion segun % 642.7 = 642.7 tn (antes 900.2)
+    -> Grano Sorgo: produccion segun % 230.5 = 230.5 tn (antes 246.9)
+    -> Grano Maní: produccion segun % 373.8 = 373.8 tn (antes 386.1)
+    -> cosechado propio por variedad: 21 variedades · 7,514.2 tn (soja 3,146.1 · trigo 3,713.5)
+[+] Cta Cte Extranets: bunge 8 páginas con datos
+[+] Cta Cte Extranets: agrinter 4 páginas con datos
+[+] Cta Cte Extranets: cargill 1379 movs + 260 pagos · ldc 172 liq · allaria 4 cuentas
+[+] Cta Cte Extranets: pendiente Finnegans por organización: 56 orgs
+[+] Finales auto-hechas (Finnegans: pen. efectuar final = 0): 211 contratos
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\index.html  (51,303.0 KB)
+$ add data/arca_cruce.json data/ctg_finnegans.json data/arca/cpe_solicitadas.json data/arca/cpe_participantes.json data/arca_liq_cruce.json data/liq_coes_finnegans.json data/arca/lpg_liquidaciones.json data/arca/lpg_detalle.json data/arca/lpg_codigos.json
+$ commit -q -m Cruce CP y Liquidaciones ARCA vs Finnegans: datos al 2026-09-14
+$ push -q origin main
+El tablero se regenera en GitHub y en unos 10 minutos esta en la pagina.
+
+Listo en 23 min 56 seg.

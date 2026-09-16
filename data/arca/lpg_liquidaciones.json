@@ -1,5 +1,5 @@
 {
- "bajado": "2026-09-16T08:39:24",
+ "bajado": "2026-09-16T09:57:47",
  "desde": "2026-08-02",
  "hasta": "2026-09-16",
  "cuit": "30710712758",
@@ -9,7 +9,7 @@
   "lsg_emitidas": 558,
   "lsg_recibidas": 52,
   "lpg_por_comprador": 1513,
-  "lsg_por_vendedor": 1026
+  "lsg_por_vendedor": 1028
  },
  "filas": [
   {
@@ -97072,6 +97072,36 @@
    "lado": "venta",
    "cuit": "30663290262",
    "denominacion": "INTAGRO SOCIEDAD ANONIMA S. A.",
+   "sistema": "WS",
+   "operacion": "Consignaci?n de granos - L.S.G.",
+   "estado": "",
+   "sujeto": ""
+  },
+  {
+   "coe": "331009461357",
+   "fecha": "2026-09-16",
+   "fecha_arca": "16/09/2026",
+   "consulta": "lsg_por_vendedor",
+   "tipo": "secundaria",
+   "flujo": "emitida",
+   "lado": "venta",
+   "cuit": "30652327474",
+   "denominacion": "CANZANI CASAS SA",
+   "sistema": "WS",
+   "operacion": "Consignaci?n de granos - L.S.G.",
+   "estado": "",
+   "sujeto": ""
+  },
+  {
+   "coe": "331009461347",
+   "fecha": "2026-09-16",
+   "fecha_arca": "16/09/2026",
+   "consulta": "lsg_por_vendedor",
+   "tipo": "secundaria",
+   "flujo": "emitida",
+   "lado": "venta",
+   "cuit": "30652327474",
+   "denominacion": "CANZANI CASAS SA",
    "sistema": "WS",
    "operacion": "Consignaci?n de granos - L.S.G.",
    "estado": "",

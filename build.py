@@ -1730,6 +1730,24 @@ window.apiFetch = function(path, opts){
                 style="padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
             <button class="clear" id="el-h-def" title="Vuelve a los valores de fábrica de esta plantilla"
               style="align-self:flex-end">↺ Valores por defecto</button>
+
+            <!-- Condición y gastos (pedido usuario 16/09). Son texto libre a
+                 propósito: a veces es un porcentaje, a veces un importe y a veces
+                 una aclaración, y cada uno se escribe como lo necesita la
+                 administrativa. Lo que quede vacío no sale en el correo. -->
+            <div style="flex-basis:100%;height:0"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">CONDICIÓN CÁMARA</label>
+              <input id="el-h-camara" placeholder="ej. Cámara Arbitral Rosario"
+                style="width:190px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">HONORARIOS LABORATORIO</label>
+              <input id="el-h-lab" placeholder="ej. 0,3% ó $ 4.500"
+                style="width:150px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">GASTOS DE FUMIGADA</label>
+              <input id="el-h-fum" placeholder="ej. $ 1.200/tn"
+                style="width:140px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
+            <div><label style="font-size:10px;color:var(--muted);display:block">GASTOS DE SECADA</label>
+              <input id="el-h-sec" placeholder="ej. $ 2.800/tn"
+                style="width:140px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:#fff"></div>
           </div>
 
           <!-- a quien va -->
@@ -15763,7 +15781,9 @@ function ctRender(){
   function guardaCond(){
     const t = val("el-tpl");
     try { localStorage.setItem("el_cond_"+t, JSON.stringify(
-      {liq:val("el-h-liq"), nd:val("el-h-nd"), com:val("el-h-com")})); } catch(e){}
+      {liq:val("el-h-liq"), nd:val("el-h-nd"), com:val("el-h-com"),
+       camara:val("el-h-camara"), lab:val("el-h-lab"),
+       fum:val("el-h-fum"), sec:val("el-h-sec")})); } catch(e){}
   }
   function ponerCond(deFabrica){
     const t = val("el-tpl"), d = tplActual();
@@ -15772,7 +15792,20 @@ function ctRender(){
     el("el-h-liq").value = g && g.liq !== "" && g.liq != null ? g.liq : (d.liq === "" ? "" : d.liq);
     el("el-h-nd").value  = g && g.nd  !== "" && g.nd  != null ? g.nd  : (d.nd  === "" ? "" : d.nd);
     el("el-h-com").value = g && g.com !== "" && g.com != null ? g.com : (d.com === "" ? "" : d.com);
+    // condicion de camara y gastos: no tienen valor de fabrica, se guarda lo que
+    // haya usado la ultima vez con esa plantilla
+    ["camara", "lab", "fum", "sec"].forEach(k => {
+      el("el-h-" + k).value = (!deFabrica && g && g[k]) ? g[k] : "";
+    });
     el("el-h-pago-box").style.display = d.pago ? "" : "none";
+  }
+  // Las condiciones extra, tal como se escribieron. Solo salen las que tienen algo.
+  function condExtra(){
+    return [["Condición cámara", val("el-h-camara")],
+            ["Honorarios de laboratorio", val("el-h-lab")],
+            ["Gastos de fumigada", val("el-h-fum")],
+            ["Gastos de secada", val("el-h-sec")]]
+           .filter(([, v]) => String(v || "").trim());
   }
 
   function elegidos(){
@@ -15806,12 +15839,19 @@ function ctRender(){
     const t = tplActual();
     const e = EX[String(cur.num)] || {}, gs = elegidos();
     let b = "Hola,\n\n" + encabezado() + "\n\n";
-    b += `Contrato de compra : ${cur.num}${e.numerodocumentoadicional?" ("+e.numerodocumentoadicional+")":""}\n`;
-    b += `Entregador         : ${cur.org||""}\n`;
-    b += `Grano              : ${(cur.prod||"").replace(/^Grano\s+/,"")}\n`;
-    if(cur.cos) b += `Campaña            : ${String(cur.cos).replace("CAMPAÑA ","")}\n`;
-    if(val("el-com")) b += `Comercial          : ${val("el-com")}${el("el-adm").value?"  ·  Administrativa: "+el("el-adm").value:""}\n`;
-    b += `Modalidad          : ${t.tit}\n\n`;
+    // el ancho lo manda la etiqueta mas larga ("Honorarios de laboratorio"), asi
+    // los dos puntos quedan alineados en todas las lineas
+    const ANCHO = 25;
+    const enc = (nom, v) => { b += pad(nom, ANCHO) + ": " + String(v) + "\n"; };
+    enc("Contrato de compra", `${cur.num}${e.numerodocumentoadicional?" ("+e.numerodocumentoadicional+")":""}`);
+    enc("Entregador", cur.org || "");
+    enc("Grano", (cur.prod||"").replace(/^Grano\s+/,""));
+    if(cur.cos) enc("Campaña", String(cur.cos).replace("CAMPAÑA ",""));
+    if(val("el-com")) enc("Comercial", val("el-com")
+      + (el("el-adm").value ? "  ·  Administrativa: " + el("el-adm").value : ""));
+    enc("Modalidad", t.tit);
+    condExtra().forEach(([nom, v]) => enc(nom, String(v).trim()));
+    b += "\n";
     b += pad("CTG",15)+pad("CARTA DE PORTE",19)+pad("FECHA",12)+pad("CLIENTE",26)
        + padL("KG",11)+padL("% LIQ",8)+padL("KG A LIQ.",12)+"  "+pad("MON",5)+padL("IMPORTE",14)+"\n";
     b += "-".repeat(114)+"\n";
@@ -15872,7 +15912,9 @@ function ctRender(){
       </tr></thead><tbody>` + es.map(e => {
         const k = (e.ctgs||[]).reduce((a,x) => a + (Number(x.kg)||0), 0);
         const cond = [e.liq?"liq "+e.liq+"%":"", e.nd?"ND "+e.nd+"%":"", e.comis?"com "+e.comis+"%":"",
-                      e.pagof?"pago "+fec(e.pagof):""].filter(Boolean).join(" · ");
+                      e.pagof?"pago "+fec(e.pagof):"", e.camara?"cámara "+e.camara:"",
+                      e.lab?"lab "+e.lab:"", e.fum?"fumigada "+e.fum:"", e.sec?"secada "+e.sec:""]
+                     .filter(Boolean).join(" · ");
         return `<tr><td>${fec(e.fecha)}</td>
           <td><span class="el-ir" data-cto="${esc(e.cto)}" title="abrir este contrato">#${esc(e.cto)}</span></td>
           <td style="font-size:11px">${esc(e.org||"")}</td>
@@ -15899,7 +15941,9 @@ function ctRender(){
         const ip = (e.ctgs||[]).filter(x=>x.mon!=="DOLARES").reduce((a,x)=>a+(Number(x.imp)||0),0);
         const id = (e.ctgs||[]).filter(x=>x.mon==="DOLARES").reduce((a,x)=>a+(Number(x.imp)||0),0);
         const cond = [e.liq?"liq "+e.liq+"%":"", e.nd?"ND "+e.nd+"%":"", e.comis?"com "+e.comis+"%":"",
-                      e.pagof?"pago "+fec(e.pagof):""].filter(Boolean).join(" · ");
+                      e.pagof?"pago "+fec(e.pagof):"", e.camara?"cámara "+e.camara:"",
+                      e.lab?"lab "+e.lab:"", e.fum?"fumigada "+e.fum:"", e.sec?"secada "+e.sec:""]
+                     .filter(Boolean).join(" · ");
         return `<tr><td>${fec(e.fecha)}</td><td>${esc((TPL[e.tpl]||{}).tit||e.tpl||"")}</td>
           <td style="font-size:11px;color:#475569">${esc(cond)}</td>
           <td class="num">${n0((e.ctgs||[]).length)}</td><td class="num" style="font-weight:700">${n0(kg)}</td>
@@ -16004,6 +16048,8 @@ function ctRender(){
               prod:cur.prod, tpl:val("el-tpl"), com:val("el-com"), adm:el("el-adm").value,
               para:val("el-para"),
               liq:val("el-h-liq"), nd:val("el-h-nd"), comis:val("el-h-com"), pagof:val("el-h-pago"),
+              camara:val("el-h-camara"), lab:val("el-h-lab"),
+              fum:val("el-h-fum"), sec:val("el-h-sec"),
               ctgs:gs.map(x => ({ctg:x.ctg, cp:x.cp, fecha:String(x.fecha||"").slice(0,10),
                                  kg:x.kg_liq, kg_cp:x.kg, pct:x.pct, mon:x.mon, imp:x.imp,
                                  cliente:x.dest||null, flete:x.flete||null}))});
@@ -16223,12 +16269,14 @@ function ctRender(){
     const q = v => { let t = String(v==null?"":v); return /[";\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t; };
     const num = v => String(Math.round((Number(v)||0)*100)/100).replace(".",",");
     const L = [["Fecha envío","Contrato","Entregador","Grano","Modalidad","Se liquida al %","ND %",
-                "Comisión %","Fecha de pago","Comercial","Administrativa","Enviado a",
+                "Comisión %","Fecha de pago","Condición cámara","Honorarios laboratorio",
+                "Gastos de fumigada","Gastos de secada","Comercial","Administrativa","Enviado a",
                 "CTG","Carta de porte","Fecha CP","Cliente","Flete lo paga",
                 "Kg de la CP","Kg enviados","% liq.","Moneda","Importe"].join(";")];
     ENV.slice().sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha))).forEach(e =>
       (e.ctgs||[]).forEach(x => L.push([q(e.fecha), q(e.cto), q(e.org), q((e.prod||"").replace(/^Grano\s+/,"")),
-        q((TPL[e.tpl]||{}).tit||e.tpl), q(e.liq), q(e.nd), q(e.comis), q(e.pagof), q(e.com), q(e.adm), q(e.para),
+        q((TPL[e.tpl]||{}).tit||e.tpl), q(e.liq), q(e.nd), q(e.comis), q(e.pagof),
+        q(e.camara), q(e.lab), q(e.fum), q(e.sec), q(e.com), q(e.adm), q(e.para),
         q(x.ctg), q(x.cp), q(x.fecha), q(x.cliente), q(x.flete),
         x.kg_cp!=null?num(x.kg_cp):"", num(x.kg), num(x.pct), q(x.mon), x.imp!=null?num(x.imp):""].join(";"))));
     // las marcas a mano, aparte
@@ -16294,6 +16342,10 @@ function ctRender(){
           Object.keys(sel).forEach(k => { if(!sel[k].pctMano) sel[k].pct = pc; }); pintar(); }
         else preview(); }, 250); }));
   el("el-h-pago").addEventListener("change", preview);
+  // condicion de camara y gastos: se guardan solos y entran al correo al tipear
+  ["el-h-camara", "el-h-lab", "el-h-fum", "el-h-sec"].forEach(id =>
+    el(id).addEventListener("input", () => { clearTimeout(el(id)._t);
+      el(id)._t = setTimeout(() => { guardaCond(); preview(); }, 300); }));
   el("el-h-def").addEventListener("click", () => { ponerCond(true); guardaCond(); preview(); });
   el("el-com").addEventListener("change", () => { el("el-para").dataset.tocado=""; pintarQuien(); preview(); });
   el("el-para").addEventListener("input", () => { el("el-para").dataset.tocado="1";

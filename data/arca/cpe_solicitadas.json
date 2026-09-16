@@ -1,6 +1,6 @@
 {
  "listado": "solicitadas",
- "bajado": "2026-09-16T08:34:43",
+ "bajado": "2026-09-16T09:53:28",
  "heads": {},
  "filas": [
   {
@@ -2455,8 +2455,8 @@
    "Nro Carta Porte": "00000-00011660",
    "CTG/CTDG": "10235109502",
    "Fecha de emisión": "15/09/2026",
-   "Fecha de Vencimiento": "17/09/2026",
-   "Estado": "Activa",
+   "Fecha de Vencimiento": "19/09/2026",
+   "Estado": "Activa con confirmacion de arribo",
    "Cuit transportista": "20177957373",
    "Cuit transportista segundo tramo": "",
    "N. Vagón": "",

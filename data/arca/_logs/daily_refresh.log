@@ -91,3 +91,129 @@
 [OK] -> arca_liq_cruce.json (3,365 KB)
 [2026-09-11] [.] sin cambios en el cruce, no commit
 [2026-09-11] ===== FIN =====
+[2026-09-12] ===== REFRESH ARCA (hasta 2026-09-12, tramo forzado desde 2026-07-29) =====
+[2026-09-12] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-07-29 --hasta 2026-09-12
+[2026-09-13] ===== REFRESH ARCA (hasta 2026-09-13, tramo forzado desde 2026-07-30) =====
+[2026-09-13] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-07-30 --hasta 2026-09-13
+[2026-09-13]    CPE scraper rc=0 ·     ROL Pagador Flete Pagador (G/DG): 147 filas en todo el rango
+    -> cpe_participantes.json: 285 filas
+[+] consolidado: 315 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+[2026-09-13] -> CPE consolidar: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --consolidar
+[2026-09-13]    CPE consolidar rc=0 ·     -> cpe_solicitadas.json: 766 filas
+    -> cpe_participantes.json: 1408 filas
+[+] consolidado desde cache: 766 solicitadas + 1408 participantes -> 1534 CTG unicos
+[2026-09-13] -> LPG scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_lpg_scraper.py --forzar --desde 2026-07-30 --hasta 2026-09-13
+[2026-09-13]    LPG scraper rc=0 ·      lsg_recibidas       52
+     lpg_por_comprador  1501
+     lsg_por_vendedor  1022
+[2026-09-13] -> LPG kilos: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_kg.py
+[2026-09-13]    LPG kilos rc=0 · 
+[OK] 4376 liquidaciones con toneladas Â· 352,085.8 tn -> lpg_detalle.json
+     de las 143 que faltan pasar tengo tn de 143: 9,766.8 tn Â· $ 3,426,760,022
+[2026-09-13] -> CTG Finnegans: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py
+[2026-09-13]    CTG Finnegans rc=0 ·            4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1710 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+[2026-09-13] -> CTG cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py --cruce
+[2026-09-13]    CTG cruce rc=0 ·          25 camiones -   1,180.9 tn  MaÃ­z
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+[2026-09-13] -> LIQ cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_cruce.py
+[2026-09-13]    LIQ cruce rc=0 ·          4  INTAGRO SOCIEDAD ANONIMA
+
+[OK] -> arca_liq_cruce.json (3,366 KB)
+[2026-09-13] [.] sin cambios en el cruce, no commit
+[2026-09-13] ===== FIN =====
+[2026-09-14] ===== REFRESH ARCA (hasta 2026-09-14, tramo forzado desde 2026-07-31) =====
+[2026-09-14] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-07-31 --hasta 2026-09-14
+[2026-09-14]    CPE scraper rc=0 ·     ROL Pagador Flete Pagador (G/DG): 147 filas en todo el rango
+    -> cpe_participantes.json: 268 filas
+[+] consolidado: 289 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+[2026-09-14] -> CPE consolidar: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --consolidar
+[2026-09-14]    CPE consolidar rc=0 ·     -> cpe_solicitadas.json: 766 filas
+    -> cpe_participantes.json: 1313 filas
+[+] consolidado desde cache: 766 solicitadas + 1313 participantes -> 1449 CTG unicos
+[2026-09-14] -> LPG scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_lpg_scraper.py --forzar --desde 2026-07-31 --hasta 2026-09-14
+[2026-09-14]    LPG scraper rc=0 ·      lsg_recibidas       52
+     lpg_por_comprador  1501
+     lsg_por_vendedor  1022
+[2026-09-14] -> LPG kilos: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_kg.py
+[2026-09-14]    LPG kilos rc=0 · 
+[OK] 4376 liquidaciones con toneladas Â· 352,085.8 tn -> lpg_detalle.json
+     de las 143 que faltan pasar tengo tn de 143: 9,766.8 tn Â· $ 3,426,760,022
+[2026-09-14] -> CTG Finnegans: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py
+[2026-09-14]    CTG Finnegans rc=0 ·            4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1712 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+[2026-09-14] -> CTG cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py --cruce
+[2026-09-14]    CTG cruce rc=0 ·          21 camiones -     978.4 tn  MaÃ­z
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+[2026-09-14] -> LIQ cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_cruce.py
+[2026-09-14]    LIQ cruce rc=0 ·          4  INTAGRO SOCIEDAD ANONIMA
+
+[OK] -> arca_liq_cruce.json (3,367 KB)
+[2026-09-14] [.] sin cambios en el cruce, no commit
+[2026-09-14] ===== FIN =====
+[2026-09-15] ===== REFRESH ARCA (hasta 2026-09-15, tramo forzado desde 2026-08-01) =====
+[2026-09-15] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-08-01 --hasta 2026-09-15
+[2026-09-15]    CPE scraper rc=0 ·     ROL Pagador Flete Pagador (G/DG): 156 filas en todo el rango
+    -> cpe_participantes.json: 258 filas
+[+] consolidado: 283 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+[2026-09-15] -> CPE consolidar: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --consolidar
+[2026-09-15]    CPE consolidar rc=0 ·     -> cpe_solicitadas.json: 787 filas
+    -> cpe_participantes.json: 1321 filas
+[+] consolidado desde cache: 787 solicitadas + 1321 participantes -> 1467 CTG unicos
+[2026-09-15] -> LPG scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_lpg_scraper.py --forzar --desde 2026-08-01 --hasta 2026-09-15
+[2026-09-15]    LPG scraper rc=0 ·      lsg_recibidas       52
+     lpg_por_comprador  1505
+     lsg_por_vendedor  1022
+[2026-09-15] -> LPG kilos: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_kg.py
+[2026-09-15]    LPG kilos rc=0 · 
+[OK] 4377 liquidaciones con toneladas Â· 352,085.8 tn -> lpg_detalle.json
+     de las 144 que faltan pasar tengo tn de 144: 9,766.8 tn Â· $ 3,426,791,279
+[2026-09-15] -> CTG Finnegans: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py
+[2026-09-15]    CTG Finnegans rc=0 ·            4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1718 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+[2026-09-15] -> CTG cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py --cruce
+[2026-09-15]    CTG cruce rc=0 ·           2 camiones -      90.0 tn  Trigo
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+[2026-09-15] -> LIQ cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_cruce.py
+[2026-09-15]    LIQ cruce rc=0 ·          4  INTAGRO SOCIEDAD ANONIMA
+
+[OK] -> arca_liq_cruce.json (3,370 KB)
+[2026-09-15] [.] sin cambios en el cruce, no commit
+[2026-09-15] ===== FIN =====
+[2026-09-16] ===== REFRESH ARCA (hasta 2026-09-16, tramo forzado desde 2026-08-02) =====
+[2026-09-16] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-08-02 --hasta 2026-09-16
+[2026-09-16]    CPE scraper rc=0 ·     ROL Pagador Flete Pagador (G/DG): 163 filas en todo el rango
+    -> cpe_participantes.json: 273 filas
+[+] consolidado: 276 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+[2026-09-16] -> CPE consolidar: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --consolidar
+[2026-09-16]    CPE consolidar rc=0 ·     -> cpe_solicitadas.json: 814 filas
+    -> cpe_participantes.json: 1352 filas
+[+] consolidado desde cache: 814 solicitadas + 1352 participantes -> 1498 CTG unicos
+[2026-09-16] -> LPG scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_lpg_scraper.py --forzar --desde 2026-08-02 --hasta 2026-09-16
+[2026-09-16]    LPG scraper rc=0 ·      lsg_recibidas       52
+     lpg_por_comprador  1513
+     lsg_por_vendedor  1026
+[2026-09-16] -> LPG kilos: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_kg.py
+[2026-09-16]    LPG kilos rc=0 · 
+[OK] 4400 liquidaciones con toneladas Â· 354,000.8 tn -> lpg_detalle.json
+     de las 150 que faltan pasar tengo tn de 150: 9,810.1 tn Â· $ 3,443,297,995
+[2026-09-16] -> CTG Finnegans: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py
+[2026-09-16]    CTG Finnegans rc=0 ·            4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1719 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+[2026-09-16] -> CTG cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py --cruce
+[2026-09-16]    CTG cruce rc=0 ·           9 camiones -     435.0 tn  Trigo
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+[2026-09-16] -> LIQ cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_cruce.py
+[2026-09-16]    LIQ cruce rc=0 ·          4  INTAGRO SOCIEDAD ANONIMA S. A.
+
+[OK] -> arca_liq_cruce.json (3,387 KB)
+[2026-09-16] [.] sin cambios en el cruce, no commit
+[2026-09-16] ===== FIN =====
