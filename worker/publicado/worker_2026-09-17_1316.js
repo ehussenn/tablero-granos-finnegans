@@ -187,16 +187,13 @@ export default {
     }
 
     // ---- EMBEBIDO EN LA EXTRANET: CORS para la página publicada (GitHub Pages) ----
-    // El tablero embebido como vista de la extranet se sirve desde GitHub Pages
-    // (repo oficial: sanguine86.github.io/tablero-granos; el viejo ehussenn.github.io
-    // se mantiene durante la transición) y llama a este Worker para el estado
-    // compartido (/api/data, whoami, balanza). La identidad viene en el header
-    // X-Tablero-User (el email que la extranet le pasó a la vista embebida) y solo
-    // se acepta si ese email existe en USUARIOS — mismo nivel de confianza que el
-    // ?user= de las vistas embebidas del extranet.
-    const EMBED_ORIGINS = new Set(["https://sanguine86.github.io", "https://ehussenn.github.io"]);
+    // El tablero embebido como vista de la extranet se sirve desde ehussenn.github.io
+    // y llama a este Worker para el estado compartido (/api/data, whoami, balanza).
+    // La identidad viene en el header X-Tablero-User (el email que la extranet le
+    // pasó a la vista embebida) y solo se acepta si ese email existe en USUARIOS —
+    // mismo nivel de confianza que el ?user= de las vistas embebidas del extranet.
+    const EMBED_ORIGIN = "https://ehussenn.github.io";
     const _origin = request.headers.get("Origin") || "";
-    const EMBED_ORIGIN = EMBED_ORIGINS.has(_origin) ? _origin : null;
     const cors = _origin === EMBED_ORIGIN ? {
       "Access-Control-Allow-Origin": EMBED_ORIGIN,
       "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
@@ -253,17 +250,7 @@ export default {
       // SHARED: todos los usuarios internos ven la misma data (no namespaced por email)
       //  - pagos / contratos: Proyectado Pagos y Contratos
       //  - finales_estado: estado de Finales Pendientes (enviadas 🟡 / hechas 🟢) — TODOS ven lo mismo
-      //  - envios_liq / marcas_liq / comerciales_admin: Enviar a Liquidar. Compartidas
-      //    desde el 17/09/2026: lo que uno manda a liquidar lo tienen que ver todos,
-      //    si no dos personas mandan el mismo CTG dos veces.
-      //
-      // pn_manual queda POR USUARIO a proposito. El archivo local lo tenia como
-      // compartida pero nunca se habia publicado asi, y pasarlo ahora dejaria la
-      // clave compartida vacia: las ediciones de la Posicion Granaria parecerian
-      // borradas (siguen en pn_manual:<email>, pero ya no se leerian). Son calculos
-      // del dia, no hay razon para arriesgarlos en este cambio.
-      const SHARED_KEYS = new Set(["pagos", "contratos", "finales_estado",
-                                   "envios_liq", "marcas_liq", "comerciales_admin"]);
+      const SHARED_KEYS = new Set(["pagos", "contratos", "finales_estado"]);
       const fullKey = SHARED_KEYS.has(rawKey) ? rawKey : `${rawKey}:${email}`;
 
       if (request.method === "GET") {
@@ -286,41 +273,6 @@ export default {
             }
             if (env2.size || hec2.size) {
               data = JSON.stringify({ enviadas: [...env2], hechas: [...hec2] });
-              await env.TABLERO_KV.put(fullKey, data, { metadata: { migrated: true, ts: Date.now() } });
-            }
-          } catch {}
-        }
-        // Migración one-shot de Enviar a Liquidar (17/09/2026): antes se guardaban
-        // por usuario y por eso lo que mandaba uno no lo veía el otro. Al pasar a
-        // compartidas, la primera lectura junta lo que ya había en cada copia.
-        //   envios_liq / marcas_liq / comerciales_admin
-        const MIGRAR_LIQ = { envios_liq: "lista", marcas_liq: "objeto", comerciales_admin: "objeto" };
-        if (MIGRAR_LIQ[rawKey] && (!data || data === "[]" || data === "{}")) {
-          try {
-            const list = await env.TABLERO_KV.list({ prefix: rawKey + ":" });
-            let lista = [], obj = {};
-            const vistos = new Set();
-            for (const k of list.keys) {
-              const v = await env.TABLERO_KV.get(k.name);
-              if (!v) continue;
-              try {
-                const o = JSON.parse(v);
-                if (Array.isArray(o)) {
-                  // los envíos traen id propio: no duplicar si ya estaba
-                  o.forEach(x => { const id = x && x.id; if (id && vistos.has(id)) return;
-                                   if (id) vistos.add(id); lista.push(x); });
-                } else if (o && typeof o === "object") {
-                  for (const kk of Object.keys(o)) {
-                    obj[kk] = (obj[kk] && typeof obj[kk] === "object" && typeof o[kk] === "object")
-                            ? Object.assign({}, obj[kk], o[kk]) : o[kk];
-                  }
-                }
-              } catch {}
-            }
-            const fusion = MIGRAR_LIQ[rawKey] === "lista" ? lista : obj;
-            const hay = Array.isArray(fusion) ? fusion.length : Object.keys(fusion).length;
-            if (hay) {
-              data = JSON.stringify(fusion);
               await env.TABLERO_KV.put(fullKey, data, { metadata: { migrated: true, ts: Date.now() } });
             }
           } catch {}

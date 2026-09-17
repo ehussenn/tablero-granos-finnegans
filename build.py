@@ -12050,6 +12050,37 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
   };
   const anulada = e => /anulad/i.test(e || "");
 
+  // Que decir cuando la tabla queda vacia. Antes siempre decia "esta todo
+  // cargado", y eso confunde: si el HASTA quedo antes que el DESDE no puede
+  // haber ninguna fila, y no quiere decir que no falte nada.
+  function vacioMsg(nCols){
+    const td = m => `<tr><td colspan="${nCols}" style="padding:14px">${m}</td></tr>`;
+    const dd = (document.getElementById("aliq-desde") || {}).value || "";
+    const hh = (document.getElementById("aliq-hasta") || {}).value || "";
+    const dmy = f => f ? f.slice(8,10)+"/"+f.slice(5,7)+"/"+f.slice(0,4) : "";
+    if(dd && hh && hh < dd){
+      return td(`<b style="color:#b3372b">Las fechas estan al reves:</b> pusiste HASTA `
+        + `<b>${dmy(hh)}</b>, que es anterior al DESDE <b>${dmy(dd)}</b>. `
+        + `Asi no puede aparecer ninguna fila. Corregi las fechas o apreta <b>Limpiar</b>.`);
+    }
+    const f = [];
+    const lado = (document.getElementById("aliq-lado") || {}).value || "";
+    const gr = (document.getElementById("aliq-grano") || {}).value || "";
+    const q = ((document.getElementById("aliq-txt") || {}).value || "").trim();
+    if(lado) f.push("lado " + lado);
+    if(gr) f.push("grano " + gr);
+    if(dd) f.push("desde " + dmy(dd));
+    if(hh) f.push("hasta " + dmy(hh));
+    if(q) f.push('busqueda "' + escapeHtml(q) + '"');
+    if(f.length){
+      return td(`<span style="color:var(--muted)">Sin filas con estos filtros `
+        + `(${f.join(" · ")}). Si la vista es "a ingresar", con estos filtros `
+        + `esta todo cargado — probá apretando <b>Limpiar</b> para ver el resto.</span>`);
+    }
+    return td('<span style="color:var(--muted)">Sin filas — si la vista es '
+      + '"a ingresar", quiere decir que esta todo cargado.</span>');
+  }
+
   // Columnas de cada vista: [campo, titulo, esNumero]
   const COLS = {
     faltan: [["fecha","Fecha",0],["coe","COE",0],["tipoTxt","Liquidación",0],["ladoTxt","Lado",0],
@@ -12276,7 +12307,7 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
       }
       return `<td>${escapeHtml(val == null || val === "" ? "-" : String(val))}</td>`;
     }).join("") + "</tr>").join("") ||
-      `<tr><td colspan="${cols.length}" style="color:var(--muted);padding:14px">Sin filas con estos filtros \u2014 si la vista es "a ingresar", quiere decir que est\u00e1 todo cargado.</td></tr>`;
+      vacioMsg(cols.length);
     t.querySelector("tfoot").innerHTML = rs.length
       ? `<tr><td style="font-weight:800">TOTAL ${n0(rs.length)}</td>` +
         cols.slice(1).map(c => {
