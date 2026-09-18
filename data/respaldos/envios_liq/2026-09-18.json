@@ -1,0 +1,213 @@
+[
+ {
+  "id": "e1789487688898_3fhrb",
+  "fecha": "2026-09-15",
+  "cto": "1149",
+  "org": "DUBINI GUILLERMO JOSE",
+  "prod": "Grano Maíz",
+  "tpl": "pago",
+  "com": "Hugo Gonzalez",
+  "adm": "Evangelina Santoro",
+  "para": "hgonzalez@agronasaja.com.ar; esantoro@agronasaja.com.ar",
+  "liq": "97.5",
+  "nd": "1.25",
+  "comis": "2",
+  "pagof": "2026-09-21",
+  "ctgs": [
+   {
+    "ctg": "10134535539",
+    "cp": "00000-00000766",
+    "fecha": "2026-08-20",
+    "kg": 30340,
+    "kg_cp": 30340,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 299000,
+    "cliente": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
+    "flete": "TOMAS HNOS Y CIA SA"
+   },
+   {
+    "ctg": "10134630539",
+    "cp": "00000-00000801",
+    "fecha": "2026-08-24",
+    "kg": 30260,
+    "kg_cp": 30260,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 299000,
+    "cliente": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+    "flete": "DUBINI GUILLERMO JOSE"
+   }
+  ]
+ },
+ {
+  "id": "e1789494286908_jvyv3",
+  "fecha": "2026-09-15",
+  "cto": "1072",
+  "org": "DUBINI GUILLERMO JOSE",
+  "prod": "Grano Soja",
+  "tpl": "pago",
+  "com": "Hugo Gonzalez",
+  "adm": "Evangelina Santoro",
+  "para": "hgonzalez@agronasaja.com.ar; esantoro@agronasaja.com.ar",
+  "liq": "97.5",
+  "nd": "1.25",
+  "comis": "2",
+  "pagof": "2026-09-21",
+  "ctgs": [
+   {
+    "ctg": "10131837505",
+    "cp": "00000-00000646",
+    "fecha": "2026-05-07",
+    "kg": 748,
+    "kg_cp": 34780,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "VICENTIN SAIC",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10132247468",
+    "cp": "00000-00000668",
+    "fecha": "2026-05-18",
+    "kg": 18030,
+    "kg_cp": 30360,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10132259682",
+    "cp": "00000-00000671",
+    "fecha": "2026-05-19",
+    "kg": 2670,
+    "kg_cp": 36460,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "LDC ARGENTINA S.A.",
+    "flete": "DUBINI GUILLERMO JOSE"
+   },
+   {
+    "ctg": "10134744750",
+    "cp": "00000-00000807",
+    "fecha": "2026-08-28",
+    "kg": 4480,
+    "kg_cp": 36790,
+    "pct": 97.5,
+    "mon": "PESOS",
+    "imp": 560000,
+    "cliente": "LDC ARGENTINA S.A.",
+    "flete": "DUBINI GUILLERMO JOSE"
+   }
+  ]
+ },
+ {
+  "id": "e1789570042553_z16fj",
+  "fecha": "2026-09-16",
+  "cto": "1166",
+  "org": "EL GAUCHO AGROPECUARIO S.A",
+  "prod": "Grano Maíz",
+  "tpl": "canje",
+  "com": "Alfonso Bolivar",
+  "adm": "Melisa Zanchetta",
+  "para": "abolivar@agronasaja.com.ar; mzanchetta@agronasaja.com.ar",
+  "liq": "97.5",
+  "nd": "1.25",
+  "comis": "1.5",
+  "pagof": "",
+  "camara": "",
+  "lab": "",
+  "fum": "",
+  "sec": "",
+  "ctgs": [
+   {
+    "ctg": "10134254305",
+    "cp": "00000-00001557",
+    "fecha": "2026-08-10",
+    "kg": 30069,
+    "kg_cp": 30069,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "PUERTO ARROYO SECO SA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10134254515",
+    "cp": "00000-00001558",
+    "fecha": "2026-08-10",
+    "kg": 33195,
+    "kg_cp": 33195,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "PUERTO ARROYO SECO SA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10134297412",
+    "cp": "00000-00001563",
+    "fecha": "2026-08-11",
+    "kg": 28764,
+    "kg_cp": 28764,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "PUERTO ARROYO SECO SA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10134463083",
+    "cp": "00000-00001575",
+    "fecha": "2026-08-18",
+    "kg": 30093,
+    "kg_cp": 30093,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "PUERTO ARROYO SECO SA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10130511524",
+    "cp": "00000-00001296",
+    "fecha": "2026-08-19",
+    "kg": 33201,
+    "kg_cp": 33201,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "PUERTO ARROYO SECO SA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10134633717",
+    "cp": "00000-00001579",
+    "fecha": "2026-08-24",
+    "kg": 33920,
+    "kg_cp": 33920,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   },
+   {
+    "ctg": "10134648010",
+    "cp": "00000-00001580",
+    "fecha": "2026-08-25",
+    "kg": 30353,
+    "kg_cp": 30353,
+    "pct": 97.5,
+    "mon": "DOLARES",
+    "imp": 195,
+    "cliente": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
+    "flete": "EL GAUCHO AGROPECUARIO S.A"
+   }
+  ]
+ }
+]
