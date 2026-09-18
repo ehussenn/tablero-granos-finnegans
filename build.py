@@ -15580,23 +15580,43 @@ function ctRender(){
   const val = id => (el(id)||{}).value || "";
 
   // ── persistencia ─────────────────────────────────────────────────────────
+  // Lee del navegador, que es instantaneo y nunca falla.
+  function cargarLocal(){
+    const leer = (k, def) => { try { return JSON.parse(localStorage.getItem(k) || def); }
+                               catch(e){ return JSON.parse(def); } };
+    const r = leer(LS, "[]");   ENV = Array.isArray(r) ? r : [];
+    const c = leer(LSC, "{}");  CFG = (c && typeof c === "object" && !Array.isArray(c)) ? c : {};
+    const m = leer(LSM, "{}");  MAR = (m && typeof m === "object" && !Array.isArray(m)) ? m : {};
+  }
+
+  // Busca en la nube SIN quedarse colgado. Si en 12 segundos no contesta, se
+  // sigue con lo local: antes esto dejaba la pestaña en blanco para siempre.
+  function conLimite(promesa, segundos){
+    return Promise.race([promesa,
+      new Promise(r => setTimeout(() => r("__tarde__"), (segundos || 12) * 1000))]);
+  }
+
   async function cargar(){
     let r = null;
-    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) r = await apiLoad(KV);
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) r = await conLimite(apiLoad(KV));
+    if(r === "__tarde__") return false;
     if(!Array.isArray(r)){ try { r = JSON.parse(localStorage.getItem(LS)||"[]"); } catch(e){ r = []; } }
     ENV = Array.isArray(r) ? r : [];
     let c = null;
-    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) c = await apiLoad(KVC);
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) c = await conLimite(apiLoad(KVC));
+    if(c === "__tarde__") return false;
     if(!c || typeof c !== "object" || Array.isArray(c)){
       try { c = JSON.parse(localStorage.getItem(LSC)||"{}"); } catch(e){ c = {}; }
     }
     CFG = (c && typeof c === "object" && !Array.isArray(c)) ? c : {};
     let m = null;
-    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) m = await apiLoad(KVM);
+    if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) m = await conLimite(apiLoad(KVM));
+    if(m === "__tarde__") return false;
     if(!m || typeof m !== "object" || Array.isArray(m)){
       try { m = JSON.parse(localStorage.getItem(LSM)||"{}"); } catch(e){ m = {}; }
     }
     MAR = (m && typeof m === "object" && !Array.isArray(m)) ? m : {};
+    return true;
   }
   function avisoGuardado(txt){
     const e = el("el-save");
@@ -16493,9 +16513,27 @@ function ctRender(){
   });
 
   let _listo = false;
+  // Se dibuja PRIMERO con lo que hay en la maquina, asi la pestaña se puede usar
+  // enseguida, y lo de la nube se busca despues. Antes esperaba a la nube antes
+  // de dibujar nada: si esa lectura se colgaba, la pestaña quedaba congelada.
   async function abrir(){
-    if(_listo) return; _listo = true;
-    await cargar();
+    if(_listo) return;
+    _listo = true;
+    cargarLocal();
+    armarPantalla();
+    const av = el("el-save");
+    if(av) av.textContent = "buscando lo guardado…";
+    let ok = false;
+    try { ok = await cargar(); } catch(e){ ok = false; }
+    if(av){
+      av.textContent = ok ? "" : "⚠ no pude leer lo guardado en la nube — estás viendo lo de esta máquina";
+      av.style.color = ok ? "var(--green)" : "#b45309";
+    }
+    if(!ok) _listo = false;      // que el proximo click reintente
+    armarPantalla();
+  }
+
+  function armarPantalla(){
     const ds = el("el-ctos");
     ds.innerHTML = Object.values(CT)
       .filter(c => (c.sin_n||0) > 0 || (c.sis_pend||0) > 0.05)
@@ -18445,7 +18483,10 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
             "par_n": len(par), "par_tn": tn_par,
             "ident_tn": tn_ident, "cubierto": cubierto,
             "est": est, "txt": txt,
-            "ctgs": cams,
+            # Las cartas de porte solo viajan si el contrato tiene algo que mirar.
+            # Llevar las 10.290 de los 1.386 contratos pesaba 5 MB en una pagina
+            # que ya tardaba minutos en abrir, y en un contrato al dia no se usan.
+            "ctgs": cams if (sin or par or abs(pend) > 0.05) else [],
         })
 
     kpi = {}
@@ -18477,6 +18518,85 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
           f"venta {kpi['venta']['sin_n']} CTG ({kpi['venta']['sin_tn']:,.1f} tn) · "
           f"compra {kpi['compra']['sin_n']} CTG ({kpi['compra']['sin_tn']:,.1f} tn)")
     return out
+
+
+
+# ============================================================================
+#  ALIGERAR EL PAYLOAD  (18/09/2026)
+#  La pagina llego a 58 MB y tardaba mas de 110 segundos en abrir: se veia
+#  "congelada" y no se podia trabajar. El 98% eran datos embebidos. Aca se saca
+#  lo que no se usa, SIN tocar ninguna funcion de la pantalla.
+# ============================================================================
+
+def _cargill_detalle_liviano(det: dict) -> dict:
+    """De cada movimiento de Cargill viaja solo lo que la pantalla muestra.
+
+    La pantalla usa del analisis de calidad: tipo, valor, unidad, descuento y
+    factor; y descarta los renglones que vienen en cero. De los servicios usa
+    nombre, precio, moneda y como se calcula. Todo lo demas (patente, chofer,
+    origen, destino, estados...) ya viene en cargill_movements.
+    """
+    QA = ("analysisType", "valueCargill", "analysisUnit", "discount", "cargillQualityDescription")
+    SV = ("serviceName", "unitPrice", "billingCurrency", "currencyCode", "calculationType")
+    VACIO = (None, "", 0, 0.0)
+
+    def num(v):
+        try:
+            return float(str(v).replace(",", ".") or 0)
+        except Exception:
+            return 0.0
+
+    out = {}
+    for k, v in (det or {}).items():
+        if not isinstance(v, dict):
+            continue
+        qa = [{x: a.get(x) for x in QA if a.get(x) not in VACIO}
+              for a in (v.get("qualityAnalysis") or [])
+              if num(a.get("valueCargill")) != 0 or num(a.get("discount")) > 0]
+        sv = [{x: t.get(x) for x in SV if t.get(x) not in VACIO}
+              for t in (v.get("services") or [])]
+        sv = [t for t in sv if t]
+        if qa or sv:
+            out[k] = {"qualityAnalysis": qa, "services": sv}
+    return out
+
+
+def aligerar_payload(payload: dict) -> dict:
+    """Saca los campos que vienen vacios en TODAS las filas de una lista.
+
+    Si un campo nunca trae nada, no aporta y ocupa lugar en cada fila. Queda
+    ausente en vez de nulo, que para la pantalla es lo mismo (ambos son falsos).
+    """
+    VACIO = (None, "", [], {})
+    total_antes = total_desp = 0
+    detalle = []
+    for clave, val in payload.items():
+        if not isinstance(val, list) or not val or not isinstance(val[0], dict):
+            continue
+        antes = len(json.dumps(val, ensure_ascii=False))
+        campos = set()
+        for r in val:
+            if isinstance(r, dict):
+                campos |= set(r)
+        muertos = [c for c in campos
+                   if all((not isinstance(r, dict)) or r.get(c) in VACIO for r in val)]
+        if not muertos:
+            continue
+        for r in val:
+            if isinstance(r, dict):
+                for c in muertos:
+                    r.pop(c, None)
+        desp = len(json.dumps(val, ensure_ascii=False))
+        total_antes += antes
+        total_desp += desp
+        detalle.append((antes - desp, clave, len(muertos)))
+    if detalle:
+        detalle.sort(reverse=True)
+        print(f"[+] Aligerado: {(total_antes-total_desp)/1e6:,.1f} MB menos sacando campos "
+              f"siempre vacios")
+        for ahorro, clave, n in detalle[:6]:
+            print(f"      {clave:22s} -{ahorro/1e6:>5,.1f} MB ({n} campos que nunca traian nada)")
+    return payload
 
 
 
@@ -20097,7 +20217,8 @@ def main() -> int:
         "cargill_movements": cargill_movements,
         "cargill_invoices": cargill_invoices,
         "cargill_payments": cargill_payments,
-        "cargill_details": cargill_details,
+        # solo lo que la pantalla muestra: pasaba de 12,6 MB a 2,5 MB
+        "cargill_details": _cargill_detalle_liviano(cargill_details),
         "ldc_settlements": ldc_settlements,
         "ldc_fixations": ldc_fixations,
         "ldc_ctgs": ldc_ctgs,
@@ -20120,7 +20241,12 @@ def main() -> int:
         "demsup_trigo":    demsup_trigo_data,
         "trigo_cruce":     trigo_cruce_data,
     }
+    # La pagina se abre con todos estos datos adentro, asi que cada byte se paga
+    # en el tiempo de apertura: a 58 MB tardaba mas de 110 segundos y se veia
+    # congelada (18/09/2026). Antes de escribirla se saca lo que no aporta.
+    payload = aligerar_payload(payload)
     payload_json = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    print(f"[+] Payload: {len(payload_json)/1e6:,.1f} MB")
 
     build_time = datetime.now().strftime("%Y-%m-%d %H:%M (%Z)").strip().rstrip("()").strip()
 
