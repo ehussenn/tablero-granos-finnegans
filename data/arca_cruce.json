@@ -1,27 +1,27 @@
 {
- "generado": "2026-09-18T07:18:09",
+ "generado": "2026-09-19T07:05:36",
  "rango_arca": [
   "2026-02-01",
-  "2026-09-16"
+  "2026-09-18"
  ],
  "kpi": {
-  "arca_ctg": 1412,
-  "fnn_ctg": 5254,
-  "no_ingresados": 28,
-  "no_ingresados_tn": 1276.3,
-  "a_ingresar": 28,
-  "a_ingresar_tn": 1276.3,
-  "sin_arca": 1844,
-  "dif_kg_n": 1384
+  "arca_ctg": 1434,
+  "fnn_ctg": 5256,
+  "no_ingresados": 32,
+  "no_ingresados_tn": 1462.6,
+  "a_ingresar": 32,
+  "a_ingresar_tn": 1462.6,
+  "sin_arca": 1828,
+  "dif_kg_n": 1402
  },
  "por_cultivo": {
   "Soja": {
-   "camiones": 18,
-   "tn": 827.2
+   "camiones": 21,
+   "tn": 971.0
   },
   "Maíz": {
-   "camiones": 9,
-   "tn": 401.245
+   "camiones": 10,
+   "tn": 443.759
   },
   "Trigo": {
    "camiones": 1,
@@ -30,26 +30,30 @@
  },
  "por_origen": {
   "Participante + Solicitada": {
-   "camiones": 19,
-   "tn": 872.2
+   "camiones": 17,
+   "tn": 784.14
   },
   "Participante": {
-   "camiones": 9,
-   "tn": 404.105
+   "camiones": 12,
+   "tn": 536.619
+  },
+  "Solicitada": {
+   "camiones": 3,
+   "tn": 141.86
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 17,
-   "tn": 769.465
+   "camiones": 20,
+   "tn": 903.119
   },
   "Activa con confirmacion de arribo": {
-   "camiones": 7,
-   "tn": 315.0
+   "camiones": 8,
+   "tn": 367.0
   },
   "Activa": {
    "camiones": 4,
-   "tn": 191.84
+   "tn": 192.5
   }
  },
  "faltan": [
@@ -66,23 +70,6 @@
    "flujo_fnn": "",
    "kg_fnn": 0.0,
    "patente": "REL179 - AC470ET",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011639",
-   "CTG": "10235075666",
-   "Fecha": "14/09/2026",
-   "Cultivo": "Soja",
-   "Kg": 43720.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "TUM480 - UUX979",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -258,6 +245,74 @@
    "dif_kg": 0.0
   },
   {
+   "CartaPorte": "00001-00010086",
+   "CTG": "10235147044",
+   "Fecha": "16/09/2026",
+   "Cultivo": "Maíz",
+   "Kg": 42514.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Remitente Comercial Pr",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "DGQ650 -RRQ669",
+   "cuit_solicitante": "30644215403",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00011676",
+   "CTG": "10235177673",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 44860.0,
+   "Estado": "Confirmada",
+   "Origen": "Solicitada",
+   "OrigenDetalle": "Solicitada - Operador",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "AG533ER - AB578KL",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00000304",
+   "CTG": "10135177665",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Destinatario (G/DG)",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "DXW851 -AB249BO",
+   "cuit_solicitante": "20227691108",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00000301",
+   "CTG": "10135176916",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Destinatario (G/DG)",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "GDH718 -OSB312",
+   "cuit_solicitante": "20227691108",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
    "CartaPorte": "00000-00000237",
    "CTG": "10134776584",
    "Fecha": "29/08/2026",
@@ -394,23 +449,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00011667",
-   "CTG": "10235117273",
-   "Fecha": "15/09/2026",
-   "Cultivo": "Soja",
-   "Kg": 44340.0,
-   "Estado": "Activa",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "HRD946 - AC853DE",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00011660",
    "CTG": "10235109502",
    "Fecha": "15/09/2026",
@@ -525,6 +563,40 @@
    "flujo_fnn": "",
    "kg_fnn": 0.0,
    "patente": "AC413WH - AB445ZW",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00011679",
+   "CTG": "10235186205",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 52000.0,
+   "Estado": "Activa con confirmacion de arribo",
+   "Origen": "Solicitada",
+   "OrigenDetalle": "Solicitada - Operador",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "AH592HK - AH903GL",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00011678",
+   "CTG": "10235185887",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Estado": "Activa",
+   "Origen": "Solicitada",
+   "OrigenDetalle": "Solicitada - Operador",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "IIR680 - HXC144",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -1000,6 +1072,26 @@
    "Flujo": "PRODUCCIÓN (CPE propia)",
    "Organizacion": "ARGENTRADING S.A.",
    "Estado": "CN"
+  },
+  {
+   "CTG": "332023666877",
+   "CartaPorte": "00000-00000007",
+   "Fecha": "01-08-2026",
+   "Cultivo": "Grano Maní en caja",
+   "Kg": 28319.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "DELSEN S.R.L",
+   "Estado": "Activa"
+  },
+  {
+   "CTG": "332023666875",
+   "CartaPorte": "00000-00000008",
+   "Fecha": "01-08-2026",
+   "Cultivo": "Grano Maní en caja",
+   "Kg": 49466.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "DELSEN S.R.L",
+   "Estado": "Activa"
   },
   {
    "CTG": "10134061508",
@@ -2699,26 +2791,6 @@
    "Kg": 4486.0,
    "Flujo": "COMPRA SEMILLA",
    "Organizacion": "PALAVERSICH Y CIA SA",
-   "Estado": "Activa"
-  },
-  {
-   "CTG": "332023666877",
-   "CartaPorte": "00000-00000007",
-   "Fecha": "04-09-2026",
-   "Cultivo": "Grano Maní en caja",
-   "Kg": 28319.0,
-   "Flujo": "COMPRA",
-   "Organizacion": "DELSEN S.R.L",
-   "Estado": "Activa"
-  },
-  {
-   "CTG": "332023666875",
-   "CartaPorte": "00000-00000008",
-   "Fecha": "04-09-2026",
-   "Cultivo": "Grano Maní en caja",
-   "Kg": 49466.0,
-   "Flujo": "COMPRA",
-   "Organizacion": "DELSEN S.R.L",
    "Estado": "Activa"
   },
   {
@@ -4679,166 +4751,6 @@
    "Kg": 23960.0,
    "Flujo": "PRODUCCIÓN (CPE propia)",
    "Organizacion": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134196569",
-   "CartaPorte": "00000-00010965",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30208.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134198190",
-   "CartaPorte": "00000-00010966",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30533.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134198237",
-   "CartaPorte": "00000-00010967",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 33040.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134200714",
-   "CartaPorte": "00000-00010970",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30535.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134202668",
-   "CartaPorte": "00000-00010971",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 31950.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134202746",
-   "CartaPorte": "00000-00010972",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 33041.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134202811",
-   "CartaPorte": "00000-00010973",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29591.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134204385",
-   "CartaPorte": "00000-00010975",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 34035.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134205758",
-   "CartaPorte": "00000-00010977",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 28969.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134206701",
-   "CartaPorte": "00000-00010978",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 29538.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134207009",
-   "CartaPorte": "00000-00010979",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 35418.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134204429",
-   "CartaPorte": "00000-00010976",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 31976.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134196509",
-   "CartaPorte": "00000-00010964",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 33443.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134200591",
-   "CartaPorte": "00000-00010968",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30800.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134200640",
-   "CartaPorte": "00000-00010969",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 33475.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134204326",
-   "CartaPorte": "00000-00010974",
-   "Fecha": "08-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 31409.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
    "Estado": "CN"
   },
   {
@@ -21830,6 +21742,23 @@
    "dif_kg": -17091.0
   },
   {
+   "CartaPorte": "00000-00010979",
+   "CTG": "10134207009",
+   "Fecha": "09/08/2026",
+   "Cultivo": "Maíz",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Solicitada",
+   "OrigenDetalle": "Solicitada - Productor",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 35418.0,
+   "patente": "AC219UQ - AE504UY",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -17082.0
+  },
+  {
    "CartaPorte": "00000-00011629",
    "CTG": "10134945520",
    "Fecha": "07/09/2026",
@@ -25755,26 +25684,9 @@
    "cuit_solicitante": "",
    "a_ingresar": false,
    "dif_kg": -16045.0
-  },
-  {
-   "CartaPorte": "00000-00011662",
-   "CTG": "10135112930",
-   "Fecha": "15/09/2026",
-   "Cultivo": "Trigo",
-   "Kg": 51500.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Productor",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 35460.0,
-   "patente": "NXN480 - AF445YD",
-   "cuit_solicitante": "",
-   "a_ingresar": false,
-   "dif_kg": -16040.0
   }
  ],
- "total_filas": 1412,
+ "total_filas": 1434,
  "excluidos": [
   {
    "CTG": "10134836674",
@@ -26231,6 +26143,14 @@
    "Cultivo": "Maíz",
    "Kg": 39000.0,
    "Motivo": "Anulada en ARCA — no está en Finnegans (regla automática)"
+  },
+  {
+   "CTG": "10235185526",
+   "CartaPorte": "00000-00011677",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Motivo": "Desactivada en ARCA — no está en Finnegans (regla automática)"
   },
   {
    "CTG": "10130300458",

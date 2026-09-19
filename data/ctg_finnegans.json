@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8359,
-  "con_ctg": 7002,
+  "filas": 8361,
+  "con_ctg": 7004,
   "sin_ctg": 1357,
-  "ctg_unicos": 5254,
+  "ctg_unicos": 5256,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1756,11 +1756,11 @@
     "tn": 54609.42299999999
    },
    "PRODUCCIÓN (CPE propia)": {
-    "n": 3468,
-    "tn": 105345.66800000002
+    "n": 3470,
+    "tn": 105404.52800000002
    }
   },
-  "tn_total": 217097.599
+  "tn_total": 217156.459
  },
  "rows": [
   {
@@ -74576,7 +74576,7 @@
   {
    "ctg": "332023666877",
    "cp": "00000-00000007",
-   "fecha": "04-09-2026",
+   "fecha": "01-08-2026",
    "fecha_partida": "04-09-2026",
    "fecha_descarga": "04-09-2026",
    "grano": "Grano Maní en caja",
@@ -74606,7 +74606,7 @@
   {
    "ctg": "332023666875",
    "cp": "00000-00000008",
-   "fecha": "04-09-2026",
+   "fecha": "01-08-2026",
    "fecha_partida": "04-09-2026",
    "fecha_descarga": "04-09-2026",
    "grano": "Grano Maní en caja",
@@ -146486,7 +146486,7 @@
   {
    "ctg": "332023666877",
    "cp": "00000-00000007",
-   "fecha": "04-09-2026",
+   "fecha": "01-08-2026",
    "fecha_partida": "04-09-2026",
    "fecha_descarga": "04-09-2026",
    "grano": "Grano Maní en caja",
@@ -146516,7 +146516,7 @@
   {
    "ctg": "332023666875",
    "cp": "00000-00000008",
-   "fecha": "04-09-2026",
+   "fecha": "01-07-2026",
    "fecha_partida": "04-09-2026",
    "fecha_descarga": "04-09-2026",
    "grano": "Grano Maní en caja",
@@ -252532,6 +252532,66 @@
    "cancelado": false,
    "contrato": "",
    "doc": "TRAS-VTA-GRANO-AS - 8210"
+  },
+  {
+   "ctg": "10235117273",
+   "cp": "00000-00011667",
+   "fecha": "15-09-2026",
+   "fecha_partida": "15-09-2026",
+   "fecha_descarga": "18-09-2026",
+   "grano": "Grano Soja",
+   "kg": 28420.0,
+   "kg_sin_merma": 28420.0,
+   "kg_afip": 0.0,
+   "patente": "HRD946",
+   "chofer": "JUAN IRIART",
+   "transportista": "GONZALEZ FACUNDO",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "LDC ARGENTINA S.A.",
+   "destino": "LDC ARGENTINA S.A.",
+   "org": "LDC ARGENTINA S.A.",
+   "loc_origen": "BENGOLEA",
+   "loc_destino": "TIMBUES JOSE MARIA",
+   "prov_origen": "Cordoba",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8211"
+  },
+  {
+   "ctg": "10235075666",
+   "cp": "00000-00011639",
+   "fecha": "14-09-2026",
+   "fecha_partida": "14-09-2026",
+   "fecha_descarga": "18-09-2026",
+   "grano": "Grano Soja",
+   "kg": 30440.0,
+   "kg_sin_merma": 30440.0,
+   "kg_afip": 0.0,
+   "patente": "TUM480",
+   "chofer": "MERCADO SEBASTIAN ALEXIS",
+   "transportista": "MERCADO SEBASTIAN ALEXIS",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "MOLINOS AGRO S.A.",
+   "destino": "MOLINOS AGRO S.A.",
+   "org": "FERTILIZANTES FULLTEC SRL",
+   "loc_origen": "BENGOLEA",
+   "loc_destino": "",
+   "prov_origen": "Cordoba",
+   "prov_destino": "",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8212"
   }
  ]
 }
