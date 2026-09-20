@@ -1,23 +1,23 @@
 {
- "generado": "2026-09-19T07:05:36",
+ "generado": "2026-09-20T07:05:14",
  "rango_arca": [
   "2026-02-01",
   "2026-09-18"
  ],
  "kpi": {
-  "arca_ctg": 1434,
+  "arca_ctg": 1436,
   "fnn_ctg": 5256,
-  "no_ingresados": 32,
-  "no_ingresados_tn": 1462.6,
-  "a_ingresar": 32,
-  "a_ingresar_tn": 1462.6,
+  "no_ingresados": 34,
+  "no_ingresados_tn": 1567.6,
+  "a_ingresar": 34,
+  "a_ingresar_tn": 1567.6,
   "sin_arca": 1828,
   "dif_kg_n": 1402
  },
  "por_cultivo": {
   "Soja": {
-   "camiones": 21,
-   "tn": 971.0
+   "camiones": 23,
+   "tn": 1076.0
   },
   "Maíz": {
    "camiones": 10,
@@ -30,22 +30,22 @@
  },
  "por_origen": {
   "Participante + Solicitada": {
-   "camiones": 17,
-   "tn": 784.14
+   "camiones": 18,
+   "tn": 836.14
   },
   "Participante": {
-   "camiones": 12,
-   "tn": 536.619
+   "camiones": 14,
+   "tn": 641.619
   },
   "Solicitada": {
-   "camiones": 3,
-   "tn": 141.86
+   "camiones": 2,
+   "tn": 89.86
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 20,
-   "tn": 903.119
+   "camiones": 22,
+   "tn": 1008.119
   },
   "Activa con confirmacion de arribo": {
    "camiones": 8,
@@ -313,6 +313,40 @@
    "dif_kg": 0.0
   },
   {
+   "CartaPorte": "00000-00000303",
+   "CTG": "10135177585",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Destinatario (G/DG)",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "AD679TM -AG917KM",
+   "cuit_solicitante": "20227691108",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00000302",
+   "CTG": "10135177496",
+   "Fecha": "18/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 52500.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante",
+   "OrigenDetalle": "Participante - Destinatario (G/DG)",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "OUB144 -AI419IZ",
+   "cuit_solicitante": "20227691108",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
    "CartaPorte": "00000-00000237",
    "CTG": "10134776584",
    "Fecha": "29/08/2026",
@@ -574,8 +608,8 @@
    "Cultivo": "Soja",
    "Kg": 52000.0,
    "Estado": "Activa con confirmacion de arribo",
-   "Origen": "Solicitada",
-   "OrigenDetalle": "Solicitada - Operador",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
@@ -25686,7 +25720,7 @@
    "dif_kg": -16045.0
   }
  ],
- "total_filas": 1434,
+ "total_filas": 1436,
  "excluidos": [
   {
    "CTG": "10134836674",
