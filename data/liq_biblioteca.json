@@ -1,5 +1,5 @@
 {
- "generado": "2026-09-14T16:24:47.299863+00:00",
+ "generado": "2026-09-21T15:34:12.058272+00:00",
  "liquidaciones": {
   "LIQPRICPRA - 336": {
    "liq": "LIQPRICPRA - 336",
@@ -1784,6 +1784,889 @@
      "partida": "CAMPAÑA 25-26"
     }
    ]
+  },
+  "LIQCPRAGRA - 1820": {
+   "liq": "LIQCPRAGRA - 1820",
+   "fecha": "2026-09-14",
+   "comprobante": "330132480983",
+   "contrato_corredor": "COMP306",
+   "proveedor": "23109161519",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "Gastos de comercialización Granos 10,5%",
+     "cantidad": 2.0,
+     "precio": -28380.34,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQPRICPRA - 210": {
+   "liq": "LIQPRICPRA - 210",
+   "fecha": "2026-03-25",
+   "comprobante": "330130834790",
+   "contrato_corredor": "COMP252",
+   "proveedor": "3096",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 30.03,
+     "precio": 252434.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.94,
+     "precio": 252434.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 30.21,
+     "precio": 252434.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRASEM - 147": {
+   "liq": "LIQCPRASEM - 147",
+   "fecha": "2026-02-12",
+   "comprobante": "330130574109",
+   "contrato_corredor": "DM 50E22 SA DE LOS 13",
+   "proveedor": "6635",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 100.0,
+     "precio": 486850.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1169": {
+   "liq": "LIQCPRAGRA - 1169",
+   "fecha": "2026-01-27",
+   "comprobante": "330130457030",
+   "contrato_corredor": "COMP161",
+   "proveedor": "20-11781033-0",
+   "moneda": "PES",
+   "parcial_pct": 95.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.38,
+     "precio": 252000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 29.79,
+     "precio": 252000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.907,
+     "precio": 252000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 34.885,
+     "precio": 252000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 31.4,
+     "precio": 252000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQCPRASEM - 145": {
+   "liq": "LIQCPRASEM - 145",
+   "fecha": "2026-01-20",
+   "comprobante": "330130409544",
+   "contrato_corredor": "52E21 DUBINI",
+   "proveedor": "970",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 160.0,
+     "precio": 495000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1114": {
+   "liq": "LIQCPRAGRA - 1114",
+   "fecha": "2025-12-30",
+   "comprobante": "330130246957",
+   "contrato_corredor": "COMP077",
+   "proveedor": "20281300564",
+   "moneda": "PES",
+   "parcial_pct": 95.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.47,
+     "precio": 264457.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 29.29,
+     "precio": 264457.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 30.72,
+     "precio": 264457.5,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 180": {
+   "liq": "LIQPRICPRA - 180",
+   "fecha": "2025-12-30",
+   "comprobante": "330130241793",
+   "contrato_corredor": "REBOLLO SOJA 25",
+   "proveedor": "4974",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 18.835,
+     "precio": 500000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.94,
+     "precio": 500000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.77,
+     "precio": 500000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1110": {
+   "liq": "LIQCPRAGRA - 1110",
+   "fecha": "2025-12-29",
+   "comprobante": "330130234550",
+   "contrato_corredor": "COMP096",
+   "proveedor": "30708474998",
+   "moneda": "PES",
+   "parcial_pct": 95.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 29.036,
+     "precio": 233905.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 27.8,
+     "precio": 233905.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    },
+    {
+     "producto": "GTrigoPan",
+     "cantidad": 28.33,
+     "precio": 233905.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 25-26"
+    }
+   ]
+  },
+  "LIQPRICPRA - 172": {
+   "liq": "LIQPRICPRA - 172",
+   "fecha": "2025-12-19",
+   "comprobante": "330130164606",
+   "contrato_corredor": "CRIVELLO SOJA",
+   "proveedor": "20321488170",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 2.0,
+     "precio": 500000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1089": {
+   "liq": "LIQCPRAGRA - 1089",
+   "fecha": "2025-12-16",
+   "comprobante": "330130123476",
+   "contrato_corredor": "COMP164",
+   "proveedor": "1114",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 28.85,
+     "precio": 460556.31,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 137": {
+   "liq": "LIQCPRASEM - 137",
+   "fecha": "2025-12-01",
+   "comprobante": "330129993683",
+   "contrato_corredor": "DM 50E22 SA DE LOS 13",
+   "proveedor": "6635",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 81.23,
+     "precio": 504350.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 136": {
+   "liq": "LIQCPRASEM - 136",
+   "fecha": "2025-11-25",
+   "comprobante": "330129937994",
+   "contrato_corredor": "DM 50E22 SA DE LOS 13",
+   "proveedor": "6635",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 180.0,
+     "precio": 491400.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQPRICPRA - 153": {
+   "liq": "LIQPRICPRA - 153",
+   "fecha": "2025-11-05",
+   "comprobante": "330129831874",
+   "contrato_corredor": "TALISMAN SOJA 25",
+   "proveedor": "549",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 28.425,
+     "precio": 302000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.852,
+     "precio": 302000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 0.559,
+     "precio": 302000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQPRICPRA - 151": {
+   "liq": "LIQPRICPRA - 151",
+   "fecha": "2025-10-29",
+   "comprobante": "330129784767",
+   "contrato_corredor": "COMP067",
+   "proveedor": "20-20034786-3",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 0.0,
+     "precio": 0.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "Calidad - Granos",
+     "cantidad": 35.96,
+     "precio": -2933.46,
+     "traslado": null,
+     "partida": null
+    },
+    {
+     "producto": "Calidad - Granos",
+     "cantidad": 34.718,
+     "precio": -2933.46,
+     "traslado": null,
+     "partida": null
+    }
+   ]
+  },
+  "LIQPRICPRA - 146": {
+   "liq": "LIQPRICPRA - 146",
+   "fecha": "2025-10-09",
+   "comprobante": "330129676019",
+   "contrato_corredor": "COMP034",
+   "proveedor": "631",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 31.0,
+     "precio": 268090.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.1,
+     "precio": 268090.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 31.34,
+     "precio": 268090.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 28.61,
+     "precio": 268090.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1016": {
+   "liq": "LIQCPRAGRA - 1016",
+   "fecha": "2025-10-06",
+   "comprobante": "330129641541",
+   "contrato_corredor": "SABBA HNOS SOJA 225",
+   "proveedor": "4169",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.89,
+     "precio": 506600.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1006": {
+   "liq": "LIQCPRAGRA - 1006",
+   "fecha": "2025-09-30",
+   "comprobante": "330129597665",
+   "contrato_corredor": "COMP082rt",
+   "proveedor": "3282",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 65.849,
+     "precio": 454600.2,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQPRICPRA - 138": {
+   "liq": "LIQPRICPRA - 138",
+   "fecha": "2025-09-30",
+   "comprobante": "330129603587",
+   "contrato_corredor": "COMP067",
+   "proveedor": "20-20034786-3",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GrM",
+     "cantidad": 35.205,
+     "precio": 271210.0,
+     "traslado": "TRAS-CPRA-CV - 2846",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.96,
+     "precio": 271210.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.42,
+     "precio": 271210.0,
+     "traslado": "TRAS-CPRA-CV - 2839",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 29.563,
+     "precio": 271210.0,
+     "traslado": "TRAS-CPRA-CV - 2872",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 35.195,
+     "precio": 271210.0,
+     "traslado": "TRAS-CPRA-CV - 2858",
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GrM",
+     "cantidad": 34.718,
+     "precio": 271210.0,
+     "traslado": "TRAS-CPRA-CV - 2886",
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 130": {
+   "liq": "LIQCPRASEM - 130",
+   "fecha": "2025-09-30",
+   "comprobante": "330129594497",
+   "contrato_corredor": "FUSICO 50E22",
+   "proveedor": "1700",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 2.525,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.452,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 7.213,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 31.283,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 11.202,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 18.325,
+     "precio": 453000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 1003": {
+   "liq": "LIQCPRAGRA - 1003",
+   "fecha": "2025-09-29",
+   "comprobante": "330129590476",
+   "contrato_corredor": "COMP040",
+   "proveedor": "6153",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 29.82,
+     "precio": 413271.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQPRICPRA - 134": {
+   "liq": "LIQPRICPRA - 134",
+   "fecha": "2025-09-29",
+   "comprobante": "330129585883",
+   "contrato_corredor": "REBOLLO SOJA 25",
+   "proveedor": "4974",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.33,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.245,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 129": {
+   "liq": "LIQCPRASEM - 129",
+   "fecha": "2025-09-29",
+   "comprobante": "330129590100",
+   "contrato_corredor": "FUSICO 50E22",
+   "proveedor": "1700",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 2.525,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 27.475,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRASEM - 128": {
+   "liq": "LIQCPRASEM - 128",
+   "fecha": "2025-09-26",
+   "comprobante": "330129576153",
+   "contrato_corredor": "MIYA 50E22",
+   "proveedor": "1683",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 16.974,
+     "precio": 461000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 10.927,
+     "precio": 461000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 32.099,
+     "precio": 461000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRASEM - 127": {
+   "liq": "LIQCPRASEM - 127",
+   "fecha": "2025-09-26",
+   "comprobante": "330129575520",
+   "contrato_corredor": "MIYA 50E22",
+   "proveedor": "1683",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 10.927,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 19.073,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRASEM - 124": {
+   "liq": "LIQCPRASEM - 124",
+   "fecha": "2025-09-26",
+   "comprobante": "330129574429",
+   "contrato_corredor": "MIYA 50E22",
+   "proveedor": "1683",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GRANEL DM 50E22",
+     "cantidad": 10.927,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GRANEL DM 50E22",
+     "cantidad": 19.073,
+     "precio": 493000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRASEM - 123": {
+   "liq": "LIQCPRASEM - 123",
+   "fecha": "2025-09-24",
+   "comprobante": "330129546012",
+   "contrato_corredor": "MIYA 50E22",
+   "proveedor": "1683",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 10.927,
+     "precio": 505000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 19.073,
+     "precio": 505000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRASEM - 122": {
+   "liq": "LIQCPRASEM - 122",
+   "fecha": "2025-09-23",
+   "comprobante": "330129535031",
+   "contrato_corredor": "DM 50E22 SA DE LOS 13",
+   "proveedor": "6635",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 200.0,
+     "precio": 505000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 121": {
+   "liq": "LIQCPRASEM - 121",
+   "fecha": "2025-09-23",
+   "comprobante": "330129534692",
+   "contrato_corredor": "FUSICO 50E22",
+   "proveedor": "1700",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 30.0,
+     "precio": 440000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQCPRAGRA - 995": {
+   "liq": "LIQCPRAGRA - 995",
+   "fecha": "2025-09-22",
+   "comprobante": "330129527102",
+   "contrato_corredor": "COMP062",
+   "proveedor": "4236",
+   "moneda": "PES",
+   "parcial_pct": 97.5,
+   "tipo": "LIQCPRAGRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 29.99,
+     "precio": 434145.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
+  },
+  "LIQCPRASEM - 118": {
+   "liq": "LIQCPRASEM - 118",
+   "fecha": "2025-09-19",
+   "comprobante": "330129511347",
+   "contrato_corredor": "FUSICO 50E22",
+   "proveedor": "1700",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQCPRASEM",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 32.525,
+     "precio": 420000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 2.475,
+     "precio": 420000.0,
+     "traslado": null,
+     "partida": "CAMPAÑA 23-24"
+    }
+   ]
+  },
+  "LIQPRICPRA - 127": {
+   "liq": "LIQPRICPRA - 127",
+   "fecha": "2025-09-15",
+   "comprobante": "330129474636",
+   "contrato_corredor": "COMP063",
+   "proveedor": "30647474809",
+   "moneda": "PES",
+   "parcial_pct": 100.0,
+   "tipo": "LIQPRICPRA",
+   "productos": [
+    {
+     "producto": "GSj",
+     "cantidad": 29.7,
+     "precio": 251889.69,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 31.2,
+     "precio": 251889.69,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 29.8,
+     "precio": 251889.69,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 28.8,
+     "precio": 251889.69,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    },
+    {
+     "producto": "GSj",
+     "cantidad": 30.7,
+     "precio": 251889.69,
+     "traslado": null,
+     "partida": "CAMPAÑA 24-25"
+    }
+   ]
   }
  },
  "contratos": {
@@ -1885,6 +2768,159 @@
      "kg": 30260.0,
      "traslado": "TRAS-CPRA-CV - 4240",
      "liqs": []
+    }
+   ]
+  },
+  "compra-732": {
+   "lado": "compra",
+   "numero": "732",
+   "consultado": "2026-09-21T15:34:12.058235+00:00",
+   "org": "CARIGNANO DIEGO RAUL",
+   "grano": "Grano Sorgo",
+   "cosecha": "24-25",
+   "kg_total": 423760.0,
+   "kg_liquidado": 364580.0,
+   "liquidaciones": [
+    "LIQCPRAGRA - 922",
+    "LIQCPRAGRA - 923",
+    "LIQCPRAGRA - 955"
+   ],
+   "ctgs": [
+    {
+     "ctg": "10124846305",
+     "cp": "00000-00001588",
+     "fecha": "2025-06-24",
+     "kg": 30640.0,
+     "traslado": "TRAS-CPRA-CV - 2530",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10124857123",
+     "cp": "00000-00001589",
+     "fecha": "2025-06-24",
+     "kg": 28600.0,
+     "traslado": "TRAS-CPRA-CV - 2528",
+     "liqs": []
+    },
+    {
+     "ctg": "10124863290",
+     "cp": "00000-00001590",
+     "fecha": "2025-06-25",
+     "kg": 30780.0,
+     "traslado": "TRAS-CPRA-CV - 2539",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10124886726",
+     "cp": "00000-00001591",
+     "fecha": "2025-06-25",
+     "kg": 30300.0,
+     "traslado": "TRAS-CPRA-CV - 2562",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10124899822",
+     "cp": "00000-00001592",
+     "fecha": "2025-06-26",
+     "kg": 29220.0,
+     "traslado": "TRAS-CPRA-CV - 2545",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10124899973",
+     "cp": "00000-00001593",
+     "fecha": "2025-06-26",
+     "kg": 30940.0,
+     "traslado": "TRAS-CPRA-CV - 2546",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10124900099",
+     "cp": "00000-00001594",
+     "fecha": "2025-06-26",
+     "kg": 31080.0,
+     "traslado": "TRAS-CPRA-CV - 2547",
+     "liqs": [
+      "LIQCPRAGRA - 922"
+     ]
+    },
+    {
+     "ctg": "10225073504",
+     "cp": "00000-00004173",
+     "fecha": "2025-07-02",
+     "kg": 30580.0,
+     "traslado": "TRAS-CPRA-CV - 2602",
+     "liqs": []
+    },
+    {
+     "ctg": "10225076492",
+     "cp": "00000-00004174",
+     "fecha": "2025-07-02",
+     "kg": 31440.0,
+     "traslado": "TRAS-CPRA-CV - 2584",
+     "liqs": [
+      "LIQCPRAGRA - 923"
+     ]
+    },
+    {
+     "ctg": "10225076868",
+     "cp": "00000-00004175",
+     "fecha": "2025-07-02",
+     "kg": 28440.0,
+     "traslado": "TRAS-CPRA-CV - 2585",
+     "liqs": [
+      "LIQCPRAGRA - 923"
+     ]
+    },
+    {
+     "ctg": "10225722846",
+     "cp": "00000-00004197",
+     "fecha": "2025-08-04",
+     "kg": 30700.0,
+     "traslado": "TRAS-CPRA-CV - 2689",
+     "liqs": [
+      "LIQCPRAGRA - 955"
+     ]
+    },
+    {
+     "ctg": "10225731317",
+     "cp": "00000-00004198",
+     "fecha": "2025-08-05",
+     "kg": 31180.0,
+     "traslado": "TRAS-CPRA-CV - 2685",
+     "liqs": [
+      "LIQCPRAGRA - 955"
+     ]
+    },
+    {
+     "ctg": "10225775462",
+     "cp": "00000-00004202",
+     "fecha": "2025-08-06",
+     "kg": 29120.0,
+     "traslado": "TRAS-CPRA-CV - 2714",
+     "liqs": [
+      "LIQCPRAGRA - 955"
+     ]
+    },
+    {
+     "ctg": "10225776701",
+     "cp": "00000-00004203",
+     "fecha": "2025-08-06",
+     "kg": 30740.0,
+     "traslado": "TRAS-CPRA-CV - 2713",
+     "liqs": [
+      "LIQCPRAGRA - 955"
+     ]
     }
    ]
   }
@@ -2560,6 +3596,41 @@
     "liq": "LIQCPRAGRA - 1468",
     "fecha": "2026-05-15",
     "tn": 35.53
+   }
+  ],
+  "TRAS-CPRA-CV - 2846": [
+   {
+    "liq": "LIQPRICPRA - 138",
+    "fecha": "2025-09-30",
+    "tn": 35.205
+   }
+  ],
+  "TRAS-CPRA-CV - 2839": [
+   {
+    "liq": "LIQPRICPRA - 138",
+    "fecha": "2025-09-30",
+    "tn": 35.42
+   }
+  ],
+  "TRAS-CPRA-CV - 2872": [
+   {
+    "liq": "LIQPRICPRA - 138",
+    "fecha": "2025-09-30",
+    "tn": 29.563
+   }
+  ],
+  "TRAS-CPRA-CV - 2858": [
+   {
+    "liq": "LIQPRICPRA - 138",
+    "fecha": "2025-09-30",
+    "tn": 35.195
+   }
+  ],
+  "TRAS-CPRA-CV - 2886": [
+   {
+    "liq": "LIQPRICPRA - 138",
+    "fecha": "2025-09-30",
+    "tn": 34.718
    }
   ]
  }
