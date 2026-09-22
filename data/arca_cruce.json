@@ -1,23 +1,23 @@
 {
- "generado": "2026-09-21T08:34:12",
+ "generado": "2026-09-22T08:25:03",
  "rango_arca": [
   "2026-02-01",
-  "2026-09-18"
+  "2026-09-21"
  ],
  "kpi": {
-  "arca_ctg": 1436,
-  "fnn_ctg": 5256,
-  "no_ingresados": 34,
-  "no_ingresados_tn": 1567.6,
-  "a_ingresar": 34,
-  "a_ingresar_tn": 1567.6,
-  "sin_arca": 1828,
-  "dif_kg_n": 1402
+  "arca_ctg": 1441,
+  "fnn_ctg": 5260,
+  "no_ingresados": 37,
+  "no_ingresados_tn": 1700.1,
+  "a_ingresar": 37,
+  "a_ingresar_tn": 1700.1,
+  "sin_arca": 1830,
+  "dif_kg_n": 1404
  },
  "por_cultivo": {
   "Soja": {
-   "camiones": 23,
-   "tn": 1076.0
+   "camiones": 26,
+   "tn": 1208.5
   },
   "Maíz": {
    "camiones": 10,
@@ -30,30 +30,30 @@
  },
  "por_origen": {
   "Participante + Solicitada": {
-   "camiones": 18,
-   "tn": 836.14
+   "camiones": 20,
+   "tn": 924.56
   },
   "Participante": {
    "camiones": 14,
    "tn": 641.619
   },
   "Solicitada": {
-   "camiones": 2,
-   "tn": 89.86
+   "camiones": 3,
+   "tn": 133.94
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 22,
-   "tn": 1008.119
+   "camiones": 23,
+   "tn": 1051.539
   },
   "Activa con confirmacion de arribo": {
    "camiones": 8,
    "tn": 367.0
   },
   "Activa": {
-   "camiones": 4,
-   "tn": 192.5
+   "camiones": 6,
+   "tn": 281.58
   }
  },
  "faltan": [
@@ -347,6 +347,23 @@
    "dif_kg": 0.0
   },
   {
+   "CartaPorte": "00000-00011685",
+   "CTG": "10235221685",
+   "Fecha": "21/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 43420.0,
+   "Estado": "Confirmada",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "HJB405 - AA943NN",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
    "CartaPorte": "00000-00000237",
    "CTG": "10134776584",
    "Fecha": "29/08/2026",
@@ -625,12 +642,46 @@
    "Cultivo": "Soja",
    "Kg": 45000.0,
    "Estado": "Activa",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "IIR680 - HXC144",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00011686",
+   "CTG": "10235228026",
+   "Fecha": "21/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 44080.0,
+   "Estado": "Activa",
    "Origen": "Solicitada",
    "OrigenDetalle": "Solicitada - Operador",
    "Existe_en_Finnegans": "No",
    "flujo_fnn": "",
    "kg_fnn": 0.0,
-   "patente": "IIR680 - HXC144",
+   "patente": "UIP806 - CZR341",
+   "cuit_solicitante": "",
+   "a_ingresar": true,
+   "dif_kg": 0.0
+  },
+  {
+   "CartaPorte": "00000-00011684",
+   "CTG": "10135221591",
+   "Fecha": "21/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 45000.0,
+   "Estado": "Activa",
+   "Origen": "Solicitada",
+   "OrigenDetalle": "Solicitada - Productor",
+   "Existe_en_Finnegans": "No",
+   "flujo_fnn": "",
+   "kg_fnn": 0.0,
+   "patente": "FFS769 - GEW944",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -5225,26 +5276,6 @@
    "Kg": 30980.0,
    "Flujo": "PRODUCCIÓN (CPE propia)",
    "Organizacion": "ACEITERA GENERAL DEHEZA S A",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134210799",
-   "CartaPorte": "00000-00010980",
-   "Fecha": "09-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 35160.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134210857",
-   "CartaPorte": "00000-00010981",
-   "Fecha": "09-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30989.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "TOMAS HNOS Y CIA SA",
    "Estado": "CN"
   },
   {
@@ -11858,6 +11889,26 @@
    "Estado": "CN"
   },
   {
+   "CTG": "10135122408",
+   "CartaPorte": "00000-00001043",
+   "Fecha": "15-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 31560.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "ARBUATTI FERNANDO",
+   "Estado": "CN"
+  },
+  {
+   "CTG": "10135122421",
+   "CartaPorte": "00000-00001044",
+   "Fecha": "15-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 36670.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "ARBUATTI FERNANDO",
+   "Estado": "CN"
+  },
+  {
    "CTG": "10130229156",
    "CartaPorte": "00000-00000516",
    "Fecha": "16-03-2026",
@@ -12436,6 +12487,16 @@
    "Flujo": "COMPRA",
    "Organizacion": "AGROCOMERCIAL GRECO S.R.L.",
    "Estado": "Activa"
+  },
+  {
+   "CTG": "10135140824",
+   "CartaPorte": "00000-00001434",
+   "Fecha": "16-09-2026",
+   "Cultivo": "Grano Maíz",
+   "Kg": 38900.0,
+   "Flujo": "COMPRA",
+   "Organizacion": "LA ADELAIDA SA",
+   "Estado": "CN"
   },
   {
    "CTG": "10130255608",
@@ -15376,6 +15437,16 @@
    "Flujo": "COMPRA",
    "Organizacion": "DUBINI GUILLERMO JOSE",
    "Estado": "CN"
+  },
+  {
+   "CTG": "003300002190",
+   "CartaPorte": "",
+   "Fecha": "21-09-2026",
+   "Cultivo": "SEM. GRANEL CEBADILLA BARENO (kilos)",
+   "Kg": 4160.0,
+   "Flujo": "COMPRA SEMILLA",
+   "Organizacion": "PALAVERSICH Y CIA SA",
+   "Estado": "Activa"
   },
   {
    "CTG": "10130392914",
@@ -25720,7 +25791,7 @@
    "dif_kg": -16045.0
   }
  ],
- "total_filas": 1436,
+ "total_filas": 1441,
  "excluidos": [
   {
    "CTG": "10134836674",
