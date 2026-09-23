@@ -1141,6 +1141,9 @@ window.apiFetch = function(path, opts){
 
   /* tabla con fila de totales sticky al pie */
   table tfoot td{background:#ecfdf5;font-weight:700;padding:8px 10px;font-size:12.5px;border-top:2px solid var(--blue);position:sticky;bottom:0;z-index:1}
+  /* TOTAL GENERAL: analisis + los "a acomodar". Es el que tiene que cerrar con Finnegans. */
+  table tfoot tr.tot-gen td{background:#e0f2fe;border-top:2px solid #0284c7;color:#075985}
+  table tfoot tr.tot-gen td.num,table tfoot tr.tot-gen td.lbl{color:#075985}
   table tfoot tr.sel td{background:#fef3c7;border-top:2px solid var(--orange);bottom:33px}
   table tfoot td.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--blue)}
   table tfoot tr.sel td.num{color:#a16207}
@@ -4274,7 +4277,7 @@ function render(){
     `${rows.length.toLocaleString('es-AR')} para análisis + ${rowsAcomodar.length.toLocaleString('es-AR')} a acomodar / ${DATA.length.toLocaleString('es-AR')} contratos` +
     (rows.length>MAX ? ` (mostrando ${MAX})` : '');
 
-  renderFootPos(rows);
+  renderFootPos(rows, rowsAcomodar);
   renderAcomodar(rowsAcomodar, getVal);
 }
 
@@ -4283,8 +4286,12 @@ function render(){
 function renderAcomodar(rowsA, getVal){
   const anulados = rowsA.filter(r => String(r.estadoanulacion||'').trim().toLowerCase()==='anulado').length;
   const tPliq = rowsA.reduce((s,r)=>s+((r.cantidadentregada||0)-(r.cantidadliquidada||0)),0);
+  // las tn ENTREGADAS que se lleva esta seccion son las que hacen que el total de arriba
+  // no coincida con Finnegans, asi que van a la vista en el titulo
+  const tEnt = rowsA.reduce((s,r)=>s+(Number(r.cantidadentregada)||0),0);
   document.getElementById('acomodar-meta').textContent =
-    `${rowsA.length.toLocaleString('es-AR')} contratos (${anulados} anulados) · pdte. liq. ${fmt.num(tPliq)} tn`;
+    `${rowsA.length.toLocaleString('es-AR')} contratos (${anulados} anulados) · `
+    + `${fmt.num(tEnt)} tn entregadas que NO suman arriba · pdte. liq. ${fmt.num(tPliq)} tn`;
   document.getElementById('tbl-acomodar-head').innerHTML =
     TABLE_COLS.map(c=>`<th>${c.lbl}</th>`).join('') + '<th>Motivo</th>';
   const MAXA = 400;
@@ -4318,7 +4325,7 @@ function renderAcomodar(rowsA, getVal){
   document.getElementById('tbl-acomodar-foot').innerHTML = `<tr>${foot}<td></td></tr>`;
 }
 
-function renderFootPos(rows){
+function renderFootPos(rows, rowsAcomodar){
   const computeFoot = (subset, label, isSel) => TABLE_COLS.map((c, idx) => {
     if(idx === 0){
       const btn = isSel ? ` <button class="clear-sel" onclick="SEL_POS.clear(); render();">Limpiar selección</button>` : '';
@@ -4345,7 +4352,17 @@ function renderFootPos(rows){
   const totalRow = `<tr>${computeFoot(rows, 'TOTAL', false)}</tr>`;
   const selRows = rows.filter(r => SEL_POS.has(rowId(r)));
   const selRow  = selRows.length ? `<tr class="sel">${computeFoot(selRows, '🟨 SELECCIONADOS', true)}</tr>` : '';
-  document.getElementById('tbl-foot').innerHTML = totalRow + selRow;
+
+  // TOTAL GENERAL: la tabla de arriba deja afuera los contratos "a acomodar" (pdte. liq.
+  // 0-15 tn), y eso hace que su total NO coincida con el de Finnegans — en venta 25-26
+  // la mitad de lo entregado queda en esa seccion. Esta fila suma las dos partes, asi el
+  // numero cierra contra Finnegans sin tener que ir a buscar la seccion de abajo.
+  const aco = rowsAcomodar || [];
+  const genRow = aco.length
+    ? `<tr class="tot-gen" title="Analisis + Pendientes a acomodar: este es el total que tiene que coincidir con Finnegans">`
+      + computeFoot(rows.concat(aco), '📐 TOTAL GENERAL (con los a acomodar)', false) + '</tr>'
+    : '';
+  document.getElementById('tbl-foot').innerHTML = totalRow + genRow + selRow;
 }
 
 render();
