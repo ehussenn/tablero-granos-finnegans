@@ -605,15 +605,51 @@ window.apiFetch = function(path, opts){
   .nav-item{display:block;padding:9px 12px;border-radius:var(--r);color:#4B5550;font-size:13.5px;cursor:pointer;text-decoration:none;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
   .nav-item:hover{background:var(--chip);color:var(--blue)}
   .nav-item.active{background:var(--chip);color:var(--blue);border-left-color:var(--blue);font-weight:600}
+  /* ===== MENU PLEGABLE, como el rail de iconos de LBO =====
+     Plegado quedan solo los iconos y el nombre aparece en un globito. Los items
+     son los mismos: no se saca ninguno, solo se achica la columna. */
+  .app-shell.plegado .sidebar{width:64px;flex:0 0 64px}
+  .app-shell.plegado .main{margin-left:64px}
+  .app-shell.plegado .sidebar .brand-name,
+  .app-shell.plegado .sidebar .brand-sub,
+  .app-shell.plegado .nav-group,
+  .app-shell.plegado .sidebar .campana{display:none}
+  .app-shell.plegado .sidebar .brand{justify-content:center;padding:18px 0 4px}
+  .app-shell.plegado .nav-item,
+  .app-shell.plegado .campana-home{
+    text-align:center;padding:11px 0;font-size:0;position:relative;border-left:none;
+    border-radius:0}
+  /* el emoji que ya trae cada item hace de icono */
+  .app-shell.plegado .nav-item::first-letter,
+  .app-shell.plegado .campana-home::first-letter{font-size:18px}
+  .app-shell.plegado .nav-item:hover::after{
+    content:attr(data-title);position:absolute;left:100%;top:50%;transform:translateY(-50%);
+    margin-left:8px;background:#0B3D2E;color:#fff;font-size:12px;white-space:nowrap;
+    padding:6px 10px;border-radius:6px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  /* pie de pagina en columnas, como el de LBO */
+  .pie-lbo{display:flex;flex-wrap:wrap;gap:34px;align-items:center;border-top:1px solid var(--line);
+    background:#fff;padding:22px 26px;margin-top:20px;font-size:12px;color:var(--muted)}
+  .pie-marca{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:13px}
+  .pie-logo{width:34px;height:34px;border-radius:var(--r);background:var(--chip);display:flex;
+    align-items:center;justify-content:center;font-size:17px}
+  .pie-chico{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);
+    font-weight:600;margin-bottom:2px}
+  .pie-col{line-height:1.5}
+
+  .plegar-btn{position:sticky;bottom:0;width:100%;border:none;border-top:1px solid var(--line);
+    background:#fff;color:var(--muted);padding:12px;cursor:pointer;font-size:15px;
+    font-family:inherit;transition:background .15s,color .15s}
+  .plegar-btn:hover{background:var(--chip);color:var(--blue)}
+
   .main{flex:1;margin-left:248px;min-width:0;display:flex;flex-direction:column}
-  .topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:11px 24px;display:flex;justify-content:space-between;align-items:center;z-index:25;gap:16px}
-  .topbar-title{font-size:18px;font-weight:700;color:var(--ink)}
+  .topbar{position:sticky;top:0;background:#0B3D2E;border-bottom:1px solid #12563F;padding:11px 24px;display:flex;justify-content:space-between;align-items:center;z-index:25;gap:16px}
+  .topbar-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.2px}
   .topbar-right{display:flex;align-items:center;gap:14px}
-  .topbar-meta{font-size:11px;color:var(--muted);text-align:right;line-height:1.35}
+  .topbar-meta{font-size:11px;color:#A7DCC4;text-align:right;line-height:1.35}
   .topbar-meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3B9C6E;margin-right:5px;box-shadow:0 0 0 3px rgba(18,176,116,.25)}
   .admin-pill{background:#E8F5EF;color:#0D9963;border:1px solid #BFE6D4;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
   .admin-pill:hover{background:#BFE6D4}
-  .logout-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);color:var(--ink);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .logout-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
   .logout-btn:hover{border-color:#C0392B;color:#C0392B}
   .content{padding:20px 24px;max-width:1560px;width:100%}
   .menu-toggle{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--ink);line-height:1}
@@ -1350,6 +1386,7 @@ window.apiFetch = function(path, opts){
         </div>
       </div>
     </nav>
+    <button class="plegar-btn" id="plegar-btn" type="button" title="Plegar o desplegar el menú">&#8592;</button>
   </aside>
 
   <div class="main">
@@ -3519,6 +3556,16 @@ window.apiFetch = function(path, opts){
   </div><!-- /panel personal -->
 
     </div><!-- /.content -->
+
+    <footer class="pie-lbo">
+      <div class="pie-marca">
+        <span class="pie-logo">&#127793;</span>
+        <div><b>AGRONASAJA SRL</b><div class="pie-chico">Portal de Granos</div></div>
+      </div>
+      <div class="pie-col"><div class="pie-chico">Datos</div>Finnegans &middot; ARCA &middot; DW</div>
+      <div class="pie-col"><div class="pie-chico">Extranets</div>Cargill &middot; LDC &middot; ACA &middot; Allaria</div>
+      <div class="pie-col"><div class="pie-chico">Actualizado</div>__BUILD_TIME__</div>
+    </footer>
   </div><!-- /.main -->
 </div><!-- /.app-shell -->
 
@@ -17968,6 +18015,28 @@ async function mbAutoBackup(forceNow){
   })();
 })();
 
+</script>
+
+<script>
+/* Menu plegable (estilo LBO). Se acuerda de como lo dejo cada usuario. */
+(function(){
+  const shell = document.querySelector('.app-shell');
+  const btn = document.getElementById('plegar-btn');
+  if(!shell || !btn) return;
+  const LS = 'agnsj_menu_plegado';
+  const pintar = () => {
+    const p = shell.classList.contains('plegado');
+    btn.innerHTML = p ? '&#8594;' : '&#8592;';
+    btn.title = p ? 'Desplegar el menú' : 'Plegar el menú';
+  };
+  try { if(localStorage.getItem(LS) === '1') shell.classList.add('plegado'); } catch(e){}
+  pintar();
+  btn.addEventListener('click', () => {
+    shell.classList.toggle('plegado');
+    try { localStorage.setItem(LS, shell.classList.contains('plegado') ? '1' : '0'); } catch(e){}
+    pintar();
+  });
+})();
 </script>
 </body>
 </html>
