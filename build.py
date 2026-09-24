@@ -627,6 +627,15 @@ window.apiFetch = function(path, opts){
     margin-left:8px;background:#0B3D2E;color:#fff;font-size:12px;white-space:nowrap;
     padding:6px 10px;border-radius:6px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   /* pie de pagina en columnas, como el de LBO */
+  /* Precios Compra vs Venta */
+  #px2-tabla td.px-cult{font-weight:600;color:var(--ink)}
+  #px2-tabla tr.px-fila{cursor:pointer}
+  #px2-tabla tr.px-fila:hover{background:var(--chip)}
+  #px2-tabla tr.px-det td{background:#FAFAFA;font-size:11.5px;color:var(--muted)}
+  #px2-tabla td.px-pos{color:#0D9963;font-weight:700}
+  #px2-tabla td.px-neg{color:#C0392B;font-weight:700}
+  #px2-tabla tfoot td{background:var(--chip);font-weight:700;color:var(--ink)}
+
   .pie-lbo{display:flex;flex-wrap:wrap;gap:34px;align-items:center;border-top:1px solid var(--line);
     background:#fff;padding:22px 26px;margin-top:20px;font-size:12px;color:var(--muted)}
   .pie-marca{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:13px}
@@ -1373,6 +1382,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arcaliq" data-title="Cruce Liquidaciones · ARCA vs Finnegans">🧾 Cruce Liquidaciones</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-arca" data-title="Cruce CP · ARCA vs Finnegans">🚛 Cruce CP · ARCA</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-trackeo" data-title="Trackeo de Camiones · certificados y mermas">🎯 Trackeo Camiones</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-precios" data-title="Precios Compra vs Venta · a cuánto compraste y a cuánto vendiste">💵 Precios Compra vs Venta</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-ctgliq" data-title="CTG sin Liquidar · qué carta de porte falta liquidar o vincular">🧾 CTG sin Liquidar</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
@@ -2825,6 +2835,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="pn-arca">🚛 Cruce CP · ARCA</button>
       <button class="subtab" data-sub="pn-trackeo">🎯 Trackeo Camiones</button>
       <button class="subtab" data-sub="pn-ctgliq">🧾 CTG sin Liquidar</button>
+      <button class="subtab" data-sub="pn-precios">💵 Precios Compra vs Venta</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
 
@@ -3384,6 +3395,51 @@ window.apiFetch = function(path, opts){
     </div><!-- /subpanel pn-arca -->
 
     <!-- ===== SUBPANEL: Taqueo CTG ===== -->
+
+    <div class="subpanel" data-sub-panel="pn-precios">
+      <div class="section" style="background:linear-gradient(135deg,#0A7A4F 0%,#12B074 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">💵 Precios Compra vs Venta · por cultivo y campaña</h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
+          A cuánto <b>compraste</b> y a cuánto <b>vendiste</b> cada cultivo, y cuánto hay de
+          diferencia. Los precios son <b>promedios ponderados por tonelada</b> (un contrato de
+          500 tn pesa más que uno de 20), no promedios simples.
+          Como hay contratos en pesos y en dólares, se lleva todo a una sola moneda usando el
+          <b>tipo de cambio del día de cada contrato</b> — no el de hoy, porque comparar un
+          contrato de 2024 al dólar de hoy no dice nada.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="px2-chips"></div>
+      </div>
+
+      <div class="section">
+        <div class="filterbar">
+          <div><label>CAMPAÑA</label><select id="px2-camp"><option value="">Todas</option></select></div>
+          <div><label>CULTIVO</label><select id="px2-prod"><option value="">Todos</option></select></div>
+          <div><label>EMPRESA</label><select id="px2-empresa"><option value="">Todas</option></select></div>
+          <div><label>CONTRAPARTE</label><select id="px2-org"><option value="">Todas</option></select></div>
+          <div><label>CORREDOR</label><select id="px2-corr"><option value="">Todos</option></select></div>
+          <div><label>TIPO CONTRATO</label><select id="px2-tipo"><option value="">Todos</option></select></div>
+          <div><label>MONEDA ORIGINAL</label><select id="px2-monori"><option value="">Todas</option>
+            <option value="DOLARES">Sólo en dólares</option><option value="PESOS">Sólo en pesos</option></select></div>
+          <div><label>VER EN</label><select id="px2-mon">
+            <option value="usd">Dólares por tn</option><option value="ars">Pesos por tn</option></select></div>
+          <div><label>PRECIO</label><select id="px2-base">
+            <option value="fij">Fijado (precio cerrado)</option>
+            <option value="liq">Liquidado (efectivamente facturado)</option></select></div>
+          <div><label>BUSCAR</label><input type="text" id="px2-q" placeholder="contraparte o nº…" style="min-width:180px"></div>
+          <button class="clear" id="px2-reset">Limpiar</button>
+        </div>
+        <div id="px2-info" style="font-size:11.5px;color:var(--muted);margin-top:6px"></div>
+      </div>
+
+      <div id="px2-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:0 0 14px"></div>
+
+      <div class="section">
+        <h3>Precio por cultivo y campaña <span class="badge">Click en una fila para ver los contratos</span></h3>
+        <div class="tbl-wrap" style="max-height:620px">
+          <table id="px2-tabla"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+        </div>
+      </div>
+    </div><!-- /subpanel pn-precios -->
     <div class="subpanel" data-sub-panel="pn-taqueo">
       <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
         <h3 style="color:#fff;margin:0">🔎 Taqueo CTG · Seguimiento fino Finnegans</h3>
@@ -18178,6 +18234,252 @@ async function mbAutoBackup(forceNow){
 
   // al abrir, recuperar lo ultimo elegido
   setTimeout(aplicar, 1200);
+})();
+</script>
+
+<script>
+/* ============================================================
+   PRECIOS COMPRA vs VENTA  (pedido de Ezequiel, 24/09/2026)
+   A cuanto compraste y a cuanto vendiste cada cultivo, por campaña.
+
+   Dos decisiones que cambian el numero y conviene tener a la vista:
+   1) El precio es PONDERADO POR TONELADA: se suman importes y se suman
+      toneladas, y recien ahi se divide. Un promedio simple dejaria que un
+      contrato de 20 tn pese lo mismo que uno de 500.
+   2) Conviven pesos y dolares. Se lleva todo a una moneda con el tipo de
+      cambio DEL DIA DE CADA CONTRATO (PAYLOAD.tc_hist), no con el de hoy:
+      valuar un contrato de 2024 al dolar de hoy no dice nada.
+   ============================================================ */
+(function px2Init(){
+  const COM = (PAYLOAD.compra || []).filter(r => String(r.tipo||"").startsWith("1"));
+  const VEN = (PAYLOAD.pilot  || []).filter(r => String(r.tipo||"").startsWith("1"));
+  const TC  = PAYLOAD.tc_hist || {};
+  const TC_FECHAS = Object.keys(TC).sort();
+
+  const esc = x => String(x==null?"":x).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n0 = v => (Number(v)||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+  const n1 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
+  const n2 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const val = id => (document.getElementById(id)||{}).value || "";
+  const cultivo = p => String(p||"—").replace(/^Grano\s+/i,"").trim() || "—";
+  const campS = c => { const m = String(c||"").match(/(\d{2}\s*[-\/]\s*\d{2})/);
+                       return m ? m[1].replace(/\s/g,"") : (String(c||"")||"—"); };
+
+  /* el dolar del dia del contrato; si no esta esa fecha, la anterior mas cercana */
+  function tcDe(fecha){
+    const f = String(fecha||"").slice(0,10);
+    if(TC[f]) return TC[f];
+    if(!f || !TC_FECHAS.length) return 0;
+    let lo = 0, hi = TC_FECHAS.length - 1, res = null;
+    while(lo <= hi){
+      const m = (lo + hi) >> 1;
+      if(TC_FECHAS[m] <= f){ res = TC_FECHAS[m]; lo = m + 1; } else hi = m - 1;
+    }
+    return res ? TC[res] : TC[TC_FECHAS[0]];
+  }
+
+  /* Cuanto y a que precio, ya llevado a la moneda elegida.
+
+     OJO con la moneda: el campo "moneda" del contrato NO dice en que moneda
+     esta el precio. De 78 contratos de soja 25-26 marcados DOLARES, 33 tienen
+     el precio en PESOS (500.000+ por tn): son contratos en dolares fijados en
+     pesos. Haciendole caso a ese campo, la soja daba 90.445 USD/tn.
+
+     Se deduce por el orden de magnitud, que separa limpio: de 2.428 contratos
+     con precio, 609 estan debajo de 1.000 y 1.814 arriba de 50.000; en la
+     franja dudosa de 1.000 a 5.000 hay 5. Un grano en dolares no pasa de 5.000
+     por tonelada; en pesos no baja de 5.000 desde 2022. El corte va en 5.000.
+
+     Devuelve null si no hay precio cerrado o si el precio es absurdo para un
+     grano (contratos simbolicos de canje, con precio 1, que tiraban el
+     promedio para abajo). Cuantos quedaron afuera se dice en pantalla. */
+  const CORTE_PESOS = 5000;    /* arriba de esto, el precio esta en pesos */
+  const PISO_USD = 5, TECHO_USD = 3000;
+  let descartados = 0;
+
+  function medir(r, base, moneda){
+    const tn  = Number(base === "liq" ? r.cantidadliquidada : r.cantidadfijada) || 0;
+    const imp = Number(base === "liq" ? r.importeliquidado  : r.importefijado)  || 0;
+    if(tn <= 0.001 || imp === 0) return null;
+    const precio = imp / tn;
+    const tc = tcDe(r.fecha) || 0;
+    const enPesos = precio > CORTE_PESOS;
+    let pUsd, pArs;
+    if(enPesos){
+      if(!tc){ descartados++; return null; }   /* sin TC no se inventa */
+      pArs = precio; pUsd = precio / tc;
+    } else {
+      pUsd = precio; pArs = tc > 0 ? precio * tc : null;
+    }
+    if(!(pUsd >= PISO_USD && pUsd <= TECHO_USD)){ descartados++; return null; }
+    const pp = moneda === "usd" ? pUsd : pArs;
+    if(pp == null || !isFinite(pp)){ descartados++; return null; }
+    return {tn, importe: pp * tn};
+  }
+
+  function pasa(r){
+    if(val("px2-camp")   && campS(r.campana) !== val("px2-camp")) return false;
+    if(val("px2-prod")   && cultivo(r.producto) !== val("px2-prod")) return false;
+    if(val("px2-empresa")&& r.empresa !== val("px2-empresa")) return false;
+    if(val("px2-org")    && r.organizacion !== val("px2-org")) return false;
+    if(val("px2-corr")   && (r.corredor||"—") !== val("px2-corr")) return false;
+    if(val("px2-tipo")   && r.tipocontrato !== val("px2-tipo")) return false;
+    if(val("px2-monori") && String(r.moneda||"").toUpperCase() !== val("px2-monori")) return false;
+    const q = val("px2-q").trim().toLowerCase();
+    if(q && !((String(r.organizacion||"") + " " + String(r.nombre||"") + " " +
+               String(r.numerodocumentoadicional||"")).toLowerCase().includes(q))) return false;
+    return true;
+  }
+
+  function opciones(id, valores){
+    const sel = document.getElementById(id); if(!sel) return;
+    const actual = sel.value;
+    const prim = sel.options[0] ? sel.options[0].outerHTML : "";
+    sel.innerHTML = prim + valores.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+    if([...sel.options].some(o => o.value === actual)) sel.value = actual;
+  }
+
+  function armarFiltros(){
+    const todo = COM.concat(VEN);
+    const uni = f => [...new Set(todo.map(f).filter(x => x && x !== "—"))].sort();
+    opciones("px2-camp", [...new Set(todo.map(r => campS(r.campana)).filter(c => c && c !== "—"))].sort().reverse());
+    opciones("px2-prod", uni(r => cultivo(r.producto)));
+    opciones("px2-empresa", uni(r => r.empresa));
+    opciones("px2-org", uni(r => r.organizacion));
+    opciones("px2-corr", uni(r => r.corredor));
+    opciones("px2-tipo", uni(r => r.tipocontrato));
+  }
+
+  const abiertas = new Set();
+
+  function pintar(){
+    const base = val("px2-base") || "fij";
+    const mon  = val("px2-mon")  || "usd";
+    descartados = 0;
+    const uni  = mon === "usd" ? "USD" : "$";
+
+    /* agrupado por cultivo + campaña, las dos puntas en la misma fila */
+    const g = new Map();
+    const sumar = (rows, lado) => rows.forEach(r => {
+      if(!pasa(r)) return;
+      const m = medir(r, base, mon); if(!m) return;
+      const k = cultivo(r.producto) + "||" + campS(r.campana);
+      if(!g.has(k)) g.set(k, {cult: cultivo(r.producto), camp: campS(r.campana),
+                             c:{tn:0,imp:0,n:0,cs:[]}, v:{tn:0,imp:0,n:0,cs:[]}});
+      const a = g.get(k)[lado];
+      a.tn += m.tn; a.imp += m.importe; a.n++; a.cs.push({r, m});
+    });
+    sumar(COM, "c"); sumar(VEN, "v");
+
+    const px = a => a.tn > 0.001 ? a.imp / a.tn : null;
+    const filas = [...g.values()].sort((x,y) =>
+      y.camp.localeCompare(x.camp) || (y.c.tn + y.v.tn) - (x.c.tn + x.v.tn));
+
+    const thead = document.querySelector("#px2-tabla thead");
+    thead.innerHTML = `<tr>
+      <th>Cultivo</th><th>Campaña</th>
+      <th class="num">Tn compradas</th><th class="num">${uni}/tn compra</th>
+      <th class="num">Tn vendidas</th><th class="num">${uni}/tn venta</th>
+      <th class="num">Diferencia ${uni}/tn</th><th class="num">Margen sobre lo vendido</th></tr>`;
+
+    const cuerpo = [];
+    let T = {ctn:0, cimp:0, vtn:0, vimp:0};
+    filas.forEach(f => {
+      const pc = px(f.c), pv = px(f.v);
+      const dif = (pc != null && pv != null) ? pv - pc : null;
+      /* el margen se mide sobre lo VENDIDO: es lo unico que ya tiene las dos puntas */
+      const marg = (dif != null) ? dif * f.v.tn : null;
+      T.ctn += f.c.tn; T.cimp += f.c.imp; T.vtn += f.v.tn; T.vimp += f.v.imp;
+      const k = f.cult + "||" + f.camp;
+      const cls = dif == null ? "" : (dif >= 0 ? "px-pos" : "px-neg");
+      cuerpo.push(`<tr class="px-fila" data-k="${esc(k)}">
+        <td class="px-cult">${esc(f.cult)}</td><td>${esc(f.camp)}</td>
+        <td class="num">${f.c.tn > 0.001 ? n1(f.c.tn) : "—"}</td>
+        <td class="num">${pc != null ? n2(pc) : "—"}</td>
+        <td class="num">${f.v.tn > 0.001 ? n1(f.v.tn) : "—"}</td>
+        <td class="num">${pv != null ? n2(pv) : "—"}</td>
+        <td class="num ${cls}">${dif != null ? (dif >= 0 ? "+" : "") + n2(dif) : "—"}</td>
+        <td class="num ${cls}">${marg != null ? (marg >= 0 ? "+" : "") + n0(marg) : "—"}</td></tr>`);
+      if(abiertas.has(k)){
+        const det = (lado, a) => a.cs
+          .sort((x,y) => y.m.tn - x.m.tn).slice(0, 30)
+          .map(({r,m}) => `<tr class="px-det"><td></td><td>${lado}</td>
+             <td colspan="2">${esc(r.nombre||"")} · ${esc(r.organizacion||"")}</td>
+             <td class="num">${n1(m.tn)} tn</td>
+             <td class="num">${n2(m.importe/m.tn)} ${uni}</td>
+             <td>${esc(String(r.moneda||""))}</td><td>${esc(String(r.fecha||"").slice(0,10))}</td></tr>`).join("");
+        cuerpo.push(det("Compra", f.c) + det("Venta", f.v));
+      }
+    });
+    document.querySelector("#px2-tabla tbody").innerHTML =
+      cuerpo.join("") || '<tr><td colspan="8" style="padding:18px;text-align:center;color:var(--muted)">Sin contratos con precio cerrado para estos filtros</td></tr>';
+
+    const PC = T.ctn > 0.001 ? T.cimp/T.ctn : null, PV = T.vtn > 0.001 ? T.vimp/T.vtn : null;
+    const DIF = (PC != null && PV != null) ? PV - PC : null;
+    document.querySelector("#px2-tabla tfoot").innerHTML = `<tr>
+      <td>TOTAL</td><td>${filas.length} fila(s)</td>
+      <td class="num">${n1(T.ctn)}</td><td class="num">${PC != null ? n2(PC) : "—"}</td>
+      <td class="num">${n1(T.vtn)}</td><td class="num">${PV != null ? n2(PV) : "—"}</td>
+      <td class="num">${DIF != null ? (DIF>=0?"+":"") + n2(DIF) : "—"}</td>
+      <td class="num">${DIF != null ? (DIF>=0?"+":"") + n0(DIF*T.vtn) : "—"}</td></tr>`;
+
+    const card = (lbl, v, hint, col) =>
+      `<div style="background:#fff;border:1px solid var(--line);border-left:4px solid ${col};border-radius:8px;padding:12px 14px">
+         <div style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase">${lbl}</div>
+         <div style="font-size:22px;font-weight:700;color:${col};margin:2px 0 1px">${v}</div>
+         <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
+    document.getElementById("px2-kpis").innerHTML =
+      card("Precio promedio de COMPRA", PC != null ? uni + " " + n2(PC) : "—",
+           `${n1(T.ctn)} tn · ponderado por tonelada`, "#C0392B") +
+      card("Precio promedio de VENTA", PV != null ? uni + " " + n2(PV) : "—",
+           `${n1(T.vtn)} tn · ponderado por tonelada`, "#0D9963") +
+      card("Diferencia por tonelada", DIF != null ? (DIF>=0?"+":"") + uni + " " + n2(DIF) : "—",
+           DIF == null ? "falta una de las dos puntas"
+                       : (DIF >= 0 ? "vendiste más caro de lo que compraste"
+                                   : "vendiste más barato de lo que compraste"), DIF >= 0 ? "#0D9963" : "#C0392B") +
+      card("Margen sobre lo vendido", DIF != null ? (DIF>=0?"+":"") + uni + " " + n0(DIF*T.vtn) : "—",
+           `diferencia × ${n1(T.vtn)} tn vendidas`, DIF >= 0 ? "#0D9963" : "#C0392B");
+
+    document.getElementById("px2-info").innerHTML =
+      `${filas.length} combinación(es) de cultivo y campaña · precio ${base === "liq" ? "liquidado" : "fijado"}`
+      + ` · valores en ${mon === "usd" ? "dólares" : "pesos"}`
+      + (descartados ? ` · <b title="precio menor a USD 5 o mayor a USD 3.000 por tonelada: contratos simbólicos de canje o cargas mal hechas. No entran al promedio para no ensuciarlo.">${n0(descartados)} contrato(s) con precio fuera de rango, no contados</b>` : "");
+
+    const ch = document.getElementById("px2-chips");
+    if(ch) ch.innerHTML = [
+      base === "liq" ? "precio liquidado" : "precio fijado",
+      mon === "usd" ? "en dólares" : "en pesos",
+      "ponderado por tn",
+      "TC del día de cada contrato",
+      "moneda deducida del precio, no del campo"
+    ].map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${esc(x)}</span>`).join("");
+  }
+
+  ["px2-camp","px2-prod","px2-empresa","px2-org","px2-corr","px2-tipo",
+   "px2-monori","px2-mon","px2-base"].forEach(id => {
+    const e = document.getElementById(id); if(e) e.addEventListener("change", pintar);
+  });
+  const q = document.getElementById("px2-q"); if(q) q.addEventListener("input", pintar);
+  const rs = document.getElementById("px2-reset");
+  if(rs) rs.addEventListener("click", () => {
+    ["px2-camp","px2-prod","px2-empresa","px2-org","px2-corr","px2-tipo","px2-monori"]
+      .forEach(id => { const e = document.getElementById(id); if(e) e.value = ""; });
+    if(q) q.value = "";
+    pintar();
+  });
+  document.querySelector("#px2-tabla").addEventListener("click", ev => {
+    const tr = ev.target.closest("tr.px-fila"); if(!tr) return;
+    const k = tr.dataset.k;
+    if(abiertas.has(k)) abiertas.delete(k); else abiertas.add(k);
+    pintar();
+  });
+
+  let listo = false;
+  document.querySelectorAll('[data-go-sub="pn-precios"], .subtab[data-sub="pn-precios"]')
+    .forEach(b => b.addEventListener("click", () => {
+      if(!listo){ listo = true; armarFiltros(); }
+      pintar();
+    }));
 })();
 </script>
 </body>
