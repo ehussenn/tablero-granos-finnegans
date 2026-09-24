@@ -17260,7 +17260,7 @@
    "estado": "Activa",
    "estado_ctg": "",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "COMPENSACION 2- CONV CUARTO CREC RIEGO - 25/26",
    "doc": "REM-COMPRA-GRANOS-CONVENIO - 220"
   },
   {
@@ -23950,7 +23950,7 @@
    "estado": "Activa",
    "estado_ctg": "",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "COMPENSACION-CONV CUARTO CREC-25/26",
    "doc": "REM-VENTA-GRANOS-CONVENIO - 77"
   },
   {
@@ -23980,7 +23980,7 @@
    "estado": "Activa",
    "estado_ctg": "",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "COMPENSACION 1-CONV CUARTO CREC-25/26",
    "doc": "REM-VENTA-GRANOS-CONVENIO - 78"
   },
   {
@@ -254920,7 +254920,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN288",
    "doc": "TRAS-VTA-GRANO-AS - 8218"
   },
   {
@@ -254950,7 +254950,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN278",
    "doc": "TRAS-VTA-GRANO-AS - 8219"
   },
   {
@@ -254980,7 +254980,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN286",
    "doc": "TRAS-VTA-GRANO-AS - 8220"
   },
   {
@@ -255010,7 +255010,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN286",
    "doc": "TRAS-VTA-GRANO-AS - 8221"
   },
   {
@@ -255220,7 +255220,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN286",
    "doc": "TRAS-VTA-GRANO-AS - 8228"
   },
   {
@@ -255250,7 +255250,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN286",
    "doc": "TRAS-VTA-GRANO-AS - 8229"
   },
   {
@@ -255280,7 +255280,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN287",
    "doc": "TRAS-VTA-GRANO-AS - 8230"
   },
   {
@@ -255310,7 +255310,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN287",
    "doc": "TRAS-VTA-GRANO-AS - 8231"
   },
   {
