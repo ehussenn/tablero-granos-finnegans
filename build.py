@@ -647,6 +647,11 @@ window.apiFetch = function(path, opts){
   .topbar-right{display:flex;align-items:center;gap:14px}
   .topbar-meta{font-size:11px;color:#A7DCC4;text-align:right;line-height:1.35}
   .topbar-meta .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3B9C6E;margin-right:5px;box-shadow:0 0 0 3px rgba(18,176,116,.25)}
+  .limpiar-pill{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);
+    padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
+    white-space:nowrap;font-family:inherit;transition:background .15s}
+  .limpiar-pill:hover{background:rgba(255,255,255,.22)}
+  .limpiar-pill.puesto{background:#1AB52E;border-color:#1AB52E}
   .admin-pill{background:#E8F5EF;color:#0D9963;border:1px solid #BFE6D4;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
   .admin-pill:hover{background:#BFE6D4}
   .logout-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
@@ -1397,6 +1402,7 @@ window.apiFetch = function(path, opts){
       </div>
       <div class="topbar-right">
         <div class="topbar-meta"><span class="dot"></span>Actualizado: __BUILD_TIME__</div>
+        <button class="limpiar-pill" id="btn-limpiar-filtros" type="button" title="Borra los filtros de esta pantalla">&#9003; Limpiar filtros</button>
         <button class="admin-pill" id="btn-admin" style="display:none">Administración</button>
         <a class="logout-btn" href="/logout">⤴ Salir</a>
       </div>
@@ -18036,6 +18042,130 @@ async function mbAutoBackup(forceNow){
     try { localStorage.setItem(LS, shell.classList.contains('plegado') ? '1' : '0'); } catch(e){}
     pintar();
   });
+})();
+</script>
+
+<script>
+/* ===================================================================
+   FILTROS COMPARTIDOS ENTRE PESTAÑAS  (pedido de Ezequiel, 23/09/2026)
+   La campaña, el cultivo y la empresa que elegis en una pantalla se
+   mantienen al pasar a otra. Y el boton de la barra de arriba los borra.
+   =================================================================== */
+(function(){
+  // que nombre de filtro corresponde a que concepto
+  const CONCEPTO = sel => {
+    const id = sel.id || "";
+    if(/(^|-)(camp|campana|campania|cosecha)$/.test(id)) return "campana";
+    if(/(^|-)(prod|grano|cultivo)$/.test(id))            return "producto";
+    if(/(^|-)(empresa|emp)$/.test(id))                   return "empresa";
+    return null;
+  };
+
+  // "CAMPAÑA 25-26", "Campaña 25/26" y "25-26" tienen que darse por iguales
+  const norm = t => String(t || "")
+    .toUpperCase().replace(/Ñ/g, "N")
+    .replace(/\([^)]*\)/g, "")          /* el conteo: "25-26 (391)" -> "25-26" */
+    .replace(/CAMPANA|COSECHA|GRANO|SEMILLA/g, "")
+    .replace(/[\/]/g, "-").replace(/[^A-Z0-9-]/g, "")
+    .trim();
+
+  const LS = "agnsj_filtros_compartidos";
+  let elegido = {};
+  try { elegido = JSON.parse(localStorage.getItem(LS) || "{}"); } catch(e){ elegido = {}; }
+  let aplicando = false;   // evita que una copia dispare otra copia
+
+  const todos = () => [...document.querySelectorAll("select")].filter(CONCEPTO);
+
+  // pone el valor en un select SOLO si esa opcion existe ahi
+  function poner(sel, texto){
+    if(!texto) return false;
+    const t = norm(texto);
+    for(const o of sel.options){
+      if(norm(o.textContent) === t || norm(o.value) === t){
+        if(sel.value !== o.value){
+          sel.value = o.value;
+          sel.dispatchEvent(new Event("change", {bubbles:true}));
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function aplicar(){
+    if(aplicando) return;
+    aplicando = true;
+    try {
+      todos().forEach(sel => {
+        const c = CONCEPTO(sel);
+        if(elegido[c]) poner(sel, elegido[c]);
+      });
+    } finally { aplicando = false; }
+    pintarBoton();
+  }
+
+  function pintarBoton(){
+    const b = document.getElementById("btn-limpiar-filtros");
+    if(!b) return;
+    const n = Object.values(elegido).filter(Boolean).length;
+    b.classList.toggle("puesto", n > 0);
+    b.title = n ? "Borra los filtros de esta pantalla y la selección compartida"
+                : "Borra los filtros de esta pantalla";
+  }
+
+  // cuando cambias un filtro, se recuerda y se copia al resto
+  document.addEventListener("change", ev => {
+    const sel = ev.target;
+    if(aplicando || !sel || sel.tagName !== "SELECT") return;
+    const c = CONCEPTO(sel);
+    if(!c) return;
+    const txt = sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].textContent : "";
+    elegido[c] = sel.value ? txt : "";
+    try { localStorage.setItem(LS, JSON.stringify(elegido)); } catch(e){}
+    aplicar();
+  }, true);
+
+  // al cambiar de pestaña, la pantalla que aparece toma la seleccion vigente
+  document.addEventListener("click", ev => {
+    if(ev.target.closest("[data-go-tab],[data-tab],[data-sub],.nav-item,.subtab"))
+      setTimeout(aplicar, 350);
+  }, true);
+
+  // boton de limpiar: borra lo de esta pantalla y la seleccion compartida
+  document.addEventListener("click", ev => {
+    if(!ev.target.closest("#btn-limpiar-filtros")) return;
+    elegido = {};
+    try { localStorage.removeItem(LS); } catch(e){}
+    aplicando = true;
+    try {
+      /* los filtros compartidos se borran en TODAS las pantallas: si no, volvias
+         a Compra y seguia filtrado por la campaña vieja */
+      todos().forEach(sel => {
+        if(sel.options.length && sel.selectedIndex !== 0){
+          sel.selectedIndex = 0;
+          sel.dispatchEvent(new Event("change", {bubbles:true}));
+        }
+      });
+      /* y los demas filtros, solo los de la pantalla que estas viendo */
+      const pane = document.querySelector(".panel.active .subpanel.active")
+                || document.querySelector(".panel.active") || document;
+      pane.querySelectorAll("select").forEach(sel => {
+        // la primera opcion de estos filtros es siempre "Todas/Todos"
+        if(sel.options.length && sel.selectedIndex !== 0){
+          sel.selectedIndex = 0;
+          sel.dispatchEvent(new Event("change", {bubbles:true}));
+        }
+      });
+      pane.querySelectorAll('input[type=text],input[type=search]').forEach(i => {
+        if(i.value){ i.value = ""; i.dispatchEvent(new Event("input", {bubbles:true}));
+                     i.dispatchEvent(new Event("change", {bubbles:true})); }
+      });
+    } finally { aplicando = false; }
+    pintarBoton();
+  }, true);
+
+  // al abrir, recuperar lo ultimo elegido
+  setTimeout(aplicar, 1200);
 })();
 </script>
 </body>
