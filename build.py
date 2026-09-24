@@ -3143,8 +3143,11 @@ window.apiFetch = function(path, opts){
 
     <!-- ===== SUBPANEL: CTG sin liquidar (pedido usuario 14/09) ===== -->
     <div class="subpanel" data-sub-panel="pn-ctgliq">
-      <div class="section" style="background:linear-gradient(135deg,#3b1f5c 0%,#12B074 100%);color:#fff;border:none">
-        <h3 style="color:#fff;margin:0">🧾 CTG sin Liquidar · qué carta de porte falta liquidar o vincular</h3>
+      <div class="section" style="background:linear-gradient(135deg,#0A7A4F 0%,#12B074 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🧾 CTG sin Liquidar · qué carta de porte falta liquidar o vincular
+          <span style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;
+                       font-size:11.5px;font-weight:600;margin-left:10px;vertical-align:middle">
+            sólo campaña 25-26 en adelante</span></h3>
         <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
           De lo que ya entregaste y Finnegans sigue mostrando <b>pendiente de liquidar</b>, acá está
           el detalle: <b>qué carta de porte es</b>. Cada liquidación de granos cita el <b>traslado</b>
@@ -3152,6 +3155,9 @@ window.apiFetch = function(path, opts){
           del camión no figura en ninguna liquidación, ese CTG está <b>sin liquidar</b>; si figura por
           menos kilos de los que entraron, está <b>a medias</b>. Y cuando el contrato ya no tiene
           pendiente pero igual quedan CTG sueltos, lo que falta es <b>vincular</b> el traslado.
+          <br/><b>Se miran sólo las campañas 25-26 en adelante.</b> Las anteriores están cobradas,
+          pero Finnegans no devuelve con qué liquidación se pagaron, así que aparecían como
+          pendientes de mentira (16.523 tn contra 36 reales en 24-25) y se sacaron.
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="cl-chips"></div>
       </div>
@@ -16887,9 +16893,15 @@ function ctRender(){
            <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
       const debe   = rs.filter(c => FALTA_PLATA.has(c.est));
       const nVinc  = rs.filter(c => c.est === "vincular");
-      const tnVinc = rs.filter(c => !FALTA_PLATA.has(c.est)).reduce((a,c) => a+(c.sin_tn||0), 0);
       const nSinLq = debe.reduce((a,c) => a+(c.sin_n||0), 0);
-      const tSinLq = debe.reduce((a,c) => a+(c.sin_tn||0), 0);
+      /* Lo que falta liquidar de un contrato no puede pasar de su pendiente: no se
+         puede deber mas de lo que el sistema dice que se debe. En un contrato
+         "mixto" conviven camiones sin liquidar y camiones ya cobrados sin vincular;
+         sin este tope los segundos inflaban el numero (19.794 tn contra 10.594 de
+         pendiente). "cubierto" ya es min(identificado, pendiente). */
+      const tSinLq = debe.reduce((a,c) => a+Math.min(c.sin_tn||0, Math.max(0, c.cubierto||0)), 0);
+      /* el excedente no se pierde: es mercaderia cobrada a la que le falta el vinculo */
+      const tnVinc = rs.reduce((a,c) => a+(c.sin_tn||0), 0) - tSinLq;
       const sinCp  = rs.filter(c => c.est === "sincp");
       const pctCub = T.pp > 0.05 ? Math.round(100*Math.min(1, T.cu/T.pp)) : 0;
       kp.innerHTML =
@@ -16897,10 +16909,10 @@ function ctRender(){
              `${n0(rs.length)} contrato(s) · lo que informa Finnegans`, "#0f766e") +
         card("Identificado carta por carta", n1(T.cu) + " tn",
              `${pctCub}% del pendiente · el resto son kilos sueltos o no tiene CP cargada`, "#1d4ed8") +
-        card("CTG sin liquidar", n0(nSinLq),
-             `${n1(tSinLq)} tn · en contratos que todavía tienen pendiente — esto es lo accionable`, "#b91c1c") +
+        card("CTG sin liquidar", n1(tSinLq) + " tn",
+             `${n0(nSinLq)} CTG · topado al pendiente de cada contrato — esto es lo accionable`, "#b91c1c") +
         card("Falta vincular", n1(tnVinc) + " tn",
-             `${n0(nVinc.length)} contrato(s) ya cobrados donde el traslado no quedó citado`, "#a16207") +
+             `mercadería ya cobrada donde el traslado no quedó citado (${n0(nVinc.length)} contrato(s) saldados + el excedente de los mixtos)`, "#a16207") +
         card("Sin carta de porte", n1(sinCp.reduce((a,c)=>a+(c.sis_pend||0),0)) + " tn",
              `${n0(sinCp.length)} contrato(s) que el sistema da por entregados sin CP cargada`, "#4338ca");
     }
@@ -18549,8 +18561,22 @@ _LIQ_SERIES = [
 ]
 
 
+# Desde que campaña se mira la solapa "CTG sin liquidar".
+# 24-25 y anteriores quedan afuera por decision de Ezequiel (24/09/2026): estan
+# cobradas, pero Finnegans no devuelve con que liquidacion se pagaron, asi que
+# aparecian como pendientes de mentira (16.523 tn de venta contra 36 reales).
+CTGLIQ_DESDE_CAMPANA = "25-26"
+
+
+def _campana_num(c):
+    """'CAMPAÑA 25-26' / '25/26' -> 2526, para poder comparar campañas."""
+    import re as _re
+    m = _re.search(r"(\d{2})\s*[-/]\s*(\d{2})", str(c or ""))
+    return int(m.group(1) + m.group(2)) if m else 0
+
+
 def armar_ctgliq(traza_list, pilot_norm, compra_norm):
-    """Devuelve el payload de la solapa "CTG sin liquidar"."""
+    """Devuelve el payload de la solapa "CTG sin liquidar" (solo 25-26 en adelante)."""
     data_dir = Path(__file__).resolve().parent / "data"
 
     def _f(v):
@@ -18560,6 +18586,7 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
             return 0.0
 
     # ---- 1) que traslado cita cada liquidacion, y por cuantas toneladas -------
+    n_fuera = {}               # contratos dejados afuera por campaña vieja
     liq_por_tras = {}          # traslado -> [{liq, fecha, tn}]
     ult_liq = {"venta": "", "compra": ""}
     n_liq = {"venta": 0, "compra": 0}
@@ -18737,6 +18764,13 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
                    "faltan liquidar algunos y otros ya se cobraron sin vincular el traslado")
 
         cams.sort(key=lambda c: (c["est"] != "sin", str(c.get("fecha") or "")))
+
+        # campañas viejas afuera: ver CTGLIQ_DESDE_CAMPANA arriba
+        _cos = ((r.get("cosecha") or r.get("campana")) if r else "") or ""
+        if _campana_num(_cos) and _campana_num(_cos) < _campana_num(CTGLIQ_DESDE_CAMPANA):
+            n_fuera[lado] = n_fuera.get(lado, 0) + 1
+            continue
+
         contratos.append({
             "lado": lado, "cto": nm,
             "num": (nm.split(" - ")[-1] if " - " in nm else nm),
@@ -18756,6 +18790,9 @@ def armar_ctgliq(traza_list, pilot_norm, compra_norm):
             # que ya tardaba minutos en abrir, y en un contrato al dia no se usan.
             "ctgs": cams if (sin or par or abs(pend) > 0.05) else [],
         })
+
+    print(f"    [+] ctgliq: solo campaña {CTGLIQ_DESDE_CAMPANA} en adelante "
+          f"(afuera {n_fuera.get('venta', 0)} de venta y {n_fuera.get('compra', 0)} de compra)")
 
     kpi = {}
     for lado in ("venta", "compra"):
