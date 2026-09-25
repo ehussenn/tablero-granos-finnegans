@@ -436,3 +436,34 @@
 [OK] -> arca_liq_cruce.json (3,426 KB)
 [2026-09-24] [.] sin cambios en el cruce, no commit
 [2026-09-24] ===== FIN =====
+[2026-09-25] ===== REFRESH ARCA (hasta 2026-09-25, tramo forzado desde 2026-08-11) =====
+[2026-09-25] -> CPE scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --forzar --desde 2026-08-11 --hasta 2026-09-25
+[2026-09-25]    CPE scraper rc=0 ·     ROL Pagador Flete Pagador (G/DG): 113 filas en todo el rango
+    -> cpe_participantes.json: 219 filas
+[+] consolidado: 231 CTG unicos -> C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca\cpe_arca.json
+[2026-09-25] -> CPE consolidar: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_cpe_scraper.py --consolidar
+[2026-09-25]    CPE consolidar rc=0 ·     -> cpe_solicitadas.json: 957 filas
+    -> cpe_participantes.json: 1460 filas
+[+] consolidado desde cache: 957 solicitadas + 1460 participantes -> 1634 CTG unicos
+[2026-09-25] -> LPG scraper: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_lpg_scraper.py --forzar --desde 2026-08-11 --hasta 2026-09-25
+[2026-09-25]    LPG scraper rc=0 ·      lsg_recibidas       52
+     lpg_por_comprador  1548
+     lsg_por_vendedor  1048
+[2026-09-25] -> LPG kilos: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_kg.py
+[2026-09-25]    LPG kilos rc=0 · 
+[OK] 4474 liquidaciones con toneladas Â· 357,616.6 tn -> lpg_detalle.json
+     de las 120 que faltan pasar tengo tn de 120: 8,463.8 tn Â· $ 2,919,399,132
+[2026-09-25] -> CTG Finnegans: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py
+[2026-09-25]    CTG Finnegans rc=0 ·            4 camiones Â·       131.1 tn  COMPENSACIÃ“N
+    [!] 1747 CTG aparecen en mas de un traslado (normal en compra+venta del mismo camion)
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\ctg_finnegans.json
+[2026-09-25] -> CTG cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_ctg_cruce.py --cruce
+[2026-09-25]    CTG cruce rc=0 ·           1 camiones -      47.9 tn  Trigo
+
+[+] Escrito C:\Users\Public\Documents\Granos\tablero-granos-finnegans\data\arca_cruce.json
+[2026-09-25] -> LIQ cruce: C:\Users\Public\Documents\Granos\tablero-granos-finnegans\scripts\arca_liq_cruce.py
+[2026-09-25]    LIQ cruce rc=0 ·          2  20176836890
+
+[OK] -> arca_liq_cruce.json (3,432 KB)
+[2026-09-25] [.] sin cambios en el cruce, no commit
+[2026-09-25] ===== FIN =====

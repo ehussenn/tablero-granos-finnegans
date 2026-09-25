@@ -1,15 +1,15 @@
 {
- "bajado": "2026-09-25T07:24:10",
+ "bajado": "2026-09-25T09:13:01",
  "desde": "2026-08-11",
  "hasta": "2026-09-25",
  "cuit": "30710712758",
  "por_consulta": {
-  "lpg_emitidas": 1546,
+  "lpg_emitidas": 1548,
   "lpg_recibidas": 1829,
-  "lsg_emitidas": 562,
+  "lsg_emitidas": 563,
   "lsg_recibidas": 52,
-  "lpg_por_comprador": 1546,
-  "lsg_por_vendedor": 1047
+  "lpg_por_comprador": 1548,
+  "lsg_por_vendedor": 1048
  },
  "filas": [
   {
@@ -23198,6 +23198,36 @@
    "cuit": "20314282974",
    "denominacion": "",
    "sistema": "WEB",
+   "operacion": "Compraventa de granos - Ajuste Unificado",
+   "estado": "Activo",
+   "sujeto": ""
+  },
+  {
+   "coe": "330132573390",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lpg_emitidas",
+   "tipo": "primaria",
+   "flujo": "emitida",
+   "lado": "compra",
+   "cuit": "20176836890",
+   "denominacion": "",
+   "sistema": "WS",
+   "operacion": "Compraventa de granos - Ajuste Unificado",
+   "estado": "Activo",
+   "sujeto": ""
+  },
+  {
+   "coe": "330132572519",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lpg_emitidas",
+   "tipo": "primaria",
+   "flujo": "emitida",
+   "lado": "compra",
+   "cuit": "20176836890",
+   "denominacion": "",
+   "sistema": "WS",
    "operacion": "Compraventa de granos - Ajuste Unificado",
    "estado": "Activo",
    "sujeto": ""
@@ -59068,6 +59098,21 @@
    "sujeto": ""
   },
   {
+   "coe": "331009492150",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lsg_emitidas",
+   "tipo": "secundaria",
+   "flujo": "emitida",
+   "lado": "venta",
+   "cuit": "30710712758",
+   "denominacion": "",
+   "sistema": "WS",
+   "operacion": "L.S.G.",
+   "estado": "Activo",
+   "sujeto": ""
+  },
+  {
    "coe": "331008183079",
    "fecha": "2025-07-10",
    "fecha_arca": "10/07/2025",
@@ -83038,6 +83083,36 @@
    "sujeto": ""
   },
   {
+   "coe": "330132572519",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lpg_por_comprador",
+   "tipo": "primaria",
+   "flujo": "emitida",
+   "lado": "compra",
+   "cuit": "",
+   "denominacion": "",
+   "sistema": "WS",
+   "operacion": "Compraventa de granos - Ajuste Unificado",
+   "estado": "",
+   "sujeto": ""
+  },
+  {
+   "coe": "330132573390",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lpg_por_comprador",
+   "tipo": "primaria",
+   "flujo": "emitida",
+   "lado": "compra",
+   "cuit": "",
+   "denominacion": "",
+   "sistema": "WS",
+   "operacion": "Compraventa de granos - Ajuste Unificado",
+   "estado": "",
+   "sujeto": ""
+  },
+  {
    "coe": "331007905868",
    "fecha": "2025-04-14",
    "fecha_arca": "14/04/2025",
@@ -98737,6 +98812,21 @@
    "lado": "venta",
    "cuit": "30652327474",
    "denominacion": "CANZANI CASAS SA",
+   "sistema": "WS",
+   "operacion": "Consignaci?n de granos - L.S.G.",
+   "estado": "",
+   "sujeto": ""
+  },
+  {
+   "coe": "331009492150",
+   "fecha": "2026-09-25",
+   "fecha_arca": "25/09/2026",
+   "consulta": "lsg_por_vendedor",
+   "tipo": "secundaria",
+   "flujo": "emitida",
+   "lado": "venta",
+   "cuit": "30710712758",
+   "denominacion": "CARGILL SOCIEDAD ANONIMA COMERCIAL E INDUSTRIAL",
    "sistema": "WS",
    "operacion": "Consignaci?n de granos - L.S.G.",
    "estado": "",

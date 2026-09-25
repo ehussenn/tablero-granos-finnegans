@@ -627,6 +627,22 @@ window.apiFetch = function(path, opts){
     margin-left:8px;background:#0B3D2E;color:#fff;font-size:12px;white-space:nowrap;
     padding:6px 10px;border-radius:6px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   /* pie de pagina en columnas, como el de LBO */
+  /* Precios: compra y venta separadas */
+  #px2-tabla th.px-c,#px2-tabla td.px-c{background:#FDF2F0}
+  #px2-tabla th.px-v,#px2-tabla td.px-v{background:#EFF9F4}
+  #px2-tabla tr.px-fila:hover td.px-c{background:#FBE5E1}
+  #px2-tabla tr.px-fila:hover td.px-v{background:#DDF2E8}
+  .px-detalle{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;background:#FAFAFA}
+  @media (max-width:1100px){ .px-detalle{grid-template-columns:1fr} }
+  .px-bloque{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .px-bloque-tit{color:#fff;font-size:11.5px;font-weight:700;padding:7px 11px;letter-spacing:.3px}
+  .px-det-tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+  .px-det-tbl th{background:#FAFAFA;color:var(--muted);text-align:left;padding:6px 9px;
+    font-size:10px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);position:static}
+  .px-det-tbl td{padding:5px 9px;border-bottom:1px solid #F0F2EF;white-space:nowrap}
+  .px-det-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .px-det-tbl tr:last-child td{border-bottom:none}
+
   /* Precios Compra vs Venta */
   #px2-tabla td.px-cult{font-weight:600;color:var(--ink)}
   #px2-tabla tr.px-fila{cursor:pointer}
@@ -18376,10 +18392,12 @@ async function mbAutoBackup(forceNow){
       y.camp.localeCompare(x.camp) || (y.c.tn + y.v.tn) - (x.c.tn + x.v.tn));
 
     const thead = document.querySelector("#px2-tabla thead");
+    /* las dos puntas con un fondo apenas distinto, para saber de un vistazo
+       de que lado se esta mirando */
     thead.innerHTML = `<tr>
       <th>Cultivo</th><th>Campaña</th>
-      <th class="num">Tn compradas</th><th class="num">${uni}/tn compra</th>
-      <th class="num">Tn vendidas</th><th class="num">${uni}/tn venta</th>
+      <th class="num px-c">Tn compradas</th><th class="num px-c">${uni}/tn compra</th>
+      <th class="num px-v">Tn vendidas</th><th class="num px-v">${uni}/tn venta</th>
       <th class="num">Diferencia ${uni}/tn</th><th class="num">Margen sobre lo vendido</th></tr>`;
 
     const cuerpo = [];
@@ -18394,21 +18412,42 @@ async function mbAutoBackup(forceNow){
       const cls = dif == null ? "" : (dif >= 0 ? "px-pos" : "px-neg");
       cuerpo.push(`<tr class="px-fila" data-k="${esc(k)}">
         <td class="px-cult">${esc(f.cult)}</td><td>${esc(f.camp)}</td>
-        <td class="num">${f.c.tn > 0.001 ? n1(f.c.tn) : "—"}</td>
-        <td class="num">${pc != null ? n2(pc) : "—"}</td>
-        <td class="num">${f.v.tn > 0.001 ? n1(f.v.tn) : "—"}</td>
-        <td class="num">${pv != null ? n2(pv) : "—"}</td>
+        <td class="num px-c">${f.c.tn > 0.001 ? n1(f.c.tn) : "—"}</td>
+        <td class="num px-c">${pc != null ? n2(pc) : "—"}</td>
+        <td class="num px-v">${f.v.tn > 0.001 ? n1(f.v.tn) : "—"}</td>
+        <td class="num px-v">${pv != null ? n2(pv) : "—"}</td>
         <td class="num ${cls}">${dif != null ? (dif >= 0 ? "+" : "") + n2(dif) : "—"}</td>
         <td class="num ${cls}">${marg != null ? (marg >= 0 ? "+" : "") + n0(marg) : "—"}</td></tr>`);
       if(abiertas.has(k)){
-        const det = (lado, a) => a.cs
-          .sort((x,y) => y.m.tn - x.m.tn).slice(0, 30)
-          .map(({r,m}) => `<tr class="px-det"><td></td><td>${lado}</td>
-             <td colspan="2">${esc(r.nombre||"")} · ${esc(r.organizacion||"")}</td>
-             <td class="num">${n1(m.tn)} tn</td>
-             <td class="num">${n2(m.importe/m.tn)} ${uni}</td>
-             <td>${esc(String(r.moneda||""))}</td><td>${esc(String(r.fecha||"").slice(0,10))}</td></tr>`).join("");
-        cuerpo.push(det("Compra", f.c) + det("Venta", f.v));
+        /* un bloque por punta: compra y venta no se mezclan, y como el detalle
+           ocupa una sola celda a lo ancho, no tiene que alinear con el
+           encabezado de arriba (que era el otro problema) */
+        const bloque = (titulo, a, color) => {
+          if(!a.cs.length)
+            return `<div class="px-bloque"><div class="px-bloque-tit" style="background:${color}">${titulo}</div>
+              <div style="padding:12px;color:var(--muted);font-size:11.5px">Sin contratos con precio cerrado</div></div>`;
+          const cs = a.cs.slice().sort((x,y) => y.m.tn - x.m.tn);
+          const prom = a.tn > 0.001 ? a.imp / a.tn : 0;
+          return `<div class="px-bloque">
+            <div class="px-bloque-tit" style="background:${color}">${titulo} · ${n1(a.tn)} tn · ${n2(prom)} ${uni}/tn · ${a.n} contrato(s)</div>
+            <table class="px-det-tbl"><thead><tr>
+              <th>Contrato</th><th>Contraparte</th><th class="num">Tn</th>
+              <th class="num">${uni}/tn</th><th>Moneda</th><th>Fecha</th></tr></thead><tbody>`
+            + cs.slice(0, 40).map(({r,m}) => `<tr>
+                <td>${esc(r.nombre||"—")}</td>
+                <td title="${esc(r.organizacion||"")}">${esc((r.organizacion||"—").slice(0,30))}</td>
+                <td class="num">${n1(m.tn)}</td>
+                <td class="num">${n2(m.importe/m.tn)}</td>
+                <td>${esc(String(r.moneda||"—"))}</td>
+                <td>${esc(String(r.fecha||"").slice(0,10) || "—")}</td></tr>`).join("")
+            + (cs.length > 40 ? `<tr><td colspan="6" style="color:var(--muted)">… y ${cs.length-40} contrato(s) más</td></tr>` : "")
+            + `</tbody></table></div>`;
+        };
+        cuerpo.push(`<tr class="px-det"><td colspan="8" style="padding:0">
+          <div class="px-detalle">
+            ${bloque("COMPRA", f.c, "#C0392B")}
+            ${bloque("VENTA", f.v, "#0D9963")}
+          </div></td></tr>`);
       }
     });
     document.querySelector("#px2-tabla tbody").innerHTML =
@@ -18418,8 +18457,8 @@ async function mbAutoBackup(forceNow){
     const DIF = (PC != null && PV != null) ? PV - PC : null;
     document.querySelector("#px2-tabla tfoot").innerHTML = `<tr>
       <td>TOTAL</td><td>${filas.length} fila(s)</td>
-      <td class="num">${n1(T.ctn)}</td><td class="num">${PC != null ? n2(PC) : "—"}</td>
-      <td class="num">${n1(T.vtn)}</td><td class="num">${PV != null ? n2(PV) : "—"}</td>
+      <td class="num px-c">${n1(T.ctn)}</td><td class="num px-c">${PC != null ? n2(PC) : "—"}</td>
+      <td class="num px-v">${n1(T.vtn)}</td><td class="num px-v">${PV != null ? n2(PV) : "—"}</td>
       <td class="num">${DIF != null ? (DIF>=0?"+":"") + n2(DIF) : "—"}</td>
       <td class="num">${DIF != null ? (DIF>=0?"+":"") + n0(DIF*T.vtn) : "—"}</td></tr>`;
 
