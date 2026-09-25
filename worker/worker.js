@@ -262,8 +262,13 @@ export default {
       // clave compartida vacia: las ediciones de la Posicion Granaria parecerian
       // borradas (siguen en pn_manual:<email>, pero ya no se leerian). Son calculos
       // del dia, no hay razon para arriesgarlos en este cambio.
+      //  - finales_partes: cuantas tn de cada contrato ya tienen la final hecha,
+      //    cargado a mano en la solapa "Analisis de Finales" (25/09/2026). Es
+      //    trabajo administrativo: lo tienen que ver todos. Clave SEPARADA de
+      //    finales_estado a proposito, para no tocar lo que ya esta cargado ahi.
       const SHARED_KEYS = new Set(["pagos", "contratos", "finales_estado",
-                                   "envios_liq", "marcas_liq", "comerciales_admin"]);
+                                   "envios_liq", "marcas_liq", "comerciales_admin",
+                                   "finales_partes"]);
       const fullKey = SHARED_KEYS.has(rawKey) ? rawKey : `${rawKey}:${email}`;
 
       if (request.method === "GET") {

@@ -627,6 +627,13 @@ window.apiFetch = function(path, opts){
     margin-left:8px;background:#0B3D2E;color:#fff;font-size:12px;white-space:nowrap;
     padding:6px 10px;border-radius:6px;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.18)}
   /* pie de pagina en columnas, como el de LBO */
+  .ffn-partir{background:var(--chip);color:var(--blue);border:1px solid #BFE6D4;padding:3px 10px;
+    border-radius:999px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+  .ffn-partir:hover{background:#BFE6D4}
+  #ffn-tabla tr.ffn-fila{cursor:pointer}
+  #ffn-tabla tr.ffn-fila:hover{background:var(--chip)}
+  #ffn-tabla tfoot td{background:var(--chip);font-weight:700}
+
   /* Precios: compra y venta separadas */
   #px2-tabla th.px-c,#px2-tabla td.px-c{background:#FDF2F0}
   #px2-tabla th.px-v,#px2-tabla td.px-v{background:#EFF9F4}
@@ -1369,6 +1376,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canjes" data-title="Compra · Canjes">Canjes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-canje-liq" data-title="Compra · Análisis de Canje de Compras">🔄 Análisis Canje Compras</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-envliq" data-title="Compra · Enviar a Liquidar">📧 Enviar a Liquidar</a>
+          <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-fnn" data-title="Compra · Análisis de Finales (desde Finnegans)">🔎 Análisis de Finales</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-finales-pend" data-title="Compra · Finales Pendientes">🧾 Finales Pendientes</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-resultados" data-title="Compra · Resultados">📈 Resultados</a>
           <a class="nav-item" data-go-tab="compra" data-go-sub="cp-cierre-cli" data-title="Compra · Cierre de Clientes">🧾 Cierre de Clientes</a>
@@ -1506,6 +1514,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="cp-canjes">Canjes</button>
       <button class="subtab" data-sub="cp-canje-liq">🔄 Análisis Canje Compras</button>
       <button class="subtab" data-sub="cp-envliq">📧 Enviar a Liquidar</button>
+      <button class="subtab" data-sub="cp-finales-fnn">🔎 Análisis de Finales</button>
       <button class="subtab" data-sub="cp-finales-pend">🧾 Finales Pendientes</button>
       <button class="subtab" data-sub="cp-resultados">📈 Resultados</button>
       <button class="subtab" data-sub="cp-cierre-cli">🧾 Cierre de Clientes</button>
@@ -2124,6 +2133,53 @@ window.apiFetch = function(path, opts){
     </div>
 
     <!-- ========== SUB: FINALES PENDIENTES (cola de trabajo con semáforo) ========== -->
+
+    <div class="subpanel" data-sub-panel="cp-finales-fnn">
+      <div class="section" style="background:linear-gradient(135deg,#0A7A4F 0%,#12B074 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">🔎 Análisis de Finales · leído de Finnegans
+          <span style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;
+                       font-size:11.5px;font-weight:600;margin-left:10px;vertical-align:middle">sólo compra</span></h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
+          Entra a cada contrato de compra, busca <b>todas las liquidaciones que lo tocan</b> y mira el
+          campo <b>PorcentajeParcial</b> de cada una: 100% es <b>final</b>, menos es <b>parcial</b>
+          (el clásico 97,5% deja el 2,5% para la final). Con eso dice si la final está hecha,
+          si sólo hay parciales, o si el contrato <b>se amplió después de la final</b> — entraron
+          camiones con fecha posterior y la final quedó corta.
+          <br/><b>Esta solapa no toca «Finales Pendientes»</b>: aquella lleva el estado que marcás a
+          mano y queda como está. Ésta lee el dato crudo, para contrastar un movimiento puntual.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px" id="ffn-chips"></div>
+      </div>
+
+      <div id="ffn-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 14px"></div>
+
+      <div class="section">
+        <div class="filterbar">
+          <div><label>ESTADO</label><select id="ffn-est"><option value="">Todos</option>
+            <option value="ampliado">Ampliado después de la final</option>
+            <option value="final_corta">Final corta (queda pendiente)</option>
+            <option value="falta_final">Falta hacer la final</option>
+            <option value="parcial">Liquidado en parte</option>
+            <option value="sin_contabilizar">Liquidación sin contabilizar</option>
+            <option value="sin_liq">Sin ninguna liquidación</option>
+            <option value="final_ok">Final hecha y completa</option>
+            <option value="semilla">Semilla (no lleva final)</option>
+            <option value="sin_datos">Sin datos para cruzar</option></select></div>
+          <div><label>GRANO</label><select id="ffn-prod"><option value="">Todos</option></select></div>
+          <div><label>CAMPAÑA</label><select id="ffn-camp"><option value="">Todas</option></select></div>
+          <div><label>BUSCAR PROVEEDOR / CONTRATO</label><input type="text" id="ffn-q" placeholder="razón social o nº…" style="min-width:220px"></div>
+          <button class="clear" id="ffn-reset">Limpiar</button>
+        </div>
+        <div id="ffn-info" style="font-size:11.5px;color:var(--muted);margin-top:6px"></div>
+      </div>
+
+      <div class="section">
+        <h3>Contratos <span class="badge">Click en una fila para ver sus liquidaciones</span></h3>
+        <div class="tbl-wrap" style="max-height:640px">
+          <table id="ffn-tabla"><thead></thead><tbody></tbody><tfoot></tfoot></table>
+        </div>
+      </div>
+    </div><!-- /subpanel cp-finales-fnn -->
     <div class="subpanel" data-sub-panel="cp-finales-pend">
       <div class="section" style="background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;border:none">
         <h3 style="color:#fff;margin:0">🧾 Finales Pendientes · cola de trabajo</h3>
@@ -18521,6 +18577,217 @@ async function mbAutoBackup(forceNow){
     }));
 })();
 </script>
+
+<script>
+/* ============================================================
+   ANALISIS DE FINALES desde Finnegans — SOLO COMPRA (25/09/2026)
+   Solapa aparte: NO toca "Finales Pendientes", que lleva el estado
+   que el usuario marca a mano.
+   ============================================================ */
+(function ffnInit(){
+  const D = PAYLOAD.finales_fnn || {};
+  const TODO = D.filas || [];
+  const esc = x => String(x==null?"":x).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const n0 = v => (Number(v)||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+  const n1 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
+  const val = id => (document.getElementById(id)||{}).value || "";
+  const fec = f => { const t = String(f||"").slice(0,10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(t) ? t.slice(8,10)+"/"+t.slice(5,7)+"/"+t.slice(0,4) : (t||"—"); };
+
+  /* cuanto de cada contrato ya tiene la final hecha, cargado a mano.
+     Clave propia y COMPARTIDA: no toca el estado de "Finales Pendientes". */
+  const KVPARTES = "finales_partes";
+  let PARTES = {};
+  async function cargarPartes(){
+    let r = null;
+    try { if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) r = await apiLoad(KVPARTES); } catch(e){}
+    if(!r || typeof r !== "object" || Array.isArray(r)){
+      try { r = JSON.parse(localStorage.getItem(KVPARTES) || "{}"); } catch(e){ r = {}; }
+    }
+    PARTES = (r && typeof r === "object" && !Array.isArray(r)) ? r : {};
+  }
+  async function guardarPartes(){
+    try { localStorage.setItem(KVPARTES, JSON.stringify(PARTES)); } catch(e){}
+    try { if(typeof API_AVAILABLE !== "undefined" && API_AVAILABLE) await apiSave(KVPARTES, PARTES); } catch(e){}
+  }
+
+  const EST = {
+    ampliado:    {t:"Ampliado tras la final", c:"#991b1b", bg:"#fee2e2"},
+    falta_final: {t:"Falta la final",         c:"#854d0e", bg:"#fef9c3"},
+    parcial:     {t:"Liquidado en parte",     c:"#9a3412", bg:"#ffedd5"},
+    sin_liq:     {t:"Sin liquidación",        c:"#3730a3", bg:"#e0e7ff"},
+    final_ok:    {t:"Final hecha",            c:"#166534", bg:"#dcfce7"},
+    final_corta: {t:"Final corta",            c:"#9a3412", bg:"#ffedd5"},
+    semilla:     {t:"Semilla · sin final",    c:"#0369a1", bg:"#e0f2fe"},
+    sin_datos:   {t:"Sin datos para cruzar",  c:"#475569", bg:"#f1f5f9"},
+    sin_contabilizar: {t:"Liq. sin contabilizar", c:"#7c2d12", bg:"#ffedd5"}
+  };
+  const abiertas = new Set();
+
+  function pasa(r){
+    if(val("ffn-est")  && r.est !== val("ffn-est")) return false;
+    if(val("ffn-prod") && r.prod !== val("ffn-prod")) return false;
+    if(val("ffn-camp") && r.camp !== val("ffn-camp")) return false;
+    const q = val("ffn-q").trim().toLowerCase();
+    if(q && !((r.prov + " " + r.cto + " " + r.num).toLowerCase().includes(q))) return false;
+    return true;
+  }
+
+  function llenar(id, vals){
+    const sel = document.getElementById(id); if(!sel) return;
+    const act = sel.value, prim = sel.options[0].outerHTML;
+    sel.innerHTML = prim + vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+    if([...sel.options].some(o => o.value === act)) sel.value = act;
+  }
+
+  function pintar(){
+    const rs = TODO.filter(pasa);
+    const cnt = {}; TODO.forEach(r => cnt[r.est] = (cnt[r.est]||0) + 1);
+    const tnPorEst = {}; TODO.forEach(r => tnPorEst[r.est] = (tnPorEst[r.est]||0) + r.ent);
+
+    const card = (lbl, v, hint, col) =>
+      `<div style="background:#fff;border:1px solid var(--line);border-left:4px solid ${col};border-radius:8px;padding:12px 14px">
+         <div style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase">${lbl}</div>
+         <div style="font-size:22px;font-weight:700;color:${col};margin:2px 0 1px">${v}</div>
+         <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
+    document.getElementById("ffn-kpis").innerHTML =
+      card("Ampliado tras la final", n0(cnt.ampliado||0),
+           `${n1(tnPorEst.ampliado||0)} tn · entraron kilos después: la final quedó corta`, "#991b1b") +
+      card("Final corta", n0(cnt.final_corta||0),
+           `${n1(tnPorEst.final_corta||0)} tn · hay final pero Finnegans sigue informando pendiente`, "#9a3412") +
+      card("Falta hacer la final", n0(cnt.falta_final||0),
+           `${n1(tnPorEst.falta_final||0)} tn · sólo tienen liquidaciones parciales`, "#a16207") +
+      card("Liquidado en parte", n0(cnt.parcial||0),
+           `${n1(tnPorEst.parcial||0)} tn · todavía no corresponde la final`, "#9a3412") +
+      card("Liq. sin contabilizar", n0(cnt.sin_contabilizar||0),
+           `${n1(tnPorEst.sin_contabilizar||0)} tn · la liquidación existe en Finnegans pero no llegó al libro mayor`, "#7c2d12") +
+      card("Sin liquidación", n0(cnt.sin_liq||0),
+           `${n1(tnPorEst.sin_liq||0)} tn con cartas de porte y ninguna liquidación`, "#4338ca") +
+      card("Final hecha y completa", n0(cnt.final_ok||0),
+           `${n1(tnPorEst.final_ok||0)} tn · al día`, "#0D9963") +
+      card("Semilla · sin final", n0(cnt.semilla||0),
+           `${n1(tnPorEst.semilla||0)} tn · no llevan final, van al 100%`, "#0369a1");
+
+    document.querySelector("#ffn-tabla thead").innerHTML = `<tr>
+      <th>Estado</th><th>Contrato</th><th>Proveedor</th><th>Grano</th><th>Camp.</th>
+      <th class="num">Tn entregadas</th><th class="num">Tn liquidadas</th><th class="num">Pendiente</th>
+      <th class="num">Liq.</th><th>Final</th><th>Últ. entrega</th>
+      <th class="num">Tn con final</th><th></th></tr>`;
+
+    const cuerpo = [];
+    rs.slice(0, 500).forEach(r => {
+      const pt = PARTES[r.cto] || null;
+      /* si despues de partir entraron mas kilos, la parte marcada ya no cubre
+         el total: el contrato vuelve a quedar pendiente. Es lo que se pidio:
+         "si le agregue kg, no me lo dejes como hecho" */
+      const creció = pt && r.ent > (pt.ent_al_marcar || 0) + 0.05;
+      const e = creció ? EST.ampliado
+              : (pt && pt.tn >= r.ent - 0.05) ? EST.final_ok
+              : (EST[r.est] || EST.final_ok);
+      cuerpo.push(`<tr class="ffn-fila" data-k="${esc(r.cto)}" title="${esc(r.txt)}">
+        <td><span class="cl-bad" style="background:${e.bg};color:${e.c}">${e.t}</span></td>
+        <td>${esc(r.cto)}</td><td title="${esc(r.prov)}">${esc(r.prov.slice(0,30))}</td>
+        <td>${esc(r.prod.replace(/^Grano\s+/,""))}</td><td>${esc(r.camp)}</td>
+        <td class="num">${n1(r.ent)}</td><td class="num">${n1(r.liq)}</td>
+        <td class="num" style="color:${Math.abs(r.pend)>0.05?"#C0392B":"inherit"};font-weight:${Math.abs(r.pend)>0.05?700:400}">${n1(r.pend)}</td>
+        <td class="num">${r.n_liq}${r.n_parcial?` <span style="color:#a16207" title="${r.n_parcial} parcial(es)">·${r.n_parcial}p</span>`:""}</td>
+        <td>${r.f_final ? fec(r.f_final) : '<span style="color:var(--muted)">—</span>'}</td>
+        <td>${fec(r.f_ent)}</td>
+        <td class="num">${pt ? n1(pt.tn) : '<span style="color:var(--muted)">—</span>'}</td>
+        <td><button class="ffn-partir" data-cto="${esc(r.cto)}">${pt ? "Editar" : "Partir"}</button></td></tr>`);
+      if(abiertas.has(r.cto)){
+        const ls = (r.liqs||[]);
+        cuerpo.push(`<tr class="ffn-det"><td colspan="13" style="padding:0">
+          <div style="padding:12px 16px;background:#FAFAFA">
+            <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">${esc(r.txt)}</div>
+            ${pt ? `<div style="font-size:11.5px;margin-bottom:8px;padding:8px 10px;border-radius:6px;
+                 background:${creció ? "#fee2e2" : "#dcfce7"};color:${creció ? "#991b1b" : "#166534"}">
+                 <b>Partido a mano:</b> ${n1(pt.tn)} tn con la final hecha de ${n1(pt.ent_al_marcar||0)} tn entregadas
+                 ${pt.nota ? " · " + esc(pt.nota) : ""}
+                 ${creció ? `<br/><b>OJO:</b> después se agregaron ${n1(r.ent - (pt.ent_al_marcar||0))} tn al contrato
+                     — la final quedó corta y hay que rehacerla.` : ""}</div>` : ""}
+            ${ls.length ? `<table class="px-det-tbl"><thead><tr>
+              <th>Liquidación</th><th>Fecha</th><th class="num">Tn</th><th class="num">% liquidado</th><th>Tipo</th>
+            </tr></thead><tbody>` + ls.map(x => {
+              const fin = x.pct != null && Math.abs(x.pct - 100) < 0.01;
+              return `<tr><td>${esc(x.liq)}</td><td>${fec(x.fecha)}</td>
+                <td class="num">${n1(x.tn)}</td>
+                <td class="num">${x.pct == null ? "—" : n1(x.pct) + "%"}</td>
+                <td><span class="cl-bad" style="background:${fin?"#dcfce7":"#fef9c3"};color:${fin?"#166534":"#854d0e"}">${fin?"FINAL":"PARCIAL"}</span></td></tr>`;
+            }).join("") + `</tbody></table>`
+            : '<div style="color:var(--muted);font-size:11.5px">No encontré ninguna liquidación que cite los traslados de este contrato.</div>'}
+          </div></td></tr>`);
+      }
+    });
+    document.querySelector("#ffn-tabla tbody").innerHTML = cuerpo.join("")
+      || '<tr><td colspan="13" style="padding:18px;text-align:center;color:var(--muted)">Sin contratos para estos filtros</td></tr>';
+
+    const T = rs.reduce((a,r) => ({ent:a.ent+r.ent, liq:a.liq+r.liq, pend:a.pend+r.pend}), {ent:0,liq:0,pend:0});
+    document.querySelector("#ffn-tabla tfoot").innerHTML = `<tr>
+      <td colspan="5">TOTAL · ${n0(rs.length)} contrato(s)</td>
+      <td class="num">${n1(T.ent)}</td><td class="num">${n1(T.liq)}</td>
+      <td class="num">${n1(T.pend)}</td><td colspan="5"></td></tr>`;
+
+    document.getElementById("ffn-info").textContent =
+      `${n0(rs.length)} de ${n0(TODO.length)} contratos de compra con entregas`
+      + (rs.length > 500 ? " · se muestran los primeros 500" : "");
+    const ch = document.getElementById("ffn-chips");
+    if(ch) ch.innerHTML = ["sólo compra", "leído de Finnegans",
+                           "no toca Finales Pendientes", "% de cada liquidación"]
+      .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:600">${esc(x)}</span>`).join("");
+  }
+
+  let listo = false;
+  async function abrir(){
+    if(!listo){
+      listo = true;
+      await cargarPartes();
+      llenar("ffn-prod", [...new Set(TODO.map(r => r.prod))].sort());
+      llenar("ffn-camp", [...new Set(TODO.map(r => r.camp).filter(Boolean))].sort().reverse());
+      ["ffn-est","ffn-prod","ffn-camp"].forEach(id => {
+        const e = document.getElementById(id); if(e) e.addEventListener("change", pintar); });
+      const q = document.getElementById("ffn-q"); if(q) q.addEventListener("input", pintar);
+      const rs = document.getElementById("ffn-reset");
+      if(rs) rs.addEventListener("click", () => {
+        ["ffn-est","ffn-prod","ffn-camp"].forEach(id => { const e = document.getElementById(id); if(e) e.value = ""; });
+        if(q) q.value = ""; pintar(); });
+      document.querySelector("#ffn-tabla").addEventListener("click", async ev => {
+        const bp = ev.target.closest(".ffn-partir");
+        if(bp){
+          ev.stopPropagation();
+          const cto = bp.dataset.cto;
+          const r = TODO.find(x => x.cto === cto); if(!r) return;
+          const act = PARTES[cto];
+          const txt = prompt(
+            `Contrato ${cto}\n${r.prov}\n\nEntregadas: ${n1(r.ent)} tn\n` +
+            `Liquidadas segun Finnegans: ${n1(r.liq)} tn\n\n` +
+            `¿Cuantas toneladas YA tienen la final hecha?\n` +
+            `(vacio o 0 borra la marca)`,
+            act ? String(act.tn) : "");
+          if(txt === null) return;
+          const tn = parseFloat(String(txt).replace(/\./g, "").replace(",", ".")) || 0;
+          if(tn <= 0){ delete PARTES[cto]; }
+          else {
+            const nota = prompt("Nota (opcional): por ejemplo el numero de la final", act ? (act.nota||"") : "") || "";
+            PARTES[cto] = {tn: Math.min(tn, r.ent), ent_al_marcar: r.ent, nota,
+                           cuando: new Date().toISOString().slice(0,10)};
+          }
+          await guardarPartes();
+          pintar();
+          return;
+        }
+        const tr = ev.target.closest("tr.ffn-fila"); if(!tr) return;
+        const k = tr.dataset.k;
+        if(abiertas.has(k)) abiertas.delete(k); else abiertas.add(k);
+        pintar();
+      });
+    }
+    pintar();
+  }
+  document.querySelectorAll('[data-go-sub="cp-finales-fnn"], .subtab[data-sub="cp-finales-fnn"]')
+    .forEach(b => b.addEventListener("click", abrir));
+})();
+</script>
 </body>
 </html>
 """
@@ -18644,6 +18911,59 @@ def fetch_vendedores() -> dict:
         print(f"    [!] vendedores: {type(e).__name__}: {str(e)[:120]}")
     return out
 
+
+
+
+def fetch_mayor(desde: str = "2024-01-01") -> dict:
+    """Trae el libro mayor y devuelve QUE DOCUMENTOS estan contabilizados.
+
+    Sirve para saber si una liquidacion que existe en Finnegans llego o no a la
+    contabilidad. Se guarda solo lo necesario (el nombre del documento y las
+    facturas por proveedor), no los 200.000 asientos: el payload ya pesa 44 MB.
+    """
+    from datetime import date as _date
+    hoy = _date.today()
+    hasta = hoy.isoformat()
+    a0, a1 = int(desde[:4]), hoy.year
+    print(f"\n[+] Bajando libro mayor por año ({a0} a {a1})...", flush=True)
+
+    filas, anios_ok = [], []
+    for a in range(a0, a1 + 1):
+        d = f"{a}-01-01"
+        h = hasta if a == a1 else f"{a}-12-31"
+        try:
+            r = api.call("/reports/libroMayor",
+                         {"PARAMWEBREPORT_FechaDesde": d,
+                          "PARAMWEBREPORT_FechaHasta": h}, timeout=900)
+            f = r if isinstance(r, list) else (r.get("data") or r.get("items") or [])
+            filas.extend(f)
+            anios_ok.append(a)
+            print(f"    {a}: {len(f):,} asientos", flush=True)
+        except Exception as e:
+            # Un año que no se pudo leer NO se juzga: ver cobertura mas abajo.
+            print(f"    {a}: no se pudo bajar ({type(e).__name__}) — ese año no se evalúa")
+
+    if not anios_ok:
+        print("    [!] no pude bajar el mayor de ningún año")
+        return {"docs": [], "fc_por_org": {}, "anios": [], "n": 0}
+
+    docs = set()
+    fc_por_org = {}
+    for x in filas:
+        d = str(x.get("DOCUMENTO") or x.get("documento") or "").strip()
+        if not d or d == "Saldo Inicial":
+            continue
+        docs.add(d)
+        # facturas por proveedor, para poder mirarlas junto al contrato
+        if d.upper().startswith("FC"):
+            org = " ".join(str(x.get("ORGANIZACION") or "").split()).strip().upper()
+            if org:
+                fc_por_org.setdefault(org, set()).add(d)
+    out = {"docs": sorted(docs), "anios": anios_ok, "n": len(filas),
+           "fc_por_org": {k: sorted(v)[:40] for k, v in fc_por_org.items()}}
+    print(f"    -> {len(filas):,} asientos de {len(anios_ok)} año(s) {anios_ok} · "
+          f"{len(docs):,} documentos contabilizados · {len(fc_por_org):,} proveedores con factura")
+    return out
 
 
 def fetch_tc_hist(desde: str = "2022-01-01") -> dict:
@@ -18914,6 +19234,186 @@ def _campana_num(c):
     import re as _re
     m = _re.search(r"(\d{2})\s*[-/]\s*(\d{2})", str(c or ""))
     return int(m.group(1) + m.group(2)) if m else 0
+
+
+
+# ============================================================================
+#  ANALISIS DE FINALES DESDE FINNEGANS — SOLO COMPRA  (pedido 25/09/2026)
+#
+#  Finales Pendientes (la otra solapa) lleva el estado que marca el usuario a
+#  mano y NO se toca. Esta mira lo mismo pero desde el dato crudo de Finnegans,
+#  para poder contrastar un movimiento puntual.
+#
+#  La clave es el campo PorcentajeParcial de cada liquidacion: 100 = final,
+#  menos = parcial. De las 2.221 liquidaciones de compra, 609 son parciales
+#  (97,5% en su mayoria, el clasico que deja el 2,5% para la final).
+# ============================================================================
+
+def armar_finales_fnn(traza_list, compra_norm, mayor=None):
+    """Por contrato de compra: que liquidaciones lo tocan y si la final esta hecha."""
+    data_dir = Path(__file__).resolve().parent / "data"
+    COMPRA = [("liq_compra_api.json", "LIQPRICPRA"),
+              ("liq_cpragra_api.json", "LIQCPRAGRA"),
+              ("liq_cprasem_api.json", "LIQCPRASEM")]
+
+    def _f(v):
+        try:
+            return float(str(v).replace(",", "") or 0)
+        except Exception:
+            return 0.0
+
+    # documentos que llegaron a la contabilidad, para marcar las liquidaciones
+    # que existen en Finnegans pero NO estan contabilizadas
+    may = mayor or {}
+    contab = set(may.get("docs") or ())
+    fc_org = may.get("fc_por_org") or {}
+    # años del mayor que se pudieron leer de verdad. Una liquidacion de un año
+    # que no se leyo NO se marca como "sin contabilizar": puede estar asentada
+    # y yo no tener el dato. Mejor no decir nada que inventar un problema.
+    anios_may = set(may.get("anios") or ())
+    hay_mayor = bool(contab)
+
+    # 1) traslado -> liquidaciones que lo citan (solo series de compra)
+    por_tras = {}
+    for arch, pref in COMPRA:
+        fp = data_dir / arch
+        if not fp.exists():
+            continue
+        try:
+            snap = json.loads(fp.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"    [!] finales_fnn: no pude leer {arch}: {e}")
+            continue
+        for num, rec in snap.items():
+            pct = rec.get("parcial_pct")
+            try:
+                pct = float(pct) if pct is not None else None
+            except Exception:
+                pct = None
+            fec = str(rec.get("fecha") or "")[:10]
+            doc = f"{pref} - {num}"
+            for pr in (rec.get("productos") or []):
+                t = str(pr.get("traslado") or "").strip()
+                if not t or t == "None":
+                    continue
+                por_tras.setdefault(t, []).append(
+                    {"liq": doc, "fecha": fec, "tn": _f(pr.get("cantidad")), "pct": pct,
+                     "cont": ((doc in contab)
+                              if (hay_mayor and fec[:4].isdigit() and int(fec[:4]) in anios_may)
+                              else None)})
+
+    # 2) carta de porte -> contrato de compra, y fecha de la ultima entrega
+    tras_de_cto, ult_entrega = {}, {}
+    for t in traza_list:
+        cto = str(t.get("contrato_compra") or "").strip()
+        doc = str(t.get("doc_compra") or "").strip()
+        if not cto:
+            continue
+        if doc and doc != "None":
+            tras_de_cto.setdefault(cto, set()).add(doc)
+        f = str(t.get("fecha") or "")[:10]
+        if f and f > ult_entrega.get(cto, ""):
+            ult_entrega[cto] = f
+
+    filas = []
+    for r in compra_norm:
+        if not str(r.get("tipo", "")).startswith("1"):
+            continue
+        prod = str(r.get("producto") or "")
+        # La SEMILLA no lleva final (regla de Ezequiel, 25/09/2026): entra al
+        # analisis pero se da por cerrada al 100%. Antes se filtraba afuera y
+        # quedaban 335 contratos y 58.034 tn sin verse.
+        es_semilla = not prod.strip().lower().startswith("grano")
+        est_an = str(r.get("estadoanulacion") or "").lower()
+        if "anul" in est_an and "no anul" not in est_an:
+            continue
+        nm = str(r.get("nombre") or r.get("contrato") or "").strip()
+        ent = _f(r.get("cantidadentregada"))
+        liq = _f(r.get("cantidadliquidada"))
+        if ent <= 0.05:
+            continue          # sin entregas no hay nada que liquidar
+
+        liqs, vistas = [], set()
+        for tr in tras_de_cto.get(nm, ()):
+            for x in por_tras.get(tr, ()):
+                k = (x["liq"], round(x["tn"], 3))
+                if k in vistas:
+                    continue
+                vistas.add(k)
+                liqs.append(x)
+        liqs.sort(key=lambda x: (x["fecha"], x["liq"]))
+
+        finales = [x for x in liqs if x["pct"] is not None and abs(x["pct"] - 100) < 0.01]
+        parciales = [x for x in liqs if x["pct"] is not None and x["pct"] < 99.99]
+        f_final = max((x["fecha"] for x in finales), default="")
+        f_ent = ult_entrega.get(nm, "")
+        pend = round(ent - liq, 3)
+
+        n_cps = len(tras_de_cto.get(nm, ()))
+        sin_cont = [x for x in liqs if x.get("cont") is False]
+
+        if es_semilla:
+            estado = "semilla"
+            txt = (f"Semilla: no lleva final. Se da por cerrado al 100% "
+                   f"({ent:,.1f} tn entregadas)")
+        elif not liqs and not n_cps:
+            # No hay con que cruzar: la traza cubre campañas recientes. Decir
+            # "sin liquidacion" aca seria una falsa alarma (me paso: marcaba 508).
+            estado = "sin_datos"
+            txt = (f"No tengo cartas de porte de este contrato para cruzar, así que no puedo "
+                   f"verificar sus liquidaciones. Finnegans informa {liq:,.1f} de {ent:,.1f} tn liquidadas")
+        elif not liqs:
+            estado, txt = "sin_liq", (f"Tiene {n_cps} traslado(s) con cartas de porte y "
+                                      f"ninguno aparece en una liquidación")
+        elif sin_cont:
+            estado = "sin_contabilizar"
+            txt = ("Hay " + str(len(sin_cont)) + " liquidación(es) que existen en Finnegans pero "
+                   "NO figuran en el libro mayor: " + ", ".join(x["liq"] for x in sin_cont[:4]))
+        elif finales and f_ent and f_final and f_ent > f_final:
+            estado = "ampliado"
+            txt = (f"La final es del {f_final} pero entraron camiones hasta el {f_ent}: "
+                   "el contrato se amplió después y la final quedó corta")
+        elif finales and abs(pend) <= 0.05:
+            estado, txt = "final_ok", f"Final hecha el {f_final} y cubre las {ent:,.1f} tn entregadas"
+        elif finales:
+            # No se amplio nada: la final es posterior a la ultima entrega pero
+            # igual queda pendiente. Es otro problema, y merece otro cartel.
+            estado = "final_corta"
+            txt = (f"La final es del {f_final}, posterior a la última entrega "
+                   f"({f_ent or '—'}), pero Finnegans todavía informa {pend:,.1f} tn "
+                   "pendientes: la final se hizo por menos de lo entregado o falta una liquidación")
+        elif parciales and abs(pend) <= 0.05:
+            estado = "falta_final"
+            pcts = sorted({f"{x['pct']:g}%" for x in parciales})
+            txt = ("Está liquidado al " + ", ".join(pcts) +
+                   " con liquidaciones parciales: falta la final")
+        else:
+            estado = "parcial"
+            txt = f"Liquidado {liq:,.1f} de {ent:,.1f} tn · faltan {pend:,.1f}"
+
+        filas.append({
+            "cto": nm, "num": str(r.get("numerointerno") or ""),
+            "prov": r.get("organizacion") or "", "prod": prod,
+            "camp": str(r.get("campana") or "").replace("CAMPAÑA ", ""),
+            "ent": round(ent, 3), "liq": round(liq, 3), "pend": pend,
+            "n_liq": len(liqs), "n_final": len(finales), "n_parcial": len(parciales),
+            "f_final": f_final, "f_ent": f_ent,
+            "est": estado, "txt": txt,
+            "n_cps": n_cps,
+            "n_sincont": len(sin_cont),
+            "fc": fc_org.get(" ".join(str(r.get("organizacion") or "").split()).strip().upper(), [])[:10],
+            "liqs": liqs[:40],
+        })
+
+    ORDEN = {"ampliado": 0, "final_corta": 1, "sin_contabilizar": 2, "falta_final": 3,
+             "sin_liq": 4, "parcial": 5, "final_ok": 6, "semilla": 7, "sin_datos": 8}
+    filas.sort(key=lambda x: (ORDEN.get(x["est"], 9), -x["ent"]))
+    res = {}
+    for x in filas:
+        res[x["est"]] = res.get(x["est"], 0) + 1
+    print(f"    [+] finales_fnn (solo compra): {len(filas)} contratos · " +
+          " · ".join(f"{k} {v}" for k, v in sorted(res.items(), key=lambda kv: -kv[1])))
+    return {"generado": datetime.now(timezone.utc).isoformat(), "filas": filas, "resumen": res}
 
 
 def armar_ctgliq(traza_list, pilot_norm, compra_norm):
@@ -20823,6 +21323,16 @@ def main() -> int:
         print(f"    [!] ctgliq: {type(e).__name__}: {e}")
         ctgliq = {"contratos": [], "kpi": {}, "generado": "", "cam_hasta": ""}
 
+    # ---- Analisis de Finales desde Finnegans, SOLO COMPRA (pedido 25/09).
+    # Va aparte a proposito: la solapa "Finales Pendientes" lleva el estado que
+    # el usuario marca a mano y no se toca. Esta lee el dato crudo.
+    mayor = fetch_mayor()
+    try:
+        finales_fnn = armar_finales_fnn(traza_list, compra_norm, mayor)
+    except Exception as e:
+        print(f"    [!] finales_fnn: {type(e).__name__}: {e}")
+        finales_fnn = {"filas": [], "resumen": {}, "generado": ""}
+
     # Quien es el comercial de cada firma (para el correo de "Enviar a liquidar")
     print("\n[+] Bajando comerciales por firma...", flush=True)
     vendedores = fetch_vendedores()
@@ -20830,6 +21340,7 @@ def main() -> int:
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "ctgliq": ctgliq,
+        "finales_fnn": finales_fnn,
         "vendedores": vendedores,
         "counts": counts,
         "fp_auto_hechas": fp_auto_hechas,
