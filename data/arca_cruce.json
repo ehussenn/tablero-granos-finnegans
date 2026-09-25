@@ -1,12 +1,12 @@
 {
- "generado": "2026-09-24T09:51:47",
+ "generado": "2026-09-25T07:19:32",
  "rango_arca": [
   "2026-02-01",
   "2026-09-22"
  ],
  "kpi": {
   "arca_ctg": 1500,
-  "fnn_ctg": 5299,
+  "fnn_ctg": 5300,
   "no_ingresados": 19,
   "no_ingresados_tn": 863.6,
   "a_ingresar": 19,

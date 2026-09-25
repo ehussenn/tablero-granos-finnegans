@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8454,
-  "con_ctg": 7067,
+  "filas": 8455,
+  "con_ctg": 7068,
   "sin_ctg": 1387,
-  "ctg_unicos": 5299,
+  "ctg_unicos": 5300,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1760,8 +1760,8 @@
     "tn": 341.649
    },
    "COMPRA SEMILLA": {
-    "n": 117,
-    "tn": 2125.4280000000003
+    "n": 118,
+    "tn": 2128.8680000000004
    },
    "COMPENSACIÓN": {
     "n": 4,
@@ -1769,7 +1769,7 @@
    },
    "COMPRA": {
     "n": 1721,
-    "tn": 55234.437
+    "tn": 55227.273
    },
    "VENTA": {
     "n": 1721,
@@ -1780,7 +1780,7 @@
     "tn": 106092.18500000001
    }
   },
-  "tn_total": 219220.196
+  "tn_total": 219216.472
  },
  "rows": [
   {
@@ -13602,6 +13602,36 @@
    "cancelado": false,
    "contrato": "",
    "doc": "REC-SEM-TERC - 253"
+  },
+  {
+   "ctg": "003300002199",
+   "cp": "",
+   "fecha": "24-09-2026",
+   "fecha_partida": "24-09-2026",
+   "fecha_descarga": "24-09-2026",
+   "grano": "SEM. GRANEL CEBADILLA BARENO (kilos)",
+   "kg": 3440.0,
+   "kg_sin_merma": 3440.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "PALAVERSICH Y CIA SA",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla TERCEROS",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-TERC - 254"
   },
   {
    "ctg": "",
@@ -70430,7 +70460,7 @@
    "fecha_partida": "10-08-2026",
    "fecha_descarga": "12-08-2026",
    "grano": "Grano Maíz",
-   "kg": 31160.0,
+   "kg": 29374.0,
    "kg_sin_merma": 31160.0,
    "kg_afip": 0.0,
    "patente": "BUZ821",
@@ -70490,7 +70520,7 @@
    "fecha_partida": "10-08-2026",
    "fecha_descarga": "12-08-2026",
    "grano": "Grano Maíz",
-   "kg": 29310.0,
+   "kg": 27630.0,
    "kg_sin_merma": 29310.0,
    "kg_afip": 0.0,
    "patente": "LMT179",
@@ -70520,7 +70550,7 @@
    "fecha_partida": "10-08-2026",
    "fecha_descarga": "12-08-2026",
    "grano": "Grano Maíz",
-   "kg": 31180.0,
+   "kg": 29212.0,
    "kg_sin_merma": 31180.0,
    "kg_afip": 0.0,
    "patente": "BCS918",
@@ -70850,7 +70880,7 @@
    "fecha_partida": "10-08-2026",
    "fecha_descarga": "13-08-2026",
    "grano": "Grano Maíz",
-   "kg": 30170.0,
+   "kg": 28440.0,
    "kg_sin_merma": 30170.0,
    "kg_afip": 0.0,
    "patente": "IVP021",
