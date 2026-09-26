@@ -1,18 +1,18 @@
 {
- "generado": "2026-09-25T09:13:14",
+ "generado": "2026-09-26T07:05:41",
  "rango_arca": [
   "2026-02-01",
   "2026-09-22"
  ],
  "kpi": {
-  "arca_ctg": 1518,
-  "fnn_ctg": 5301,
-  "no_ingresados": 19,
-  "no_ingresados_tn": 863.6,
-  "a_ingresar": 19,
-  "a_ingresar_tn": 863.6,
-  "sin_arca": 1774,
-  "dif_kg_n": 1499
+  "arca_ctg": 1520,
+  "fnn_ctg": 5305,
+  "no_ingresados": 16,
+  "no_ingresados_tn": 729.6,
+  "a_ingresar": 16,
+  "a_ingresar_tn": 729.6,
+  "sin_arca": 1772,
+  "dif_kg_n": 1504
  },
  "por_cultivo": {
   "Maíz": {
@@ -20,8 +20,8 @@
    "tn": 443.759
   },
   "Soja": {
-   "camiones": 8,
-   "tn": 371.94
+   "camiones": 5,
+   "tn": 237.96
   },
   "Trigo": {
    "camiones": 1,
@@ -34,18 +34,18 @@
    "tn": 686.619
   },
   "Participante + Solicitada": {
-   "camiones": 4,
-   "tn": 176.94
+   "camiones": 1,
+   "tn": 42.96
   }
  },
  "por_estado": {
   "Confirmada": {
-   "camiones": 16,
-   "tn": 731.619
+   "camiones": 15,
+   "tn": 686.619
   },
   "Activa": {
-   "camiones": 3,
-   "tn": 131.94
+   "camiones": 1,
+   "tn": 42.96
   }
  },
  "faltan": [
@@ -203,23 +203,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00011687",
-   "CTG": "10235242885",
-   "Fecha": "22/09/2026",
-   "Cultivo": "Soja",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "GFL674 - AI309YG",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00000123",
    "CTG": "10135235945",
    "Fecha": "22/09/2026",
@@ -322,23 +305,6 @@
    "dif_kg": 0.0
   },
   {
-   "CartaPorte": "00000-00011686",
-   "CTG": "10235228026",
-   "Fecha": "21/09/2026",
-   "Cultivo": "Soja",
-   "Kg": 44080.0,
-   "Estado": "Activa",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "UIP806 - CZR341",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
    "CartaPorte": "00000-00011689",
    "CTG": "10235246715",
    "Fecha": "22/09/2026",
@@ -351,23 +317,6 @@
    "flujo_fnn": "",
    "kg_fnn": 0.0,
    "patente": "TUM480 - UUX979",
-   "cuit_solicitante": "",
-   "a_ingresar": true,
-   "dif_kg": 0.0
-  },
-  {
-   "CartaPorte": "00000-00011688",
-   "CTG": "10235244359",
-   "Fecha": "22/09/2026",
-   "Cultivo": "Soja",
-   "Kg": 44900.0,
-   "Estado": "Activa",
-   "Origen": "Participante + Solicitada",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
-   "Existe_en_Finnegans": "No",
-   "flujo_fnn": "",
-   "kg_fnn": 0.0,
-   "patente": "ATH174 - CHU525",
    "cuit_solicitante": "",
    "a_ingresar": true,
    "dif_kg": 0.0
@@ -1299,7 +1248,7 @@
    "CartaPorte": "00000-00000117",
    "Fecha": "02-09-2026",
    "Cultivo": "Grano Maíz",
-   "Kg": 34220.0,
+   "Kg": 34049.0,
    "Flujo": "COMPRA",
    "Organizacion": "AVANZAR SRL ",
    "Estado": "CN"
@@ -6815,16 +6764,6 @@
    "Estado": "CN"
   },
   {
-   "CTG": "10134300885",
-   "CartaPorte": "00000-00011100",
-   "Fecha": "11-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30762.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "LA BRAGADENSE SA",
-   "Estado": "CN"
-  },
-  {
    "CTG": "10134288355",
    "CartaPorte": "00000-00011080",
    "Fecha": "11-08-2026",
@@ -7592,16 +7531,6 @@
    "Kg": 28369.0,
    "Flujo": "COMPRA",
    "Organizacion": "CUMARINA AGROPECUARIA S.R.L",
-   "Estado": "CN"
-  },
-  {
-   "CTG": "10134303566",
-   "CartaPorte": "00000-00011101",
-   "Fecha": "12-08-2026",
-   "Cultivo": "Grano Maíz",
-   "Kg": 30001.0,
-   "Flujo": "PRODUCCIÓN (CPE propia)",
-   "Organizacion": "ASOC DE COOPERATIVAS ARGENTINAS COOP LTDA",
    "Estado": "CN"
   },
   {
@@ -12049,7 +11978,7 @@
    "CartaPorte": "00000-00000836",
    "Fecha": "17-09-2026",
    "Cultivo": "Grano Maíz",
-   "Kg": 36520.0,
+   "Kg": 35151.0,
    "Flujo": "COMPRA",
    "Organizacion": "DUBINI GUILLERMO JOSE",
    "Estado": "CN"
@@ -24135,6 +24064,23 @@
    "dif_kg": -16263.0
   },
   {
+   "CartaPorte": "00000-00011688",
+   "CTG": "10235244359",
+   "Fecha": "22/09/2026",
+   "Cultivo": "Soja",
+   "Kg": 44900.0,
+   "Estado": "Activa",
+   "Origen": "Participante + Solicitada",
+   "OrigenDetalle": "Participante - Pagador Flete Pagador; Solicitada - Operador",
+   "Existe_en_Finnegans": "Si",
+   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
+   "kg_fnn": 28640.0,
+   "patente": "ATH174 - CHU525",
+   "cuit_solicitante": "",
+   "a_ingresar": false,
+   "dif_kg": -16260.0
+  },
+  {
    "CartaPorte": "00000-00011646",
    "CTG": "10135085437",
    "Fecha": "14/09/2026",
@@ -24898,26 +24844,9 @@
    "cuit_solicitante": "30710712758",
    "a_ingresar": false,
    "dif_kg": -16170.0
-  },
-  {
-   "CartaPorte": "00000-00011044",
-   "CTG": "10134259335",
-   "Fecha": "10/08/2026",
-   "Cultivo": "Maíz",
-   "Kg": 45000.0,
-   "Estado": "Confirmada",
-   "Origen": "Participante",
-   "OrigenDetalle": "Participante - Pagador Flete Pagador",
-   "Existe_en_Finnegans": "Si",
-   "flujo_fnn": "PRODUCCIÓN (CPE propia)",
-   "kg_fnn": 28836.0,
-   "patente": "JED782 -AE209SV",
-   "cuit_solicitante": "30710712758",
-   "a_ingresar": false,
-   "dif_kg": -16164.0
   }
  ],
- "total_filas": 1518,
+ "total_filas": 1520,
  "excluidos": [
   {
    "CTG": "10134836674",

@@ -2,10 +2,10 @@
  "desde": "2025-07-01",
  "hasta": "2030-12-31",
  "resumen": {
-  "filas": 8467,
-  "con_ctg": 7070,
+  "filas": 8471,
+  "con_ctg": 7074,
   "sin_ctg": 1397,
-  "ctg_unicos": 5301,
+  "ctg_unicos": 5305,
   "ctg_repetidos": {
    "10127856793": 2,
    "827857": 13,
@@ -1761,8 +1761,8 @@
     "tn": 341.649
    },
    "COMPRA SEMILLA": {
-    "n": 118,
-    "tn": 2128.8680000000004
+    "n": 119,
+    "tn": 2132.4480000000003
    },
    "COMPENSACIÓN": {
     "n": 4,
@@ -1770,18 +1770,18 @@
    },
    "COMPRA": {
     "n": 1722,
-    "tn": 55263.823000000004
+    "tn": 55262.283
    },
    "VENTA": {
     "n": 1722,
-    "tn": 55331.93299999999
+    "tn": 55331.76199999999
    },
    "PRODUCCIÓN (CPE propia)": {
-    "n": 3492,
-    "tn": 106091.49000000002
+    "n": 3495,
+    "tn": 106180.18000000002
    }
   },
-  "tn_total": 219288.877
+  "tn_total": 219379.436
  },
  "rows": [
   {
@@ -13785,6 +13785,36 @@
    "doc": "REC-SEM-TERC - 254"
   },
   {
+   "ctg": "003300002201",
+   "cp": "",
+   "fecha": "25-09-2026",
+   "fecha_partida": "25-09-2026",
+   "fecha_descarga": "25-09-2026",
+   "grano": "SEM. GRANEL CEBADILLA BARENO (kilos)",
+   "kg": 3580.0,
+   "kg_sin_merma": 3580.0,
+   "kg_afip": 0.0,
+   "patente": "",
+   "chofer": "",
+   "transportista": "",
+   "titular": "",
+   "destinatario": "",
+   "destino": "",
+   "org": "PALAVERSICH Y CIA SA",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "PERGAMINO",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Buenos Aires",
+   "cosecha": "25-26",
+   "subtipo": "Recepción de Semilla TERCEROS",
+   "flujo": "COMPRA SEMILLA",
+   "estado": "Activa",
+   "estado_ctg": "",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "REC-SEM-TERC - 255"
+  },
+  {
    "ctg": "",
    "cp": "",
    "fecha": "19-03-2026",
@@ -17471,7 +17501,7 @@
    "estado": "Activa",
    "estado_ctg": "",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "COMPENSACION1-SAN BERNARDO-26/27",
    "doc": "REM-COMPRA-GRANOS-CONVENIO - 221"
   },
   {
@@ -24221,7 +24251,7 @@
    "estado": "Activa",
    "estado_ctg": "",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "COMPENSACION-SAN BERNARDO-26/27",
    "doc": "REM-VENTA-GRANOS-CONVENIO - 79"
   },
   {
@@ -75051,7 +75081,7 @@
    "fecha_partida": "02-09-2026",
    "fecha_descarga": "11-09-2026",
    "grano": "Grano Maíz",
-   "kg": 34220.0,
+   "kg": 34049.0,
    "kg_sin_merma": 34220.0,
    "kg_afip": 0.0,
    "patente": "XKJ890",
@@ -75951,8 +75981,8 @@
    "fecha_partida": "17-09-2026",
    "fecha_descarga": "22-09-2026",
    "grano": "Grano Maíz",
-   "kg": 36520.0,
-   "kg_sin_merma": 36520.0,
+   "kg": 35151.0,
+   "kg_sin_merma": 35151.0,
    "kg_afip": 0.0,
    "patente": "AC428LC",
    "chofer": "",
@@ -148521,7 +148551,7 @@
    "fecha_partida": "02-09-2026",
    "fecha_descarga": "11-09-2026",
    "grano": "Grano Maíz",
-   "kg": 34220.0,
+   "kg": 34049.0,
    "kg_sin_merma": 34220.0,
    "kg_afip": 0.0,
    "patente": "XKJ890",
@@ -149771,7 +149801,7 @@
    "estado": "Activa",
    "estado_ctg": "CN",
    "cancelado": false,
-   "contrato": "",
+   "contrato": "VEN268",
    "doc": "TRAS-VTA-CV - 4632"
   },
   {
@@ -255793,6 +255823,96 @@
    "cancelado": false,
    "contrato": "VEN281",
    "doc": "TRAS-VTA-GRANO-AS - 8234"
+  },
+  {
+   "ctg": "10235242885",
+   "cp": "00000-00011687",
+   "fecha": "22-09-2026",
+   "fecha_partida": "22-09-2026",
+   "fecha_descarga": "25-09-2026",
+   "grano": "Grano Soja",
+   "kg": 31340.0,
+   "kg_sin_merma": 31340.0,
+   "kg_afip": 0.0,
+   "patente": "GFL674",
+   "chofer": "MARIANO BIURRIET",
+   "transportista": "EL SIETE DE BASTOS S.R.L",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "LDC ARGENTINA S.A.",
+   "destino": "VICENTIN SAIC",
+   "org": "LDC ARGENTINA S.A.",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "SAN LORENZO (SAN LORENZO)",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8235"
+  },
+  {
+   "ctg": "10235244359",
+   "cp": "00000-00011688",
+   "fecha": "22-09-2026",
+   "fecha_partida": "22-09-2026",
+   "fecha_descarga": "25-09-2026",
+   "grano": "Grano Soja",
+   "kg": 28640.0,
+   "kg_sin_merma": 28640.0,
+   "kg_afip": 0.0,
+   "patente": "ATH174",
+   "chofer": "CORDOBA FERNANDO OSCAR",
+   "transportista": "CORDOBA FERNANDO OSCAR",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "LDC ARGENTINA S.A.",
+   "destino": "VICENTIN SAIC",
+   "org": "LDC ARGENTINA S.A.",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "SAN LORENZO (SAN LORENZO)",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8236"
+  },
+  {
+   "ctg": "10235228026",
+   "cp": "00000-00011686",
+   "fecha": "21-09-2026",
+   "fecha_partida": "21-09-2026",
+   "fecha_descarga": "25-09-2026",
+   "grano": "Grano Soja",
+   "kg": 28710.0,
+   "kg_sin_merma": 28710.0,
+   "kg_afip": 0.0,
+   "patente": "UIP806",
+   "chofer": "IGNACIO TOMAS RODRIGUEZ",
+   "transportista": "RODRIGUEZ MATIAS MIGUEL",
+   "titular": "AGRONASAJA S.R.L.",
+   "destinatario": "LDC ARGENTINA S.A.",
+   "destino": "LDC ARGENTINA S.A.",
+   "org": "LDC ARGENTINA S.A.",
+   "loc_origen": "PERGAMINO",
+   "loc_destino": "TIMBUES JOSE MARIA",
+   "prov_origen": "Buenos Aires",
+   "prov_destino": "Santa Fe",
+   "cosecha": "25-26",
+   "subtipo": "Traslado CPE Agronasaja",
+   "flujo": "PRODUCCIÓN (CPE propia)",
+   "estado": "Activa",
+   "estado_ctg": "CN",
+   "cancelado": false,
+   "contrato": "",
+   "doc": "TRAS-VTA-GRANO-AS - 8237"
   }
  ]
 }
