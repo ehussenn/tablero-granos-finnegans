@@ -2582,7 +2582,7 @@ window.apiFetch = function(path, opts){
       </div>
       <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
         💡 <strong>Pend. liquidar</strong> = lo <b>entregado</b> que todavía no se liquidó, contrato por contrato, <b>tal cual Finnegans</b>
-        (Cantidad entregada pendiente liquidar, con positivos y negativos). Solo granos, sin compensaciones de convenio ni anulados.
+        (Cantidad entregada pendiente liquidar, con positivos y negativos). Solo granos, más la <b>semilla de soja</b>, que cuenta como soja y va en la fila <b>Semilla de soja (variedades)</b>; sin compensaciones de convenio ni anulados. <b>Entregado sin liquidar</b> suma los contratos con pendiente (+) y <b>Adelantos / liq. de más</b> los liquidados por encima de lo entregado (−); el neto es la suma de los dos.
         <strong>Posición</strong> = venta − compra.
         <br/>🔀 <strong>Venta: primaria y secundaria</strong> según el origen de los camiones de cada contrato:
         <b>primaria</b> = salió de <b>campo</b> propio (carta de porte de Agronasaja que no viene de una compra ni de planta) ·
@@ -12481,7 +12481,8 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
     const ent = num(c.cantidadentregada_sin_rt != null ? c.cantidadentregada_sin_rt : c.cantidadentregada);
     const liq = num(c.cantidadliquidada);
     const tot = lado === "venta" ? num(c.cantidadentregadapendienteliquidar) : ent - liq;
-    const f = {tot, ent, liq, pri: 0, sec: 0, ter: 0, pla: 0, sin: 0, cams: []};
+    // + = entregado pendiente de liquidar · − = adelanto financiero / liquidado de mas (19/10/2026)
+    const f = {tot, pos: Math.max(0, tot), neg: Math.min(0, tot), ent, liq, pri: 0, sec: 0, ter: 0, pla: 0, sin: 0, cams: []};
     if(lado === "venta"){
       const p = partes(c);
       if(p){ f.pri = tot * p.sh.campo; f.ter = tot * p.sh.terceros; f.pla = tot * p.sh.planta; f.sec = f.ter + f.pla; f.cams = p.cams; }
@@ -12489,30 +12490,41 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
     }
     return f;
   }
+  // semilla de soja: todas las variedades juntas en una fila de SOJA (19/10/2026)
+  const SEM_SOJA = "Semilla de soja (variedades)";
+  function esSemSoja(p){ const u = String(p || ""); return pnFamilia(u) === "SOJA" && /SEM\.|\bSEM\b|SEMILLA/i.test(u); }
+  const clave = p => esSemSoja(p) ? SEM_SOJA : p;
   function calcular(){
     const camp = $("pl-campana").value, emp = $("pl-empresa").value;
     const cul = $("pl-cultivo").value, pro = $("pl-producto").value, org = $("pl-org").value;
-    // SOLO GRANOS: la semilla y todo lo que no sea "Grano ..." queda afuera
-    const esGrano = r => /^grano\s/i.test(String(r.producto || "").trim());
+    // Granos, y desde el 19/10/2026 tambien la SEMILLA DE SOJA (Ezequiel: "consideramela como
+    // grano de soja"): va dentro de SOJA en una fila aparte con todas sus variedades.
+    // El resto de las semillas sigue afuera.
+    const esGrano = r => /^grano\s/i.test(String(r.producto || "").trim()) || esSemSoja(r.producto);
     const ok = r => esGrano(r) && !pnEsCompensacion(r) && !pnEsAnulado(r) && (!camp || r.campana === camp) && (!emp || r.empresa === emp);
     const baseC = (DATA_CP || []).filter(ok), baseV = (DATA || []).filter(ok);
     const okF = r => (!cul || pnFamilia(r.producto) === cul) && (!pro || r.producto === pro) && (!org || (r.organizacion || "") === org);
     const compras = baseC.filter(okF), ventas = baseV.filter(okF);
     const D = {};
-    const nuevo = () => ({cTot: 0, vTot: 0, vPri: 0, vSec: 0, vSin: 0, pos: 0, cs: [], vs: []});
+    const nuevo = () => ({cTot: 0, cPos: 0, cNeg: 0, vTot: 0, vPos: 0, vNeg: 0, vPri: 0, vSec: 0, vSin: 0, pos: 0, cs: [], vs: []});
     compras.forEach(c => { const f = fila(c, "compra"); if(Math.abs(f.tot) < 0.05) return;
-      const r = D[c.producto] = D[c.producto] || nuevo(); r.cTot += f.tot; r.cs.push([c, f]); });
+      const k = clave(c.producto), r = D[k] = D[k] || nuevo();
+      r.cTot += f.tot; r.cPos += f.pos; r.cNeg += f.neg; r.cs.push([c, f]); });
     ventas.forEach(c => { const f = fila(c, "venta"); if(Math.abs(f.tot) < 0.05) return;
-      const r = D[c.producto] = D[c.producto] || nuevo();
-      r.vTot += f.tot; r.vPri += f.pri; r.vSec += f.sec; r.vSin += f.sin; r.vs.push([c, f]); });
+      const k = clave(c.producto), r = D[k] = D[k] || nuevo();
+      r.vTot += f.tot; r.vPos += f.pos; r.vNeg += f.neg; r.vPri += f.pri; r.vSec += f.sec; r.vSin += f.sin; r.vs.push([c, f]); });
     Object.values(D).forEach(r => r.pos = r.vTot - r.cTot);   // venta − compra
     return {D, nC: compras.length, nV: ventas.length, baseC, baseV};
   }
   const COLS = [
     {grp: "COMPRA · ENTREGADO PEND. DE LIQUIDAR", cls: "grp-compra", cols: [
-      {k: "cTot", lbl: "Pend. liquidar", main: true, tit: "entregado pendiente de liquidar según Finnegans (con positivos y negativos)"}]},
+      {k: "cTot", lbl: "Pend. liquidar (neto)", main: true, tit: "entregado − liquidado, contrato por contrato, con positivos y negativos"},
+      {k: "cPos", lbl: "Entregado sin liquidar", tit: "contratos con entregado pendiente de liquidar (+)"},
+      {k: "cNeg", lbl: "Adelantos / liq. de más", tit: "contratos liquidados por más de lo entregado: adelantos financieros (−)"}]},
     {grp: "VENTA · ENTREGADO PEND. DE LIQUIDAR", cls: "grp-venta", cols: [
-      {k: "vTot", lbl: "Pend. liquidar", main: true, tit: "entregado pendiente de liquidar según Finnegans (con positivos y negativos)"},
+      {k: "vTot", lbl: "Pend. liquidar (neto)", main: true, tit: "entregado pendiente de liquidar según Finnegans (con positivos y negativos)"},
+      {k: "vPos", lbl: "Entregado sin liquidar", tit: "contratos con entregado pendiente de liquidar (+)"},
+      {k: "vNeg", lbl: "Adelantos / liq. de más", tit: "contratos liquidados por más de lo entregado: adelantos financieros (−)"},
       {k: "vPri", lbl: "Primaria (campo)", tit: "lo que salió de campo propio"},
       {k: "vSec", lbl: "Secundaria (terceros/planta)", tit: "lo que es de terceros (compraventa) o salió de planta"},
       {k: "vSin", lbl: "Sin camión", tit: "contratos sin camiones cargados para saber el origen"}]},
@@ -12559,16 +12571,21 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
     let h = "";
     const grupo = (lado, arr, color) => {
       if(!arr.length) return;
+      const porVar = p === SEM_SOJA;           // semilla de soja: se abre por variedad
+      const gk = c => porVar ? String(c.producto || "—").trim() : (c.organizacion || "—");
       const porOrg = {};
-      arr.forEach(([c, f]) => (porOrg[c.organizacion || "—"] = porOrg[c.organizacion || "—"] || []).push([c, f]));
+      arr.forEach(([c, f]) => (porOrg[gk(c)] = porOrg[gk(c)] || []).push([c, f]));
       const orgs = Object.keys(porOrg).map(o => {
         const fs = porOrg[o].map(x => x[1]);
         const s = k => fs.reduce((a, f) => a + f[k], 0);
-        return {o, cs: porOrg[o], tot: s("tot"), pri: s("pri"), sec: s("sec"), sin: s("sin")};
+        return {o, cs: porOrg[o], tot: s("tot"), pos: s("pos"), neg: s("neg"), pri: s("pri"), sec: s("sec"), sin: s("sin")};
       }).sort((a, b) => b.tot - a.tot);
       const tot = orgs.reduce((a, x) => a + x.tot, 0);
-      const valsLado = x => lado === "compra" ? {cTot: x.tot} : {vTot: x.tot, vPri: x.pri, vSec: x.sec, vSin: x.sin};
-      h += `<tr class="pl-sub"><td class="pn-prod-cell" style="padding-left:34px;font-weight:700;color:${color}">↳ ${lado === "compra" ? "Compra" : "Venta"} · ${orgs.length} ${lado === "compra" ? "proveedor" : "beneficiario"}${orgs.length === 1 ? "" : (lado === "compra" ? "es" : "s")}</td>${celdas(valsLado({tot, pri: orgs.reduce((a, x) => a + x.pri, 0), sec: orgs.reduce((a, x) => a + x.sec, 0), sin: orgs.reduce((a, x) => a + x.sin, 0)}))}</tr>`;
+      const valsLado = x => lado === "compra" ? {cTot: x.tot, cPos: x.pos, cNeg: x.neg} : {vTot: x.tot, vPos: x.pos, vNeg: x.neg, vPri: x.pri, vSec: x.sec, vSin: x.sin};
+      const sm = k => orgs.reduce((a, x) => a + x[k], 0);
+      const queSon = porVar ? (orgs.length === 1 ? "variedad" : "variedades")
+                            : (lado === "compra" ? "proveedor" : "beneficiario") + (orgs.length === 1 ? "" : (lado === "compra" ? "es" : "s"));
+      h += `<tr class="pl-sub"><td class="pn-prod-cell" style="padding-left:34px;font-weight:700;color:${color}">↳ ${lado === "compra" ? "Compra" : "Venta"} · ${orgs.length} ${queSon}</td>${celdas(valsLado({tot, pos: sm("pos"), neg: sm("neg"), pri: sm("pri"), sec: sm("sec"), sin: sm("sin")}))}</tr>`;
       orgs.forEach(x => {
         const kO = p + "|" + lado + "|" + x.o, abO = ORG_ABIERTA.has(kO);
         h += `<tr class="pl-org" data-k="${escapeHtml(kO)}" style="cursor:pointer"><td class="pn-prod-cell" style="padding-left:48px;font-weight:600">${abO ? "▾" : "▸"} ${escapeHtml(x.o)} <span style="font-weight:400;color:var(--muted);font-size:10px">(${x.cs.length} contrato${x.cs.length === 1 ? "" : "s"})</span></td>${celdas(valsLado(x))}</tr>`;
@@ -12576,8 +12593,8 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
         x.cs.slice().sort((a, b) => b[1].tot - a[1].tot).forEach(([c, f]) => {
           const kC = String(c.nombre || c.numerointerno), abC = CTO_ABIERTO.has(kC), hayCam = f.cams.length > 0;
           h += `<tr class="pl-cto${hayCam ? " pl-cto-cam" : ""}" data-k="${escapeHtml(kC)}" title="entregado ${fmt.num(f.ent)} tn · liquidado ${fmt.num(f.liq)} tn"${hayCam ? ' style="cursor:pointer"' : ""}>
-            <td class="pn-prod-cell" style="padding-left:64px;font-size:10.5px;font-weight:400">${hayCam ? (abC ? "▾ " : "▸ ") : ""}#${escapeHtml(String(c.numerointerno || ""))} ${escapeHtml(c.numerodocumentoadicional || "")}</td>
-            ${celdas(lado === "compra" ? {cTot: f.tot} : {vTot: f.tot, vPri: f.pri, vSec: f.sec, vSin: f.sin})}</tr>`;
+            <td class="pn-prod-cell" style="padding-left:64px;font-size:10.5px;font-weight:400">${hayCam ? (abC ? "▾ " : "▸ ") : ""}#${escapeHtml(String(c.numerointerno || ""))} ${escapeHtml(c.numerodocumentoadicional || "")}${porVar ? ` · <span style="color:var(--muted)">${escapeHtml(c.organizacion || "")}</span>` : ""}</td>
+            ${celdas(lado === "compra" ? {cTot: f.tot, cPos: f.pos, cNeg: f.neg} : {vTot: f.tot, vPos: f.pos, vNeg: f.neg, vPri: f.pri, vSec: f.sec, vSin: f.sin})}</tr>`;
           if(abC && hayCam){
             const n = f.cams.length, tn = f.cams.reduce((a, y) => a + y.tn, 0);
             const porO = {campo: 0, terceros: 0, planta: 0}; f.cams.forEach(y => porO[y.o] += y.tn);
@@ -12615,7 +12632,7 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
     let b = "";
     const totFam = {};
     fams.forEach(f => {
-      const ps = porFam[f].sort();
+      const ps = porFam[f].sort((a, b) => (a === SEM_SOJA) - (b === SEM_SOJA) || a.localeCompare(b, "es"));
       const t = suma(ps.map(p => D[p])); totFam[f] = t;
       const ab = FAM_ABIERTA.has(f);
       b += `<tr class="pn-grupo pl-fam" data-fam="${escapeHtml(f)}" style="cursor:pointer"><td class="pn-prod-cell">${ab ? "▾" : "▸"} TOTAL ${escapeHtml(f)}
@@ -12636,6 +12653,8 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
         <div class="of-de"><span>Venta pend. liq.</span><span style="font-weight:700">${fmt.num(t.vTot)} Tn</span></div>
         <div class="of-de" style="font-size:11px;color:var(--muted)"><span>campo ${fmt.num(t.vPri)}</span><span>terceros/planta ${fmt.num(t.vSec)}</span></div>
         <div class="of-de"><span>Compra pend. liq.</span><span style="font-weight:700">${fmt.num(t.cTot)} Tn</span></div>
+        ${f === "SOJA" && D[SEM_SOJA] ? `<div class="of-de" style="font-size:11px;color:var(--muted)"><span>de eso, semilla de soja</span><span>${fmt.num(D[SEM_SOJA].cTot)} Tn</span></div>` : ""}
+        <div class="of-de" style="font-size:11px;color:var(--muted)"><span>adelantos (−): venta ${fmt.num(t.vNeg)}</span><span>compra ${fmt.num(t.cNeg)}</span></div>
       </div>`; }).join("");
   }
   const toggle = (set, k) => { set.has(k) ? set.delete(k) : set.add(k); render(); };
