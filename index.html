@@ -12653,7 +12653,7 @@ moduloPrecios("pv2", PAYLOAD.pilot, "venta", "Cliente",
         <div class="of-de"><span>Venta pend. liq.</span><span style="font-weight:700">${fmt.num(t.vTot)} Tn</span></div>
         <div class="of-de" style="font-size:11px;color:var(--muted)"><span>campo ${fmt.num(t.vPri)}</span><span>terceros/planta ${fmt.num(t.vSec)}</span></div>
         <div class="of-de"><span>Compra pend. liq.</span><span style="font-weight:700">${fmt.num(t.cTot)} Tn</span></div>
-        ${f === "SOJA" && D[SEM_SOJA] ? `<div class="of-de" style="font-size:11px;color:var(--muted)"><span>de eso, semilla de soja</span><span>${fmt.num(D[SEM_SOJA].cTot)} Tn</span></div>` : ""}
+        ${f === "SOJA" && D[SEM_SOJA] ? `<div class="of-de" style="font-size:11.5px"><span>· soja grano</span><span style="font-weight:600">${fmt.num(t.cTot - D[SEM_SOJA].cTot)} Tn</span></div><div class="of-de" style="font-size:11.5px"><span>· soja semilla (variedades)</span><span style="font-weight:600">${fmt.num(D[SEM_SOJA].cTot)} Tn</span></div>` : ""}
         <div class="of-de" style="font-size:11px;color:var(--muted)"><span>adelantos (−): venta ${fmt.num(t.vNeg)}</span><span>compra ${fmt.num(t.cNeg)}</span></div>
       </div>`; }).join("");
   }
