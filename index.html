@@ -9664,6 +9664,14 @@ function pnEsAnulado(r){
   return chk(r.estadoanulacion) || chk(r.estado);
 }
 
+// Campaña 26/27 (pedido Ezequiel 20/10/2026): la produccion viene separada en maiz 1ra
+// (temprano) y 2da (tardio + segunda), pero por ahora TODOS los contratos de maiz de la
+// 26/27 van a "Grano Maíz 1ra". Mas adelante avisa para separarlos.
+function pnProdPos(r){
+  const p = String(r.producto || "");
+  if(/26\s*[-\/]\s*27/.test(String(r.campana || "")) && /^grano\s+ma[ií]z\s*$/i.test(p.trim())) return "Grano Maíz 1ra";
+  return p;
+}
 function pnFiltrarOps(){
   // DATA_CP y DATA ya vienen con maizSplit aplicado al inicio (Grano Maíz 1ra/2da)
   const c = document.getElementById("pn-campana").value;
@@ -9675,9 +9683,10 @@ function pnFiltrarOps(){
     if(e && r.empresa !== e) return false;
     return true;
   };
+  const aPos = r => { const p = pnProdPos(r); return p === r.producto ? r : Object.assign({}, r, {producto: p}); };
   return {
-    compras: (DATA_CP || []).filter(filtra),
-    ventas:  (DATA    || []).filter(filtra),
+    compras: (DATA_CP || []).filter(filtra).map(aPos),
+    ventas:  (DATA    || []).filter(filtra).map(aPos),
   };
 }
 
@@ -10534,7 +10543,7 @@ function pnctRender(){
     famSel.value = (fams.length === 1 && opts.includes(fams[0])) ? fams[0] : '';
   }
   let rowsSinOrg = src.filter(c => {
-    if(set && !set.has(c.producto)) return false;
+    if(set && !set.has(c.producto) && !set.has(pnProdPos(c))) return false;
     if(!set && PNCT.fam && pnFamilia(c.producto) !== PNCT.fam) return false;
     // la semilla DM va aparte (manual), pero los "SEMILLA X" son grano y SÍ se muestran
     if(PNCT.exclSem && !pnEsSemillaGrano(c.producto) && (c.producto||'').toLowerCase().includes('sem')) return false;
