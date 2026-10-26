@@ -16050,7 +16050,14 @@ function ctRender(){
       const liq  = (m.liq == null) ? liqF : !!m.liq;    // salvo que lo marques a mano
       const envF = env > 0.5;
       const enviado = (m.env == null) ? envF : !!m.env;
-      const disp = (liq || enviado) ? 0 : Math.max(0, kg - kgliq - env);
+      // Lo enviado a medias tambien deja saldo: antes cualquier envio bloqueaba el
+      // CTG entero y el contrato 1100 mostraba 29.740 kg disponibles con 63,2 tn
+      // pendientes (dos CP mandadas por 10.000 y 15.000 de ~29.000 cada una).
+      // Se resta el mayor entre lo liquidado y lo enviado, no la suma: lo que se
+      // manda despues aparece liquidado en Finnegans y son los mismos kilos.
+      // Solo el tilde puesto a mano bloquea el CTG entero.
+      const envKg = (m.env === false) ? 0 : env;
+      const disp = (liq || m.env === true) ? 0 : Math.max(0, kg - Math.max(kgliq, envKg));
       return {...x, kg, kgliq, env, liq, liqF, parcial, enviado, envF, manual: m, disp};
     }).sort((a,b) => (b.disp>0) - (a.disp>0) || String(a.fecha||"").localeCompare(String(b.fecha||"")));
   }
