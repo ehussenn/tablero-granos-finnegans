@@ -11104,7 +11104,6 @@ document.addEventListener('click', (e) => {
 
   const COLS = [
     ["organizacion", "Organización"],
-    ["contrato",     "Contrato"],
     ["producto",     "Cultivo"],
     ["campana",      "Campaña"],
     ["tn",           "TN", 1],
@@ -11166,7 +11165,7 @@ document.addEventListener('click', (e) => {
       return "<tr>" + COLS.map(celda).join("") + "</tr>";
     }).join("");
     t.querySelector("tfoot").innerHTML = `<tr class="pn-total">
-      <td colspan="4">TOTAL (${COB.length} operaciones · ${nCerradas} con salida cargada)</td>
+      <td colspan="3">TOTAL (${COB.length} operaciones · ${nCerradas} con salida cargada)</td>
       <td class="num">${n0(sTn)}</td><td class="num"></td>
       <td class="num">${n0(sE)}</td><td class="num"></td>
       <td class="num">${nCerradas ? n0(sS) : "—"}</td>
