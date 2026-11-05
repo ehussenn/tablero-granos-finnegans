@@ -2560,10 +2560,10 @@ window.apiFetch = function(path, opts){
           <thead></thead><tbody></tbody><tfoot></tfoot>
         </table></div>
         <div style="margin-top:10px;font-size:11.5px;color:var(--muted)">
-          💡 <b>Precio de entrada</b>: el precio fijado del contrato en Finnegans (en USD/tn).
-          <b>Precio de salida</b>: lo cargás vos con un click en la celda (violeta = cargado a mano).
-          <b>Total entrada</b> = tn × precio entrada · <b>Total salida</b> = tn × precio salida ·
-          <b>Resultado</b> = (salida − entrada) × tn.
+          💡 <b>Precio de venta</b>: lo cargás vos con un click en la celda (violeta = cargado a mano).
+          <b>Precio de recompra</b>: el precio al que se recompró (en USD/tn).
+          <b>Total venta</b> = tn × precio venta · <b>Total recompra</b> = tn × precio recompra ·
+          <b>Resultado</b> = (venta − recompra) × tn.
           Para agregar o sacar operaciones se edita <code>data/coberturas.json</code>.
         </div>
       </div>
@@ -11107,10 +11107,11 @@ document.addEventListener('click', (e) => {
     ["producto",     "Cultivo"],
     ["campana",      "Campaña"],
     ["tn",           "TN", 1],
-    ["pe",           "Precio entrada USD/tn", 1],
-    ["totE",         "Total entrada USD", 1],
-    ["ps",           "Precio salida USD/tn", 1, "salida"],
-    ["totS",         "Total salida USD", 1],
+    // 05/11/2026 (Ezequiel): primero la venta (salida) y despues la recompra (entrada)
+    ["ps",           "Precio venta USD/tn", 1, "salida"],
+    ["totS",         "Total venta USD", 1],
+    ["pe",           "Precio recompra USD/tn", 1],
+    ["totE",         "Total recompra USD", 1],
     ["neto",         "Resultado USD", 1],
   ];
 
@@ -11167,8 +11168,8 @@ document.addEventListener('click', (e) => {
     t.querySelector("tfoot").innerHTML = `<tr class="pn-total">
       <td colspan="3">TOTAL (${COB.length} operaciones · ${nCerradas} con salida cargada)</td>
       <td class="num">${n0(sTn)}</td><td class="num"></td>
-      <td class="num">${n0(sE)}</td><td class="num"></td>
-      <td class="num">${nCerradas ? n0(sS) : "—"}</td>
+      <td class="num">${nCerradas ? n0(sS) : "—"}</td><td class="num"></td>
+      <td class="num">${n0(sE)}</td>
       <td class="num" style="color:${sN >= 0 ? "#7dd3a0" : "#fca5a5"}">${nCerradas ? n0(sN) : "—"}</td></tr>`;
     const card = (lbl, val, sub, col) => `<div style="background:#fff;border:1px solid var(--line);
         border-left:5px solid ${col};border-radius:11px;padding:12px 14px">
@@ -11177,7 +11178,7 @@ document.addEventListener('click', (e) => {
       <div style="font-size:11.5px;color:var(--muted)">${sub}</div></div>`;
     document.getElementById("cob-kpis").innerHTML =
       card("Toneladas cubiertas", n0(sTn) + " tn", `${COB.length} operación(es)`, "#12B074") +
-      card("Total entrada", "USD " + n0(sE), sTn ? `${n2(sE / sTn)} USD/tn promedio` : "", "#2b5fb3") +
+      card("Total recompra", "USD " + n0(sE), sTn ? `${n2(sE / sTn)} USD/tn promedio` : "", "#2b5fb3") +
       card("Resultado", nCerradas ? "USD " + n0(sN) : "—",
            nCerradas ? `${nCerradas} de ${COB.length} con precio de salida` : "falta cargar el precio de salida",
            sN >= 0 ? "#1a7a3c" : "#b3372b");
