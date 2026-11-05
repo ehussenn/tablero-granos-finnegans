@@ -19266,6 +19266,10 @@ async function mbAutoBackup(forceNow){
     Object.keys(ent).forEach(k => { if(ent[k] >= mx * 0.2 && ent[k] > 0 && (v === null || k > v)) v = k; });
     return v;
   }
+  /* PRECIO DE LA PRODUCCION PROPIA (pedido usuario 05/11/2026): todo el trigo a 220 USD/tn.
+     Con precio, la produccion entra al promedio de COMPRA como un proveedor mas
+     (las "Tn compradas" siguen siendo solo contratos). Familia -> USD/tn. */
+  const PX_PROD_USD = {"TRIGO": 220};
   function produccion(){
     const out = new Map();
     if(val("px2-org") || val("px2-corr") || val("px2-tipo") || val("px2-monori") || val("px2-q").trim()) return out;
@@ -19306,7 +19310,7 @@ async function mbAutoBackup(forceNow){
 
     /* agrupado por cultivo + campaña, las dos puntas en la misma fila */
     const g = new Map();
-    const nueva = (cult, camp) => ({cult, camp, prod: 0, c:{tn:0,imp:0,n:0,cs:[],suc:[]}, v:{tn:0,imp:0,n:0,cs:[],suc:[]}});
+    const nueva = (cult, camp) => ({cult, camp, prod: 0, pp:{tn:0,imp:0}, c:{tn:0,imp:0,n:0,cs:[],suc:[]}, v:{tn:0,imp:0,n:0,cs:[],suc:[]}});
     const sumar = (rows, lado) => rows.forEach(r => {
       if(!pasa(r)) return;
       const antes = SUCIOS.length;
@@ -19328,9 +19332,16 @@ async function mbAutoBackup(forceNow){
       const [cult, camp] = k.split("||");
       if(!g.has(k)) g.set(k, nueva(cult, camp));
       g.get(k).prod += tn;
+      const pu = PX_PROD_USD[pnFamilia(cult)];
+      if(pu){
+        const tcHoy = tcBna(new Date().toISOString().slice(0, 10));
+        g.get(k).pp.tn += tn; g.get(k).pp.imp += tn * (mon === "usd" ? pu : pu * tcHoy);
+      }
     });
 
     const px = a => a.tn > 0.001 ? a.imp / a.tn : null;
+    // precio de compra = contratos + produccion propia con precio (05/11/2026)
+    const pxC = f => (f.c.tn + f.pp.tn) > 0.001 ? (f.c.imp + f.pp.imp) / (f.c.tn + f.pp.tn) : null;
     const filas = [...g.values()].filter(f => f.prod > 0.05 || f.c.tn > 0.001 || f.v.tn > 0.001 || f.c.suc.length || f.v.suc.length)
       .sort((x,y) => y.camp.localeCompare(x.camp) || (y.prod + y.c.tn + y.v.tn) - (x.prod + x.c.tn + x.v.tn));
 
@@ -19339,19 +19350,20 @@ async function mbAutoBackup(forceNow){
        de que lado se esta mirando */
     thead.innerHTML = `<tr>
       <th>Cultivo</th><th>Campaña</th>
-      <th class="num px-c" title="producción propia (Posición Granaria), por ahora sin precio">Tn producción</th>
-      <th class="num px-c">Tn compradas</th><th class="num px-c">${uni}/tn compra</th>
+      <th class="num px-c" title="producción propia (Posición Granaria). El trigo va a 220 USD/tn y entra al precio de compra">Tn producción</th>
+      <th class="num px-c">Tn compradas</th><th class="num px-c" title="promedio ponderado de los contratos de compra más la producción propia que tiene precio (trigo a 220 USD/tn)">${uni}/tn compra</th>
       <th class="num px-v">Tn vendidas</th><th class="num px-v">${uni}/tn venta</th>
       <th class="num">Diferencia ${uni}/tn</th><th class="num">Margen sobre lo vendido</th></tr>`;
 
     const cuerpo = [];
-    let T = {ctn:0, cimp:0, vtn:0, vimp:0, prod:0};
+    let T = {ctn:0, cimp:0, vtn:0, vimp:0, prod:0, ptn:0, pimp:0};
     filas.forEach(f => {
-      const pc = px(f.c), pv = px(f.v);
+      const pc = pxC(f), pv = px(f.v);
       const dif = (pc != null && pv != null) ? pv - pc : null;
       /* el margen se mide sobre lo VENDIDO: es lo unico que ya tiene las dos puntas */
       const marg = (dif != null) ? dif * f.v.tn : null;
       T.ctn += f.c.tn; T.cimp += f.c.imp; T.vtn += f.v.tn; T.vimp += f.v.imp; T.prod += f.prod;
+      T.ptn += f.pp.tn; T.pimp += f.pp.imp;
       const k = f.cult + "||" + f.camp;
       const cls = dif == null ? "" : (dif >= 0 ? "px-pos" : "px-neg");
       cuerpo.push(`<tr class="px-fila" data-k="${esc(k)}">
@@ -19371,7 +19383,10 @@ async function mbAutoBackup(forceNow){
           `<div style="padding:6px 10px;font-size:10.5px;color:#9a3412;background:#fff7ed;border-top:1px solid var(--line)">
              <b>Afuera del promedio (datos sucios):</b> ${a.suc.map(x => `${esc(x.r.nombre || "—")} · ${esc((x.r.organizacion || "").slice(0, 28))} · ${n1(x.tn)} tn · ${x.pUsd > 0 ? n2(x.pUsd) + " USD/tn" : "$1"} — ${esc(x.mot)}`).join("<br>")}</div>`;
         const filaProd = (f.prod > 0.05)
-          ? `<div style="padding:7px 10px;font-size:11.5px;background:#f0fdf4;border-bottom:1px solid var(--line)"><b>PRODUCCIÓN PROPIA</b> · ${n1(f.prod)} tn · <span style="color:var(--muted)">sin precio por ahora (no entra al promedio)</span></div>` : "";
+          ? `<div style="padding:7px 10px;font-size:11.5px;background:#f0fdf4;border-bottom:1px solid var(--line)"><b>PRODUCCIÓN PROPIA</b> · ${n1(f.prod)} tn · ` +
+            (f.pp.tn > 0.001
+              ? `${n2(f.pp.imp / f.pp.tn)} ${uni}/tn · <span style="color:var(--muted)">entra al promedio de compra: ${n1(f.c.tn + f.pp.tn)} tn a <b>${n2(pc)} ${uni}/tn</b></span>`
+              : `<span style="color:var(--muted)">sin precio por ahora (no entra al promedio)</span>`) + `</div>` : "";
         const bloque = (titulo, a, color) => {
           if(!a.cs.length)
             return `<div class="px-bloque"><div class="px-bloque-tit" style="background:${color}">${titulo}</div>${titulo === "COMPRA" ? filaProd : ""}
@@ -19404,7 +19419,7 @@ async function mbAutoBackup(forceNow){
     document.querySelector("#px2-tabla tbody").innerHTML =
       cuerpo.join("") || '<tr><td colspan="9" style="padding:18px;text-align:center;color:var(--muted)">Sin contratos con precio cerrado para estos filtros</td></tr>';
 
-    const PC = T.ctn > 0.001 ? T.cimp/T.ctn : null, PV = T.vtn > 0.001 ? T.vimp/T.vtn : null;
+    const PC = (T.ctn + T.ptn) > 0.001 ? (T.cimp + T.pimp)/(T.ctn + T.ptn) : null, PV = T.vtn > 0.001 ? T.vimp/T.vtn : null;
     const DIF = (PC != null && PV != null) ? PV - PC : null;
     document.querySelector("#px2-tabla tfoot").innerHTML = `<tr>
       <td>TOTAL</td><td>${filas.length} fila(s)</td>
@@ -19420,9 +19435,12 @@ async function mbAutoBackup(forceNow){
          <div style="font-size:22px;font-weight:700;color:${col};margin:2px 0 1px">${v}</div>
          <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
     document.getElementById("px2-kpis").innerHTML =
-      card("Producción propia", n1(T.prod) + " tn", "como un proveedor más de la compra · sin precio por ahora", "#0A7A4F") +
+      card("Producción propia", n1(T.prod) + " tn", T.ptn > 0.001
+             ? `como un proveedor más de la compra · ${n1(T.ptn)} tn con precio (trigo a 220 USD/tn)`
+             : "como un proveedor más de la compra · sin precio por ahora", "#0A7A4F") +
       card("Precio promedio de COMPRA", PC != null ? uni + " " + n2(PC) : "—",
-           `${n1(T.ctn)} tn · ponderado por tonelada`, "#C0392B") +
+           T.ptn > 0.001 ? `${n1(T.ctn)} tn compradas + ${n1(T.ptn)} tn producción · ponderado por tonelada`
+                         : `${n1(T.ctn)} tn · ponderado por tonelada`, "#C0392B") +
       card("Precio promedio de VENTA", PV != null ? uni + " " + n2(PV) : "—",
            `${n1(T.vtn)} tn · ponderado por tonelada`, "#0D9963") +
       card("Diferencia por tonelada", DIF != null ? (DIF>=0?"+":"") + uni + " " + n2(DIF) : "—",
