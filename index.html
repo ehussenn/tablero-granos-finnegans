@@ -19293,10 +19293,10 @@ async function mbAutoBackup(forceNow){
     Object.keys(ent).forEach(k => { if(ent[k] >= mx * 0.2 && ent[k] > 0 && (v === null || k > v)) v = k; });
     return v;
   }
-  /* PRECIO DE LA PRODUCCION PROPIA (pedido usuario 05/11/2026): todo el trigo a 220 USD/tn.
+  /* PRECIO DE LA PRODUCCION PROPIA (pedido usuario 05/11/2026): todo el trigo a 200 USD/tn.
      Con precio, la produccion entra al promedio de COMPRA como un proveedor mas
      (las "Tn compradas" siguen siendo solo contratos). Familia -> USD/tn. */
-  const PX_PROD_USD = {"TRIGO": 220};
+  const PX_PROD_USD = {"TRIGO": 200};
   function produccion(){
     const out = new Map();
     if(val("px2-org") || val("px2-corr") || val("px2-tipo") || val("px2-monori") || val("px2-q").trim()) return out;
@@ -19377,8 +19377,8 @@ async function mbAutoBackup(forceNow){
        de que lado se esta mirando */
     thead.innerHTML = `<tr>
       <th>Cultivo</th><th>Campaña</th>
-      <th class="num px-c" title="producción propia (Posición Granaria). El trigo va a 220 USD/tn y entra al precio de compra">Tn producción</th>
-      <th class="num px-c">Tn compradas</th><th class="num px-c" title="promedio ponderado de los contratos de compra más la producción propia que tiene precio (trigo a 220 USD/tn)">${uni}/tn compra</th>
+      <th class="num px-c" title="producción propia (Posición Granaria). El trigo va a 200 USD/tn y entra al precio de compra">Tn producción</th>
+      <th class="num px-c">Tn compradas</th><th class="num px-c" title="promedio ponderado de los contratos de compra más la producción propia que tiene precio (trigo a 200 USD/tn)">${uni}/tn compra</th>
       <th class="num px-v">Tn vendidas</th><th class="num px-v">${uni}/tn venta</th>
       <th class="num">Diferencia ${uni}/tn</th><th class="num">Margen sobre lo vendido</th></tr>`;
 
@@ -19463,7 +19463,7 @@ async function mbAutoBackup(forceNow){
          <div style="font-size:11px;color:var(--muted);line-height:1.35">${hint}</div></div>`;
     document.getElementById("px2-kpis").innerHTML =
       card("Producción propia", n1(T.prod) + " tn", T.ptn > 0.001
-             ? `como un proveedor más de la compra · ${n1(T.ptn)} tn con precio (trigo a 220 USD/tn)`
+             ? `como un proveedor más de la compra · ${n1(T.ptn)} tn con precio (trigo a 200 USD/tn)`
              : "como un proveedor más de la compra · sin precio por ahora", "#0A7A4F") +
       card("Precio promedio de COMPRA", PC != null ? uni + " " + n2(PC) : "—",
            T.ptn > 0.001 ? `${n1(T.ctn)} tn compradas + ${n1(T.ptn)} tn producción · ponderado por tonelada`
