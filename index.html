@@ -3935,10 +3935,7 @@ const TABLE_COLS = [
    tip:'Liquidaciones ya emitidas por la cerealera que faltan pasar al ERP. Total por cerealera+grano (se repite en cada contrato del grupo). Snapshot Finnegans.'},
   {k:'_difLiq',                     lbl:'Dif. s/Cerealera',num:true, sum:false,
    tip:'Tn Pdte Liquidar de esta fila MENOS Liq. s/Pasar de la cerealera (regla 25/08): lo que falta que la cerealera liquide, descontando lo ya emitido sin pasar.'},
-  {k:'cantidadcertificadaneta',     lbl:'Tn Certif.',      num:true, sum:true},
-  {k:'cantidadpendientecertificar', lbl:'Tn Pdte Cert.',   num:true, sum:true},
-  {k:'fechaminentrega',             lbl:'Entrega Desde',   num:false},
-  {k:'fechamaxentrega',             lbl:'Entrega Hasta',   num:false},
+  // Tn Certif. / Tn Pdte Cert. / Entrega Desde / Entrega Hasta: sacadas (pedido usuario 10/11/2026)
   // Campaña / Corredor / Puerto: sacadas del detalle de VENTA (regla usuario 19/08 — no suman)
   // Estado: sacada (regla usuario 24/08) — los anulados se ocultan con el toggle de la tabla
 ];
