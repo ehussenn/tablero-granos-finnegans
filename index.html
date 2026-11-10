@@ -15899,6 +15899,26 @@ function ctRender(){
 
   const CT = {};
   ((PAYLOAD.ctgliq||{}).contratos||[]).forEach(c => { if(c.lado === "compra") CT[String(c.num)] = c; });
+  // 10/11/2026: camiones recien cargados (#1267 La Adelaida). La trazabilidad del DW
+  // todavia no tiene la carta de porte y el contrato salia "sin CTG", pero Finnegans
+  // ya los tiene vinculados (TrasladosPendientesFromContrato = ctg_pend_compra). Si el
+  // contrato no trae CTG de la trazabilidad, se usan esos.
+  {
+    const TPC = (PAYLOAD.ctg_pend_compra || {}).contratos || {};
+    Object.values(CT).forEach(c => {
+      if((c.ctgs || []).length) return;
+      const cams = TPC[String(c.cto || "").trim()] || [];
+      if(!cams.length) return;
+      c.ctgs = cams.map(x => {
+        const tn = Number(x.tn) || 0, disp = Number(x.disp) || 0;
+        return {ctg: x.ctg, cp: x.cp, fecha: x.fecha, tn, tn_liq: Math.max(0, tn - disp), falta: disp,
+                doc: "", est: "pend", desv: false, liqs: [], dest: x.dest || "", flete: x.flete || "",
+                otro: x.dest || "", fuente: "finnegans"};
+      });
+      c.cam_n = c.ctgs.length;
+      c.cam_tn = c.ctgs.reduce((a, x) => a + x.tn, 0);
+    });
+  }
   const EX = {};
   (PAYLOAD.compra||[]).forEach(r => { const k = String(r.numerointerno||""); if(k) EX[k] = r; });
   const VEN = PAYLOAD.vendedores || {por_cuit:{}, por_nombre:{}, comerciales:[]};
