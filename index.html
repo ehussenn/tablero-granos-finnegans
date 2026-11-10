@@ -1364,8 +1364,8 @@ window.apiFetch = function(path, opts){
             <option value="canje">Para canje (aplicar en cuenta)</option>
           </select></div>
           <div><label>ABRIR EL CORREO EN</label><select id="el-via">
+            <option value="owa">Outlook web de Agronasaja (cuenta de la empresa)</option>
             <option value="eml">Outlook de la compu (va todo cargado)</option>
-            <option value="owa">Outlook de Agronasaja (navegador)</option>
             <option value="gmail">Gmail (navegador)</option>
             <option value="mailto">El programa de correo de la compu</option>
           </select></div>
@@ -17235,11 +17235,13 @@ function ctRender(){
       .join("");
     const fijos = localStorage.getItem("el_fijos") || "";
     if(fijos) el("el-cc").value = fijos;
-    // 03/11/2026: Outlook de la compu pasa a ser lo de siempre. A quien venia con
-    // Outlook web se lo cambia una sola vez; despues manda lo que elija.
+    // 10/11/2026: vuelve Outlook WEB como lo de siempre (Ezequiel: el Outlook de la compu
+    // esta logueado con su cuenta personal; el correo tiene que salir con la de la empresa).
+    // A quien venia con el de la compu se lo cambia una sola vez; despues manda lo que elija.
+    // (El 03/11 se habia pasado al .eml del Outlook de escritorio.)
     let via = localStorage.getItem("el_via");
-    if(!localStorage.getItem("el_via_eml") && (!via || via === "owa")){
-      via = "eml"; localStorage.setItem("el_via", via); localStorage.setItem("el_via_eml", "1");
+    if(!localStorage.getItem("el_via_owa2") && (!via || via === "eml")){
+      via = "owa"; localStorage.setItem("el_via", via); localStorage.setItem("el_via_owa2", "1");
     }
     if(via) el("el-via").value = via;
     ponerCond(false);
