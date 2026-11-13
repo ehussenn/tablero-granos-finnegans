@@ -974,6 +974,7 @@ window.apiFetch = function(path, opts){
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-precios" data-title="Precios Compra vs Venta · a cuánto compraste y a cuánto vendiste">💵 Precios Compra vs Venta</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-ctgliq" data-title="CTG sin Liquidar · qué carta de porte falta liquidar o vincular">🧾 CTG sin Liquidar</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-entreg" data-title="Entregas y liquidaciones · comprador vs Finnegans vs ARCA">🚚 Comprador vs Finnegans</a>
+          <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-extent" data-title="Entregas por Extranet · lo que dice cada comprador vs lo que tiene Agronasaja">📦 Entregas por Extranet</a>
           <a class="nav-item" data-go-tab="posicion" data-go-sub="pn-taqueo" data-title="Taqueo CTG">🔎 Taqueo CTG</a>
         </div>
       </div>
@@ -2485,6 +2486,7 @@ window.apiFetch = function(path, opts){
       <button class="subtab" data-sub="pn-trackeo">🎯 Trackeo Camiones</button>
       <button class="subtab" data-sub="pn-ctgliq">🧾 CTG sin Liquidar</button>
       <button class="subtab" data-sub="pn-entreg">🚚 Comprador vs Finnegans</button>
+      <button class="subtab" data-sub="pn-extent">📦 Entregas por Extranet</button>
       <button class="subtab" data-sub="pn-precios">💵 Precios Compra vs Venta</button>
       <button class="subtab" data-sub="pn-taqueo">🔎 Taqueo CTG</button>
     </div>
@@ -2897,6 +2899,59 @@ window.apiFetch = function(path, opts){
         </div>
       </div>
     </div><!-- /subpanel pn-entreg -->
+
+    <!-- ===== SUBPANEL: Entregas por Extranet (pedido Ezequiel 13/11/2026) ===== -->
+    <div class="subpanel" data-sub-panel="pn-extent">
+      <style>#ex-tabla td:first-child,#ex-tabla th:first-child{white-space:normal;min-width:240px;max-width:430px}
+             #ex-tabla td.num,#ex-tabla th.num{white-space:nowrap}</style>
+      <div class="section" style="background:linear-gradient(135deg,#7c2d12 0%,#c2410c 100%);color:#fff;border:none">
+        <h3 style="color:#fff;margin:0">📦 Entregas por Extranet · lo que dice cada comprador vs lo que tiene Agronasaja
+          <span style="background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;margin-left:10px;vertical-align:middle">
+            CTG por CTG · campaña 25-26 en adelante · ventas</span></h3>
+        <div style="font-size:12px;opacity:.92;margin-top:4px;line-height:1.5">
+          Cada CTG entregado según <b>la extranet</b> (portal del comprador: Cargill, LDC, ACA, Bunge, FYO; y <b>Williams</b>
+          para los compradores que no tienen portal) contra <b>lo que tiene Agronasaja</b> en Finnegans. Lo de Agronasaja se abre por
+          <b>origen</b> del camión: <b>producción propia</b> (salió del campo), <b>planta</b> (acopio, planta, depósito o elevador) o
+          <b>terceros</b> (compraventa o camión comprado a un productor). Todo en <b>kilos</b>.
+          Las extranets se consultan <b>a pedido</b> (botón «Actualizar portales» en Comprador vs Finnegans).
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center" id="ex-chips"></div>
+      </div>
+      <div class="section">
+        <div id="ex-general" style="margin:0 0 12px"></div>
+        <div id="ex-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:0 0 14px"></div>
+        <div class="filterbar" style="margin:0 0 12px">
+          <div><label>EXTRANET</label><select id="ex-ext"><option value="">Todas</option></select></div>
+          <div><label>CAMPAÑA</label><select id="ex-camp"></select></div>
+          <div><label>CULTIVO</label><select id="ex-prod"><option value="">Todos</option></select></div>
+          <div><label>ORIGEN</label><select id="ex-orig">
+            <option value="">Todos</option><option value="campo">Producción propia</option>
+            <option value="planta">Planta</option><option value="terceros">Terceros</option></select></div>
+          <div><label>SITUACIÓN</label><select id="ex-sit">
+            <option value="">Todos</option><option value="prob">Solo diferencias</option>
+            <option value="ok">OK (mismos kilos)</option><option value="dif">Diferencia de kilos</option>
+            <option value="solo_ext">Está en la extranet y no en Agronasaja</option>
+            <option value="solo_agn">Está en Agronasaja y no en la extranet</option>
+            <option value="nocam">No es un camión (transferencia o certificado)</option></select></div>
+          <div><label>BUSCAR</label><input id="ex-txt" placeholder="CTG / CP / contrato / comprador"
+            style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);min-width:170px"></div>
+          <button class="clear" id="ex-limpiar">Limpiar</button>
+          <button class="clear" id="ex-abrir">⬍ Abrir todas</button>
+          <button class="clear" id="ex-cerrar">⇢ Cerrar todas</button>
+          <button class="clear" id="ex-excel">⬇ Exportar a Excel</button>
+          <button class="clear" id="ex-copiar" title="Copia los CTG de la tabla, uno por línea">⧉ Copiar CTGs</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px" id="ex-info"></span>
+        </div>
+        <div class="tbl-wrap" style="max-height:720px">
+          <table id="ex-tabla" style="font-size:12px"><thead></thead><tbody></tbody></table>
+        </div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.55">
+          <b>Kg extranet</b>: el peso que informa el portal del comprador (o la balanza de Williams). <b>Kg Agronasaja</b>: el del traslado en Finnegans.
+          Más de 100 kg de diferencia en un camión es <b>diferencia de kilos</b>. Los camiones que Williams da en posición o rechazados no suman como entregados en la extranet.
+          El origen sale de la trazabilidad de Finnegans; si el camión no está ahí queda como «sin dato».
+        </div>
+      </div>
+    </div><!-- /subpanel pn-extent -->
 
     <!-- ===== SUBPANEL: CTG sin liquidar (pedido usuario 14/09) ===== -->
     <div class="subpanel" data-sub-panel="pn-ctgliq">
@@ -17813,6 +17868,218 @@ function ctRender(){
   document.querySelectorAll('[data-go-sub="pn-entreg"], .subtab[data-sub="pn-entreg"]')
     .forEach(a => a.addEventListener("click", () => setTimeout(() => { _dib = true; render(); }, 60)));
   setTimeout(() => { if(!_dib) render(); }, 900);
+})();
+
+/* ============================================================
+   ====  ENTREGAS POR EXTRANET  (pedido Ezequiel 13/11/2026)  ====
+   Lo que cada extranet (portal del comprador, o Williams para los
+   compradores sin portal) dice que se entrego, CTG por CTG, contra
+   lo que tiene Agronasaja (Finnegans), con lo de Agronasaja abierto
+   por origen: produccion propia (campo) / planta / terceros.
+   Fuentes: PAYLOAD.entreg (cruce a pedido, scripts/entregadores_cruce.py)
+   y PAYLOAD.traza (origen y campaña de cada CTG). Mismo criterio de
+   origen que la vista de pendientes de liquidar (plInit).
+   ============================================================ */
+(function exInit(){
+  const E = PAYLOAD.entreg || {};
+  const $ = id => document.getElementById(id);
+  const t = $("ex-tabla");
+  if(!t) return;
+  const esc = x => escapeHtml(String(x == null ? "" : x));
+  const kg = x => fmt.num(Math.round(x || 0));
+  const pct = (a, b) => b > 0 ? (Math.round(a / b * 1000) / 10).toLocaleString("es-AR") + "%" : "—";
+  const iso = s => { s = String(s || "");
+    let m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s); return m ? `${m[3]}-${m[2]}-${m[1]}` : ""; };
+  const fec = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || "")); return m ? `${m[3]}/${m[2]}/${m[1]}` : esc(s); };
+  const cult = p => { const s = String(p || "").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    if(/SOJA/.test(s)) return "Soja"; if(/PISING/.test(s)) return "Maíz pisingallo"; if(/MAIZ/.test(s)) return "Maíz";
+    if(/TRIGO/.test(s)) return "Trigo"; if(/GIRASOL/.test(s)) return "Girasol"; if(/SORGO/.test(s)) return "Sorgo";
+    if(/CEBADA/.test(s)) return "Cebada"; if(/ARVEJA/.test(s)) return "Arveja"; if(/MANI/.test(s)) return "Maní";
+    return s ? s.charAt(0) + s.slice(1).toLowerCase() : "—"; };
+  const PORTALES = ["Cargill", "LDC", "ACA", "Bunge", "FYO"];
+  const ORDEN_EX = PORTALES.concat(["Williams"]);
+  const NOM_EX = {Williams: "Williams (entregador)"};
+  const RX_PLANTA = /ACOPIO|PLANTA|DEP[OÓ]SITO|ELEVADOR/i;
+  const ORIG = {campo: "Producción propia", planta: "Planta", terceros: "Terceros", "": "Sin dato"};
+  const TZ = {};
+  (PAYLOAD.traza || []).forEach(x => { if(x.ctg) TZ[String(x.ctg)] = x; });
+  function origen(x){
+    if(!x) return "";
+    if(String(x.doc_venta || "").startsWith("TRAS-VTA-CV")) return "terceros";
+    if(x.contrato_compra || x.doc_compra) return "terceros";
+    if(RX_PLANTA.test(String(x.descripcion || ""))) return "planta";
+    return "campo";
+  }
+  function extranet(r){
+    if(PORTALES.includes(r.fu)) return r.fu;
+    const m = /NO en (Cargill|LDC|ACA|Bunge|FYO)\b/.exec(r.e || "");
+    return m ? m[1] : "Williams";
+  }
+  const FILAS = (E.filas || []).map(r => {
+    const x = TZ[String(r.c)], ex = extranet(r), f = iso(r.f) || iso(x && x.fecha);
+    const ka = +r.kf || 0, e = String(r.e || "");
+    /* kilos de la extranet: el peso del comprador/Williams que el cruce eligio para comparar
+       (neto, descarga, balanza...: el mas cercano), o sea Finnegans + la diferencia */
+    let kx = (r.d != null && ka) ? ka + Number(r.d) : (ex === "Williams" ? (+r.wk || +r.kp || 0) : (+r.kp || 0));
+    const nodesc = ex === "Williams" && r.ws && r.ws !== "descargado";
+    const est = e === "OK" ? "ok" : /^Diferencia/.test(e) ? "dif" : /NO en Finnegans/.test(e) ? "solo_ext"
+              : (/^En Finnegans/.test(e) || /^Williams:/.test(e)) ? "solo_agn" : (kx && ka ? "ok" : kx ? "solo_ext" : ka ? "solo_agn" : "otro");
+    if(est === "solo_agn") kx = 0;
+    const camp = (x && x.cosecha) || (!f ? "" : f >= "2026-11-01" ? "26-27" : f >= "2025-11-01" ? "25-26" : "24-25");
+    // mas de 60 tn en un solo "CTG": no es un camion (transferencia o certificado del portal), no suma
+    const nocam = !ka && kx > 60000;
+    return {ex, org: r.o || "(sin organización)", cto: r.cf || "", ctoC: r.cc || "", ctg: String(r.c || ""), cp: r.cp || "",
+            f, prod: cult((x && x.producto) || r.p), camp, kx: nocam ? 0 : kx, kxNo: nocam ? kx : 0, ka, o: ka ? origen(x) : "",
+            est: nocam ? "nocam" : est, ws: nodesc ? r.ws : "", doc: r.doc || ""};
+  });
+  const SIT = {ok: ["#dcfce7", "#166534", "OK"], dif: ["#fef9c3", "#854d0e", "Diferencia de kilos"],
+               solo_ext: ["#fee2e2", "#991b1b", "En la extranet, no en Agronasaja"],
+               solo_agn: ["#ffedd5", "#9a3412", "En Agronasaja, no en la extranet"], otro: ["#f1f5f9", "#334155", "Sin kilos"],
+               nocam: ["#e0e7ff", "#3730a3", "No es un camión (transferencia o certificado): no suma"]};
+  const badge = (e, extra) => { const c = SIT[e] || SIT.otro;
+    return `<span style="background:${c[0]};color:${c[1]};padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap">${esc(c[2] + (extra ? " · " + extra : ""))}</span>`; };
+  let abiertos = new Set(["*"]);   // "*" = extranets abiertas al entrar
+  function filtrar(sinExt){
+    const ex = sinExt ? "" : $("ex-ext").value, cp = $("ex-camp").value, p = $("ex-prod").value, o = $("ex-orig").value,
+          s = $("ex-sit").value, q = $("ex-txt").value.trim().toLowerCase();
+    return FILAS.filter(r => (!ex || r.ex === ex) && (cp ? r.camp === cp : r.camp >= "25-26") && (!p || r.prod === p) &&
+      (!o || r.o === o) && (!s || (s === "prob" ? r.est !== "ok" : r.est === s)) &&
+      (!q || [r.ctg, r.cp, r.cto, r.ctoC, r.org, r.doc].some(v => String(v).toLowerCase().includes(q))));
+  }
+  function suma(rs){
+    const a = {n: rs.length, kx: 0, ka: 0, campo: 0, planta: 0, terceros: 0, sd: 0, dif: 0};
+    rs.forEach(r => { a.kx += r.kx; a.ka += r.ka; if(r.o) a[r.o] += r.ka; else a.sd += r.ka; if(r.est !== "ok") a.dif++; });
+    return a;
+  }
+  function llenar(){
+    const camps = [...new Set(FILAS.map(r => r.camp).filter(c => c >= "25-26"))].sort();
+    const sc = $("ex-camp"), ac = sc.value;
+    sc.innerHTML = `<option value="">25-26 en adelante</option>` + camps.map(c => `<option>${esc(c)}</option>`).join("");
+    if(camps.includes(ac)) sc.value = ac;
+    const se = $("ex-ext"), ae = se.value, exs = ORDEN_EX.filter(x => FILAS.some(r => r.ex === x));
+    se.innerHTML = `<option value="">Todas</option>` + exs.map(x => `<option value="${x}">${esc(NOM_EX[x] || x)}</option>`).join("");
+    if(exs.includes(ae)) se.value = ae;
+    const sp = $("ex-prod"), ap = sp.value, ps = [...new Set(FILAS.map(r => r.prod))].sort();
+    sp.innerHTML = `<option value="">Todos</option>` + ps.map(x => `<option>${esc(x)}</option>`).join("");
+    if(ps.includes(ap)) sp.value = ap;
+  }
+  function tarjetas(){
+    const G = suma(filtrar(false)), d = G.kx - G.ka;
+    const big = (lbl, v, col, sub) => `<div style="flex:1;min-width:180px"><div style="font-size:10.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase">${lbl}</div>
+        <div style="font-size:26px;font-weight:800;color:${col};margin:2px 0">${v}</div><div style="font-size:11px;color:var(--muted)">${sub}</div></div>`;
+    const ori = (lbl, v, col) => `<div style="flex:1;min-width:150px;border-left:4px solid ${col};padding:2px 10px">
+        <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${lbl}</div>
+        <div style="font-size:18px;font-weight:700;color:${col}">${kg(v)} kg</div><div style="font-size:11px;color:var(--muted)">${pct(v, G.ka)} de lo de Agronasaja</div></div>`;
+    $("ex-general").innerHTML = `<div style="background:#fff;border:1px solid var(--line);border-top:4px solid #c2410c;border-radius:12px;padding:14px 16px">
+      <div style="font-weight:800;font-size:13px;margin-bottom:8px">TOTAL ENTREGADO · ${esc($("ex-camp").value || "campaña 25-26 en adelante")}${$("ex-ext").value ? " · " + esc(NOM_EX[$("ex-ext").value] || $("ex-ext").value) : " · todas las extranets"}</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        ${big("Kg según las extranets", kg(G.kx), "#7c2d12", `${fmt.num(G.n)} CTG`)}
+        ${big("Kg en Agronasaja", kg(G.ka), "#0A7A4F", "traslados en Finnegans")}
+        ${big("Diferencia", (d > 0 ? "+" : "") + kg(d), Math.abs(d) > 1000 ? "#b91c1c" : "#334155", `extranet − Agronasaja · ${fmt.num(G.dif)} CTG con algo para revisar`)}
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)">
+        ${ori("Producción propia", G.campo, "#15803d")}${ori("Planta", G.planta, "#1d4ed8")}${ori("Terceros", G.terceros, "#a16207")}
+        ${G.sd > 0.5 ? ori("Sin dato de origen", G.sd, "#64748b") : ""}
+      </div></div>`;
+    const B = filtrar(true), sel = $("ex-ext").value;
+    $("ex-cards").innerHTML = ORDEN_EX.filter(x => B.some(r => r.ex === x)).map(x => {
+      const a = suma(B.filter(r => r.ex === x)), dd = a.kx - a.ka;
+      return `<div class="ex-card" data-ex="${x}" title="Click: ver solo ${esc(NOM_EX[x] || x)}" style="cursor:pointer;background:${sel === x ? "#fff7ed" : "#fff"};border:1px solid ${sel === x ? "#c2410c" : "var(--line)"};border-left:4px solid #c2410c;border-radius:10px;padding:9px 11px">
+        <div style="font-weight:700;font-size:12.5px">${esc(NOM_EX[x] || x)} <span style="font-weight:400;color:var(--muted)">· ${fmt.num(a.n)} CTG</span></div>
+        <div style="font-size:11.5px;margin-top:3px">Extranet <b>${kg(a.kx)}</b> kg</div>
+        <div style="font-size:11.5px">Agronasaja <b>${kg(a.ka)}</b> kg</div>
+        <div style="font-size:11.5px;color:${Math.abs(dd) > 1000 ? "#b91c1c" : "var(--muted)"}">Diferencia ${(dd > 0 ? "+" : "") + kg(dd)} kg</div></div>`;
+    }).join("");
+  }
+  const COLS = ["Extranet · comprador · contrato", "CTG", "Kg extranet", "Kg Agronasaja", "Diferencia", "Producción propia", "Planta", "Terceros", "Situación"];
+  function filaTot(cls, key, lbl, a, nivel){
+    const ab = abiertos.has(key) || (nivel === 0 && abiertos.has("*")), d = a.kx - a.ka;
+    const bg = nivel === 0 ? "background:#fff7ed;font-weight:800" : "background:var(--bg2);font-weight:600";
+    return `<tr class="${cls}" data-k="${esc(key)}" style="cursor:pointer;${bg}">
+      <td style="padding-left:${8 + nivel * 18}px">${ab ? "▾" : "▸"} ${lbl}</td><td class="num">${fmt.num(a.n)}</td>
+      <td class="num">${kg(a.kx)}</td><td class="num">${kg(a.ka)}</td>
+      <td class="num" style="color:${Math.abs(d) > 100 ? "#b91c1c" : "var(--muted)"}">${(d > 0 ? "+" : "") + kg(d)}</td>
+      <td class="num">${a.campo ? kg(a.campo) : "·"}</td><td class="num">${a.planta ? kg(a.planta) : "·"}</td><td class="num">${a.terceros ? kg(a.terceros) : "·"}</td>
+      <td>${a.dif ? `<span style="color:#b45309;font-weight:600">${fmt.num(a.dif)} para revisar</span>` : `<span style="color:#15803d">OK</span>`}</td></tr>`;
+  }
+  function render(){
+    llenar(); tarjetas();
+    const rs = filtrar(false);
+    t.querySelector("thead").innerHTML = "<tr>" + COLS.map((c, i) => `<th${i ? ' class="num"' : ""}>${c}</th>`).join("") + "</tr>";
+    const porEx = {};
+    rs.forEach(r => { ((porEx[r.ex] = porEx[r.ex] || {})[r.org + " · " + (r.cto ? "Contrato " + r.cto : "sin contrato en Finnegans")] =
+      (porEx[r.ex] || {})[r.org + " · " + (r.cto ? "Contrato " + r.cto : "sin contrato en Finnegans")] || []).push(r); });
+    let h = "";
+    ORDEN_EX.filter(x => porEx[x]).forEach(x => {
+      const grupos = porEx[x], todos = [].concat(...Object.values(grupos));
+      h += filaTot("ex-n0", "E|" + x, esc(NOM_EX[x] || x), suma(todos), 0);
+      if(!(abiertos.has("E|" + x) || abiertos.has("*"))) return;
+      Object.keys(grupos).sort((a, b) => suma(grupos[b]).ka + suma(grupos[b]).kx - suma(grupos[a]).ka - suma(grupos[a]).kx).forEach(g => {
+        const key = "C|" + x + "|" + g;
+        h += filaTot("ex-n1", key, esc(g), suma(grupos[g]), 1);
+        if(!abiertos.has(key)) return;
+        grupos[g].slice().sort((a, b) => b.f.localeCompare(a.f)).forEach(r => {
+          const d = r.kx - r.ka, col = c => r.o === c ? kg(r.ka) : "";
+          h += `<tr><td style="padding-left:48px;font-size:11.5px;color:var(--muted)">${fec(r.f)} · CP ${esc(r.cp || "—")} · ${esc(r.prod)} · ${esc(r.camp)}${r.ctoC ? " · contrato comprador " + esc(r.ctoC) : ""}</td>
+            <td class="num"><span class="ex-cpy" data-c="${esc(r.ctg)}" title="clic para copiar" style="cursor:pointer;text-decoration:underline dotted">${esc(r.ctg)}</span></td>
+            <td class="num">${r.kx ? kg(r.kx) : r.kxNo ? `<span style="color:var(--muted)">(${kg(r.kxNo)})</span>` : "—"}</td><td class="num">${r.ka ? kg(r.ka) : "—"}</td>
+            <td class="num" style="color:${Math.abs(d) > 100 ? "#b91c1c" : "var(--muted)"}">${r.kx && r.ka ? (d > 0 ? "+" : "") + kg(d) : "—"}</td>
+            <td class="num">${col("campo")}</td><td class="num">${col("planta")}</td><td class="num">${col("terceros")}</td>
+            <td>${badge(r.est, r.ws ? "Williams: " + r.ws : (r.ka && !r.o ? "origen sin dato" : ""))}</td></tr>`;
+        });
+      });
+    });
+    t.querySelector("tbody").innerHTML = h || `<tr><td colspan="${COLS.length}" style="padding:20px;color:var(--muted)">${FILAS.length ? "Nada con estos filtros." : "Todavía no se corrió el cruce con las extranets: tocá «Actualizar portales» en Comprador vs Finnegans."}</td></tr>`;
+    $("ex-info").textContent = `${fmt.num(rs.length)} CTG`;
+    const fr = E.frescura || {};
+    $("ex-chips").innerHTML = [`datos de las extranets del ${fec(E.generado)} ${String(E.generado || "").slice(11, 16)}`]
+      .concat(Object.entries(fr).map(([k, v]) => `${k}: ${fec(v)}`))
+      .map(x => `<span style="background:rgba(255,255,255,.18);padding:3px 10px;border-radius:999px;font-size:11.5px">${esc(x)}</span>`).join("");
+  }
+  function exportar(){
+    const rs = filtrar(false);
+    if(!rs.length){ alert("No hay CTG con estos filtros."); return; }
+    const K = [["ex", "Extranet"], ["org", "Comprador"], ["cto", "Contrato Finnegans"], ["ctoC", "Contrato del comprador"], ["ctg", "CTG"],
+               ["cp", "Carta de porte"], ["f", "Fecha"], ["prod", "Cultivo"], ["camp", "Campaña"], ["kx", "Kg extranet"], ["ka", "Kg Agronasaja"],
+               ["_d", "Diferencia kg"], ["_o", "Origen"], ["_s", "Situación"], ["doc", "Traslado Finnegans"]];
+    const q = x => { let s = String(x == null ? "" : x); if(/[";\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"'; return s; };
+    const val = (r, k) => k === "_d" ? (r.kx && r.ka ? r.kx - r.ka : "") : k === "_o" ? (r.ka ? ORIG[r.o] : "") : k === "_s" ? SIT[r.est][2] + (r.ws ? " (Williams: " + r.ws + ")" : "") : r[k];
+    const L = [K.map(k => q(k[1])).join(";")].concat(rs.map(r => K.map(k => q(val(r, k[0]))).join(";")));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + L.join("\r\n")], {type: "text/csv;charset=utf-8"}));
+    a.download = `Entregas-por-extranet_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+  t.addEventListener("click", e => {
+    const c = e.target.closest(".ex-cpy");
+    if(c){ navigator.clipboard.writeText(c.dataset.c).then(() => { const o = c.textContent; c.textContent = "✓ copiado"; setTimeout(() => c.textContent = o, 1200); }); return; }
+    const tr = e.target.closest("tr.ex-n0, tr.ex-n1");
+    if(!tr) return;
+    const k = tr.dataset.k;
+    if(abiertos.has("*")){ abiertos.delete("*"); ORDEN_EX.forEach(x => abiertos.add("E|" + x)); }
+    abiertos.has(k) ? abiertos.delete(k) : abiertos.add(k);
+    render();
+  });
+  $("ex-cards").addEventListener("click", e => {
+    const c = e.target.closest(".ex-card"); if(!c) return;
+    $("ex-ext").value = $("ex-ext").value === c.dataset.ex ? "" : c.dataset.ex; render();
+  });
+  ["ex-ext", "ex-camp", "ex-prod", "ex-orig", "ex-sit"].forEach(id => $(id).addEventListener("change", render));
+  let _tq; $("ex-txt").addEventListener("input", () => { clearTimeout(_tq); _tq = setTimeout(render, 250); });
+  $("ex-limpiar").addEventListener("click", () => { ["ex-ext", "ex-camp", "ex-prod", "ex-orig", "ex-sit", "ex-txt"].forEach(id => $(id).value = ""); abiertos = new Set(["*"]); render(); });
+  $("ex-abrir").addEventListener("click", () => {
+    abiertos = new Set(); filtrar(false).forEach(r => { abiertos.add("E|" + r.ex); abiertos.add("C|" + r.ex + "|" + r.org + " · " + (r.cto ? "Contrato " + r.cto : "sin contrato en Finnegans")); }); render(); });
+  $("ex-cerrar").addEventListener("click", () => { abiertos = new Set(); render(); });
+  $("ex-excel").addEventListener("click", exportar);
+  $("ex-copiar").addEventListener("click", () => {
+    const cs = filtrar(false).map(r => r.ctg); if(!cs.length) return;
+    navigator.clipboard.writeText(cs.join("\n")).then(() => { const b = $("ex-copiar"); b.textContent = `✓ ${cs.length} CTG copiados`; setTimeout(() => b.textContent = "⧉ Copiar CTGs", 2200); });
+  });
+  let _dib = false;
+  document.querySelectorAll('[data-go-sub="pn-extent"], .subtab[data-sub="pn-extent"]')
+    .forEach(a => a.addEventListener("click", () => setTimeout(() => { _dib = true; render(); }, 60)));
+  setTimeout(() => { if(!_dib) render(); }, 1200);
 })();
 
 /* ============================================================
