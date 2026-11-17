@@ -19424,7 +19424,10 @@ async function mbAutoBackup(forceNow){
   const n1 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:1,maximumFractionDigits:1});
   const n2 = v => (Number(v)||0).toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
   const val = id => (document.getElementById(id)||{}).value || "";
-  const cultivo = p => String(p||"—").replace(/^Grano\s+/i,"").trim() || "—";
+  // 17/11/2026: "Grano Trigo" y "Grano Trigo Pan" son el mismo cultivo. Separados,
+  // elegir "Trigo" dejaba afuera las ventas 26-27 (cargadas como Trigo Pan) y la
+  // compra y la venta de trigo no se comparaban en la misma fila.
+  const cultivo = p => String(p||"—").replace(/^Grano\s+/i,"").replace(/^Trigo\s+Pan$/i, "Trigo").trim() || "—";
   const campS = c => { const m = String(c||"").match(/(\d{2}\s*[-\/]\s*\d{2})/);
                        return m ? m[1].replace(/\s/g,"") : (String(c||"")||"—"); };
 
