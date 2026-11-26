@@ -16803,6 +16803,7 @@ function ctRender(){
     el("el-para").dataset.tocado = "";            // se recalcula segun el comercial
     if(!q){ cur = null; pintar(); return; }
     cur = CT[q] || null;
+    sumarVivo(q);                                 // camiones cargados hoy (en vivo)
     if(!cur){
       const e = EX[q];
       el("el-vacio").innerHTML = e
@@ -16810,6 +16811,56 @@ function ctRender(){
         : `No encontré el contrato de compra <b>#${esc(q)}</b>. Fijate el número interno en Finnegans (por ejemplo 1013).`;
       pintar(); return;
     }
+    elegirComercial();
+  }
+  // 26/11/2026 (contrato 1260, camion cargado esa mañana): la pagina sale del DW de
+  // anoche, asi que un camion recien cargado no estaba. Al traer el contrato se le pregunta
+  // EN VIVO a Finnegans (Worker -> TrasladosPendientesFromContrato, la pantalla Vincular)
+  // y se suman los CTG con algo sin liquidar que todavia no estaban en la foto.
+  let _vivoReq = 0;
+  async function sumarVivo(q){
+    const e = EX[q];
+    if(!e || !e.contratoid) return;
+    const yo = ++_vivoReq;
+    let rs;
+    try {
+      const r = await apiFetch(`/api/finnegans/pendcompra/${encodeURIComponent(e.contratoid)}`, {credentials:"include"});
+      if(!r.ok) return;
+      rs = (await r.json()).traslados || [];
+    } catch(x){ return; }
+    if(yo !== _vivoReq || String(val("el-cto")).replace(/\D/g,"") !== q) return;   // ya cambiaste de contrato
+    const iso = f => { const m = /^(\d\d)-(\d\d)-(\d{4})/.exec(String(f||"")); return m ? `${m[3]}-${m[2]}-${m[1]}` : String(f||"").slice(0,10); };
+    const por = {};
+    rs.forEach(x => {
+      const ctg = String(x.CTG || "").trim();
+      if(!ctg) return;
+      const d = por[ctg] = por[ctg] || {ctg, cp: String(x.CARTADEPORTE || "").trim(), fecha: iso(x.FECHA),
+                                        kg: Number(x.PESONETO) || 0, disp: 0};
+      d.disp += Number(x.CANTIDADDISPONIBLE) || 0;
+    });
+    const nuevo = !cur;
+    if(nuevo){
+      cur = CT[q] = {lado: "compra", cto: e.nombre || "", num: q, org: e.organizacion || "",
+                     prod: e.producto || "", cos: e.cosecha || e.campana || "",
+                     sis_ent: Number(e.cantidadentregada) || 0, sis_liq: Number(e.cantidadliquidada) || 0,
+                     sis_pend: Number(e.cantidadentregadapendienteliquidar) || 0, ctgs: []};
+    }
+    const ya = new Set((cur.ctgs || []).map(x => String(x.ctg)));
+    const add = Object.values(por).filter(d => !ya.has(d.ctg) && d.disp > 0.0005);
+    if(!add.length){ if(nuevo){ delete CT[q]; cur = null; } return; }
+    cur.ctgs = cur.ctgs || [];
+    add.forEach(d => {
+      const tn = d.kg / 1000;
+      cur.ctgs.push({ctg: d.ctg, cp: d.cp, fecha: d.fecha, tn, tn_liq: Math.max(0, tn - d.disp), falta: d.disp,
+                     doc: "", est: "pend", desv: false, liqs: [], dest: "", flete: "", otro: "", fuente: "vivo"});
+      cur.sis_ent += tn; cur.sis_pend += d.disp;
+    });
+    cur.cam_n = cur.ctgs.length;
+    cur.cam_tn = cur.ctgs.reduce((a, x) => a + (Number(x.tn) || 0), 0);
+    if(nuevo) elegirComercial(); else pintar();
+    avisoGuardado(`${add.length} CTG recién cargado${add.length > 1 ? "s" : ""} traído${add.length > 1 ? "s" : ""} en vivo de Finnegans`);
+  }
+  function elegirComercial(){
     // el comercial de la firma, si Finnegans lo tiene
     const com = comercialDe(cur.org);
     const sc = el("el-com");
