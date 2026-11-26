@@ -16173,6 +16173,20 @@ function ctRender(){
       c.cam_tn = c.ctgs.reduce((a, x) => a + x.tn, 0);
     });
   }
+  // 26/11/2026 (solo por hoy, a mano): camion del contrato 1260 leido en vivo de
+  // Finnegans (TrasladosPendientesFromContrato) a las 14 h. Mañana lo trae el build.
+  {
+    const c = CT["1260"];
+    if(c && !(c.ctgs || []).some(x => String(x.ctg) === "10135907040")){
+      c.ctgs = (c.ctgs || []).concat([{ctg: "10135907040", cp: "00000-00000861", fecha: "2026-11-02",
+        tn: 31.54, tn_liq: 0, falta: 31.54, doc: "", est: "pend", desv: false, liqs: [],
+        dest: "", flete: "", otro: "", fuente: "vivo"}]);
+      c.sis_ent = (Number(c.sis_ent) || 0) + 31.54;
+      c.sis_pend = (Number(c.sis_pend) || 0) + 31.54;
+      c.cam_n = c.ctgs.length;
+      c.cam_tn = c.ctgs.reduce((a, x) => a + (Number(x.tn) || 0), 0);
+    }
+  }
   const EX = {};
   (PAYLOAD.compra||[]).forEach(r => { const k = String(r.numerointerno||""); if(k) EX[k] = r; });
   const VEN = PAYLOAD.vendedores || {por_cuit:{}, por_nombre:{}, comerciales:[]};
