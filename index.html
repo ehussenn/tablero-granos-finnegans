@@ -2103,6 +2103,24 @@ window.apiFetch = function(path, opts){
               </div>
             </div>
 
+            <!-- 26/11/2026 (pedido Ezequiel): te dan un importe en $ o USD y la calculadora
+                 devuelve las toneladas, con el mismo precio, TC y descuentos de arriba -->
+            <div style="margin-top:14px;padding:12px;background:#ecfdf5;border-radius:8px;border:1px solid #A7DCC4">
+              <div style="font-size:11px;font-weight:700;color:#0A7A4F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔁 Toneladas a partir de un importe</div>
+              <div class="calc-grid">
+                <div><label>Importe</label><input type="number" id="prfi-imp" step="0.01" placeholder="ej. 50000000"/></div>
+                <div><label>Moneda del importe</label><select id="prfi-mon"><option value="ARS">Pesos ($)</option><option value="USD">Dólares (USD)</option></select></div>
+                <div style="grid-column:1/-1"><label>Ese importe es</label><select id="prfi-base" style="width:100%">
+                  <option value="final">Lo que se cobra al final (con IVA; si elegiste SISA, después de retenciones)</option>
+                  <option value="sin">A facturar sin IVA</option>
+                  <option value="bruto">Bruto (toneladas × precio, antes de descuentos)</option>
+                </select></div>
+              </div>
+              <div id="prfi-out" style="margin-top:10px;font-size:13px;color:var(--ink);line-height:1.5">Cargá un importe.</div>
+              <button class="clear" id="prfi-usar" style="margin-top:8px;display:none">⬆ Usar estas toneladas en la proforma</button>
+              <div style="margin-top:6px;font-size:11px;color:var(--muted)">Usa el precio, el tipo de cambio, el % de liquidación, la comisión, la cámara, los gastos y el IVA de arriba. Los dólares se pasan a pesos con ese mismo tipo de cambio. La cámara se toma fija por los camiones que cargaste.</div>
+            </div>
+
             <button class="clear" id="prf-reset" style="margin-top:14px">↺ Resetear a valores ejemplo</button>
           </div>
 
@@ -14364,8 +14382,62 @@ function prfRender(){
 
   const persist = Object.assign({}, v); delete persist.sisa;
   try{ localStorage.setItem(PRF_KEY, JSON.stringify(persist)); }catch(e){}
+  prfImporte();
+}
+// Las mismas cuentas de prfRender, sin pintar: sirven para ir de un importe a toneladas.
+function prfCalc(v){
+  const total   = v.tn * v.precio * v.tc * (v.liq/100);
+  const factSin = total - total * v.com/100 - v["cam-tarifa"] * v["cam-n"] - total * v.gtos/100;
+  const factCon = factSin * (1 + v.iva/100);
+  let sisaTot = null;
+  if(v.sisa !== "none"){
+    const bruto = v.tn * v.precio * v.tc;
+    const conIva = bruto * (1 - v.com/100 - v.gtos/100) * (1 + v.iva/100);
+    sisaTot = conIva - bruto * (v.sisa === "sisa1" ? 0.05 : 0.09);
+  }
+  return {total, factSin, factCon, sisaTot};
+}
+// 26/11/2026 (pedido Ezequiel): importe en $ o USD -> toneladas. Todo es lineal en las
+// toneladas (la camara es fija), asi que tn = (importe - f(0)) / (f(1) - f(0)).
+let prfTnImp = null;
+function prfImporte(){
+  const out = document.getElementById("prfi-out"), usar = document.getElementById("prfi-usar");
+  if(!out) return;
+  const v = prfGet();
+  const imp = parseFloat(document.getElementById("prfi-imp").value) || 0;
+  const mon = document.getElementById("prfi-mon").value;
+  const base = document.getElementById("prfi-base").value;
+  prfTnImp = null; usar.style.display = "none";
+  if(!imp){ out.textContent = "Cargá un importe."; return; }
+  if(!(v.precio > 0) || !(v.tc > 0)){ out.textContent = "Falta el precio o el tipo de cambio de arriba."; return; }
+  const ars = mon === "USD" ? imp * v.tc : imp;
+  const f = tn => { const r = prfCalc(Object.assign({}, v, {tn}));
+    return base === "bruto" ? r.total : base === "sin" ? r.factSin : (r.sisaTot != null ? r.sisaTot : r.factCon); };
+  const f0 = f(0), m = f(1) - f0;
+  if(!(m > 0)){ out.textContent = "Con estos descuentos no se puede calcular (revisá los % de arriba)."; return; }
+  const tn = (ars - f0) / m;
+  if(!(tn > 0)){ out.textContent = "Ese importe no alcanza ni para cubrir la cámara."; return; }
+  prfTnImp = tn;
+  const que = base === "bruto" ? "de bruto" : base === "sin" ? "a facturar sin IVA"
+            : (v.sisa !== "none" ? "a cobrar después de retenciones" : "a facturar con IVA");
+  out.innerHTML = `<span style="font-size:20px;font-weight:700;color:#0A7A4F">${cnjFmt(tn, 2)} tn</span>`
+    + ` <span style="color:var(--muted)">(${cnjFmt0(tn * 1000)} kg)</span><br>`
+    + `para $ ${cnjFmt0(ars)} ${que}`
+    + (mon === "USD" ? ` (USD ${cnjFmt(imp, 2)} × TC ${cnjFmt(v.tc, 2)})` : "")
+    + ` · precio USD ${cnjFmt(v.precio, 2)}/tn`;
+  usar.style.display = "";
 }
 (function prfInit(){
+  ["prfi-imp", "prfi-mon", "prfi-base"].forEach(id => {
+    const e = document.getElementById(id);
+    if(e) e.addEventListener(e.tagName === "SELECT" ? "change" : "input", prfImporte);
+  });
+  const usar = document.getElementById("prfi-usar");
+  if(usar) usar.addEventListener("click", () => {
+    if(prfTnImp == null) return;
+    document.getElementById("prf-tn").value = Math.round(prfTnImp * 100) / 100;
+    prfRender();
+  });
   Object.keys(PRF_DEFAULTS).forEach(k => {
     const el = document.getElementById("prf-"+k);
     if(el) el.addEventListener("input", prfRender);
